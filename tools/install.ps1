@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/assemblyhelper.ps1"
+. "$psscriptroot/../src/lib/stdlib/enable-stdlib.ps1"
+
+include-source "src/app/common/assemblyhelper"
+
+. "$($global:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
 
 function ValidateNugetPresent {
     get-command nuget | out-null
@@ -25,7 +29,8 @@ function ValidateNugetPresent {
 function InstallDependencies {
     ValidateNugetPresent
     $packagesDestination = (GetAssemblyRoot)
-    & nuget restore -packagesdirectory $packagesDestination
+    $packagesConfigFile = join-path -path $global:ApplicationRoot -child packages.config
+    & nuget restore $packagesConfigFile -packagesdirectory $packagesDestination
 }
 
 InstallDependencies

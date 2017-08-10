@@ -13,6 +13,6 @@
 # limitations under the License.
 
 $global:ApplicationEntryScriptName = "graph"
-. "$psscriptroot/start-app.ps1"
+. "$psscriptroot/src/lib/stdlib/start-app.ps1"
 
 

@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function GetScriptRoot {
-    split-path -parent $pscommandpath
-}
-
 function GetAssemblyRoot {
-    $scriptRoot = GetScriptRoot
+    $scriptRoot = $global:ApplicationRoot
     join-path -path $scriptRoot -childpath pkg
 }
 

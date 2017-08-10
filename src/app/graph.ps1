@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include-source "assemblyhelper"
+include-source "src/app/common/assemblyhelper"
 
 class GraphContext {
     $AuthContext

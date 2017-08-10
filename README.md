@@ -20,7 +20,7 @@ Follow these steps on your workstation to install **PoshGraph** there:
 * Within a **PowerShell** terminal, `cd` to the extracted or cloned directory
 * Execute the install command:
 
-  `.\install.ps1`
+  `.\tools\install.ps1`
 
 Now you're all set!
 
@@ -84,7 +84,7 @@ Get-GraphItem tenantDetails $msgraphconnnection
 
 The connection may be reused until the token acquired by the initial authentication expires (this typically takes several minutes). You can always execute `New-GraphConnection` to get a new one if that happens to you. Of course, **PoshGraph** should eventually support some sort of token renewal scheme eventually to avoid manual token renewal...
 
-That's it for now -- there are many more cmdlets to arrive soon~
+That's it for now -- there are many more cmdlets to arrive soon!
 
 ## Contributing/Development
 The project is not yet ready for contributors, but suggestions on features or other advice is welcome while I establish a baseline.

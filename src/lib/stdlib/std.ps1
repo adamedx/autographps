@@ -12,8 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/enable-stdlib.ps1"
+set-strictmode -version 2
 
-include-source $global:applicationEntryScriptName
+$alreadyInitialized = try {
+    get-variable -scope $script:IsStdLibInitialized
+    $true
+} catch {
+    $false
+}
 
-. "$(script:ApplicationRoot)/enable-include.ps1"
+if ($alreadyInitialized) {
+    throw "This script file must only be sourced once from the entry script."
+}
+
+$global:ApplicationRoot = (get-item "$psscriptRoot/../../..").fullname
+
+function script:ApplicationRoot {
+    $global:ApplicationRoot
+}
+
+. (join-path $psscriptroot include.ps1)
+
+$script:IsStdlibInitialized = $true

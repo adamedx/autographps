@@ -11,19 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-$global:includes = @{}
-$global:included = @{}
 
-function include-source($scriptRelativePath)
-{
-    $relativePath = "$($scriptRelativePath).ps1"
-    $relativeNormal = $scriptRelativePath.ToLower()
-    $fullPath = (join-path $psscriptRoot $relativePath | get-item).Fullname
-    $canonical = $fullPath.ToLower()
-    if ( $global:included[$canonical] -eq $null )
-    {
-        $global:included[$canonical] = @($psscriptRoot, $relativeNormal)
-        $global:includes[$canonical] = $false
-    }
-}
+. "$psscriptroot/enable-stdlib.ps1"
 
+include-source "src/app/$global:applicationEntryScriptName"
+
+. "$($global:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
