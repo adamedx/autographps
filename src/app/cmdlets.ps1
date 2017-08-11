@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include-source "src/app/graph"
+include-source "src/app/GraphAuthenticationContext"
+include-source "src/app/GraphContext"
 
 function Get-MSAAuthContext {
     [CmdletBinding()]
