@@ -232,7 +232,12 @@ class GraphAuthenticationContext {
             if ($this.AuthType -eq 'aad') {
                 $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $this.Authority
                 $redirectUri = "http://localhost"
-                $this.Token = $adalAuthContext.AcquireToken($this.ResourceAppIdURI, $this.AppId, $redirectUri, "Auto")
+
+                # Value of '3' comes from RefreshSession of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
+                $promptBehaviorValueRefreshSession = 3
+
+                $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValueRefreshSession
+                $this.Token = $adalAuthContext.AcquireTokenAsync($this.ResourceAppIdURI, $this.AppId, $redirectUri,  $promptBehavior).Result
             } else {
                 $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.AppId
                 $scopes = new-object System.Collections.Generic.List[string]
