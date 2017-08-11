@@ -14,6 +14,7 @@
 
 include-source "src/app/GraphAuthenticationContext"
 include-source "src/app/GraphContext"
+include-source "src/app/GraphConnection"
 
 function Get-MSAAuthContext {
     [CmdletBinding()]
@@ -63,17 +64,14 @@ function New-GraphConnection($graphType = 'msgraph', $authtype = 'msa', $tenantN
     [GraphConnection]::new($graphType, $authtype, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
 }
 
-function ConnectToGraph($defaultConnection = $null) {
-    $connection = if ($defaultConnection -eq $null) {
+function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
+    $connection = if ($existingConnection -eq $null) {
         New-GraphConnection
     } else {
-        $defaultConnection
+        $existingConnection
     }
 
     $connection.Connect()
-    $connection
-}
 
-function Get-GraphItem($itemRelativeUri, $connection = $null) {
-    (ConnectToGraph $connection).Context.GetGraphAPIResponse($itemRelativeUri, $null)
+    $connection.Context.GetGraphAPIResponse($itemRelativeUri, $null)
 }
