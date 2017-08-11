@@ -14,6 +14,7 @@
 
 
 include-source "src/app/common/assemblyhelper"
+include-source "src/app/cmdlets"
 
 class GraphContext {
     $AuthContext
@@ -233,8 +234,8 @@ class GraphAuthenticationContext {
                 $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $this.Authority
                 $redirectUri = "http://localhost"
 
-                # Value of '3' comes from RefreshSession of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
-                $promptBehaviorValueRefreshSession = 3
+                # Value of '2' comes from 'Auto' of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
+                $promptBehaviorValueRefreshSession = 2
 
                 $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValueRefreshSession
                 $this.Token = $adalAuthContext.AcquireTokenAsync($this.ResourceAppIdURI, $this.AppId, $redirectUri,  $promptBehavior).Result
@@ -258,7 +259,7 @@ class GraphConnection {
         $this.AuthContext = $authContext
     }
     GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
-        $this.Context = New-GraphContext $graphType $authType $tenantName $altAppId $altEndpoint $altAuthority
+        $this.Context = [GraphContext]::new($graphType, $authtype, $tenantName, $altAppId, $altEndpoint, $altAuthority)
     }
 
     Connect() {
@@ -268,80 +269,5 @@ class GraphConnection {
         }
     }
 }
-
-function Get-MSAAuthContext {
-    [CmdletBinding()]
-    param($alternateAppId = $null)
-
-    $appId = $alternateAppId
-
-    if ($appId -eq $null) {
-        $appId = [GraphPublicEndpoint]::MSGraphAppId()
-    }
-
-    $authContext = [GraphAuthenticationContext]::new('msa', $appId, $null, $null, $null)
-    $authContext
-}
-
-function Get-AADAuthContext {
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory=$true)] [string] $tenantName,
-                                              $alternateAppId = $null,
-                                              $altResourceAppIdUri = $null,
-                                              $alternateAuthority = $null
-    )
-
-    $resourceAppIdUri = $altResourceAppIdUri
-
-    if ($resourceAppIdUri -eq $null) {
-        $resourceAppIdUri = [GraphPublicEndpoint]::AADGraphEndpoint()
-    }
-
-    $appId = $alternateAppId
-
-    if ($appId -eq $null) {
-        $appId = [GraphPublicEndpoint]::AADGraphAppId()
-    }
-
-    $authContext = [GraphAuthenticationContext]::new('aad', $appId,  $tenantName, $resourceAppIdUri, $alternateAuthority)
-
-    $authContext
-}
-
-function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    [GraphContext]::new($graphType, $authtype, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
-}
-
-function New-GraphConnection($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    [GraphConnection]::new($graphType, $authtype, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
-}
-
-function ConnectToGraph($defaultConnection = $null) {
-    $connection = if ($defaultConnection -eq $null) {
-        New-GraphConnection
-    } else {
-        $defaultConnection
-    }
-
-    $connection.Connect()
-    $connection
-}
-
-function Get-GraphItem($itemRelativeUri, $connection = $null) {
-    (ConnectToGraph $connection).Context.GetGraphAPIResponse($itemRelativeUri, $null)
-}
-
-function Get-GraphItemRelativeQueryUri($itemRelativeUri, $connection = $null, $links = $false, $customQuery = $null) {
-}
-
-
-function Set-GraphData($itemRelativeUri, $connection = $null) {
-}
-
-function Get-GraphQueryData($itemRelativeUri, $oDataQuery, $connection = $null) {
-}
-
-
 
 
