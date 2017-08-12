@@ -69,26 +69,27 @@ class GraphAuthenticationContext {
         $this.tenantName = $tenantName
         $this.Token = $null
     }
-
-    [object] AcquireToken() {
-        if ($this.Token -eq $null) {
-            if ($this.AuthType -eq 'aad') {
-                $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $this.Authority
-                $redirectUri = "http://localhost"
-
-                # Value of '2' comes from 'Auto' of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
-                $promptBehaviorValueRefreshSession = 2
-
-                $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValueRefreshSession
-                $this.Token = $adalAuthContext.AcquireTokenAsync($this.ResourceAppIdURI, $this.AppId, $redirectUri,  $promptBehavior).Result
-            } else {
-                $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.AppId
-                $scopes = new-object System.Collections.Generic.List[string]
-                $scopes.Add("User.Read")
-                $this.Token = $msaAuthContext.AcquireTokenAsync($scopes).Result
-            }
-        }
-        return $this.Token
-    }
 }
+
+function GraphAuthenticationContext_AcquireToken([GraphAuthenticationContext] $_this) {
+    if ($_this.Token -eq $null) {
+        if ($_this.AuthType -eq 'aad') {
+            $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $_this.Authority
+            $redirectUri = "http://localhost"
+
+            # Value of '2' comes from 'Auto' of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
+            $promptBehaviorValueRefreshSession = 2
+
+            $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValueRefreshSession
+            $_this.Token = $adalAuthContext.AcquireTokenAsync($_this.ResourceAppIdURI, $_this.AppId, $redirectUri,  $promptBehavior).Result
+        } else {
+            $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $_this.AppId
+            $scopes = new-object System.Collections.Generic.List[string]
+            $scopes.Add("User.Read")
+            $_this.Token = $msaAuthContext.AcquireTokenAsync($scopes).Result
+        }
+    }
+    $_this.Token
+}
+
 

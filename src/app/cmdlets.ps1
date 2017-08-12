@@ -71,7 +71,7 @@ function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
         $existingConnection
     }
 
-    $connection.Connect()
+    GraphConnection_Connect $connection
 
-    $connection.Context.GetGraphAPIResponse($itemRelativeUri, $null)
+    GraphContext_GetGraphAPIResponse $connection.Context $itemRelativeUri $null
 }
