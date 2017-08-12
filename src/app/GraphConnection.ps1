@@ -17,11 +17,7 @@ include-source "src/app/GraphContext"
 class GraphConnection {
     $Context
     $Connected = $false
-    GraphConnection($graphType, $authContext) {
-        $this.Context = [GraphContext]::new($graphType, $authContext)
-        InitializeGraphType $graphType
-        $this.AuthContext = $authContext
-    }
+
     GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
         $this.Context = [GraphContext]::new($graphType, $authtype, $tenantName, $altAppId, $altEndpoint, $altAuthority)
     }
