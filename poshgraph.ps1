@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$global:ApplicationEntryScriptName = "graph"
+$ApplicationEntryScriptName = "graph"
 . "$psscriptroot/src/lib/stdlib/start-app.ps1"
 
 

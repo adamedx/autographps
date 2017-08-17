@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-$global:includes = @{}
-$global:included = @{}
+$includes = @{}
+$included = @{}
 
 function ValidateIncludePath($includePath) {
     if ( $includePath.StartsWith("/") -or $includePath.StartsWith("\\") ) {
@@ -33,12 +33,12 @@ function include-source($appRelativePath)
     ValidateIncludePath($appRelativePath)
     $relativePath = "$($appRelativePath).ps1"
     $relativeNormal = $relativePath.ToLower()
-    $fullPath = (join-path $global:ApplicationRoot $relativePath | get-item).Fullname
+    $fullPath = (join-path $ApplicationRoot $relativePath | get-item).Fullname
     $canonical = $fullPath.ToLower()
-    if ( $global:included[$canonical] -eq $null )
+    if ( $included[$canonical] -eq $null )
     {
-        $global:included[$canonical] = @($global:ApplicationRoot, $relativeNormal)
-        $global:includes[$canonical] = $false
+        $included[$canonical] = @($ApplicationRoot, $relativeNormal)
+        $includes[$canonical] = $false
     }
 }
 
