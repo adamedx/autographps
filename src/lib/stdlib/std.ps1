@@ -32,5 +32,6 @@ function script:ApplicationRoot {
 }
 
 . (join-path $psscriptroot include.ps1)
+. (join-path $psscriptroot 'define-class.ps1')
 
 $script:IsStdlibInitialized = $true

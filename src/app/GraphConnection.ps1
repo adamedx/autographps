@@ -16,19 +16,23 @@
 include-source "src/app/GraphContext"
 include-source "src/app/GraphAuthenticationContext"
 
-class GraphConnection {
-    $Context
-    $Connected = $false
+function GraphConnection($method = $null) {
+    class GraphConnection {
+        $Context
+        $Connected = $false
 
-    GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
-        $this.Context = new-object "GraphContext" -argumentlist ($graphType, $authtype, $tenantName, $altAppId, $altEndpoint, $altAuthority)
+        GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
+            $this.Context = GraphContext new $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
+        }
     }
-}
 
-function GraphConnection_Connect([GraphConnection] $_this) {
-    if ( ! $_this.Connected ) {
-        GraphAuthenticationContext_AcquireToken $_this.Context.AuthContext | out-null
-        $_this.Connected = $true
+    function Connect($_this) {
+        if ( ! $_this.Connected ) {
+            GraphAuthenticationContext AcquireToken $_this.Context.AuthContext | out-null
+            $_this.Connected = $true
+        }
     }
+
+    . $define_class @args
 }
 
