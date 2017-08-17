@@ -158,7 +158,7 @@ function GraphContext($method = $null) {
             }
         }
 
-        $_this.AuthContext = (GraphAuthenticationContext)::new($authType, $appId, $tenantName, $resourceAppIdUri, $altAuthority)
+        $_this.AuthContext = GraphAuthenticationContext new $authType $appId $tenantName $resourceAppIdUri $altAuthority
     }
 
     function GetRestAPIHeader($token) {

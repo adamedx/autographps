@@ -34,7 +34,7 @@ $define_class = {
         $thisType
     } else {
         if ($args.length -gt 0 -and $method -ne 'new' -and $args[0].Gettype().name -ne $thisType.name) {
-            throw [InvalidCastException]::new("Mismatch type '$($args[0].gettype())' supplied when type '$thisType' was required")
+            throw [InvalidCastException]::new("Mismatch type '$($args[0].gettype())' supplied when type '$thisType' was required`n$(get-pscallstack)")
         }
         $scriptblock = (get-item (join-path -path "function:" -child $method)).scriptblock
         $result = try {
