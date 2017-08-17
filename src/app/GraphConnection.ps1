@@ -22,7 +22,7 @@ function GraphConnection($method = $null) {
         $Connected = $false
 
         GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
-            $this.Context = GraphContext new $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
+            $this.Context = GraphContext __new $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
         }
     }
 
