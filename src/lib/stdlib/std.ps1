@@ -15,7 +15,7 @@
 set-strictmode -version 2
 
 $alreadyInitialized = try {
-    get-variable -scope $script:IsStdLibInitialized
+    get-variable -scope script IsStdLibInitialized >* out-null
     $true
 } catch {
     $false
@@ -25,12 +25,13 @@ if ($alreadyInitialized) {
     throw "This script file must only be sourced once from the entry script."
 }
 
-$global:ApplicationRoot = (get-item "$psscriptRoot/../../..").fullname
+$ApplicationRoot = (get-item "$psscriptRoot/../../..").fullname
 
 function script:ApplicationRoot {
-    $global:ApplicationRoot
+    $ApplicationRoot
 }
 
 . (join-path $psscriptroot include.ps1)
+. (join-path $psscriptroot 'define-class.ps1')
 
 $script:IsStdlibInitialized = $true

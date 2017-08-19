@@ -14,40 +14,81 @@
 
 include-source "src/app/GraphAuthenticationContext"
 
-class GraphContext {
-    $AuthContext
-    $Endpoint
-    $GraphType
+function GraphContext($method = $null) {
 
-    static [string] GetGraphEndpoint($graphType, $alternateEndpoint) {
-        [GraphContext]::ValidateGraphType($graphType)
+    class GraphContext {
+        $AuthContext
+        $Endpoint
+        $GraphType
+
+        GraphContext($graphType = 'msgraph', $authContext) {
+            $this.Endpoint = $null
+            $this.AuthContext = $authContext
+            InitializeGraphType $this $graphType
+        }
+
+        GraphContext($graphType = 'msgraph', $authType = 'msa',  $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
+            InitializeGraphType $this $graphType
+            $this.Endpoint = GetGraphEndpoint $graphType $alternateEndpoint
+            InitializeAuth $this $graphType $authType $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
+        }
+    }
+
+    function GetRestAPIResponseForResource($_this, $resourceUri, $token, $query = $null) {
+        $restAPIHeader = GetRestAPIHeader $token
+        $uri = RestAPIResourceUriForGraph $_this.GraphType $_this.Endpoint $_this.AuthContext.TenantName $resourceUri $query
+        CallRestAPIMethodForResource $uri $restAPIHeader
+    }
+
+    function GetGraphAPIResponse($_this, $relativeResourceUri, $query = $null) {
+        GetRestAPIResponseForResource $_this $relativeResourceUri $_this.AuthContext.Token $query
+    }
+
+    function CallRestAPIMethodForResource($uri, $restAPIHeader) {
+        InvokeRestAPIMethod $uri $restAPIHeader "GET"
+    }
+
+    function InvokeRestAPIMethod($uri, $header, $method="GET") {
+        $result = try {
+            Invoke-RestMethod -Uri $uri -Headers $header -method $method
+        } catch {
+            write-error $_.Exception
+            $_.Exception.Response | out-host
+            $null
+        }
+
+        $result
+    }
+
+    function GetGraphEndpoint($graphType, $alternateEndpoint) {
+        ValidateGraphType $graphType
         $result = if ( $alternateEndpoint -ne $null ) {
             $alternateEndpoint
         } elseif ( $graphType -eq 'msgraph' ) {
-            [GraphContext]::MSGraphEndpoint()
+            (MSGraphEndpoint)
         } else {
-            [GraphContext]::AADGraphEndpoint()
+            (AADGraphEndpoint)
         }
-        return $result
+        $result
     }
 
-    static [string] AADGraphEndpoint() {
-        return "https://graph.windows.net"
+    function AADGraphEndpoint() {
+        "https://graph.windows.net"
     }
 
-    static [string] MSGraphEndpoint() {
-        return "https://graph.microsoft.com/v1.0"
+    function MSGraphEndpoint() {
+        "https://graph.microsoft.com/v1.0"
     }
 
-    static [string] AADGraphAppId() {
-        return "42c41bc4-75da-4142-91d7-baf15cc24fb9"
+    function AADGraphAppId() {
+        "42c41bc4-75da-4142-91d7-baf15cc24fb9"
     }
 
-    static [string] MSGraphAppId() {
-        return "01e45b18-f1e5-4e66-b2db-09ce7909b99d"
+    function MSGraphAppId() {
+        "01e45b18-f1e5-4e66-b2db-09ce7909b99d"
     }
 
-    static [string] GetTenantEndpointComponent($graphType, $endpointRoot, $tenantName) {
+    function GetTenantEndpointComponent($graphType, $endpointRoot, $tenantName) {
         $result = if ($graphType -eq 'adgraph') {
             if ( $tenantName -eq $null) {
                 throw "No tenant was specified for the ad graph endpoint"
@@ -57,10 +98,10 @@ class GraphContext {
             $endpointRoot
         }
 
-        return $result
+        $result
     }
 
-    static [string] GetUriQueryComponent($graphType, $query = $null) {
+    function GetUriQueryComponent($graphType, $query = $null) {
         $result = ""
         $querySeparator = '?'
         if ($graphType -eq 'adgraph') {
@@ -72,10 +113,10 @@ class GraphContext {
             $result += ($querySeparator + $query)
         }
 
-        return $result
+        $result
     }
 
-    static [string] RestAPIResourceUri($endpoint, $resource, $query) {
+    function RestAPIResourceUri($endpoint, $resource, $query) {
         $strictUri = "$endpoint/$resource"
 
         $result = if ($query -eq $null) {
@@ -84,41 +125,25 @@ class GraphContext {
             "$($strictUri)$($query)"
         }
 
-        return $result
+        $result
     }
 
-    static [string] RestAPIResourceUriForGraph($graphType, $endpointRoot, $tenantName, $resource, $query) {
-        $graphEndpoint = [GraphContext]::GetTenantEndpointComponent($graphType, $endpointRoot, $tenantName)
-        $queryComponent = [GraphContext]::GetUriQueryComponent($graphType, $query)
-        return [GraphContext]::RestAPIResourceUri($graphEndpoint, $resource, $queryComponent)
+    function RestAPIResourceUriForGraph($graphType, $endpointRoot, $tenantName, $resource, $query) {
+        $graphEndpoint = GetTenantEndpointComponent $graphType $endpointRoot $tenantName
+        $queryComponent = GetUriQueryComponent $graphType $query
+        RestAPIResourceUri $graphEndpoint $resource $queryComponent
     }
 
-    InitializeGraphType($graphType) {
-        [GraphContext]::ValidateGraphType($graphType)
-        $this.GraphType = $graphType
-    }
-
-    GraphContext($graphType = 'msgraph', $authContext) {
-        $this.Endpoint = $null
-        $this.AuthContext = $authContext
-        $this.InitializeGraphType($graphType)
-    }
-
-    GraphContext($graphType = 'msgraph', $authType = 'msa',  $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-        $this.InitializeGraphType($graphType)
-        $this.Endpoint = [GraphContext]::GetGraphEndpoint($graphType, $alternateEndpoint)
-        $this.InitializeAuth($graphType, $authType, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
-    }
-
-    static ValidateGraphType($graphType) {
+    function ValidateGraphType($graphType) {
         $validGraphs = @('msgraph', 'adgraph')
         if (-not $graphType -in $validGraphs) {
             throw "Invalid graph type '$graphType' was specified -- must be one of '$($validGraphs -join ',')'"
         }
     }
-    InitializeAuth($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint, $altAuthority = $null) {
+
+    function InitializeAuth($_this, $graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint, $altAuthority = $null) {
         $resourceAppIdUri = if ($authType -eq 'aad') {
-            [GraphContext]::GetGraphEndpoint($graphType, $altEndpoint)
+            GetGraphEndpoint $graphType $altEndpoint
         } else {
             $null
         }
@@ -127,45 +152,29 @@ class GraphContext {
 
         if ($appId -eq $null) {
             $appId = if ($graphType -eq 'adgraph') {
-                [GraphContext]::AADGraphAppId()
+                (AADGraphAppId)
             } else {
-                [GraphContext]::MSGraphAppId()
+                (MSGraphAppId)
             }
         }
 
-        $this.AuthContext = [GraphAuthenticationContext]::new($authType, $appId, $tenantName, $resourceAppIdUri, $altAuthority)
+        $_this.AuthContext = GraphAuthenticationContext __new $authType $appId $tenantName $resourceAppIdUri $altAuthority
     }
 
-    [object] InvokeRestAPIMethod($uri, $header, $method="GET") {
-        $result = try {
-            Invoke-RestMethod -Uri $uri -Headers $header -method $method
-        } catch {
-            write-error $_.Exception
-            $_.Exception.Response | out-host
-            $null
-        }
-        return $result
-    }
-
-    [object] GetRestAPIHeader($token) {
+    function GetRestAPIHeader($token) {
         # Building Rest Api header with authorization token
-        return @{
+        @{
             'Content-Type'='application\json'
             'Authorization'=$token.CreateAuthorizationHeader()
         }
     }
 
-    [object] CallRestAPIMethodForResource($uri, $restAPIHeader) {
-        return $this.InvokeRestAPIMethod($uri, $restAPIHeader, "GET")
+    function InitializeGraphType($_this, $graphType) {
+        ValidateGraphType $graphType
+        $_this.GraphType = $graphType
     }
 
-    [object] GetRestAPIResponseForResource($resourceUri, $token, $query = $null) {
-        $restAPIHeader = $this.GetRestAPIHeader($token)
-        $uri = [GraphContext]::RestAPIResourceUriForGraph($this.GraphType, $this.Endpoint, $this.AuthContext.TenantName, $resourceUri, $query)
-       return $this.CallRestAPIMethodForResource($uri, $restAPIHeader)
-    }
-
-    [object] GetGraphAPIResponse($relativeResourceUri, $query = $null) {
-        return $this.GetRestAPIResponseForResource($relativeResourceUri, $this.AuthContext.Token, $query)
-    }
+    . $define_class @args
 }
+
+

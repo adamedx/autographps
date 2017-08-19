@@ -14,6 +14,6 @@
 
 . "$psscriptroot/enable-stdlib.ps1"
 
-include-source "src/app/$global:applicationEntryScriptName"
+include-source "src/app/$script:applicationEntryScriptName"
 
-. "$($global:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
+. "$($script:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"

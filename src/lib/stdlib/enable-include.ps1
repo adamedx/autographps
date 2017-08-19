@@ -17,11 +17,11 @@ $processedNone = $false
 while (-not $processedNone ) {
     $processedCount = 0
     $files = @()
-    $global:includes.keys | foreach { $files += $_ }
+    $includes.keys | foreach { $files += $_ }
     $files | foreach {
         if ( -not $includes[$_] ) {
             . $_
-            $global:includes[$_] = $true
+            $includes[$_] = $true
             $processedCount += 1
         }
     }

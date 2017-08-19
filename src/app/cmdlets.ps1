@@ -26,7 +26,7 @@ function Get-MSAAuthContext {
         $appId = [GraphPublicEndpoint]::MSGraphAppId()
     }
 
-    $authContext = [GraphAuthenticationContext]::new('msa', $appId, $null, $null, $null)
+    $authContext = GraphAuthenticationContext __new 'msa' $appId $null $null $null
     $authContext
 }
 
@@ -51,17 +51,15 @@ function Get-AADAuthContext {
         $appId = [GraphPublicEndpoint]::AADGraphAppId()
     }
 
-    $authContext = [GraphAuthenticationContext]::new('aad', $appId,  $tenantName, $resourceAppIdUri, $alternateAuthority)
-
-    $authContext
+    GraphAuthenticationContext __new 'aad' $appId $tenantName $resourceAppIdUri $alternateAuthority
 }
 
 function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    [GraphContext]::new($graphType, $authtype, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
+    GraphContext new $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
 }
 
 function New-GraphConnection($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    [GraphConnection]::new($graphType, $authtype, $tenantName, $alternateAppId, $alternateEndpoint, $alternateAuthority)
+    GraphConnection __new $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
 }
 
 function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
@@ -71,7 +69,7 @@ function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
         $existingConnection
     }
 
-    $connection.Connect()
+    GraphConnection Connect $connection
 
-    $connection.Context.GetGraphAPIResponse($itemRelativeUri, $null)
+    GraphContext GetGraphAPIResponse $connection.Context $itemRelativeUri $null
 }
