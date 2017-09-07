@@ -41,7 +41,7 @@ $msgraphconnection = New-GraphConnection
 
 Note that we assign the connection to a variable -- we'll need it later to use with the cmdlets that actully access the graph. The cmdlet does not actually "connect" to the graph -- in fact, no authentication is actually performed when this command executes. Instead, authentication will occur the first time this connection is used in a subsequent call to one of the graph access cmdlets.
 
-The `NewGraphConnection` cmdlet supports arguments that specify both the authentication mechanism and the graph. For example, the previous invocation with no arguments is the equivalent of the following command:
+The `New-GraphConnection` cmdlet supports arguments that specify both the authentication mechanism and the graph. For example, the previous invocation with no arguments is the equivalent of the following command:
 
 ```powershell
 $msgraphconnection = New-GraphConnection -graphtype msgraph -authtype msa # Use MSA auth with MS Graph
@@ -63,23 +63,23 @@ $adgraphconnection = New-GraphConnection -graphtype msgraph -authtype aad -tenan
 All graph access cmdlets require a connection obtained from `New-GraphConnection` as a mandatory parameter. The simplest cmdlet for accessing the graph is `Get-GraphItem`. The first time you execute it or any other graph access cmdlet, you'll see an authentication popup that may reuqire you to enter credentials if you aren't already authenticated via a web browser session. Subsequent uses of the same connection will proceed without any popups. Here's an example that gets the `me` entity for MS Graph:
 
 ```powershell
-$msgraphconnection = NewGraphConnection
+$msgraphconnection = New-GraphConnection
 Get-GraphItem me $msgraphconnnection
 ```
 
 After you respond to authentication popups that result from invoking the commands, the `GetGraphItem` cmdlet returns a PowerShell .NET object deserialized from the JSON response returned by MS Graph that describes the `me` entity, i.e. information about the user you authenticated as via the popup. Since `me` is supported through both MS Graph and AAD graph, you can invoke the exact same `GetGraphItem` command and arguments to get AAD Graph's view of `me` for an AAD user:
 
 ```powershell
-$adgraphconnection = NewGraphConnection -graphtype adgraph -authtype aad -tenantname mytenant.org
-Get-GraphItem me $msgraphconnnection
+$adgraphconnection = New-GraphConnection -graphtype adgraph -authtype aad -tenantname mytenant.org
+Get-GraphItem me $adgraphconnnection
 ```
 
 As mentioned earlier, you can use the same connection for multiple commands. In the example below for AAD Graph, both the `me` and the `tenantDetails` entity (note: case matters with entity names) are accessed using the same connection:
 
 ```powershell
-$adgraphconnection = NewGraphConnection -graphtype adgraph -authtype aad -tenantname mytenant.org
-Get-GraphItem me $msgraphconnnection
-Get-GraphItem tenantDetails $msgraphconnnection
+$adgraphconnection = New-GraphConnection -graphtype adgraph -authtype aad -tenantname mytenant.org
+Get-GraphItem me $adgraphconnection
+Get-GraphItem tenantDetails $adgraphconnection
 ```
 
 The connection may be reused until the token acquired by the initial authentication expires (this typically takes several minutes). You can always execute `New-GraphConnection` to get a new one if that happens to you. Of course, **PoshGraph** should eventually support some sort of token renewal scheme eventually to avoid manual token renewal...
