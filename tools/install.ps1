@@ -16,7 +16,7 @@
 
 include-source "src/app/common/assemblyhelper"
 
-. "$($global:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
+. "$($ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
 
 function ValidateNugetPresent {
     get-command nuget | out-null
@@ -29,7 +29,7 @@ function ValidateNugetPresent {
 function InstallDependencies {
     ValidateNugetPresent
     $packagesDestination = (GetAssemblyRoot)
-    $packagesConfigFile = join-path -path $global:ApplicationRoot -child packages.config
+    $packagesConfigFile = join-path -path $ApplicationRoot -child packages.config
     & nuget restore $packagesConfigFile -packagesdirectory $packagesDestination
 }
 

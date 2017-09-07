@@ -13,7 +13,7 @@
 # limitations under the License.
 
 function GetAssemblyRoot {
-    $scriptRoot = $global:ApplicationRoot
+    $scriptRoot = "$ApplicationRoot"
     join-path -path $scriptRoot -childpath pkg
 }
 
