@@ -12,54 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include-source "src/app/GraphAuthenticationContext"
-include-source "src/app/GraphContext"
-include-source "src/app/GraphConnection"
-
-function Get-MSAAuthContext {
-    [CmdletBinding()]
-    param($alternateAppId = $null)
-
-    $appId = $alternateAppId
-
-    if ($appId -eq $null) {
-        $appId = [GraphPublicEndpoint]::MSGraphAppId()
-    }
-
-    $authContext = GraphAuthenticationContext __new 'msa' $appId $null $null $null
-    $authContext
-}
-
-function Get-AADAuthContext {
-    [CmdletBinding()]
-    param(
-        [parameter(Mandatory=$true)] [string] $tenantName,
-                                              $alternateAppId = $null,
-                                              $altResourceAppIdUri = $null,
-                                              $alternateAuthority = $null
-    )
-
-    $resourceAppIdUri = $altResourceAppIdUri
-
-    if ($resourceAppIdUri -eq $null) {
-        $resourceAppIdUri = [GraphPublicEndpoint]::AADGraphEndpoint()
-    }
-
-    $appId = $alternateAppId
-
-    if ($appId -eq $null) {
-        $appId = [GraphPublicEndpoint]::AADGraphAppId()
-    }
-
-    GraphAuthenticationContext __new 'aad' $appId $tenantName $resourceAppIdUri $alternateAuthority
-}
+. $include graphauthenticationcontext
+. $include graphcontext
+. $include graphconnection
 
 function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    GraphContext new $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
+    new-scriptobject GraphContext $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
 }
 
 function New-GraphConnection($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-    GraphConnection __new $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
+    new-scriptobject GraphConnection $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
 }
 
 function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
@@ -69,7 +31,7 @@ function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
         $existingConnection
     }
 
-    GraphConnection Connect $connection
+    $connection |=> Connect
 
-    GraphContext GetGraphAPIResponse $connection.Context $itemRelativeUri $null
+    $connection.Context |=> GetGraphAPIResponse $itemRelativeUri $null
 }

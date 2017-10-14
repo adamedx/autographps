@@ -12,36 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include-source "src/app/GraphAuthenticationContext"
+. $include "GraphAuthenticationContext"
 
-function GraphContext($method = $null) {
+ScriptClass GraphContext {
+    $AuthContext = $null
+    $Endpoint = $null
+    $GraphType = $null
 
-    class GraphContext {
-        $AuthContext
-        $Endpoint
-        $GraphType
-
-        GraphContext($graphType = 'msgraph', $authContext) {
-            $this.Endpoint = $null
-            $this.AuthContext = $authContext
-            InitializeGraphType $this $graphType
-        }
-
-        GraphContext($graphType = 'msgraph', $authType = 'msa',  $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
-            InitializeGraphType $this $graphType
-            $this.Endpoint = GetGraphEndpoint $graphType $alternateEndpoint
-            InitializeAuth $this $graphType $authType $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
-        }
+    function __initialize($graphType = 'msgraph', $authType = 'msa',  $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
+        InitializeGraphType $graphType
+        $this.Endpoint = GetGraphEndpoint $graphType $alternateEndpoint
+        InitializeAuth $graphType $authType $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
     }
 
-    function GetRestAPIResponseForResource($_this, $resourceUri, $token, $query = $null) {
+    function GetRestAPIResponseForResource($resourceUri, $token, $query = $null) {
         $restAPIHeader = GetRestAPIHeader $token
-        $uri = RestAPIResourceUriForGraph $_this.GraphType $_this.Endpoint $_this.AuthContext.TenantName $resourceUri $query
+        $uri = RestAPIResourceUriForGraph $this.GraphType $this.Endpoint $this.AuthContext.TenantName $resourceUri $query
         CallRestAPIMethodForResource $uri $restAPIHeader
     }
 
-    function GetGraphAPIResponse($_this, $relativeResourceUri, $query = $null) {
-        GetRestAPIResponseForResource $_this $relativeResourceUri $_this.AuthContext.Token $query
+    function GetGraphAPIResponse($relativeResourceUri, $query = $null) {
+        GetRestAPIResponseForResource $relativeResourceUri $this.AuthContext.Token $query
     }
 
     function CallRestAPIMethodForResource($uri, $restAPIHeader) {
@@ -81,11 +72,11 @@ function GraphContext($method = $null) {
     }
 
     function AADGraphAppId() {
-        "42c41bc4-75da-4142-91d7-baf15cc24fb9"
+        "9825d80c-5aa0-42ef-bf13-61e12116704c"
     }
 
     function MSGraphAppId() {
-        "01e45b18-f1e5-4e66-b2db-09ce7909b99d"
+        "9825d80c-5aa0-42ef-bf13-61e12116704c"
     }
 
     function GetTenantEndpointComponent($graphType, $endpointRoot, $tenantName) {
@@ -141,7 +132,7 @@ function GraphContext($method = $null) {
         }
     }
 
-    function InitializeAuth($_this, $graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint, $altAuthority = $null) {
+    function InitializeAuth($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint, $altAuthority = $null) {
         $resourceAppIdUri = if ($authType -eq 'aad') {
             GetGraphEndpoint $graphType $altEndpoint
         } else {
@@ -152,29 +143,27 @@ function GraphContext($method = $null) {
 
         if ($appId -eq $null) {
             $appId = if ($graphType -eq 'adgraph') {
+#            $appId = if ($authType -eq 'aad') {
                 (AADGraphAppId)
             } else {
                 (MSGraphAppId)
             }
         }
 
-        $_this.AuthContext = GraphAuthenticationContext __new $authType $appId $tenantName $resourceAppIdUri $altAuthority
+        $this.AuthContext = new-scriptobject GraphAuthenticationContext $authType $appId $tenantName $resourceAppIdUri $altAuthority
     }
 
     function GetRestAPIHeader($token) {
-        # Building Rest Api header with authorization token
         @{
             'Content-Type'='application\json'
             'Authorization'=$token.CreateAuthorizationHeader()
         }
     }
 
-    function InitializeGraphType($_this, $graphType) {
+    function InitializeGraphType($graphType) {
         ValidateGraphType $graphType
-        $_this.GraphType = $graphType
+        $this.GraphType = $graphType
     }
-
-    . $define_class @args
 }
 
 

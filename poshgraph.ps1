@@ -12,7 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$ApplicationEntryScriptName = "graph"
-. "$psscriptroot/src/lib/stdlib/start-app.ps1"
-
+import-module "$psscriptroot/poshgraph.psd1" -force
 
