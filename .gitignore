@@ -1,8 +1,11 @@
 pkg/*
 lib/*
+NuGet.Config
+localnuget.config
 *~
 .chef
 .#*
 *#
 *.dll
-
+.bubble/*
+BubbleFile

@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-# RootModule = ''
+RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1'
+ModuleVersion = '0.4.34'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -24,7 +24,7 @@ GUID = '524a2b17-37b1-43c2-aa55-6c19692c6450'
 Author = 'Adam Edwards'
 
 # Company or vendor of this module
-#CompanyName = 'AfroSoft'
+CompanyName = 'AfroSoft'
 
 # Copyright statement for this module
 Copyright = '(c) 2017 Adam Edwards.'
@@ -57,7 +57,7 @@ Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interact
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('./loadapp.ps1', 'src/app/cmdlets.ps1')
+# ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./loadapp.ps1', 'src/app/cmdlets.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @()
+# NestedModules = @('stdposh')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('get-graphitem', 'new-graphconnection')
@@ -84,10 +84,10 @@ AliasesToExport = @()
 # DscResourcesToExport = @()
 
 # List of all modules packaged with this module
-# ModuleList = @()
+# ModuleList = @('')
 
 # List of all files packaged with this module
-FileList = @('.\poshgraph.psd1', '.\src\app\common\assemblyhelper.ps1','.\src\app\cmdlets.ps1','.\src\app\graph.ps1','.\src\app\GraphAuthenticationContext.ps1','.\src\app\GraphConnection.ps1','.\src\app\GraphContext.ps1','.\build\install.ps1','.\poshgraph.ps1', 'loadapp.ps1', '.\poshgraph.tests.ps1')
+FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\app\cmdlets.ps1','.\src\app\graph.ps1','.\src\app\GraphAuthenticationContext.ps1','.\src\app\GraphConnection.ps1','.\src\app\GraphContext.ps1','.\build\install.ps1', '.\poshgraph.tests.ps1', '.\poshgraph.ps1', 'loadapp.ps1')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
@@ -108,6 +108,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
+
+        ExternalModuleDependencies = @('stdposh')
 
     } # End of PSData hashtable
 

@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/src/app/graph.ps1"
+import-module "$psscriptroot/lib/stdposh"
 
+. "$psscriptroot/loadapp.ps1"
+. "$psscriptroot/src/app/cmdlets.ps1"
 
+$functions = @('get-graphitem', 'new-graphconnection')
+export-modulemember -function $functions -alias @()
