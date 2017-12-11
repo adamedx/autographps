@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.34'
+ModuleVersion = '0.4.41'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -57,7 +57,7 @@ Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interact
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-# ScriptsToProcess = @()
+ScriptsToProcess = @('./loadapp.ps1')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -66,7 +66,7 @@ Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interact
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @('stdposh')
+NestedModules = @('stdposh')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('get-graphitem', 'new-graphconnection')
@@ -108,8 +108,6 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
-
-        ExternalModuleDependencies = @('stdposh')
 
     } # End of PSData hashtable
 

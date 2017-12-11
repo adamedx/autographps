@@ -35,9 +35,20 @@ Describe "Poshgraph application" {
     }
 
     Context "When invoking the PoshGraph application" {
-        import-module $manifestlocation -force
+        BeforeEach {
+            remove-module -force 'poshgraph' 2>$null
+            import-module $manifestlocation -force
+        }
+
+        AfterEach {
+            remove-module -force 'poshgraph' 2>$null
+        }
 
         It "Should be able to create a connection object" {
+
+#            $module = get-module poshgraph
+#            $module | fl * | out-host
+#            $module | select -expandproperty exportedcommands | out-host
             $connection = New-GraphConnection
         }
     }

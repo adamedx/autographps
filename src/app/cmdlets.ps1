@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. $include graphauthenticationcontext
-. $include graphcontext
-. $include graphconnection
+. (import-source graphauthenticationcontext)
+. (import-source graphcontext)
+. (import-source graphconnection)
 
 function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
     new-scriptobject GraphContext $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
@@ -35,3 +35,4 @@ function Get-GraphItem($itemRelativeUri, $existingConnection = $null) {
 
     $connection.Context |=> GetGraphAPIResponse $itemRelativeUri $null
 }
+

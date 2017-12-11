@@ -50,6 +50,7 @@ function InstallDependencies($clean) {
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
     iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination'" | out-host
 
+    # Rename any powershell modules so they can be imported from the containing folder
     ls $packagesDestination -r '*.psd1' | foreach {
         $source = $_.directory.fullname
         $destination = (join-path (split-path -parent $_.directory.fullname) $_.basename)

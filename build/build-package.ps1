@@ -22,7 +22,7 @@ $basepath = $basedirectory.fullname
 $moduleName = $basedirectory.name
 $packageManifest = join-path $basepath "$moduleName.nuspec"
 $moduleManifestPath = join-path $basepath "$moduleName.psd1"
-$localRepositoryName = ((split-path $moduleManifestPath -parent) -split '\\' -join 'x').replace(':', '_')
+$localRepositoryName = ((split-path $moduleManifestPath -parent) -split '\\' -join '_').replace(':', '_')
 
 write-host "Validating Manifest '$moduleManifestPath'"
 $moduleVersion = (test-modulemanifest $moduleManifestPath -verbose).version
@@ -91,22 +91,22 @@ if ( $buildResult -ne 0 ) {
 register-packagesource -name $localRepositoryName -location $outputDirectory -providername nuget | out-host
 
 $modulePackagePath = (ls $outputDirectory *.nupkg)[0].fullname
+
 #$nugetInstallCommand = "nuget.exe install '$moduleName' -source '$localrepositoryname' -outputdirectory '$intermediateOutputDirectory' -excludeversion -nocache"
-#write-host "Executing command $nugetInstallCommand"
-#invoke-expression $nugetInstallCommand | out-null
+# write-host "Executing command $nugetInstallCommand"
+# invoke-expression $nugetInstallCommand | out-null
 # $installResult = $lastexitcode
 
-#if ( $installResult -ne 0 ) {
-#    write-host -f red "Intermediate package install failed with status code $installResult."
-#    throw "Command `"$nugetinstallcommand`" failed with exit status $installResult"
-#}
+# if ( $installResult -ne 0 ) {
+#     write-host -f red "Intermediate package install failed with status code $installResult."
+#     throw "Command `"$nugetinstallcommand`" failed with exit status $installResult"
+# }
 
-#write-host "Intermediate installation succeeded."
+write-host "Intermediate installation succeeded."
 register-psrepository $localRepositoryName $moduleOutputDirectory
 
-# $packageData = find-package -source $localrepositoryname $modulename
-# $packageData.dependencies | foreach {
-@() | foreach {
+ $packageData = find-package -source $localrepositoryname $modulename
+ $packageData.dependencies | foreach {
     $moduleNameAndVersion = $_.split(':')[1].split('/')
     $moduleDependencyName = $moduleNameAndVersion[0]
     $moduleDependencyVersion = $moduleNameAndVersion[1]
@@ -122,29 +122,26 @@ unregister-packagesource $localrepositoryname -provider nuget
 
 $modulePath = join-path $intermediateoutputDirectory $moduleName
 $packageZipPath = "$($modulePath).zip"
-{
+
 write-host "Renaming '$modulePackagePath' to '$packageZipPath' for zip extraction"
 mv $modulePackagePath $packageZipPath
-
 
 write-host "Expanding zipped package '$packageZipPath' to '$moduleOutputDirectory'"
 expand-archive -path $packageZipPath -destination $modulePath -force
 
+$installedModulePath = (ls $intermediateOutputDirectory)[0].fullname
 
-
-# $installedModulePath = (ls $intermediateOutputDirectory)[0].fullname
-
-# $modulePath = join-path $intermediateOutputDirectory $moduleName
+$modulePath = join-path $intermediateOutputDirectory $moduleName
 ls $modulePath -filter '*content_types*.xml' | rm -force
 ls $modulePath -filter '_rels' | rm -r -force
 ls $modulePath -filter 'package' | rm -r -force
 ls $modulePath -filter "$moduleName.nuspec" | rm -force
-} | out-null
+
 write-host "Publishing installed module package at '$modulePath' as powershell module..."
 write-host "Using local path '$moduleOutputDirectory'..."
 
 write-host "publish-module -path '$modulePath' -repository '$localRepositoryName' -verbose"
-# publish-module -path $modulePath -repository $localRepositoryName -verbose
+publish-module -path $modulePath -repository $localRepositoryName -verbose
 
 # unregister-psrepository $localRepositoryName
 
