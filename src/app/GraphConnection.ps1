@@ -13,26 +13,22 @@
 # limitations under the License.
 
 
-include-source "src/app/GraphContext"
-include-source "src/app/GraphAuthenticationContext"
+. (import-source GraphContext)
+. (import-source GraphAuthenticationContext)
 
-function GraphConnection($method = $null) {
-    class GraphConnection {
-        $Context
-        $Connected = $false
+ScriptClass GraphConnection {
+    $Context = $null
+    $Connected = $false
 
-        GraphConnection($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
-            $this.Context = GraphContext __new $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
-        }
+    function __initialize($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
+        $this.Context = new-scriptobject GraphContext $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
     }
 
-    function Connect($_this) {
-        if ( ! $_this.Connected ) {
-            GraphAuthenticationContext AcquireToken $_this.Context.AuthContext | out-null
-            $_this.Connected = $true
+    function Connect {
+        if ( ! $this.Connected ) {
+            $token = $this.Context.AuthContext |=> AcquireToken
+            $this.Connected = $token -ne $null
         }
     }
-
-    . $define_class @args
 }
 

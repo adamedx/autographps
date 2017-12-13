@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/enable-stdlib.ps1"
+. "$psscriptroot/src/app/graph.ps1"
 
-include-source "src/app/$script:applicationEntryScriptName"
 
-. "$($script:ApplicationRoot)/src/lib/stdlib/enable-include.ps1"
