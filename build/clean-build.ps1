@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($targetDirectory = $null, [switch] $noclean)
-
 . "$psscriptroot/common-build-functions.ps1"
 
-$inputs = @(
-    (get-modulefrommanifest),
-    (new-moduleoutputdirectory $targetDirectory $noclean.ispresent)
-)
-
-$nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1]
-write-host "Package successfully built at '$nugetPackagePath'"
-
-$nocleanArgument = @{noclean=$noclean}
-$moduleOutputPath = build-module $inputs[0] $inputs[1] @nocleanArgument
-write-host "Module placed at '$moduleOutputPath'."
-
-write-host -foregroundcolor green "Build succeeded."
-
+clean-builddirectories

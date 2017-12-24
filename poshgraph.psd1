@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.42'
+ModuleVersion = '0.4.46'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -87,7 +87,7 @@ AliasesToExport = @()
 # ModuleList = @('')
 
 # List of all files packaged with this module
-FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\cmdlets.ps1','.\src\graph.ps1','.\src\GraphAuthenticationContext.ps1','.\src\GraphConnection.ps1','.\src\GraphContext.ps1','.\build\install.ps1', '.\poshgraph.tests.ps1')
+FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\cmdlets.ps1','.\src\graph.ps1','.\src\GraphAuthenticationContext.ps1','.\src\GraphConnection.ps1','.\src\GraphContext.ps1','.\build\install.ps1')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{

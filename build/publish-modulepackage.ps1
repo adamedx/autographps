@@ -12,21 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($targetDirectory = $null, [switch] $noclean)
+param($targetRepository = 'psgallery', $targetDirectory = $null, [switch] $noclean, [switch] $force)
 
 . "$psscriptroot/common-build-functions.ps1"
 
-$inputs = @(
-    (get-modulefrommanifest),
-    (new-moduleoutputdirectory $targetDirectory $noclean.ispresent)
-)
+$moduleOutputPath = Get-ModuleOutputDirectory
 
-$nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1]
-write-host "Package successfully built at '$nugetPackagePath'"
+write-host "Publishing module at '$moduleOutputPath' to PS module repository '$targetRepository'..."
 
-$nocleanArgument = @{noclean=$noclean}
-$moduleOutputPath = build-module $inputs[0] $inputs[1] @nocleanArgument
-write-host "Module placed at '$moduleOutputPath'."
+$forceArgument = @{force=$force}
 
-write-host -foregroundcolor green "Build succeeded."
+publish-modulebuild $moduleOutputPath $targetRepository @forceArgument
 
+write-host -foregroundcolor green "Publish succeeded."

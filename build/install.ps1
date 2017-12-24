@@ -14,19 +14,11 @@
 
 param([switch] $clean)
 
-set-strictmode -version 2
-$erroractionpreference = 'stop'
-
-function ValidateNugetPresent {
-    get-command nuget | out-null
-
-    if (! $?) {
-        throw "Nuget is not installed. Please visit https://nuget.org to install, then restart PowerShell and try again."
-    }
-}
+. "$psscriptroot/common-build-functions.ps1"
 
 function InstallDependencies($clean) {
-    ValidateNugetPresent
+    validate-nugetpresent
+
     $appRoot = join-path $psscriptroot '..'
     $packagesDestination = join-path $appRoot lib
 
@@ -34,6 +26,8 @@ function InstallDependencies($clean) {
         write-host -foregroundcolor cyan "Clean install specified -- deleting '$packagesDestination'"
         rm -r -force $packagesDestination
     }
+
+    write-host "Installing dependencies to '$appRoot'"
 
     if ( ! (test-path $packagesDestination) ) {
         mkdir $packagesDestination | out-null
