@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.41'
+ModuleVersion = '0.4.47'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -57,7 +57,7 @@ Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interact
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('./loadapp.ps1')
+ScriptsToProcess = @('./src/graph.ps1')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -87,7 +87,7 @@ AliasesToExport = @()
 # ModuleList = @('')
 
 # List of all files packaged with this module
-FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\app\cmdlets.ps1','.\src\app\graph.ps1','.\src\app\GraphAuthenticationContext.ps1','.\src\app\GraphConnection.ps1','.\src\app\GraphContext.ps1','.\build\install.ps1', '.\poshgraph.tests.ps1', '.\poshgraph.ps1', 'loadapp.ps1')
+FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\cmdlets.ps1','.\src\graph.ps1','.\src\GraphAuthenticationContext.ps1','.\src\GraphConnection.ps1','.\src\GraphContext.ps1','.\build\install.ps1')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{

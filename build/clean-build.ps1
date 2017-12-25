@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/src/app/graph.ps1"
+. "$psscriptroot/common-build-functions.ps1"
 
-
+clean-builddirectories

@@ -50,14 +50,14 @@ ScriptClass GraphAuthenticationContext {
                 $authorityValue = "https://login.windows.net/$tenantName"
             }
 
-            import-assembly ../../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+            import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
         } else {
             if ($altAuthority -eq $null) {
                 $authorityValue ='https://login.microsoftonline.com/common'
             }
             $scriptDirectory = split-path -parent $pscommandpath
 
-            import-assembly ../../lib/Microsoft.Identity.Client.dll
+            import-assembly ../lib/Microsoft.Identity.Client.dll
         }
 
         $this.AppId = $appId

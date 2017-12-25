@@ -12,5 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import-module "$psscriptroot/poshgraph.psd1" -force
+param($targetRepository = 'psgallery', $targetDirectory = $null, [switch] $noclean, [switch] $force)
 
+. "$psscriptroot/common-build-functions.ps1"
+
+$moduleOutputPath = Get-ModuleOutputDirectory
+
+write-host "Publishing module at '$moduleOutputPath' to PS module repository '$targetRepository'..."
+
+$forceArgument = @{force=$force}
+
+publish-modulebuild $moduleOutputPath $targetRepository @forceArgument
+
+write-host -foregroundcolor green "Publish succeeded."

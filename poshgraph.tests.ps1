@@ -45,10 +45,6 @@ Describe "Poshgraph application" {
         }
 
         It "Should be able to create a connection object" {
-
-#            $module = get-module poshgraph
-#            $module | fl * | out-host
-#            $module | select -expandproperty exportedcommands | out-host
             $connection = New-GraphConnection
         }
     }
