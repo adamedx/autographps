@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-. (import-source GraphContext)
-. (import-source GraphAuthenticationContext)
+. (import-script GraphContext)
+. (import-script GraphAuthenticationContext)
 
 ScriptClass GraphConnection {
     $Context = $null

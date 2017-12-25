@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-source graphauthenticationcontext)
-. (import-source graphcontext)
-. (import-source graphconnection)
+. (import-script graphauthenticationcontext)
+. (import-script graphcontext)
+. (import-script graphconnection)
 
 function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
     new-scriptobject GraphContext $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority
