@@ -21,11 +21,11 @@ $inputs = @(
     (new-moduleoutputdirectory $targetDirectory $noclean.ispresent)
 )
 
-$nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1]
+$nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1] -includeInstalledLibraries
 write-host "Package successfully built at '$nugetPackagePath'"
 
 $nocleanArgument = @{noclean=$noclean}
-$moduleOutputPath = build-module $inputs[0] $inputs[1] @nocleanArgument
+$moduleOutputPath = build-module $inputs[0] $inputs[1] @nocleanArgument -includeInstalledlibraries
 write-host "Module placed at '$moduleOutputPath'."
 
 write-host -foregroundcolor green "Build succeeded."

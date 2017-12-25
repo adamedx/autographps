@@ -44,7 +44,7 @@ function Get-ModuleOutputDirectory {
     join-path (Get-OutputDirectory) "$moduleOutputSubdirectory/$($module.name)/$($module.version)"
 }
 
-function validate-nugetpresent {
+function Validate-Nugetpresent {
     get-command nuget | out-null
 
     if (! $?) {
@@ -52,20 +52,24 @@ function validate-nugetpresent {
     }
 }
 
-function validate-prerequisites {
+function Validate-Prerequisites {
+    param ([switch] $verifyInstalledLibraries)
+
     validate-nugetpresent
 
-    $libPath = join-path (Get-SourceRootDirectory) lib
+    if ($verifyInstalledLibraries.ispresent) {
+        $libPath = join-path (Get-SourceRootDirectory) lib
 
-    $libFilesExist = if ( ! ( test-path $libPath ) ) {
-        $false
-    } else {
-        (ls -r $libPath -filter *.dll) -ne $null
-    }
+        $libFilesExist = if ( ! ( test-path $libPath ) ) {
+            $false
+        } else {
+            (ls -r $libPath -filter *.dll) -ne $null
+        }
 
-    if (! $libFilesExist ) {
-        $installScriptPath = join-path (get-sourcerootdirectory) 'build\install.ps1'
-        throw "No .dll files found under directory '$libPath' or the directory does not exist -- please run '$installScriptPath' to install these dependencies and try again"
+        if (! $libFilesExist ) {
+            $installScriptPath = join-path (get-sourcerootdirectory) 'build\install.ps1'
+            throw "No .dll files found under directory '$libPath' or the directory does not exist -- please run '$installScriptPath' to install these dependencies and try again"
+        }
     }
 }
 
@@ -103,7 +107,7 @@ function New-ModuleOutputDirectory {
 
 function build-module {
     [cmdletbinding()]
-    param($module, $outputDirectory, [switch] $noclean)
+    param($module, $outputDirectory, [switch] $noclean, [switch] $includeInstalledLibraries)
 
     if ( ! (test-path $outputDirectory ) ) {
         throw "Specified output directory '$outputDirectory' does not exist"
@@ -118,7 +122,8 @@ function build-module {
     $thisModuleDirectory = join-path $modulesDirectory $module.name
     $targetDirectory = join-path $thisModuleDirectory $module.version.tostring()
 
-    validate-prerequisites
+    $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
+    validate-prerequisites @verifyInstalledLibrariesArgument
 
     mkdir $targetDirectory | out-null
 
@@ -147,14 +152,16 @@ function build-module {
         cp $sourceFileList[ $_ ] $destinationFileList[ $_ ]
      }
 
-    $libSource = join-path $module.moduleBase lib
-    $libTarget = join-path $targetDirectory lib
-    cp -r $libSource $libTarget
+    if ($includeInstalledLibraries.ispresent) {
+        $libSource = join-path $module.moduleBase lib
+        $libTarget = join-path $targetDirectory lib
+        cp -r $libSource $libTarget
 
-    $copiedLibs = ls -r $libTarget -filter *.dll
+        $copiedLibs = ls -r $libTarget -filter *.dll
 
-    if ($copiedLibs.length -lt 1) {
-        throw "No libraries copied from '$libSource' to '$libTarget'"
+        if ($copiedLibs.length -lt 1) {
+            throw "No libraries copied from '$libSource' to '$libTarget'"
+        }
     }
 
     $targetDirectory
@@ -164,7 +171,8 @@ function build-nugetpackage {
     [cmdletbinding()]
     param(
         $module,
-        $outputDirectory
+        $outputDirectory,
+        [switch] $includeInstalledLibraries
     )
 
     if( !( test-path $outputDirectory) ) {
@@ -183,7 +191,8 @@ function build-nugetpackage {
         ls -r $packageOutputDirectory *.nupkg | rm
     }
 
-    validate-prerequisites
+    $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
+    validate-prerequisites @verifyInstalledLibrariesArgument
 
     write-host "Building nuget package from manifest '$nugetManifest'..."
     write-host "Output directory = '$packageOutputDirectory'..."
