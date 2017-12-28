@@ -17,7 +17,7 @@
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
-    'Time-Utc'=@('TimeUtc', {param($val) [DateTime] $val})
+    'Time-Utc'=@('TimeUtc', {param($val) [DateTime]::new(([DateTime] $val).ticks, [DateTimeKind]::Utc)})
 }
 
 function Test-Graph {

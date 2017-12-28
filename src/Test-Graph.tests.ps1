@@ -56,15 +56,19 @@ Describe "The Test-Graph cmdlet" {
 
         It "should return a result with expected members" {
             $testResult = Test-Graph
-            ($testResult.TimeLocal).gettype() | Should BeExactly 'datetime'
-            ($testResult.TimeUtc).gettype() | Should BeExactly 'datetime'
-            ($testResult.Build).gettype() | Should BeExactly 'string'
-            ($testResult.Slice).gettype() | Should BeExactly 'string'
-            ($testResult.Ring).gettype() | Should BeExactly 'string'
-            ($testResult.ScaleUnit).gettype() | Should BeExactly 'string'
-            ($testResult.Host).gettype() | Should BeExactly 'string'
-            ($testResult.ADSiteName).gettype() | Should BeExactly 'string'
+            ($testResult.TimeLocal).gettype() | Should BeExactly ([DateTime])
+            ($testResult.TimeUtc).gettype() | Should BeExactly ([DateTime])
+            ($testResult.Build).gettype() | Should BeExactly ([string])
+            ($testResult.Slice).gettype() | Should BeExactly ([string])
+            ($testResult.Ring).gettype() | Should BeExactly ([string])
+            ($testResult.ScaleUnit).gettype() | Should BeExactly ([string])
+            ($testResult.Host).gettype() | Should BeExactly ([string])
+            ($testResult.ADSiteName).gettype() | Should BeExactly ([string])
         }
 
+        It "should return a result with a TimeUtc member with a property of [DateTimeKind]::Utc" {
+            $testResult = Test-Graph
+            $testResult.TimeUtc.kind | Should BeExactly ([DateTimeKind]::Utc)
+        }
     }
 }
