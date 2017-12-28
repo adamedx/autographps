@@ -14,6 +14,6 @@
 
 import-module 'stdposh'
 
-$functions = @('get-graphitem', 'new-graphconnection')
+$functions = @('get-graphitem', 'new-graphconnection', 'Test-Graph')
 
 export-modulemember -function $functions

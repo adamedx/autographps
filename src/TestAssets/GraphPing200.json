@@ -1,0 +1,326 @@
+﻿{
+    "StatusCode":  200,
+    "StatusDescription":  "OK",
+    "Content":  "{\"Time-Local\":\"12/27/2017 7:59:03 PM\",\"Time-UTC\":\"12/27/2017 7:59:03 PM\",\"Build\":\"1.0.9713.8\",\"DataCenter\":\"west us\",\"Slice\":\"slicea\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"Host\":\"agsfe_in_10\",\"ADSiteName\":\"wst\"}",
+    "RawContent":  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nrequest-id: 2bf0edc0-9e29-49f8-85bb-9f1f29f84ca2\r\nclient-request-id: 2bf0edc0-9e29-49f8-85bb-9f1f29f84ca2\r\nx-ms-ags-diagnostic: {\"ServerInfo\":{\"DataCenter\":\"West US\",\"Slice\":\"SliceA\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"Host\":\"AGSFE_IN_10\",\"ADSiteName\":\"WST\"}}\r\nDuration: 0.3523\r\nCache-Control: private\r\nContent-Type: application/json; charset=utf-8\r\nDate: Wed, 27 Dec 2017 19:59:03 GMT\r\n\r\n{\"Time-Local\":\"12/27/2017 7:59:03 PM\",\"Time-UTC\":\"12/27/2017 7:59:03 PM\",\"Build\":\"1.0.9713.8\",\"DataCenter\":\"west us\",\"Slice\":\"slicea\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"Host\":\"agsfe_in_10\",\"ADSiteName\":\"wst\"}",
+    "Forms":  [
+
+              ],
+    "Headers":  {
+                    "Transfer-Encoding":  "chunked",
+                    "request-id":  "2bf0edc0-9e29-49f8-85bb-9f1f29f84ca2",
+                    "client-request-id":  "2bf0edc0-9e29-49f8-85bb-9f1f29f84ca2",
+                    "x-ms-ags-diagnostic":  "{\"ServerInfo\":{\"DataCenter\":\"West US\",\"Slice\":\"SliceA\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"Host\":\"AGSFE_IN_10\",\"ADSiteName\":\"WST\"}}",
+                    "Duration":  "0.3523",
+                    "Cache-Control":  "private",
+                    "Content-Type":  "application/json; charset=utf-8",
+                    "Date":  "Wed, 27 Dec 2017 19:59:03 GMT"
+                },
+    "Images":  [
+
+               ],
+    "InputFields":  [
+
+                    ],
+    "Links":  [
+
+              ],
+    "ParsedHtml":  {
+                       "Script":  {
+
+                                  },
+                       "all":  [
+                                   "System.__ComObject",
+                                   "System.__ComObject",
+                                   "System.__ComObject",
+                                   "System.__ComObject"
+                               ],
+                       "body":  {
+
+                                },
+                       "activeElement":  null,
+                       "images":  [
+
+                                  ],
+                       "applets":  [
+
+                                   ],
+                       "links":  [
+
+                                 ],
+                       "forms":  [
+
+                                 ],
+                       "anchors":  [
+
+                                   ],
+                       "title":  "",
+                       "scripts":  [
+
+                                   ],
+                       "designMode":  "Inherit",
+                       "selection":  {
+
+                                     },
+                       "readyState":  "complete",
+                       "frames":  {
+
+                                  },
+                       "embeds":  [
+
+                                  ],
+                       "plugins":  [
+
+                                   ],
+                       "alinkColor":  "#0000ff",
+                       "bgColor":  "#ffffff",
+                       "fgColor":  "#000000",
+                       "linkColor":  "#0000ff",
+                       "vlinkColor":  "#800080",
+                       "referrer":  null,
+                       "location":  {
+
+                                    },
+                       "lastModified":  "12/27/2017 17:09:12",
+                       "url":  "about:blank",
+                       "domain":  null,
+                       "cookie":  null,
+                       "expando":  true,
+                       "charset":  "unicode",
+                       "defaultCharset":  "windows-1252",
+                       "mimeType":  "HTM File",
+                       "fileSize":  null,
+                       "fileCreatedDate":  null,
+                       "fileModifiedDate":  null,
+                       "fileUpdatedDate":  null,
+                       "security":  "This type of document does not have a security certificate.",
+                       "protocol":  "Unknown Protocol",
+                       "nameProp":  "",
+                       "onhelp":  null,
+                       "onclick":  null,
+                       "ondblclick":  null,
+                       "onkeyup":  null,
+                       "onkeydown":  null,
+                       "onkeypress":  null,
+                       "onmouseup":  null,
+                       "onmousedown":  null,
+                       "onmousemove":  null,
+                       "onmouseout":  null,
+                       "onmouseover":  null,
+                       "onreadystatechange":  null,
+                       "onafterupdate":  null,
+                       "onrowexit":  null,
+                       "onrowenter":  null,
+                       "ondragstart":  null,
+                       "onselectstart":  null,
+                       "parentWindow":  {
+
+                                        },
+                       "styleSheets":  [
+
+                                       ],
+                       "onbeforeupdate":  null,
+                       "onerrorupdate":  null,
+                       "documentElement":  {
+
+                                           },
+                       "uniqueID":  "ms__id21",
+                       "onrowsdelete":  null,
+                       "onrowsinserted":  null,
+                       "oncellchange":  null,
+                       "ondatasetchanged":  null,
+                       "ondataavailable":  null,
+                       "ondatasetcomplete":  null,
+                       "onpropertychange":  null,
+                       "dir":  null,
+                       "oncontextmenu":  null,
+                       "onstop":  null,
+                       "parentDocument":  null,
+                       "enableDownload":  null,
+                       "baseUrl":  null,
+                       "inheritStyleSheets":  null,
+                       "onbeforeeditfocus":  null,
+                       "onselectionchange":  null,
+                       "namespaces":  {
+
+                                      },
+                       "media":  null,
+                       "oncontrolselect":  null,
+                       "URLUnencoded":  "about:blank",
+                       "onmousewheel":  null,
+                       "doctype":  null,
+                       "implementation":  {
+
+                                          },
+                       "onfocusin":  null,
+                       "onfocusout":  null,
+                       "onactivate":  null,
+                       "ondeactivate":  null,
+                       "onbeforeactivate":  null,
+                       "onbeforedeactivate":  null,
+                       "compatMode":  "BackCompat",
+                       "nodeType":  9,
+                       "parentNode":  null,
+                       "childNodes":  [
+                                          "System.__ComObject"
+                                      ],
+                       "attributes":  null,
+                       "nodeName":  "#document",
+                       "nodeValue":  null,
+                       "firstChild":  {
+
+                                      },
+                       "lastChild":  {
+
+                                     },
+                       "previousSibling":  null,
+                       "nextSibling":  null,
+                       "ownerDocument":  null,
+                       "IHTMLDocument2_Script":  {
+
+                                                 },
+                       "IHTMLDocument2_all":  [
+                                                  "System.__ComObject",
+                                                  "System.__ComObject",
+                                                  "System.__ComObject",
+                                                  "System.__ComObject"
+                                              ],
+                       "IHTMLDocument2_body":  {
+
+                                               },
+                       "IHTMLDocument2_activeElement":  null,
+                       "IHTMLDocument2_images":  [
+
+                                                 ],
+                       "IHTMLDocument2_applets":  [
+
+                                                  ],
+                       "IHTMLDocument2_links":  [
+
+                                                ],
+                       "IHTMLDocument2_forms":  [
+
+                                                ],
+                       "IHTMLDocument2_anchors":  [
+
+                                                  ],
+                       "IHTMLDocument2_title":  "",
+                       "IHTMLDocument2_scripts":  [
+
+                                                  ],
+                       "IHTMLDocument2_designMode":  "Inherit",
+                       "IHTMLDocument2_selection":  {
+
+                                                    },
+                       "IHTMLDocument2_readyState":  "complete",
+                       "IHTMLDocument2_frames":  {
+
+                                                 },
+                       "IHTMLDocument2_embeds":  [
+
+                                                 ],
+                       "IHTMLDocument2_plugins":  [
+
+                                                  ],
+                       "IHTMLDocument2_alinkColor":  "#0000ff",
+                       "IHTMLDocument2_bgColor":  "#ffffff",
+                       "IHTMLDocument2_fgColor":  "#000000",
+                       "IHTMLDocument2_linkColor":  "#0000ff",
+                       "IHTMLDocument2_vlinkColor":  "#800080",
+                       "IHTMLDocument2_referrer":  null,
+                       "IHTMLDocument2_location":  null,
+                       "IHTMLDocument2_lastModified":  "12/27/2017 17:09:12",
+                       "IHTMLDocument2_url":  "about:blank",
+                       "IHTMLDocument2_domain":  null,
+                       "IHTMLDocument2_cookie":  null,
+                       "IHTMLDocument2_expando":  true,
+                       "IHTMLDocument2_charset":  "unicode",
+                       "IHTMLDocument2_defaultCharset":  "windows-1252",
+                       "IHTMLDocument2_mimeType":  "HTM File",
+                       "IHTMLDocument2_fileSize":  null,
+                       "IHTMLDocument2_fileCreatedDate":  null,
+                       "IHTMLDocument2_fileModifiedDate":  null,
+                       "IHTMLDocument2_fileUpdatedDate":  null,
+                       "IHTMLDocument2_security":  "This type of document does not have a security certificate.",
+                       "IHTMLDocument2_protocol":  "Unknown Protocol",
+                       "IHTMLDocument2_nameProp":  "",
+                       "IHTMLDocument2_onhelp":  null,
+                       "IHTMLDocument2_onclick":  null,
+                       "IHTMLDocument2_ondblclick":  null,
+                       "IHTMLDocument2_onkeyup":  null,
+                       "IHTMLDocument2_onkeydown":  null,
+                       "IHTMLDocument2_onkeypress":  null,
+                       "IHTMLDocument2_onmouseup":  null,
+                       "IHTMLDocument2_onmousedown":  null,
+                       "IHTMLDocument2_onmousemove":  null,
+                       "IHTMLDocument2_onmouseout":  null,
+                       "IHTMLDocument2_onmouseover":  null,
+                       "IHTMLDocument2_onreadystatechange":  null,
+                       "IHTMLDocument2_onafterupdate":  null,
+                       "IHTMLDocument2_onrowexit":  null,
+                       "IHTMLDocument2_onrowenter":  null,
+                       "IHTMLDocument2_ondragstart":  null,
+                       "IHTMLDocument2_onselectstart":  null,
+                       "IHTMLDocument2_parentWindow":  {
+
+                                                       },
+                       "IHTMLDocument2_styleSheets":  [
+
+                                                      ],
+                       "IHTMLDocument2_onbeforeupdate":  null,
+                       "IHTMLDocument2_onerrorupdate":  null,
+                       "IHTMLDocument3_documentElement":  {
+
+                                                          },
+                       "IHTMLDocument3_uniqueID":  "ms__id22",
+                       "IHTMLDocument3_onrowsdelete":  null,
+                       "IHTMLDocument3_onrowsinserted":  null,
+                       "IHTMLDocument3_oncellchange":  null,
+                       "IHTMLDocument3_ondatasetchanged":  null,
+                       "IHTMLDocument3_ondataavailable":  null,
+                       "IHTMLDocument3_ondatasetcomplete":  null,
+                       "IHTMLDocument3_onpropertychange":  null,
+                       "IHTMLDocument3_dir":  null,
+                       "IHTMLDocument3_oncontextmenu":  null,
+                       "IHTMLDocument3_onstop":  null,
+                       "IHTMLDocument3_parentDocument":  null,
+                       "IHTMLDocument3_enableDownload":  null,
+                       "IHTMLDocument3_baseUrl":  null,
+                       "IHTMLDocument3_childNodes":  [
+                                                         "System.__ComObject"
+                                                     ],
+                       "IHTMLDocument3_inheritStyleSheets":  null,
+                       "IHTMLDocument3_onbeforeeditfocus":  null,
+                       "IHTMLDocument4_onselectionchange":  null,
+                       "IHTMLDocument4_namespaces":  {
+
+                                                     },
+                       "IHTMLDocument4_media":  null,
+                       "IHTMLDocument4_oncontrolselect":  null,
+                       "IHTMLDocument4_URLUnencoded":  "about:blank",
+                       "IHTMLDocument5_onmousewheel":  null,
+                       "IHTMLDocument5_doctype":  null,
+                       "IHTMLDocument5_implementation":  {
+
+                                                         },
+                       "IHTMLDocument5_onfocusin":  null,
+                       "IHTMLDocument5_onfocusout":  null,
+                       "IHTMLDocument5_onactivate":  null,
+                       "IHTMLDocument5_ondeactivate":  null,
+                       "IHTMLDocument5_onbeforeactivate":  null,
+                       "IHTMLDocument5_onbeforedeactivate":  null,
+                       "IHTMLDocument5_compatMode":  "BackCompat",
+                       "IHTMLDOMNode_nodeType":  null,
+                       "IHTMLDOMNode_parentNode":  null,
+                       "IHTMLDOMNode_childNodes":  null,
+                       "IHTMLDOMNode_attributes":  null,
+                       "IHTMLDOMNode_nodeName":  null,
+                       "IHTMLDOMNode_nodeValue":  null,
+                       "IHTMLDOMNode_firstChild":  null,
+                       "IHTMLDOMNode_lastChild":  null,
+                       "IHTMLDOMNode_previousSibling":  null,
+                       "IHTMLDOMNode_nextSibling":  null,
+                       "IHTMLDOMNode2_ownerDocument":  null
+                   },
+    "RawContentLength":  203
+}

@@ -15,6 +15,7 @@
 . (import-script graphauthenticationcontext)
 . (import-script graphcontext)
 . (import-script graphconnection)
+. (import-script Test-Graph)
 
 function New-GraphContext($graphType = 'msgraph', $authtype = 'msa', $tenantName = $null, $alternateAppId = $null, $alternateEndpoint = $null, $alternateAuthority = $null) {
     new-scriptobject GraphContext $graphType $authtype $tenantName $alternateAppId $alternateEndpoint $alternateAuthority

@@ -20,7 +20,7 @@ Describe "Poshgraph application" {
 
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
-            $expectedFunctions = @('new-graphconnection', 'get-graphitem')
+            $expectedFunctions = @('new-graphconnection', 'get-graphitem', 'test-graph')
 
             $manifest.ExportedFunctions.count | Should BeExactly $expectedFunctions.length
 
