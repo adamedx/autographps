@@ -12,9 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Test-Graph)
-. (import-script Get-GraphVersion)
-. (import-script New-GraphConnection)
-. (import-script Invoke-GraphRequest)
-. (import-script Get-GraphItem)
+enum GraphAppType {
+    AppAndUser
+    AppOnly
+}
 
+ScriptClass GraphApplication {
+    $AppId = strict-val [Guid]
+    $Secret = strict-val [GraphAppType] ([GraphAppType]::AppOnly)
+
+    function __initialize([Guid] $appId) {
+        $this.AppId = $appId
+    }
+}
