@@ -12,42 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphEndpoint)
-. (import-script GraphIdentity)
-. (import-script GraphConnection)
-. (import-script Application)
+. (import-script New-GraphConnection)
 
-function New-GraphConnection {
-    [cmdletbinding()]
+function Get-GraphToken {
+    [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
+        [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='msgraph')] [parameter(parametersetname='custom')] $AADTenantId,
         [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='msgraph')] [IdentityType] $AccountType = ([IdentityType]::MSA),
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][Guid] $AppIdSecret,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
     )
 
-    $graphAccountType = $null
-    $graphType = if ( $AADGraph.ispresent ) {
-        $graphAccountType = ([IdentityType]::AAD)
-        ([GraphType]::AADGraph)
-    } else {
-        $graphAccountType = ([IdentityType]::MSA)
-        ([GraphType]::MSGraph)
+    $connectionArguments = @{}
+    $psboundparameters.keys | foreach {
+        $connectionArguments[$_] = $psboundparameters[$_]
     }
 
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud
-    } else {
-        $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
-            new-so GraphEndpoint $Cloud $graphType
-        } else {
-            new-so GraphEndpoint $GraphEndpointUri $AuthenticationEndpointUri
-        }
+    $connection = New-GraphConnection @connectionArguments
+    $connection |=> Connect
 
-        $app = new-so GraphApplication $connectionAppId
-        $identity = new-so GraphIdentity $app $graphAccountType
-        new-so GraphConnection $graphEndpoint $identity
-    }
+    $connection.Identity.Token.AccessToken
 }

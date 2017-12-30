@@ -30,16 +30,15 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([GraphType] $graphType, [string] $AADTenantId = $null, [GraphCloud] $cloud = 'Public') {
-            $accountType = if ( $AADTenantId -ne $null ) {
-                [IdentityType]::AAD
-            } else {
-                [IdentityType]::MSA
+        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public') {
+            $accountType = switch ($graphType) {
+                ([GraphType]::AADGraph) { [IdentityType]::AAD }
+                ([GraphType]::MSGraph) { [IdentityType]::MSA }
             }
 
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication $::.Application.AppId
-            $identity = new-so GraphIdentity $app $accountType $AADTenantId
+            $identity = new-so GraphIdentity $app $accountType
             new-so GraphConnection $endpoint $identity
         }
     }

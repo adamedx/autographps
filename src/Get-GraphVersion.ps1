@@ -22,11 +22,10 @@ function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0)][String] $Version = $null,
-        [switch] $AADGraph,
         [switch] $Json,
-        [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null,
-        [GraphCloud] $Cloud = [GraphCloud]::Public
+        [parameter(parametersetname='NewConnection')][switch] $AADGraph,
+        [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
     $graphType = if ( $AADGraph.ispresent ) {
@@ -36,7 +35,7 @@ function Get-GraphVersion {
     }
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $AADTenantId $Cloud
+        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud
     } else {
         $Connection
     }
