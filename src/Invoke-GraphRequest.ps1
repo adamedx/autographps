@@ -22,6 +22,7 @@ function Invoke-GraphRequest {
         [parameter(position=1)][String] $Verb = 'GET',
         [parameter(position=2, valuefrompipeline=$true)] $Payload = $null,
         [String] $Version = $null,
+        [switch] $JSON,
         [parameter(parametersetname='NewConnection')][switch] $AADGraph,
         [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
         [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
@@ -85,5 +86,10 @@ function Invoke-GraphRequest {
     $request = new-so RESTRequest $graphUri $Verb $headers
     $response = $request |=> Invoke
 
-    $response.content
+    write-host "responded"
+    if ($JSON.ispresent) {
+        $response.content
+    } else {
+        $response.content | convertfrom-json
+    }
 }

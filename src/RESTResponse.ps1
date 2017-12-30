@@ -17,9 +17,9 @@ ScriptClass RESTResponse {
     $statusDescription = strict-val [string]
     $content = $null
     $headers = strict-val [HashTable]
-    $images = strict-val [HashTable]
-    $inputFields = strict-val [HashTable]
-    $links = strict-val [HashTable]
+    $images = $null
+    $inputFields = $null
+    $links = $null
     $rawContent = $null
     $rawContentLength = strict-val [int]
 
@@ -29,9 +29,9 @@ ScriptClass RESTResponse {
         $this.rawContent = $webResponse.rawContent
         $this.rawContentLength = $webResponse.rawContentLength
         $this.headers = $webResponse.headers
-        $this.content = $webResponse.content | convertfrom-json
-        $this.images = $webResponse.images | convertfrom-json
-        $this.inputFields = $webResponse.inputFields | convertfrom-json
-        $this.links = $webResponse.links | convertfrom-json
+        $this.content = $webResponse.content
+        $this.images = $webResponse.images
+        $this.inputFields = $webResponse.inputFields
+        $this.links = $webResponse.links
     }
 }

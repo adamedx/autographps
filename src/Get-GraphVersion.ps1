@@ -23,6 +23,7 @@ function Get-GraphVersion {
     param(
         [parameter(position=0)][String] $Version = $null,
         [switch] $AADGraph,
+        [switch] $Json,
         [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
         [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null,
         [GraphCloud] $Cloud = [GraphCloud]::Public
@@ -59,5 +60,9 @@ function Get-GraphVersion {
     $request = new-so RESTRequest $versionUri GET $headers
     $response = $request |=> Invoke
 
-    $response.content
+    if ( $JSON.ispresent ) {
+        $response.content
+    } else {
+        $response.content | convertfrom-json
+    }
 }

@@ -19,6 +19,7 @@ function Get-GraphItem {
     param(
         [parameter(position=0, mandatory=$true)][String] $ItemRelativeUri = $null,
         [String] $Version = $null,
+        [switch] $Json,
         [parameter(parametersetname='NewConnection')][switch] $AADGraph,
         [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
         [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
@@ -28,6 +29,7 @@ function Get-GraphItem {
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri
         Version=$Version
+        JSON=$Json
     }
 
     if ( $AADGraph.ispresent ) {
