@@ -12,23 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-. (import-script GraphContext)
-. (import-script GraphAuthenticationContext)
+. (import-script Application)
+. (import-script GraphEndpoint)
+. (import-script GraphIdentity)
 
 ScriptClass GraphConnection {
-    $Context = $null
-    $Connected = $false
+    $Identity = strict-val [PSCustomObject]
+    $GraphEndpoint = strict-val [PSCustomObject]
 
-    function __initialize($graphType = 'msgraph', $authType = 'msa', $tenantName = $null, $altAppId = $null, $altEndpoint = $null, $altAuthority = $null) {
-        $this.Context = new-scriptobject GraphContext $graphType $authtype $tenantName $altAppId $altEndpoint $altAuthority
+    function __initialize([PSCustomObject] $GraphEndpoint, [PSCustomObject] $Identity) {
+        $this.GraphEndpoint = $GraphEndpoint
+        $this.Identity = $Identity
     }
 
     function Connect {
-        if ( ! $this.Connected ) {
-            $token = $this.Context.AuthContext |=> AcquireToken
-            $this.Connected = $token -ne $null
+        $this.Identity |=> Authenticate $this.GraphEndpoint
+    }
+
+    static {
+        function NewSimpleConnection([GraphType] $graphType, [string] $AADTenantId = $null, [GraphCloud] $cloud = 'Public') {
+            $accountType = if ( $AADTenantId -ne $null ) {
+                [IdentityType]::AAD
+            } else {
+                [IdentityType]::MSA
+            }
+
+            $endpoint = new-so GraphEndpoint $cloud $graphType
+            $app = new-so GraphApplication $::.Application.AppId
+            $identity = new-so GraphIdentity $app $accountType $AADTenantId
+            new-so GraphConnection $endpoint $identity
         }
     }
 }
-

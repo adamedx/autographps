@@ -19,9 +19,14 @@ enum GraphCloud {
     USGovernmentCloud
 }
 
+enum GraphType {
+    MSGraph
+    AADGraph
+}
+
 ScriptClass GraphEndpoint {
     static {
-        $cloudEndpoints = @{
+        $MSGraphCloudEndpoints = @{
             [GraphCloud]::Public = @{
                 Authentication='https://login.microsoftonline.com/common'
                 Graph='https://graph.microsoft.com'
@@ -39,14 +44,40 @@ ScriptClass GraphEndpoint {
                 Graph='https://graph.microsoft.us'
             }
         }
+
+        $AADGraphCloudEndpoints = @{
+            Authentication = 'https://login.microsoftonline.com/common'
+            Graph='https://graph.windows.net'
+        }
     }
 
     $Authentication = strict-val [Uri]
     $Graph = strict-val [Uri]
+    $Type = strict-val [GraphType]
 
-    function __initialize([GraphCloud] $cloud) {
-        $endpoints = $this.scriptclass.cloudEndpoints[$cloud]
-        $this.Authentication = new-object Uri $endpoints['Authentication']
+    function __initialize {
+        [cmdletbinding()]
+        param (
+            [parameter(parametersetname='KnownEndpoints', mandatory=$true)] [GraphCloud] $cloud,
+            [parameter(parametersetname='KnownEndpoints')] [GraphType] $graphType = [GraphType]::MSGraph,
+            [parameter(parametersetname='CustomEndpoints', mandatory=$true)] [Uri] $GraphEndpoint,
+            [parameter(parametersetname='CustomEndpoints', mandatory=$true)] [Uri] $AuthenticationEndpoint
+        )
+        $this.Type = $GraphType
+        $endpoints = if ($GraphEndpoint -eq $null) {
+            if ($graphType -eq [GraphType]::MSGraph) {
+                $this.scriptclass.MSGraphCloudEndpoints[$cloud]
+            } else {
+                $this.scriptclass.AADGraphCloudEndpoints
+            }
+        } else {
+            @{
+                Graph=$GraphEndpoint
+                Authentication=$AuthenticationEndpoint
+            }
+        }
+
+        $this.Authentication = new-object Uri $endpoints.Authentication
         $this.Graph = new-object Uri $endpoints.Graph
     }
 }
