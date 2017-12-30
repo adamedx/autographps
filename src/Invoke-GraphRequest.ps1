@@ -18,7 +18,7 @@
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, mandatory=$true)][String] $RelativeUri = $null,
+        [parameter(position=0, mandatory=$true)][Uri[]] $RelativeUri,
         [parameter(position=1)][String] $Verb = 'GET',
         [parameter(position=2, valuefrompipeline=$true)] $Payload = $null,
         [String] $Version = $null,
@@ -70,25 +70,33 @@ function Invoke-GraphRequest {
         $apiVersion
     }
 
-    $graphRelativeUri = $tenantQualifiedVersionSegment, $relativeUri -join '/'
+    $results = @()
+    $RelativeUri | foreach {
+        $graphRelativeUri = $tenantQualifiedVersionSegment, $_ -join '/'
 
-    if ( $graphType -eq ([GraphType]::AADGraph) ){
-        $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
+        if ( $graphType -eq ([GraphType]::AADGraph) ){
+            $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
+        }
+
+        $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
+
+        $headers = @{
+            'Content-Type'='application\json'
+            'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
+        }
+
+        $request = new-so RESTRequest $graphUri $Verb $headers
+
+        $response = $request |=> Invoke
+
+        $content = if ($JSON.ispresent) {
+            $response.content
+        } else {
+            $response.content | convertfrom-json
+        }
+
+        $results += $content
     }
 
-    $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-
-    $headers = @{
-        'Content-Type'='application\json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
-    }
-
-    $request = new-so RESTRequest $graphUri $Verb $headers
-    $response = $request |=> Invoke
-
-    if ($JSON.ispresent) {
-        $response.content
-    } else {
-        $response.content | convertfrom-json
-    }
+    $results
 }

@@ -17,7 +17,7 @@
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, mandatory=$true)][String] $ItemRelativeUri = $null,
+        [parameter(position=0,mandatory=$true)][Uri[]] $ItemRelativeUri,
         [String] $Version = $null,
         [switch] $Json,
         [parameter(parametersetname='NewConnection')][switch] $AADGraph,
