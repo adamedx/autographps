@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphEndpoint)
-. (import-script GraphIdentity)
-. (import-script GraphConnection)
-. (import-script Application)
+. (import-script New-GraphConnection)
 
-function New-GraphConnection {
-    [cmdletbinding()]
+function Get-GraphToken {
+    [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='msgraph')] [parameter(parametersetname='custom')] $AADTenantId,
@@ -30,25 +27,13 @@ function New-GraphConnection {
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
     )
 
-    $graphAccountType = $AccountType
-    $graphType = if ( $AADGraph.ispresent ) {
-        ([GraphType]::AADGraph)
-        $graphAccountType = ([IdentityType]::AAD)
-    } else {
-        ([GraphType]::MSGraph)
+    $connectionArguments = @{}
+    $psboundparameters.keys | foreach {
+        $connectionArguments[$_] = $psboundparameters[$_]
     }
 
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $AADTenantId $Cloud
-    } else {
-        $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
-            new-so GraphEndpoint $Cloud $graphType
-        } else {
-            new-so GraphEndpoint $GraphEndpointUri $AuthenticationEndpointUri
-        }
+    $connection = New-GraphConnection @connectionArguments
+    $connection |=> Connect
 
-        $app = new-so GraphApplication $connectionAppId
-        $identity = new-so GraphIdentity $app $graphAccountType $TenantId
-        new-so GraphConnection $graphEndpoint $identity
-    }
+    $connection.Identity.Token.AccessToken
 }
