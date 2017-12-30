@@ -21,7 +21,6 @@ function Get-GraphItem {
         [String] $Version = $null,
         [switch] $Json,
         [parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
         [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
@@ -34,7 +33,6 @@ function Get-GraphItem {
 
     if ( $AADGraph.ispresent ) {
         $requestArguments['AADGraph'] = $AADGraph
-        $requestArguments['AADTenantId'] = $AADTenantId
     }
 
     if ( $Connection -ne $null ) {

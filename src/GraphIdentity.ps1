@@ -22,14 +22,12 @@ enum IdentityType {
 
 ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
-    $TenantName = strict-val [string]
     $IdentityType = strict-val [IdentityType]
     $Token = strict-val [PSCustomObject] $null
 
-    function __initialize([PSCustomObject] $App, [Identitytype] $IdentityType = [IdentityType]::MSA, $TenantName = $null) {
+    function __initialize([PSCustomObject] $App, [Identitytype] $IdentityType = [IdentityType]::MSA) {
         $this.App = $app
         $this.IdentityType = $IdentityType
-        $this.TenantName = $TenantName
 
         switch ( $IdentityType ) {
             ([IdentityType]::MSA) {

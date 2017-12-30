@@ -24,7 +24,6 @@ function Invoke-GraphRequest {
         [String] $Version = $null,
         [switch] $JSON,
         [parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='NewConnection')][String] $AADTenantId = $null,
         [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
@@ -53,17 +52,20 @@ function Invoke-GraphRequest {
     }
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $connectionArguments = @{Cloud=$Cloud}
-        if ( $AADGraph.ispresent ) {
-            $connectionArguments = @{AADGraph = $AADGraph;AADTenantId = $AADTenantId}
+        $connectionArguments = if ( $AADGraph.ispresent ) {
+            @{AADGraph = $AADGraph}
+        } else {
+            @{Cloud=$Cloud}
         }
         New-GraphConnection @connectionArguments
     } else {
         $Connection
     }
 
+    $graphConnection |=> Connect
+
     $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
-        $AADTenantId
+        $graphConnection.Identity.Token.TenantId
     } else {
         $apiVersion
     }
@@ -76,8 +78,6 @@ function Invoke-GraphRequest {
 
     $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
 
-    $graphConnection |=> Connect
-
     $headers = @{
         'Content-Type'='application\json'
         'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
@@ -86,7 +86,6 @@ function Invoke-GraphRequest {
     $request = new-so RESTRequest $graphUri $Verb $headers
     $response = $request |=> Invoke
 
-    write-host "responded"
     if ($JSON.ispresent) {
         $response.content
     } else {
