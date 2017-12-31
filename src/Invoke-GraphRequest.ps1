@@ -20,11 +20,12 @@ function Invoke-GraphRequest {
     param(
         [parameter(position=0, mandatory=$true)][Uri[]] $RelativeUri,
         [parameter(position=1)][String] $Verb = 'GET',
-        [parameter(position=2, valuefrompipeline=$true)] $Payload = $null,
+        [parameter(parametersetname='MSGraphNewConnection')][String[]] $ScopeNames = @('User.Read'),
+        [parameter(position=3, valuefrompipeline=$true)] $Payload = $null,
         [String] $Version = $null,
         [switch] $JSON,
-        [parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='AADGraphNewConnection')][switch] $AADGraph,
+        [parameter(parametersetname='MSGraphNewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
@@ -55,7 +56,7 @@ function Invoke-GraphRequest {
         $connectionArguments = if ( $AADGraph.ispresent ) {
             @{AADGraph = $AADGraph}
         } else {
-            @{Cloud=$Cloud}
+            @{Cloud=$Cloud;ScopeNames=$ScopeNames}
         }
         New-GraphConnection @connectionArguments
     } else {

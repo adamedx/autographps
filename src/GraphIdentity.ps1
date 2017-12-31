@@ -42,7 +42,7 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function Authenticate([PSCustomObject] $graphEndpoint, $scopes = $null) {
+    function Authenticate([PSCustomObject] $graphEndpoint, $scopes = @()) {
         if ($this.token -ne $null) {
             return
         }
@@ -59,7 +59,10 @@ ScriptClass GraphIdentity {
     function getMSAToken($graphEndpoint, $scopes) {
         $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication
         $requestedScopes = new-object System.Collections.Generic.List[string]
-        $requestedScopes.Add("User.Read")
+
+        $scopes | foreach {
+            $requestedScopes.Add($_)
+        }
 
         $authResult = $msaAuthContext.AcquireTokenAsync($requestedScopes)
 
