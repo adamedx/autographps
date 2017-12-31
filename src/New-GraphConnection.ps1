@@ -18,16 +18,16 @@
 . (import-script Application)
 
 function New-GraphConnection {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
+        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][String[]] $ScopeNames = @('User.Read'),
         [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][Guid] $AppIdSecret,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
     )
-
     $graphAccountType = $null
     $graphType = if ( $AADGraph.ispresent ) {
         $graphAccountType = ([IdentityType]::AAD)
@@ -38,7 +38,7 @@ function New-GraphConnection {
     }
 
     if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud
+        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud $ScopeNames
     } else {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
             new-so GraphEndpoint $Cloud $graphType
@@ -48,6 +48,6 @@ function New-GraphConnection {
 
         $app = new-so GraphApplication $connectionAppId
         $identity = new-so GraphIdentity $app $graphAccountType
-        new-so GraphConnection $graphEndpoint $identity
+        new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }
 }

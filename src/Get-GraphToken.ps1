@@ -18,7 +18,7 @@ function Get-GraphToken {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
-        [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='msgraph')] [parameter(parametersetname='custom')] $AADTenantId,
+        [parameter(parametersetname='msgraph')][String[]] $ScopeNames = @('User.Read'),
         [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='msgraph')] [IdentityType] $AccountType = ([IdentityType]::MSA),
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
@@ -26,7 +26,6 @@ function Get-GraphToken {
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
     )
-
     $connectionArguments = @{}
     $psboundparameters.keys | foreach {
         $connectionArguments[$_] = $psboundparameters[$_]

@@ -18,10 +18,11 @@ function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0,mandatory=$true)][Uri[]] $ItemRelativeUri,
+        [parameter(parametersetname='NewMSGraphConnection',mandatory=$true)][String[]] $ScopeNames = @('User.Read'),
         [String] $Version = $null,
         [switch] $Json,
-        [parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='NewAADGraphConnection',mandatory=$true)][switch] $AADGraph,
+        [parameter(parametersetname='NewMSGraphConnection')][parameter(parametersetname='MSGraph')][GraphCloud] $Cloud = [GraphCloud]::Public,
         [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
@@ -33,6 +34,8 @@ function Get-GraphItem {
 
     if ( $AADGraph.ispresent ) {
         $requestArguments['AADGraph'] = $AADGraph
+    } else {
+        $requestArguments['ScopeNames'] = $ScopeNames
     }
 
     if ( $Connection -ne $null ) {
