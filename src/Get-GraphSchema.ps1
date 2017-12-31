@@ -19,13 +19,15 @@
 function Get-GraphSchema {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='GetSchemas', mandatory=$true)][parameter(position=0,parametersetname='ListSchemas')][String] $Namespace = $null,
-        [parameter(position=1,parametersetname='GetSchemas',mandatory=$true)][String] $Version,
-        [parameter(parametersetname='GetSchemas')][switch] $Xml,
+        [parameter(position=0,parametersetname='GetSchema', mandatory=$true)][parameter(parametersetname='ListSchemas')][String] $Namespace = $null,
+        [parameter(position=0,parametersetname='GetNamespacesSchema',mandatory=$true)][PSCustomObject] $GraphVersion,
+        [parameter(position=1,parametersetname='GetSchema',mandatory=$true)][String] $SchemaVersion,
+        [parameter(position=1,parametersetname='GetNamespacesSchema')][String[]] $NamespaceList = $null,
+        [parameter(parametersetname='GetSchema')][switch] $Xml,
+        [parameter(parametersetname='ListSchemas',mandatory=$true)][switch] $ListSchemas,
         [parameter(parametersetname='ListSchemas')][switch] $Json,
-        [parameter(parametersetname='ListSchemas',mandatory=$true)][switch] $List,
-        [parameter(parametersetname='GetSchemas')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='GetSchemas')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
+        [parameter(parametersetname='GetSchema')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='GetSchema')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
     $graphConnection = if ( $Connection -eq $null ) {
@@ -34,45 +36,56 @@ function Get-GraphSchema {
         $Connection
     }
 
-    $relativeBase = 'schemas'
-    $relativeUri = if ( $List.ispresent ) {
-        if ($Namespace -ne $null) {
-            $relativeBase, $Namespace -join '/'
-        } else {
-            $relativeBase
-        }
-    } else {
-        $relativeBase, $Namespace, $Version -join '/'
-    }
-
-    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
     $graphConnection |=> Connect
 
+    $relativeBase = 'schemas'
     $headers = @{
         'Content-Type'='application/json'
         'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
     }
 
+    if ( $ListSchemas.ispresent ) {
+        return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
+    }
+
+    $relativeUri = $relativeBase, $Namespace, $SchemaVersion -join '/'
+
+    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
+
     $request = new-so RESTRequest $queryUri GET $headers
     $response = $request |=> Invoke
 
-    if ( $List.ispresent ) {
-        if ( $JSON.ispresent ) {
-            $response.content
-        } else {
-            $response.content | convertfrom-json
-        }
+    $deserializableSchema = DeserializeXmlSchema($response.content)
+
+    if ( $XML.ispresent ) {
+        # Return the corrected schema in case it included a
+        # UTF16LE BOM, which will be removed so the caller
+        # can use the standard XML parser to parse it successfully
+        $deserializableSchema.correctedXmlContent
     } else {
-        $deserializableSchema = DeserializeXmlSchema($response.content)
-        if ( $XML.ispresent ) {
-            # Return the corrected schema in case it included a
-            # UTF16LE BOM, which will be removed so the caller
-            # can use the standard XML parser to parse it successfully
-            $deserializableSchema.correctedXmlContent
-        } else {
-            $deserializableSchema.deserializedContent.schema
-        }
+        $deserializableSchema.deserializedContent.schema
+    }
+}
+
+function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jsonOutput) {
+    $relativeUri = if ($Namespace -ne $null) {
+        $relativeBase, $Namespace -join '/'
+    } else {
+        $relativeBase
+    }
+
+    $graphConnection |=> Connect
+
+    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
+
+    $headers['Content-Type'] = 'application/xml'
+    $request = new-so RESTRequest $queryUri GET $headers
+    $response = $request |=> Invoke
+
+    if ( $JSON.ispresent ) {
+        $response.content
+    } else {
+        $response.content | convertfrom-json
     }
 }
 
