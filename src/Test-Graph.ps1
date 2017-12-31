@@ -24,7 +24,8 @@ function Test-Graph {
     [cmdletbinding()]
     param(
         [parameter(parametersetname='KnownClouds')] [GraphCloud] $cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='CustomEndpoint', mandatory=$true)] [Uri] $endpointUri
+        [parameter(parametersetname='CustomEndpoint', mandatory=$true)] [Uri] $endpointUri,
+        [switch] $Json
     )
 
     $graphEndpointUri = if ($endpointUri -eq $null ) {
@@ -37,27 +38,31 @@ function Test-Graph {
     $request = new-so RESTRequest $pingUri
     $response = $request |=> Invoke
 
-    # The [ordered] type adapter will ensure that enumeration of items in a hashtable
-    # is sorted by insertion order
-    $result = [ordered] @{}
+    if ( ! $Json.ispresent ) {
+        # The [ordered] type adapter will ensure that enumeration of items in a hashtable
+        # is sorted by insertion order
+        $result = [ordered] @{}
 
-    $content = $response.content
-    $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
+        $content = $response.content | convertfrom-json
+        $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
 
-    # Sort by name to get consistent sort formatting
-    $content | gm -membertype noteproperty | sort name | foreach {
-        $value = ($content | select -expandproperty $_.name)
-        $mapping = $alternatePropertyMapping[$_.name]
+        # Sort by name to get consistent sort formatting
+        $content | gm -membertype noteproperty | sort name | foreach {
+            $value = ($content | select -expandproperty $_.name)
+            $mapping = $alternatePropertyMapping[$_.name]
 
-        $destination = if ($mapping -eq $null) {
-            $_.name
-        } else {
-            $value = invoke-command -scriptblock $mapping[1] -argumentlist $value
-            $mapping[0]
+            $destination = if ($mapping -eq $null) {
+                $_.name
+            } else {
+                $value = invoke-command -scriptblock $mapping[1] -argumentlist $value
+                $mapping[0]
+            }
+
+            $result[$destination] = $value
         }
 
-        $result[$destination] = $value
+        [PSCustomObject] $result
+    } else {
+        $response.content
     }
-
-    [PSCustomObject] $result
 }
