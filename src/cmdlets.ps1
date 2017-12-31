@@ -18,4 +18,5 @@
 . (import-script Invoke-GraphRequest)
 . (import-script Get-GraphItem)
 . (import-script Get-GraphToken)
+. (import-script Get-GraphSchema)
 

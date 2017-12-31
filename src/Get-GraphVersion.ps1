@@ -35,7 +35,7 @@ function Get-GraphVersion {
     }
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud
+        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud 'User.Read'
     } else {
         $Connection
     }
