@@ -48,23 +48,42 @@ function Get-GraphSchema {
         return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
     }
 
-    $relativeUri = $relativeBase, $Namespace, $SchemaVersion -join '/'
-
-    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-    $request = new-so RESTRequest $queryUri GET $headers
-    $response = $request |=> Invoke
-
-    $deserializableSchema = DeserializeXmlSchema($response.content)
-
-    if ( $XML.ispresent ) {
-        # Return the corrected schema in case it included a
-        # UTF16LE BOM, which will be removed so the caller
-        # can use the standard XML parser to parse it successfully
-        $deserializableSchema.correctedXmlContent
+    $graphNameSpaces = if ( $NamespaceList -ne $null ) {
+        $graphNamespaces = $NamespaceList
     } else {
-        $deserializableSchema.deserializedContent.schema
+        @($Namespace)
     }
+
+    $results = @()
+    $graphNamespaces | foreach {
+        $graphSchemaVersion = if ( $SchemaVersion -ne $null ) {
+            $SchemaVersion
+        } else {
+            throw 'Not yet implemented'
+        }
+
+        $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'
+
+        $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
+
+        $request = new-so RESTRequest $queryUri GET $headers
+        $response = $request |=> Invoke
+
+        $deserializableSchema = DeserializeXmlSchema($response.content)
+
+        $schema = if ( $XML.ispresent ) {
+            # Return the corrected schema in case it included a
+            # UTF16LE BOM, which will be removed so the caller
+            # can use the standard XML parser to parse it successfully
+            $deserializableSchema.correctedXmlContent
+        } else {
+            $deserializableSchema.deserializedContent.schema
+        }
+
+        $results += $schema
+    }
+
+    $results
 }
 
 function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jsonOutput) {
