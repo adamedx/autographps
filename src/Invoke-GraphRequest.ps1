@@ -82,7 +82,7 @@ function Invoke-GraphRequest {
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
 
         $headers = @{
-            'Content-Type'='application\json'
+            'Content-Type'='application/json'
             'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
         }
 

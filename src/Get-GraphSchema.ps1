@@ -24,8 +24,8 @@ function Get-GraphSchema {
         [parameter(parametersetname='GetSchemas')][switch] $Xml,
         [parameter(parametersetname='ListSchemas')][switch] $Json,
         [parameter(parametersetname='ListSchemas',mandatory=$true)][switch] $List,
-        [parameter(parametersetname='ListSchemas')][parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='ListSchemas')][parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
+        [parameter(parametersetname='GetSchemas')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='GetSchemas')][parameter(parametersetname='ListSchemas')][parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
     $graphConnection = if ( $Connection -eq $null ) {
@@ -71,7 +71,7 @@ function Get-GraphSchema {
             # can use the standard XML parser to parse it successfully
             $deserializableSchema.correctedXmlContent
         } else {
-            $deserializableSchema.deserializedContent
+            $deserializableSchema.deserializedContent.schema
         }
     }
 }
