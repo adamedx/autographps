@@ -21,22 +21,15 @@
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='GetVersions', mandatory=$true)][String] $Version,
-        [parameter(parametersetname='GetVersions')][switch] $Json,
-        [parameter(parametersetname='ListVersions',mandatory=$true)][switch] $List,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][switch] $AADGraph,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][PSCustomObject] $Connection = $null
+        [parameter(position=0,parametersetname='GetVersionExistingConnection',mandatory=$true)][parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)][String] $Version,
+        [switch] $Json,
+        [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)][parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)][switch] $List,
+        [parameter(parametersetname='GetVersionNewConnection')][parameter(parametersetname='ListVersionsNewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='ListVersionsExistingConnection', mandatory=$true)][parameter(parametersetname='GetVersionExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
     )
 
-    $graphType = if ( $AADGraph.ispresent ) {
-        ([GraphType]::AADGraph)
-    } else {
-        ([GraphType]::MSGraph)
-    }
-
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud 'User.Read'
+        $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
     } else {
         $Connection
     }
