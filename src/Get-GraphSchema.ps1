@@ -48,17 +48,19 @@ function Get-GraphSchema {
         return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
     }
 
+    $graphSchemaVersions = @{}
     $graphNameSpaces = if ( $NamespaceList -ne $null ) {
         $graphNamespaces = $NamespaceList
     } else {
         @($Namespace)
+        $graphSchemaVersions[$Namespace] = $SchemaVersion
     }
 
     $results = @()
     $graphNamespaces | foreach {
-        $graphSchemaVersion = if ( $SchemaVersion -ne $null ) {
-            $SchemaVersion
-        } else {
+        $graphSchemaVersion = $graphSchemaVersions[$_]
+
+        if ( $graphSchemaVersion -eq $null ) {
             throw 'Not yet implemented'
         }
 
@@ -97,7 +99,6 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
 
     $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
 
-    $headers['Content-Type'] = 'application/xml'
     $request = new-so RESTRequest $queryUri GET $headers
     $response = $request |=> Invoke
 
