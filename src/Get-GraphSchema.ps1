@@ -49,19 +49,28 @@ function Get-GraphSchema {
     }
 
     $graphSchemaVersions = @{}
-    $graphNameSpaces = if ( $NamespaceList -ne $null ) {
-        $graphNamespaces = $NamespaceList
+    $graphNameSpaces = if ( $GraphVersion -ne $null ) {
+        $GraphVersion | gm -membertype noteproperty | select -expandproperty name | where { $_ -ne 'tags' } | foreach {
+            $versionName = $_
+            $graphSchemaVersions[$versionName] = $graphVersion | select -expandproperty $versionName
+        }
+
+        if ( $NameSpaceList -ne $null ) {
+            $NamespaceList
+        } else {
+            $graphSchemaVersions.keys
+        }
     } else {
-        @($Namespace)
         $graphSchemaVersions[$Namespace] = $SchemaVersion
+        @($Namespace)
     }
 
     $results = @()
     $graphNamespaces | foreach {
         $graphSchemaVersion = $graphSchemaVersions[$_]
 
-        if ( $graphSchemaVersion -eq $null ) {
-            throw 'Not yet implemented'
+        if ($graphSchemaVersion -eq $null) {
+            throw "Specified namespace '$_' does not exist in the provided version"
         }
 
         $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'
