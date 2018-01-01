@@ -108,7 +108,6 @@ function Get-GraphSchema {
         if ( $NameSpaceList -ne $null ) {
             $NamespaceList
         } else {
-            $graphSchemaVersions.keys | out-host
             $graphSchemaVersions.keys
         }
     } else {
