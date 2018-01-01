@@ -21,27 +21,33 @@
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0)][String] $Version = $null,
+        [parameter(position=0,parametersetname='GetVersionExistingConnection',mandatory=$true)]
+        [parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)]
+        [String] $Version,
+
         [switch] $Json,
-        [parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='NewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
+
+        [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)]
+        [parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)]
+        [switch] $List,
+
+        [parameter(parametersetname='GetVersionNewConnection')]
+        [parameter(parametersetname='ListVersionsNewConnection')]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='ListVersionsExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='GetVersionExistingConnection', mandatory=$true)]
+        [PSCustomObject] $Connection = $null
     )
 
-    $graphType = if ( $AADGraph.ispresent ) {
-        ([GraphType]::AADGraph)
-    } else {
-        ([GraphType]::MSGraph)
-    }
-
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud
+        $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
     } else {
         $Connection
     }
 
     $relativeBase = 'versions'
-    $relativeUri = if ($version -ne $null) {
+    $relativeUri = if ( ! $List.ispresent ) {
         $relativeBase, $version -join '/'
     } else {
         $relativeBase
@@ -52,7 +58,7 @@ function Get-GraphVersion {
     $graphConnection |=> Connect
 
     $headers = @{
-        'Content-Type'='application\json'
+        'Content-Type'='application/json'
         'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
     }
 

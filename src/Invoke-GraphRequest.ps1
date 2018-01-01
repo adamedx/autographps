@@ -71,6 +71,11 @@ function Invoke-GraphRequest {
         $apiVersion
     }
 
+    $headers = @{
+        'Content-Type'='application/json'
+        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
+    }
+
     $results = @()
     $RelativeUri | foreach {
         $graphRelativeUri = $tenantQualifiedVersionSegment, $_ -join '/'
@@ -80,11 +85,6 @@ function Invoke-GraphRequest {
         }
 
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-
-        $headers = @{
-            'Content-Type'='application\json'
-            'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
-        }
 
         $request = new-so RESTRequest $graphUri $Verb $headers
 
