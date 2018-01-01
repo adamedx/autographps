@@ -21,18 +21,22 @@
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='GetVersionExistingConnection',mandatory=$true)][parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)]
+        [parameter(position=0,parametersetname='GetVersionExistingConnection',mandatory=$true)]
+        [parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)]
         [String] $Version,
 
         [switch] $Json,
 
-        [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)][parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)]
+        [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)]
+        [parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)]
         [switch] $List,
 
-        [parameter(parametersetname='GetVersionNewConnection')][parameter(parametersetname='ListVersionsNewConnection')]
+        [parameter(parametersetname='GetVersionNewConnection')]
+        [parameter(parametersetname='ListVersionsNewConnection')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
-        [parameter(parametersetname='ListVersionsExistingConnection', mandatory=$true)][parameter(parametersetname='GetVersionExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='ListVersionsExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='GetVersionExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
 

@@ -20,34 +20,54 @@
 function Get-GraphSchema {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='GetSchemaExistingConnection',mandatory=$true)][parameter(position=0,parametersetname='ListSchemasExistingConnection',mandatory=$true)][parameter(position=0,parametersetname='GetSchema',mandatory=$true)][parameter(position=0,parametersetname='ListSchemas',mandatory=$true)]
+        [parameter(position=0,parametersetname='GetSchemaExistingConnection',mandatory=$true)]
+        [parameter(position=0,parametersetname='ListSchemasExistingConnection',mandatory=$true)]
+        [parameter(position=0,parametersetname='GetSchema',mandatory=$true)]
+        [parameter(position=0,parametersetname='ListSchemas',mandatory=$true)]
         [String] $Namespace = $null,
 
-        [parameter(position=1, parametersetname='GetSchemaExistingConnection', mandatory=$true)][parameter(position=1, parametersetname='GetSchema', mandatory=$true)]
+        [parameter(position=1, parametersetname='GetSchemaExistingConnection', mandatory=$true)]
+        [parameter(position=1, parametersetname='GetSchema', mandatory=$true)]
         [String] $SchemaVersion = $null,
 
-        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection', mandatory=$true)][parameter(parametersetname='GetSchemaGraphObject', mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphObject', mandatory=$true)]
         [PSCustomObject] $VersionObject,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection', mandatory=$true)][parameter(parametersetname='GetSchemaGraphApiVersion', mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphApiVersion', mandatory=$true)]
         [String] $ApiVersion = $null,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')][parameter(parametersetname='GetSchemaGraphObjectExistingConnection')][parameter(parametersetname='GetSchemaGraphApiVersion')][parameter(parametersetname='GetSchemaGraphObject')]
+        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')]
+        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection')]
+        [parameter(parametersetname='GetSchemaGraphApiVersion')]
+        [parameter(parametersetname='GetSchemaGraphObject')]
         [String[]] $NamespaceList = $null,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')][parameter(parametersetname='GetSchemaGraphObjectExistingConnection')][parameter(parametersetname='GetSchemaGraphApiVersion')][parameter(parametersetname='GetSchemaGraphObject')][parameter(parametersetname='GetSchema')]
+        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')]
+        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection')]
+        [parameter(parametersetname='GetSchemaGraphApiVersion')]
+        [parameter(parametersetname='GetSchemaGraphObject')]
+        [parameter(parametersetname='GetSchema')]
         [switch] $Xml,
 
-        [parameter(parametersetname='ListSchemasExistingConnection', mandatory=$true)][parameter(parametersetname='ListSchemas', mandatory=$true)]
+        [parameter(parametersetname='ListSchemasExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='ListSchemas', mandatory=$true)]
         [switch] $ListSchemas,
 
-        [parameter(parametersetname='ListSchemasExistingConnection')][parameter(parametersetname='ListSchemas')]
+        [parameter(parametersetname='ListSchemasExistingConnection')]
+        [parameter(parametersetname='ListSchemas')]
         [switch] $Json,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersion')][parameter(parametersetname='GetSchemaGraphObject')][parameter(parametersetname='GetSchema')][parameter(parametersetname='ListSchemas')]
+        [parameter(parametersetname='GetSchemaGraphApiVersion')]
+        [parameter(parametersetname='GetSchemaGraphObject')]
+        [parameter(parametersetname='GetSchema')]
+        [parameter(parametersetname='ListSchemas')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection',mandatory=$true)][parameter(parametersetname='GetSchemaGraphObjectExistingConnection',mandatory=$true)][parameter(parametersetname='GetSchema',mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection',mandatory=$true)]
+        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection',mandatory=$true)]
+        [parameter(parametersetname='GetSchema',mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
 
