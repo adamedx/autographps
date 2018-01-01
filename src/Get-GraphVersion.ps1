@@ -21,12 +21,12 @@
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='ExistingConnection')][parameter(position=0,parametersetname='NewConnection')][parameter(position=0,parametersetname='GetVersions', mandatory=$true)][String] $Version,
+        [parameter(position=0,parametersetname='GetVersions', mandatory=$true)][String] $Version,
         [parameter(parametersetname='GetVersions')][switch] $Json,
-        [parameter(parametersetname='ExistingConnection')][parameter(parametersetname='NewConnection')][parameter(parametersetname='ListVersions',mandatory=$true)][switch] $List,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][parameter(parametersetname='NewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][parameter(parametersetname='NewConnection',mandatory=$true)][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
+        [parameter(parametersetname='ListVersions',mandatory=$true)][switch] $List,
+        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][switch] $AADGraph,
+        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][GraphCloud] $Cloud = [GraphCloud]::Public,
+        [parameter(parametersetname='GetVersions')][parameter(parametersetname='ListVersions')][PSCustomObject] $Connection = $null
     )
 
     $graphType = if ( $AADGraph.ispresent ) {

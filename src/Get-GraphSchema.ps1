@@ -15,14 +15,16 @@
 . (import-script RESTRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
+. (import-script Get-GraphVersion)
 
 function Get-GraphSchema {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0,parametersetname='GetSchema', mandatory=$true)][parameter(parametersetname='ListSchemas')][String] $Namespace = $null,
-        [parameter(position=0,parametersetname='GetNamespacesSchema',mandatory=$true)][PSCustomObject] $GraphVersion,
+        [parameter(position=0,parametersetname='GetNamespacesSchema',mandatory=$true)][PSCustomObject] $VersionObject,
+        [parameter(position=0,parametersetname='GetNamespacesSchemaFromApiVersion',mandatory=$true)][String] $ApiVersion = $null,
         [parameter(position=1,parametersetname='GetSchema',mandatory=$true)][String] $SchemaVersion,
-        [parameter(position=1,parametersetname='GetNamespacesSchema')][String[]] $NamespaceList = $null,
+        [parameter(position=1,parametersetname='GetNamespacesSchema')][parameter(parametersetname='GetNamespacesSchemaFromApiVersion')][String[]] $NamespaceList = $null,
         [parameter(parametersetname='GetSchema')][switch] $Xml,
         [parameter(parametersetname='ListSchemas',mandatory=$true)][switch] $ListSchemas,
         [parameter(parametersetname='ListSchemas')][switch] $Json,
@@ -49,8 +51,15 @@ function Get-GraphSchema {
     }
 
     $graphSchemaVersions = @{}
-    $graphNameSpaces = if ( $GraphVersion -ne $null ) {
-        $GraphVersion | gm -membertype noteproperty | select -expandproperty name | where { $_ -ne 'tags' } | foreach {
+
+    $graphVersion = if ( $VersionObject -ne $null ) {
+        $VersionObject
+    } elseif ( $ApiVersion -ne $null) {
+        get-graphversion -Connection $graphConnection -version $ApiVersion
+    }
+
+    $graphNameSpaces = if ( $graphVersion -ne $null ) {
+        $graphVersion | gm -membertype noteproperty | select -expandproperty name | where { $_ -ne 'tags' } | foreach {
             $versionName = $_
             $graphSchemaVersions[$versionName] = $graphVersion | select -expandproperty $versionName
         }
@@ -68,9 +77,14 @@ function Get-GraphSchema {
     $results = @()
     $graphNamespaces | foreach {
         $graphSchemaVersion = $graphSchemaVersions[$_]
+        $apiVersionDisplay = if ( $apiVersion -ne $null ) {
+            "'$apiVersion'"
+        } else {
+            ''
+        }
 
         if ($graphSchemaVersion -eq $null) {
-            throw "Specified namespace '$_' does not exist in the provided version"
+            throw "Specified namespace '$_' does not exist in the provided version $apiVersionDisplay"
         }
 
         $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'
