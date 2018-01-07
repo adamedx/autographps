@@ -25,11 +25,7 @@ ScriptClass GraphResponse {
         $normalizedResponse = $this |=> GetNormalizedResponse $restResponse
 
         $this.metadata = $normalizedResponse.metadata
-        if ( $normalizedResponse.entities -isnot [Object[]] ) {
-            $this.entities = @($normalizedResponse.entities)
-        } else {
-            $this.entities = $normalizedResponse.entities
-        }
+        $this.entities = $normalizedResponse.entities
 
         $this.odataContext = $this.metadata['@odata.context']
         $this.odataNextLink = $this.metadata['@odata.nextLink']
@@ -37,7 +33,7 @@ ScriptClass GraphResponse {
 
     function GetNormalizedResponse($restResponse) {
         $metadata = @{}
-        $responseData = NormalizePSObject $restResponse 0 1
+        $responseData = NormalizePSObject $restResponse
 
         $valueData = $null
 
@@ -58,61 +54,24 @@ ScriptClass GraphResponse {
             $responseData
         }
 
-        $normalizedEntities = Normalize $entityData 0 1
+        $normalizedEntityData =  if ( $entityData -isnot [Object[]] ) {
+            @($entityData)
+        } else {
+            $entityData
+        }
 
         @{
-            entities=$normalizedEntities
+            entities=$entityData
             metadata=$metadata
         }
     }
 
-    function Normalize($object, $depth = 0, $maximumDepth = 1) {
-        if ($maximumDepth -eq $null) {
-            throw "Invalid maximum depth"
-        }
-
-        if ( $maximumDepth -gt 0 -and $depth -ge $maximumDepth) {
-            return $object
-        }
-
-        $result = if ( $object -eq $null ) {
-            $null
-        } elseif ( $object -is [Object[]] ) {
-            NormalizeArray $object $depth $maximumDepth
-        } elseif ( $object -is [HashTable] ) {
-            $object
-        } elseif ( $object.gettype().fullname -eq 'System.Management.Automation.PSCustomObject' ) {
-            NormalizePSObject $object $depth $maximumDepth
-        } else {
-            $object
-        }
-
-        $result
-    }
-
-    function NormalizeArray($array, $depth, $maximumDepth) {
-        # No point in normalizing individual items if the call is
-        # just going to return the item -- we will have simply copied
-        # everything to a new array -- better to just return the array.
-        # Array normalization doesn't transform the type of the array,
-        # it just transforms the contents
-        if ( $maximumDepth -eq ($depth + 1)) {
-            return $array
-        }
-
-        $result = @()
-        $array | foreach {
-            $result += (Normalize $_ ($depth + 1) $maximumDepth)
-        }
-        $result
-    }
-
-    function NormalizePSObject([PSObject] $psobject, $depth, $maximumDepth) {
+    function NormalizePSObject([PSObject] $psobject) {
         $result = @{}
         $psobject | gm -membertype noteproperty | select -expandproperty name | foreach {
             $memberName = $_
             $memberValue = $psobject | select -expandproperty $memberName
-            $normalizedValue = (Normalize $memberValue ($depth + 1) $maximumDepth)
+            $normalizedValue = $memberValue
             $result[$memberName] = $normalizedValue
         }
         $result
