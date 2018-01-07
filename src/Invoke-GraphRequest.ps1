@@ -14,19 +14,35 @@
 
 . (import-script RESTRequest)
 . (import-script New-GraphConnection)
+. (import-script GraphResponse)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, mandatory=$true)][Uri[]] $RelativeUri,
-        [parameter(position=1)][String] $Verb = 'GET',
-        [parameter(parametersetname='MSGraphNewConnection')][String[]] $ScopeNames = @('User.Read'),
-        [parameter(position=3, valuefrompipeline=$true)] $Payload = $null,
+        [parameter(position=0, mandatory=$true)]
+        [Uri[]] $RelativeUri,
+
+        [parameter(position=1)]
+        [String] $Verb = 'GET',
+
+        [parameter(position=2, parametersetname='MSGraphNewConnection')]
+        [String[]] $ScopeNames = $null,
+
+        [parameter(position=3)]
+        $Payload = $null,
+
         [String] $Version = $null,
+
         [switch] $JSON,
-        [parameter(parametersetname='AADGraphNewConnection')][switch] $AADGraph,
-        [parameter(parametersetname='MSGraphNewConnection')][GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)][PSCustomObject] $Connection = $null
+
+        [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
+        [switch] $AADGraph,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
+        [PSCustomObject] $Connection = $null
     )
 
     $defaultVersion = $null
@@ -36,6 +52,15 @@ function Invoke-GraphRequest {
         ([GraphType]::AADGraph)
     } else {
         ([GraphType]::MSGraph)
+    }
+
+    $MSGraphScopeNames = if ( $ScopeNames -ne $null ) {
+        if ( $Connection -ne $null ) {
+            throw "Scopes may not be specified via -ScopeNames if an existing connection is supplied with -Connection"
+        }
+        $ScopeNames
+    } else {
+        @('User.Read')
     }
 
     switch ($graphType) {
@@ -56,7 +81,7 @@ function Invoke-GraphRequest {
         $connectionArguments = if ( $AADGraph.ispresent ) {
             @{AADGraph = $AADGraph}
         } else {
-            @{Cloud=$Cloud;ScopeNames=$ScopeNames}
+            @{Cloud=$Cloud;ScopeNames=$MSGraphScopeNames}
         }
         New-GraphConnection @connectionArguments
     } else {
@@ -77,26 +102,30 @@ function Invoke-GraphRequest {
     }
 
     $results = @()
-    $RelativeUri | foreach {
-        $graphRelativeUri = $tenantQualifiedVersionSegment, $_ -join '/'
 
+    $graphRelativeUri = $tenantQualifiedVersionSegment, $RelativeUri[0] -join '/'
+
+    while ( $graphRelativeUri -ne $null ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ){
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-
         $request = new-so RESTRequest $graphUri $Verb $headers
 
         $response = $request |=> Invoke
 
+        $deserializedContent = $response.content | convertfrom-json
+        $graphResponse = new-so GraphResponse $deserializedContent
+
         $content = if ($JSON.ispresent) {
             $response.content
         } else {
-            $response.content | convertfrom-json
+            $graphResponse.entities
         }
 
         $results += $content
+        $graphRelativeUri = $graphResponse.Nextlink
     }
 
     $results
