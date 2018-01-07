@@ -13,22 +13,22 @@
 # limitations under the License.
 
 ScriptClass GraphResponse {
-    $restResponse = strict-val [PSCustomObject]
-    $entities = $null
-    $odataContext = strict-val [Uri]
-    $odataNextLink = strict-val [Uri]
-    $metadata = strict-val [HashTable] @{}
+    $RestResponse = strict-val [PSCustomObject]
+    $Entities = $null
+    $ODataContext = strict-val [Uri]
+    $NextLink = strict-val [Uri]
+    $Metadata = strict-val [HashTable] @{}
 
     function __initialize ( $restResponse ) {
         $this.restResponse = $restResponse
 
         $normalizedResponse = $this |=> GetNormalizedResponse $restResponse
 
-        $this.metadata = $normalizedResponse.metadata
-        $this.entities = $normalizedResponse.entities
+        $this.Metadata = $normalizedResponse.metadata
+        $this.Entities = $normalizedResponse.entities
 
-        $this.odataContext = $this.metadata['@odata.context']
-        $this.odataNextLink = $this.metadata['@odata.nextLink']
+        $this.ODataContext = $this.metadata['@odata.context']
+        $this.NextLink = $this.metadata['@odata.nextLink']
     }
 
     function GetNormalizedResponse($restResponse) {

@@ -14,6 +14,7 @@
 
 . (import-script RESTRequest)
 . (import-script New-GraphConnection)
+. (import-script GraphResponse)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false)]
@@ -55,7 +56,6 @@ function Invoke-GraphRequest {
 
     $MSGraphScopeNames = if ( $ScopeNames -ne $null ) {
         if ( $Connection -ne $null ) {
-            write-host $ScopeNames.length, $ScopeNames[0]
             throw "Scopes may not be specified via -ScopeNames if an existing connection is supplied with -Connection"
         }
         $ScopeNames
@@ -102,26 +102,30 @@ function Invoke-GraphRequest {
     }
 
     $results = @()
-    $RelativeUri | foreach {
-        $graphRelativeUri = $tenantQualifiedVersionSegment, $_ -join '/'
 
+    $graphRelativeUri = $tenantQualifiedVersionSegment, $RelativeUri[0] -join '/'
+
+    while ( $graphRelativeUri -ne $null ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ){
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-
         $request = new-so RESTRequest $graphUri $Verb $headers
 
         $response = $request |=> Invoke
 
+        $deserializedContent = $response.content | convertfrom-json
+        $graphResponse = new-so GraphResponse $deserializedContent
+
         $content = if ($JSON.ispresent) {
             $response.content
         } else {
-            $response.content | convertfrom-json
+            $graphResponse.entities
         }
 
         $results += $content
+        $graphRelativeUri = $graphResponse.Nextlink
     }
 
     $results
