@@ -67,7 +67,7 @@ ScriptClass RESTResponse {
         ($this.contentTypeData['application/xml'] -ne $null)
     }
 
-    function GetDeserializedContent() {
+    function GetDeserializedContent([boolean] $includeCorrectedInput = $false) {
         if ( $this.RequiredContentType -ne $null -and $this.RequiredContentType.length -gt 0 ) {
             if ( $this.contentTypeData[$this.RequiredContentType] -eq $null ) {
                 $contentTypeHeader = $this.headers['Content-Type']
@@ -78,7 +78,13 @@ ScriptClass RESTResponse {
         if ( (HasJsonContent) ) {
             $this.content | convertfrom-json
         } elseif ( (HasXmlContent) ) {
-            DeserializeXml $this.content
+            $deserializedContent = DeserializeXml $this.content
+
+            if ( $includeCorrectedInput ) {
+                $deserializedContent
+            } else {
+                $deserializedContent.deserializedContent
+            }
         } else {
             $this.content
         }

@@ -115,8 +115,9 @@ function Invoke-GraphRequest {
 
         $response = $request |=> Invoke
 
+        $deserializedContent = $response |=> GetDeserializedContent
+
         $content = if ( $response |=> HasJsonContent ) {
-            $deserializedContent = $response.content | convertfrom-json
             $graphResponse = new-so GraphResponse $deserializedContent
             $graphRelativeUri = $graphResponse.Nextlink
             if (! $JSON.ispresent) {
@@ -126,7 +127,7 @@ function Invoke-GraphRequest {
             }
         } else {
             $graphRelativeUri = $null
-            $response.content
+            $deserializedContent
         }
 
         $results += $content

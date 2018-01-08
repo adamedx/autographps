@@ -138,7 +138,7 @@ function Get-GraphSchema {
         $request = new-so RESTRequest $queryUri GET $headers
         $response = $request |=> Invoke
 
-        $deserializableSchema = $response |=> GetDeserializedContent
+        $deserializableSchema = $response |=> GetDeserializedContent $true
 
         $schema = if ( $XML.ispresent ) {
             # Return the corrected schema in case it included a
