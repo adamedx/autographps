@@ -115,17 +115,21 @@ function Invoke-GraphRequest {
 
         $response = $request |=> Invoke
 
-        $deserializedContent = $response.content | convertfrom-json
-        $graphResponse = new-so GraphResponse $deserializedContent
-
-        $content = if ($JSON.ispresent) {
-            $response.content
+        $content = if ( $response |=> HasJsonContent ) {
+            $deserializedContent = $response.content | convertfrom-json
+            $graphResponse = new-so GraphResponse $deserializedContent
+            $graphRelativeUri = $graphResponse.Nextlink
+            if (! $JSON.ispresent) {
+                $graphResponse.entities
+            } else {
+                $response.content
+            }
         } else {
-            $graphResponse.entities
+            $graphRelativeUri = $null
+            $response.content
         }
 
         $results += $content
-        $graphRelativeUri = $graphResponse.Nextlink
     }
 
     $results

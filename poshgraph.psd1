@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.63'
+ModuleVersion = '0.4.64'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()

@@ -83,11 +83,14 @@ function Get-GraphSchema {
     $headers = @{
         'Content-Type'='application/json'
         'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
+        'Accept-Charset'='utf-8'
     }
 
     if ( $ListSchemas.ispresent ) {
         return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
     }
+
+    $headers['Accept'] = 'application/xml'
 
     $graphSchemaVersions = @{}
 
@@ -135,7 +138,7 @@ function Get-GraphSchema {
         $request = new-so RESTRequest $queryUri GET $headers
         $response = $request |=> Invoke
 
-        $deserializableSchema = DeserializeXmlSchema($response.content)
+        $deserializableSchema = $response |=> GetDeserializedContent
 
         $schema = if ( $XML.ispresent ) {
             # Return the corrected schema in case it included a
@@ -173,40 +176,3 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
     }
 }
 
-function DeserializeXmlSchema($xmlContent) {
-    # Try to deserialize -- this may fail due to
-    # the presence of a unicode byte order marker
-    $deserializedXml = try {
-        [Xml] $xmlContent
-    } catch {
-        $null
-    }
-
-    if ( $deserializedXml -ne $null ) {
-        @{
-            deserializedContent = $deserializedXml
-            correctedXmlContent = $xmlContent
-        }
-    } else {
-        # Remove Byte Order Mark (BOM) that breaks the
-        # XML parser during deserialization.
-        # We asssume the file is Unicode, i.e UTF16LE with
-        # the corresponding BOM.
-        $utf8NoBOMEncoding = new-object System.Text.UTF8Encoding $false
-        $unicodeBytes = [System.Text.Encoding]::Unicode.GetBytes($response.content)
-        $bomOffset = 6
-        $utf8NoBOMBytes = [System.Text.Encoding]::Convert(
-            [System.Text.Encoding]::Unicode,
-            $utf8NoBOMEncoding,
-            $unicodeBytes,
-            $bomOffset,
-            $unicodeBytes.length - $bomOffset
-        )
-        $utf8NoBOMContent = $utf8NoBOMEncoding.GetString($utf8NoBOMBytes)
-        $deserializedCorrectedXml = [Xml] $utf8NoBOMContent
-        @{
-            deserializedContent = $deserializedCorrectedXml
-            correctedXmlContent = $utf8NoBOMContent
-        }
-    }
-}
