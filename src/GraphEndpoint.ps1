@@ -40,7 +40,7 @@ ScriptClass GraphEndpoint {
                 Graph='https://graph.microsoft.de'
             }
             [GraphCloud]::USGovernmentCloud = @{
-                Authentication='https://login-us.microsoftonlinecom.com'
+                Authentication='https://login.microsoftonline.us/common'
                 Graph='https://graph.microsoft.us'
             }
         }
@@ -58,10 +58,10 @@ ScriptClass GraphEndpoint {
     function __initialize {
         [cmdletbinding()]
         param (
-            [parameter(parametersetname='KnownEndpoints', mandatory=$true)] [GraphCloud] $cloud,
-            [parameter(parametersetname='KnownEndpoints')] [GraphType] $graphType = [GraphType]::MSGraph,
-            [parameter(parametersetname='CustomEndpoints', mandatory=$true)] [Uri] $GraphEndpoint,
-            [parameter(parametersetname='CustomEndpoints', mandatory=$true)] [Uri] $AuthenticationEndpoint
+            [GraphCloud] $cloud,
+            [GraphType] $graphType = [GraphType]::MSGraph,
+            [Uri] $GraphEndpoint,
+            [Uri] $AuthenticationEndpoint
         )
         $this.Type = $GraphType
         $endpoints = if ($GraphEndpoint -eq $null) {

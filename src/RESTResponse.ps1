@@ -40,6 +40,20 @@ ScriptClass RESTResponse {
         SetContentTypeData
     }
 
+    static {
+        function GetErrorResponseDetails([System.Net.WebException] $requestException) {
+            $response = $_.exception.response
+            $responseStream = $_.exception.response.getresponsestream()
+            $reader = New-Object System.IO.StreamReader($responseStream)
+            $errorMessage = $reader.ReadToEnd()
+
+            [PSCustomObject] @{
+                response = $response
+                message = $errorMessage
+            }
+        }
+    }
+
     function SetContentTypeData {
         $this.contentTypeData = @{}
 

@@ -87,9 +87,9 @@ function Invoke-GraphRequest {
     } else {
         $Connection
     }
-
+    write-verbose "Connecting..."
     $graphConnection |=> Connect
-
+    write-verbose "Connected."
     $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
         $graphConnection.Identity.Token.TenantId
     } else {
@@ -111,7 +111,7 @@ function Invoke-GraphRequest {
         }
 
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-        $request = new-so RESTRequest $graphUri $Verb $headers
+        $request = new-so RESTRequest $graphUri $Verb $headers -verbose
 
         $response = $request |=> Invoke
 
@@ -121,7 +121,13 @@ function Invoke-GraphRequest {
             $graphResponse = new-so GraphResponse $deserializedContent
             $graphRelativeUri = $graphResponse.Nextlink
             if (! $JSON.ispresent) {
-                $graphResponse.entities
+                if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
+                    @([PSCustomObject] $graphResponse.entities)
+                } elseif ($graphResponse.entities -is [HashTable]) {
+                    @([PSCustomObject] $graphResponse.Entities)
+                } else {
+                    $graphResponse.Entities
+                }
             } else {
                 $response.content
             }

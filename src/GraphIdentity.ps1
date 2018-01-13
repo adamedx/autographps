@@ -47,6 +47,8 @@ ScriptClass GraphIdentity {
             return
         }
 
+        write-verbose ("Getting token for resource {0} from uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
+
         $this.Token = switch ($this.IdentityType) {
             ([IdentityType]::MSA) { getMSAToken $graphEndpoint $scopes }
             ([IdentityType]::AAD) { getAADToken $graphEndpoint $scopes }
@@ -54,25 +56,40 @@ ScriptClass GraphIdentity {
                 throw "Unexpected identity type '$($this.IdentityType)'"
             }
         }
+
+        if ($this.token -eq $null) {
+            throw "Failed to acquire token, no additional error information"
+        }
     }
 
     function getMSAToken($graphEndpoint, $scopes) {
+        write-verbose "Attempting to get token for MS Graph..."
         $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication
         $requestedScopes = new-object System.Collections.Generic.List[string]
+
+        write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
         $scopes | foreach {
             $requestedScopes.Add($_)
         }
 
         $authResult = $msaAuthContext.AcquireTokenAsync($requestedScopes)
+        write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
         if ( $authResult.Status -eq 'Faulted' ) {
             throw "Failed to acquire token for uri '$($graphEndpoint.Graph)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
         }
-        $authResult.Result
+
+        $result = $authResult.Result
+
+        if ( $authResult.IsFaulted ) {
+            throw $authResult.Exception
+        }
+        $result
     }
 
     function getAADToken($graphEndpoint, $scopes) {
+        write-verbose "Attempting to get token for AAD Graph..."
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
         $redirectUri = "http://localhost"
 
