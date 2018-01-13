@@ -35,6 +35,8 @@ ScriptClass RESTRequest {
         [cmdletbinding(SupportsShouldProcess=$true)]
         param()
         if ($pscmdlet.shouldprocess($this.uri, $this.method)) {
+            # Disable progress display
+            $progresspreference = 'SilentlyContinue'
             $httpResponse = Invoke-WebRequest -usebasicparsing -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent
             $httpResponse | write-verbose
             new-so RESTResponse $httpResponse

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RESTRequest)
+. (import-script GraphRequest)
 . (import-script New-GraphConnection)
 . (import-script GraphResponse)
 
@@ -106,15 +106,14 @@ function Invoke-GraphRequest {
     $graphRelativeUri = $tenantQualifiedVersionSegment, $RelativeUri[0] -join '/'
 
     while ( $graphRelativeUri -ne $null ) {
-        if ( $graphType -eq ([GraphType]::AADGraph) ){
+        if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
         $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-        $request = new-so RESTRequest $graphUri $Verb $headers -verbose
 
+        $request = new-so GraphRequest $graphUri $Verb $headers
         $response = $request |=> Invoke
-
         $deserializedContent = $response |=> GetDeserializedContent
 
         $content = if ( $response |=> HasJsonContent ) {
