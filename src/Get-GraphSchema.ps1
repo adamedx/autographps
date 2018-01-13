@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RESTRequest)
+. (import-script GraphRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
 . (import-script Get-GraphVersion)
@@ -135,7 +135,7 @@ function Get-GraphSchema {
 
         $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
 
-        $request = new-so RESTRequest $queryUri GET $headers
+        $request = new-so GraphRequest $queryUri GET $headers
         $response = $request |=> Invoke
 
         $deserializableSchema = $response |=> GetDeserializedContent $true
@@ -166,7 +166,7 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
 
     $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
 
-    $request = new-so RESTRequest $queryUri GET $headers
+    $request = new-so GraphRequest $queryUri GET $headers
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {
