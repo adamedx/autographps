@@ -47,7 +47,7 @@ ScriptClass GraphIdentity {
             return
         }
 
-        write-verbose ("Getting token for resource {0} from uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
+        write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
 
         $this.Token = switch ($this.IdentityType) {
             ([IdentityType]::MSA) { getMSAToken $graphEndpoint $scopes }

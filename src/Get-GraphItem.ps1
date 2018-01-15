@@ -15,7 +15,7 @@
 . (import-script Invoke-GraphRequest)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
     param(
         [parameter(position=0,mandatory=$true)]
         [Uri[]] $ItemRelativeUri,
@@ -41,6 +41,9 @@ function Get-GraphItem {
         RelativeUri=$ItemRelativeUri
         Version=$Version
         JSON=$Json
+        First=$pscmdlet.pagingparameters.first
+        Skip=$pscmdlet.pagingparameters.skip
+        IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
     }
 
     if ( $AADGraph.ispresent ) {

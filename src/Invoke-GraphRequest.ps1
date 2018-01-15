@@ -150,7 +150,6 @@ function Invoke-GraphRequest {
                 if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true -and $results.length -eq 0 ) {
                     try {
                         $optionalCountResult = $graphResponse.RestResponse.value.count
-                        $optionalCountResult
                     } catch {
                         $countError = $true
                     }
