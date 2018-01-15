@@ -13,7 +13,7 @@
     <copyright>Copyright 2017</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
-      <dependency id="stdposh" version="0.11.49" />
+      <dependency id="stdposh" version="0.11.51" />
     </dependencies>
   </metadata>
   <files>

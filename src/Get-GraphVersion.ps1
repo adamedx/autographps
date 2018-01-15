@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RESTRequest)
+. (import-script GraphRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphIdentity)
 . (import-script Application)
@@ -53,16 +53,7 @@ function Get-GraphVersion {
         $relativeBase
     }
 
-    $versionUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-    $graphConnection |=> Connect
-
-    $headers = @{
-        'Content-Type'='application/json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
-    }
-
-    $request = new-so RESTRequest $versionUri GET $headers
+    $request = new-so GraphRequest $graphConnection $relativeUri GET
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {

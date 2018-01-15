@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RESTRequest)
+. (import-script GraphRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
 . (import-script Get-GraphVersion)
@@ -68,6 +68,7 @@ function Get-GraphSchema {
         [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection',mandatory=$true)]
         [parameter(parametersetname='GetSchemaGraphObjectExistingConnection',mandatory=$true)]
         [parameter(parametersetname='GetSchema',mandatory=$true)]
+        [parameter(parametersetname='ListSchemas')]
         [PSCustomObject] $Connection = $null
     )
 
@@ -77,17 +78,17 @@ function Get-GraphSchema {
         $Connection
     }
 
-    $graphConnection |=> Connect
-
     $relativeBase = 'schemas'
     $headers = @{
         'Content-Type'='application/json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
+        'Accept-Charset'='utf-8'
     }
 
     if ( $ListSchemas.ispresent ) {
         return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
     }
+
+    $headers['Accept'] = 'application/xml'
 
     $graphSchemaVersions = @{}
 
@@ -125,17 +126,15 @@ function Get-GraphSchema {
         }
 
         if ($graphSchemaVersion -eq $null) {
-            throw "Specified namespace '$_' does not exist in the provided version $apiVersionDisplay"
+            throw "Specified namespace '$_' does not exist in the provided version '$apiVersionDisplay'"
         }
 
         $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'
 
-        $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-        $request = new-so RESTRequest $queryUri GET $headers
+        $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
         $response = $request |=> Invoke
 
-        $deserializableSchema = DeserializeXmlSchema($response.content)
+        $deserializableSchema = $response |=> GetDeserializedContent $true
 
         $schema = if ( $XML.ispresent ) {
             # Return the corrected schema in case it included a
@@ -159,11 +158,7 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
         $relativeBase
     }
 
-    $graphConnection |=> Connect
-
-    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-    $request = new-so RESTRequest $queryUri GET $headers
+    $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {
@@ -173,40 +168,3 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
     }
 }
 
-function DeserializeXmlSchema($xmlContent) {
-    # Try to deserialize -- this may fail due to
-    # the presence of a unicode byte order marker
-    $deserializedXml = try {
-        [Xml] $xmlContent
-    } catch {
-        $null
-    }
-
-    if ( $deserializedXml -ne $null ) {
-        @{
-            deserializedContent = $deserializedXml
-            correctedXmlContent = $xmlContent
-        }
-    } else {
-        # Remove Byte Order Mark (BOM) that breaks the
-        # XML parser during deserialization.
-        # We asssume the file is Unicode, i.e UTF16LE with
-        # the corresponding BOM.
-        $utf8NoBOMEncoding = new-object System.Text.UTF8Encoding $false
-        $unicodeBytes = [System.Text.Encoding]::Unicode.GetBytes($response.content)
-        $bomOffset = 6
-        $utf8NoBOMBytes = [System.Text.Encoding]::Convert(
-            [System.Text.Encoding]::Unicode,
-            $utf8NoBOMEncoding,
-            $unicodeBytes,
-            $bomOffset,
-            $unicodeBytes.length - $bomOffset
-        )
-        $utf8NoBOMContent = $utf8NoBOMEncoding.GetString($utf8NoBOMBytes)
-        $deserializedCorrectedXml = [Xml] $utf8NoBOMContent
-        @{
-            deserializedContent = $deserializedCorrectedXml
-            correctedXmlContent = $utf8NoBOMContent
-        }
-    }
-}
