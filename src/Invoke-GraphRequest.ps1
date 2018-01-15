@@ -71,15 +71,6 @@ function Invoke-GraphRequest {
         }
     }
 
-    if ( $verb -ne 'GET' ) {
-        if ( ($pscmdlet.pagingparameters.Skip.ispresent) -or
-             ($pscmdlet.pagingparameters.First.ispresent) -or
-             ($pscmdlet.pagingparameters.IncludeTotalCount.ispresent) )
-        {
-            throw "A paging argument of 'Skip', 'First', or 'IncludeTotalCount' may not be specified for the '$verb' verb"
-        }
-    }
-
     $apiVersion = if ( $Version -eq $null -or $version.length -eq 0 ) {
         $defaultVersion
     } else {
