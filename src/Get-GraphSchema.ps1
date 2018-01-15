@@ -68,6 +68,7 @@ function Get-GraphSchema {
         [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection',mandatory=$true)]
         [parameter(parametersetname='GetSchemaGraphObjectExistingConnection',mandatory=$true)]
         [parameter(parametersetname='GetSchema',mandatory=$true)]
+        [parameter(parametersetname='ListSchemas')]
         [PSCustomObject] $Connection = $null
     )
 
@@ -77,12 +78,9 @@ function Get-GraphSchema {
         $Connection
     }
 
-    $graphConnection |=> Connect
-
     $relativeBase = 'schemas'
     $headers = @{
         'Content-Type'='application/json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
         'Accept-Charset'='utf-8'
     }
 
@@ -128,14 +126,12 @@ function Get-GraphSchema {
         }
 
         if ($graphSchemaVersion -eq $null) {
-            throw "Specified namespace '$_' does not exist in the provided version $apiVersionDisplay"
+            throw "Specified namespace '$_' does not exist in the provided version '$apiVersionDisplay'"
         }
 
         $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'
 
-        $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-        $request = new-so GraphRequest $queryUri GET $headers
+        $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
         $response = $request |=> Invoke
 
         $deserializableSchema = $response |=> GetDeserializedContent $true
@@ -162,11 +158,7 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
         $relativeBase
     }
 
-    $graphConnection |=> Connect
-
-    $queryUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-    $request = new-so GraphRequest $queryUri GET $headers
+    $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {

@@ -53,16 +53,7 @@ function Get-GraphVersion {
         $relativeBase
     }
 
-    $versionUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $relativeUri)
-
-    $graphConnection |=> Connect
-
-    $headers = @{
-        'Content-Type'='application/json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
-    }
-
-    $request = new-so GraphRequest $versionUri GET $headers
+    $request = new-so GraphRequest $graphConnection $relativeUri GET
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {

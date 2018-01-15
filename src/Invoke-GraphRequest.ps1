@@ -17,7 +17,7 @@
 . (import-script GraphResponse)
 
 function Invoke-GraphRequest {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
     param(
         [parameter(position=0, mandatory=$true)]
         [Uri[]] $RelativeUri,
@@ -71,6 +71,15 @@ function Invoke-GraphRequest {
         }
     }
 
+    if ( $verb -ne 'GET' ) {
+        if ( ($pscmdlet.pagingparameters.Skip -ne $null) -or
+             ($pscmdlet.pagingparameters.First -ne $null) -or
+             ($pscmdlet.pagingparameters.IncludeTotalCount -ne $null) )
+        {
+            throw "A paging argument of 'Skip', 'First', or 'IncludeTotalCount' may not be specified for the '$verb' verb"
+        }
+    }
+
     $apiVersion = if ( $Version -eq $null -or $version.length -eq 0 ) {
         $defaultVersion
     } else {
@@ -87,46 +96,66 @@ function Invoke-GraphRequest {
     } else {
         $Connection
     }
-    write-verbose "Connecting..."
-    $graphConnection |=> Connect
-    write-verbose "Connected."
+
     $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
+        $graphConnection |=> Connect
         $graphConnection.Identity.Token.TenantId
     } else {
         $apiVersion
     }
 
-    $headers = @{
-        'Content-Type'='application/json'
-        'Authorization'=$graphConnection.Identity.token.CreateAuthorizationHeader()
+    $firstIndex = if ( $pscmdlet.pagingparameters.Skip -ne $null -and $pscmdlet.pagingparameters.skip -ne 0 ) {
+        write-verbose "Skipping the first '$($pscmdlet.pagingparameters.skip)' parameters"
+        $pscmdlet.pagingparameters.Skip
     }
 
-    $results = @()
+    $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
+        $pscmdlet.pagingparameters.First
+    }
 
+    $skipCount = $firstIndex
+    $results = @()
     $graphRelativeUri = $tenantQualifiedVersionSegment, $RelativeUri[0] -join '/'
 
-    while ( $graphRelativeUri -ne $null ) {
+    $query = $null
+    $countError = $false
+    $optionalCountResult = $null
+    if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
+        write-verbose 'Including the total count of results'
+        $query = '$count'
+    }
+
+    while ( $graphRelativeUri -ne $null -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
-        $graphUri = [Uri]::new($graphConnection.GraphEndpoint.Graph, $graphRelativeUri)
-
-        $request = new-so GraphRequest $graphUri $Verb $headers
-        $response = $request |=> Invoke
+        $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $null $null
+        $response = $request |=> Invoke $skipCount
+        $skipCount = $null
         $deserializedContent = $response |=> GetDeserializedContent
 
         $content = if ( $response |=> HasJsonContent ) {
             $graphResponse = new-so GraphResponse $deserializedContent
             $graphRelativeUri = $graphResponse.Nextlink
             if (! $JSON.ispresent) {
-                if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
+                $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                     @([PSCustomObject] $graphResponse.entities)
                 } elseif ($graphResponse.entities -is [HashTable]) {
                     @([PSCustomObject] $graphResponse.Entities)
                 } else {
                     $graphResponse.Entities
                 }
+
+                if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true -and $results.length -eq 0 ) {
+                    try {
+                        $optionalCountResult = $graphResponse.RestResponse.value.count
+                        $optionalCountResult
+                    } catch {
+                        $countError = $true
+                    }
+                }
+                $entities
             } else {
                 $response.content
             }
@@ -136,6 +165,21 @@ function Invoke-GraphRequest {
         }
 
         $results += $content
+    }
+
+    if ($pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true) {
+        $accuracy = [double] 1.0
+        $count = if ( $optionalCountResult -eq $null ) {
+            $accuracy = [double] .1
+            $results.length
+        } else {
+            if ( $countError ) {
+                $accuracy = [double] .5
+            }
+            $optionalCountResult
+        }
+
+        $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
     }
 
     $results

@@ -38,7 +38,6 @@ ScriptClass RESTRequest {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
             $httpResponse = Invoke-WebRequest -usebasicparsing -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent
-            $httpResponse | write-verbose
             new-so RESTResponse $httpResponse
         } else {
             [PSCustomObject] @{PSTypeName='RESTResponse'}

@@ -13,35 +13,55 @@
 # limitations under the License.
 
 ScriptClass GraphRequest {
+    $Connection = $null
     $Uri = strict-val [Uri]
+    $RelativeUri = strict-val [Uri]
     $Verb = strict-val [String]
     $Body = strict-val [String]
     $Query = $null
     $Headers = $null
     $DefaultPageSize = strict-val [int32] 10
 
-    function __initialize([Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
-        $uriString = $uri.tostring()
-        $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uri.Query.length))
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
+        $uriString = if ( $uri.scheme -ne $null ) {
+            $uri.tostring()
+        } else {
+            $graphConnection.GraphEndpoint.Graph.tostring() + $uri.tostring()
+        }
+
+        $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
+        $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uriQueryLength))
+        $this.Connection = $GraphConnection
+        $this.RelativeUri = $uri
         $this.Uri = $uriNoQuery
         $this.Verb = $verb
-        $this.Query = __AddQueryParameters $uri.query $query
+        $this.Query = __AddQueryParameters $uri.query, $query
         $this.Headers = if ( $headers -ne $null ) {
             $headers
         } else {
-            $this.Headers = @{'Content-Type'='application/json'}
+            @{'Content-Type'='application/json'}
         }
+
+        $this.Connection |=> Connect
+
+        $this.Headers['Authorization'] = $graphConnection.Identity.token.CreateAuthorizationHeader()
     }
 
-    function Invoke($pageStartIndex = $null, $pageSize = $null) {
+    function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null) {
         $queryParameters = @($this.Query)
 
         if ($pageStartIndex -ne $null) {
             $queryParameters += (__NewODataParameter 'skip' $pageStartIndex)
         }
 
-        if ($pageSize -ne $null) {
-            $queryParameters += (__NewODataParameter 'top' $pageSize)
+        $adjustedPageSize = if ( $pageSize -ne $null -and $maxResultCount -ne $null -and $maxResultCount -lt $pageSize ) {
+            $maxResultCount
+        } else {
+            $pageSize
+        }
+
+        if ($adjustedPageSize -ne $null) {
+            $queryParameters += (__NewODataParameter 'top' $adjustedPageSize)
         }
 
         $query = __AddQueryParameters $queryParameters
@@ -50,14 +70,19 @@ ScriptClass GraphRequest {
     }
 
     function GetCount {
-        $countQuery = __NewODataParameter 'count'
-        __InvokeRequest 'GET' $this.uri $countQuery
+        $countParameter = __NewODataParameter count
+        $topNoResultsParameter = __NewODataParameter top 1
+        
+        $countQuery = __AddQueryParameters $countParameter, $topNoResultsParameter
+
+        $count = __InvokeRequest 'GET' $this.uri $countQuery
+        [Int]::Parse($count)
     }
 
-    function __InvokeRequest($verb, $uri, $query, $headers) {
+    function __InvokeRequest($verb, $uri, $query) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RestRequest $uri $verb $headers
+        $restRequest = new-so RestRequest $uri $verb $this.headers
         $restRequest |=> Invoke
     }
 
@@ -65,14 +90,17 @@ ScriptClass GraphRequest {
         $components = @()
 
         $parameters | foreach {
-            $normalizedParameter = if ( $_.startswith('?') ) {
-                $_.substring(1, $_.length -1)
-            } else {
-                $_
-            }
+            if ( $_ -ne $null ) {
 
-            if ( $normalizedParameter -ne $null -and $normalizedParameter.length -gt 0 ) {
-                $components += $normalizedParameter
+                $normalizedParameter = if ( $_.startswith('?') ) {
+                    $_.substring(1, $_.length -1)
+                } else {
+                    $_
+                }
+
+                if ( $normalizedParameter -ne $null -and $normalizedParameter.length -gt 0 ) {
+                    $components += $normalizedParameter
+                }
             }
         }
 
