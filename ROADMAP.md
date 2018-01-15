@@ -2,15 +2,13 @@
 
 ## To-do items -- prioritized
 
-* transform schema, version objects to hashtables
+* Add set-graphitem
 * add versions to schema, version objects
-* add paging interface to graph enumeration commands
 * consistency in apiversion, schemaversion names
 * add predefined scopes
 * Add -filter to get-graphitem
 * Add -filter to get-graphschema
 * common scopes -- use dynamicparam
-* Add set-graphitem
 * scope browser
 * Refactor directories
 * Add unit tests for parameters
@@ -49,9 +47,16 @@
 * Re-implement get-graphitem
 * add basic scopes
 * Support paging through results
-# https://graph.microsoft.com/v1.0/me/contacts?$skip=3
-### Stdposh improvements
+* Use content-type of response for deserialization
+* add paging interface to graph enumeration commands
 
+### Postponed
+
+* transform schema, version objects to hashtables
+
+#### Stdposh improvements
+
+* Fix initializers, use scriptblock for non-string object types
 * Add private methods
 * Private fields
 * strict-val for pscustomobjects
