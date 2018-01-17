@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphRequest)
 . (import-script New-GraphConnection)
-. (import-script GraphResponse)
+. (import-script GraphRequest)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
@@ -122,12 +121,11 @@ function Invoke-GraphRequest {
         }
 
         $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $null $null
-        $response = $request |=> Invoke $skipCount
+        $request.Body = $Payload
+        $graphResponse = $request |=> Invoke $skipCount
         $skipCount = $null
-        $deserializedContent = $response |=> GetDeserializedContent
 
-        $content = if ( $response |=> HasJsonContent ) {
-            $graphResponse = new-so GraphResponse $deserializedContent
+        $content = if ( $graphResponse.Entities -ne $null ) {
             $graphRelativeUri = $graphResponse.Nextlink
             if (! $JSON.ispresent) {
                 $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
@@ -147,11 +145,11 @@ function Invoke-GraphRequest {
                 }
                 $entities
             } else {
-                $response.content
+                $graphResponse |=> Content
             }
         } else {
             $graphRelativeUri = $null
-            $deserializedContent
+            $graphResponse |=> Content
         }
 
         $results += $content

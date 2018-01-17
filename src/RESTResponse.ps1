@@ -100,7 +100,7 @@ ScriptClass RESTResponse {
                 $deserializedContent.deserializedContent
             }
         } else {
-            $this.content
+            $null
         }
     }
 

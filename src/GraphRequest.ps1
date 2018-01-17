@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script GraphResponse)
+
 ScriptClass GraphRequest {
     $Connection = $null
     $Uri = strict-val [Uri]
@@ -66,13 +68,14 @@ ScriptClass GraphRequest {
 
         $query = __AddQueryParameters $queryParameters
 
-        __InvokeRequest $this.verb $this.uri $query $this.headers
+        $response = __InvokeRequest $this.verb $this.uri $query $this.headers
+        new-so GraphResponse $response
     }
 
     function GetCount {
         $countParameter = __NewODataParameter count
         $topNoResultsParameter = __NewODataParameter top 1
-        
+
         $countQuery = __AddQueryParameters $countParameter, $topNoResultsParameter
 
         $count = __InvokeRequest 'GET' $this.uri $countQuery
