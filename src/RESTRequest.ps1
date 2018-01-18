@@ -20,12 +20,22 @@ ScriptClass RESTRequest {
     $uri = strict-val [Uri]
     $headers = strict-val [HashTable]
     $method = strict-val [String]
+    $body = $null
     $userAgent = $PoshGraphUserAgent
 
-    function __initialize([Uri] $uri, $method = "GET", [HashTable] $headers = @{}, $userAgent = $null) {
+    function __initialize([Uri] $uri, $method = "GET", [HashTable] $headers = @{}, $body = $null, $userAgent = $null) {
         $this.headers = $headers
         $this.method = $method
         $this.uri = $uri
+        $this.body = if ( $body -eq $null ) {
+            $null
+        } elseif ( $body -is [String] ) {
+            $body | convertfrom-json | out-null
+            $body
+        } else {
+            $body | convertto-json
+        }
+
         $this.userAgent = if ( $userAgent -ne $null ) {
             $this.userAgent = $userAgent
         }

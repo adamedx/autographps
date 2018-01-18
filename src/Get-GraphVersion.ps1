@@ -57,8 +57,8 @@ function Get-GraphVersion {
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {
-        $response.content
+        $response |=> Content
     } else {
-        $response.content | convertfrom-json
+        [PSCustomObject] $response.entities
     }
 }

@@ -20,9 +20,10 @@ ScriptClass GraphResponse {
     $Metadata = strict-val [HashTable] @{}
 
     function __initialize ( $restResponse ) {
-        $this.restResponse = $restResponse
+        $this.RestResponse = $restResponse
 
-        $normalizedResponse = $this |=> GetNormalizedResponse $restResponse
+        $deserializedContent = $this.RestResponse |=> GetDeserializedContent
+        $normalizedResponse = $this |=> __GetNormalizedResponse $deserializedContent
 
         $this.Metadata = $normalizedResponse.metadata
         $this.Entities = $normalizedResponse.entities
@@ -31,9 +32,13 @@ ScriptClass GraphResponse {
         $this.NextLink = $this.metadata['@odata.nextLink']
     }
 
-    function GetNormalizedResponse($restResponse) {
+    function Content {
+        $this.restResponse.content
+    }
+
+    function __GetNormalizedResponse($deserializedContent) {
         $metadata = @{}
-        $responseData = NormalizePSObject $restResponse
+        $responseData = NormalizePSObject $deserializedContent
 
         $valueData = $null
 
@@ -54,7 +59,7 @@ ScriptClass GraphResponse {
             $responseData
         }
 
-        $normalizedEntityData =  if ( $entityData -isnot [Object[]] ) {
+        $normalizedEntityData = if ( $entityData -isnot [Object[]] ) {
             @($entityData)
         } else {
             $entityData
@@ -68,7 +73,8 @@ ScriptClass GraphResponse {
 
     function NormalizePSObject([PSObject] $psobject) {
         $result = @{}
-        $psobject | gm -membertype noteproperty | select -expandproperty name | foreach {
+
+        $psobject | gm -membertype properties | select -expandproperty name | foreach {
             $memberName = $_
             $memberValue = $psobject | select -expandproperty $memberName
             $normalizedValue = $memberValue

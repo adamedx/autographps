@@ -93,14 +93,9 @@ ScriptClass RESTResponse {
             $this.content | convertfrom-json
         } elseif ( (HasXmlContent) ) {
             $deserializedContent = DeserializeXml $this.content
-
-            if ( $includeCorrectedInput ) {
-                $deserializedContent
-            } else {
-                $deserializedContent.deserializedContent
-            }
+            $deserializedContent.deserializedContent
         } else {
-            $this.content
+            $null
         }
     }
 
