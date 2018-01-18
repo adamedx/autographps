@@ -134,18 +134,13 @@ function Get-GraphSchema {
         $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
         $response = $request |=> Invoke
 
-        $deserializableSchema = $response |=> GetDeserializedContent $true
-
         $schema = if ( $XML.ispresent ) {
-            # Return the corrected schema in case it included a
-            # UTF16LE BOM, which will be removed so the caller
-            # can use the standard XML parser to parse it successfully
-            $deserializableSchema.correctedXmlContent
+            $response |=> Content
         } else {
-            $deserializableSchema.deserializedContent.schema
+            $response.Entities.schema
         }
 
-        $results += $schema
+        $results += [PSCustomObject] $schema
     }
 
     $results
@@ -162,9 +157,9 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
     $response = $request |=> Invoke
 
     if ( $JSON.ispresent ) {
-        $response.content
+        $response |=> content
     } else {
-        $response.content | convertfrom-json
+        [PSCustomObject] $response.Entities
     }
 }
 

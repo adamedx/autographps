@@ -59,7 +59,7 @@ ScriptClass GraphResponse {
             $responseData
         }
 
-        $normalizedEntityData =  if ( $entityData -isnot [Object[]] ) {
+        $normalizedEntityData = if ( $entityData -isnot [Object[]] ) {
             @($entityData)
         } else {
             $entityData
@@ -73,7 +73,8 @@ ScriptClass GraphResponse {
 
     function NormalizePSObject([PSObject] $psobject) {
         $result = @{}
-        $psobject | gm -membertype noteproperty | select -expandproperty name | foreach {
+
+        $psobject | gm -membertype properties | select -expandproperty name | foreach {
             $memberName = $_
             $memberValue = $psobject | select -expandproperty $memberName
             $normalizedValue = $memberValue
