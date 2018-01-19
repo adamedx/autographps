@@ -72,20 +72,18 @@ ScriptClass GraphRequest {
         new-so GraphResponse $response
     }
 
-    function GetCount {
-        $countParameter = __NewODataParameter count
-        $topNoResultsParameter = __NewODataParameter top 1
-
-        $countQuery = __AddQueryParameters $countParameter, $topNoResultsParameter
-
-        $count = __InvokeRequest 'GET' $this.uri $countQuery
-        [Int]::Parse($count)
+    function SetBody($body) {
+        $this.body = if ($body -is [string] ) {
+            $body
+        } else {
+            $body | convertto-json
+        }
     }
 
     function __InvokeRequest($verb, $uri, $query) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RestRequest $uri $verb $this.headers
+        $restRequest = new-so RestRequest $uri $verb $this.headers $this.body
         $restRequest |=> Invoke
     }
 

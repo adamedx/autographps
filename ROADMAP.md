@@ -5,7 +5,7 @@
 * Add set-graphitem
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
-* add predefined scopes
+* add predefined scopes: https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference
 * Add -filter to get-graphitem
 * Add -filter to get-graphschema
 * common scopes -- use dynamicparam

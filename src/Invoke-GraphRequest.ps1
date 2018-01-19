@@ -121,7 +121,7 @@ function Invoke-GraphRequest {
         }
 
         $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $null $null
-        $request.Body = $Payload
+        $request |=> SetBody $Payload
         $graphResponse = $request |=> Invoke $skipCount
         $skipCount = $null
 

@@ -47,7 +47,14 @@ ScriptClass RESTRequest {
         if ($pscmdlet.shouldprocess($this.uri, $this.method)) {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
-            $httpResponse = Invoke-WebRequest -usebasicparsing -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent
+
+            $bodyArgument = if ( $this.body -ne $null -and $this.body.length -gt 0 ) {
+                @{body=$this.body}
+            } else {
+                @{}
+            }
+
+            $httpResponse = Invoke-WebRequest -usebasicparsing -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent @bodyArgument
             new-so RESTResponse $httpResponse
         } else {
             [PSCustomObject] @{PSTypeName='RESTResponse'}
