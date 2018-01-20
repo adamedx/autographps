@@ -2,10 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Simple samples
 * Add set-graphitem
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
-* add predefined scopes
+* add predefined scopes: https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference
 * Add -filter to get-graphitem
 * Add -filter to get-graphschema
 * common scopes -- use dynamicparam
@@ -13,15 +14,17 @@
 * Refactor directories
 * Add unit tests for parameters
 * Session support
+* Enable token refresh
 * Enable app-only auth
-* invoke-graphappegistry
+* invoke-graphappregistry
 * security for token
 * set-graphconfig
 * invoke-graphaction
 * generate nuspec
 * Find a better name!
+  * Rename stdposh to ScriptClass
 * README
-* Samples
+* Extended Samples
 * Publish to psgallery
 * More tests
 * Add get-graphmetadata
@@ -118,7 +121,9 @@ class GraphConnection
 ```
 
 
-## Stdposh fixes
+## Stdposh fixes -- completed
+
+These issues have been addressed -- see following section for details.
 
 A key issue now is that each method is duplicated for every instance -- actually twice, since the type data is part of the instance and includes the entire class script.
 
@@ -144,4 +149,8 @@ The solution to the duplication problem and in some ways the formatting problem 
 * Make PSTypeName hidden unless it helps with type adapters
 
 Now we need to add ToHashTable() -- this can be used eliminate the hidden members and then it can be serialized. In theory we can deserialize from it as well via a type adapter.
+
+### How these issues were addressed
+
+* Method duplication: Methods are actually defined in an external table referenced by the class, and there is only one instance of that table
 
