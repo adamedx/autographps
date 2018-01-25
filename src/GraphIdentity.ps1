@@ -50,8 +50,8 @@ ScriptClass GraphIdentity {
         write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
 
         $this.Token = switch ($this.IdentityType) {
-            ([IdentityType]::MSA) { getMSAToken $graphEndpoint $scopes }
-            ([IdentityType]::AAD) { getAADToken $graphEndpoint $scopes }
+            ([IdentityType]::MSA) { getMSGraphToken $graphEndpoint $scopes }
+            ([IdentityType]::AAD) { getAADGraphToken $graphEndpoint $scopes }
             default {
                 throw "Unexpected identity type '$($this.IdentityType)'"
             }
@@ -62,7 +62,7 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function getMSAToken($graphEndpoint, $scopes) {
+    function getMSGraphToken($graphEndpoint, $scopes) {
         write-verbose "Attempting to get token for MS Graph..."
         $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication
         $requestedScopes = new-object System.Collections.Generic.List[string]
@@ -88,7 +88,7 @@ ScriptClass GraphIdentity {
         $result
     }
 
-    function getAADToken($graphEndpoint, $scopes) {
+    function getAADGraphToken($graphEndpoint, $scopes) {
         write-verbose "Attempting to get token for AAD Graph..."
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
         $redirectUri = "http://localhost"

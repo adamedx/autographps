@@ -3,6 +3,8 @@
 ## To-do items -- prioritized
 
 * Simple samples
+* Publish first preview / alpha
+* Add anonymous connections for use with test-graph item, metadata
 * Add set-graphitem
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
@@ -52,6 +54,7 @@
 * Support paging through results
 * Use content-type of response for deserialization
 * add paging interface to graph enumeration commands
+* Fix identity function names
 
 ### Postponed
 
