@@ -18,7 +18,7 @@ param($targetDirectory = $null, [switch] $noclean)
 
 $inputs = @(
     (get-modulefrommanifest),
-    (new-moduleoutputdirectory $targetDirectory $noclean.ispresent)
+    (new-moduleoutputdirectory $targetDirectory (! $noclean.ispresent))
 )
 
 $nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1] -includeInstalledLibraries
