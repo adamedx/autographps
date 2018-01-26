@@ -20,7 +20,6 @@ function Get-GraphToken {
         [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
         [parameter(parametersetname='msgraph')][String[]] $ScopeNames = @('User.Read'),
         [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='msgraph')] [IdentityType] $AccountType = ([IdentityType]::MSA),
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
         [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][Guid] $AppIdSecret,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,

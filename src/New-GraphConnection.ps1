@@ -28,12 +28,10 @@ function New-GraphConnection {
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
         [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
     )
-    $graphAccountType = $null
+
     $graphType = if ( $AADGraph.ispresent ) {
-        $graphAccountType = ([IdentityType]::AAD)
         ([GraphType]::AADGraph)
     } else {
-        $graphAccountType = ([IdentityType]::MSA)
         ([GraphType]::MSGraph)
     }
 
@@ -47,7 +45,7 @@ function New-GraphConnection {
         }
 
         $app = new-so GraphApplication $connectionAppId
-        $identity = new-so GraphIdentity $app $graphAccountType
+        $identity = new-so GraphIdentity $app
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }
 }

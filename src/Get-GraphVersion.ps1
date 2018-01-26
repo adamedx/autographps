@@ -13,9 +13,6 @@
 # limitations under the License.
 
 . (import-script GraphRequest)
-. (import-script GraphEndpoint)
-. (import-script GraphIdentity)
-. (import-script Application)
 . (import-script GraphConnection)
 
 function Get-GraphVersion {
