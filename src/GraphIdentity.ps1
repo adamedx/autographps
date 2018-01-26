@@ -15,45 +15,43 @@
 . (import-script GraphEndpoint)
 . (import-script GraphApplication)
 
-enum IdentityType {
-    AAD
-    MSA
-}
-
 ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
-    $IdentityType = strict-val [IdentityType]
     $Token = strict-val [PSCustomObject] $null
+    $__AuthLibraryLoaded = $false
 
-    function __initialize([PSCustomObject] $App, [Identitytype] $IdentityType = [IdentityType]::MSA) {
+    function __initialize([PSCustomObject] $App) {
         $this.App = $app
-        $this.IdentityType = $IdentityType
-
-        switch ( $IdentityType ) {
-            ([IdentityType]::MSA) {
-                import-assembly ../lib/Microsoft.Identity.Client.dll
-            }
-            ([IdentityType]::AAD) {
-                import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
-            }
-            default {
-                throw "Unexpected identity type '$IdentityType'"
-            }
-        }
     }
 
-    function Authenticate([PSCustomObject] $graphEndpoint, $scopes = @()) {
+    function Authenticate($graphEndpoint, $scopes = @()) {
         if ($this.token -ne $null) {
             return
         }
 
+        if ( ! $this.__AuthLibraryLoaded ) {
+            switch ( $graphEndpoint.Type ) {
+                ([GraphType]::MSGraph) {
+                    import-assembly ../lib/Microsoft.Identity.Client.dll
+                }
+                ([GraphType]::AADGraph) {
+                    import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+                }
+                default {
+                    throw "Unexpected graph type '$($graphEndpoint.Type)'"
+                }
+            }
+
+            $this.__AuthLibraryLoaded = $true
+        }
+
         write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
 
-        $this.Token = switch ($this.IdentityType) {
-            ([IdentityType]::MSA) { getMSGraphToken $graphEndpoint $scopes }
-            ([IdentityType]::AAD) { getAADGraphToken $graphEndpoint $scopes }
+        $this.Token = switch ($graphEndpoint.Type) {
+            ([GraphType]::MSGraph) { getMSGraphToken $graphEndpoint $scopes }
+            ([GraphType]::AADGraph) { getAADGraphToken $graphEndpoint $scopes }
             default {
-                throw "Unexpected identity type '$($this.IdentityType)'"
+                throw "Unexpected Graph type '$($graphEndpoint.GraphType)'"
             }
         }
 

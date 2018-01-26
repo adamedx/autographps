@@ -21,8 +21,8 @@ ScriptClass GraphConnection {
     $GraphEndpoint = strict-val [PSCustomObject]
     $Scopes = strict-val [Object[]]
 
-    function __initialize([PSCustomObject] $GraphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
-        $this.GraphEndpoint = $GraphEndpoint
+    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
+        $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
@@ -36,14 +36,9 @@ ScriptClass GraphConnection {
 
     static {
         function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames) {
-            $accountType = switch ($graphType) {
-                ([GraphType]::AADGraph) { [IdentityType]::AAD }
-                ([GraphType]::MSGraph) { [IdentityType]::MSA }
-            }
-
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication $::.Application.AppId
-            $identity = new-so GraphIdentity $app $accountType
+            $identity = new-so GraphIdentity $app
             new-so GraphConnection $endpoint $identity $ScopeNames
         }
     }
