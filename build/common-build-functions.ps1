@@ -25,6 +25,10 @@ function Get-ModuleName {
     (get-item (split-path -parent $psscriptroot)).name
 }
 
+function Get-ModuleNameFromManifestPath($manifestPath) {
+    ((split-path -leaf $manifestPath) -split '.', 0, 'simplematch')[0]
+}
+
 function Get-ModuleManifestPath {
     $basedirectory = get-item (split-path -parent $psscriptroot)
     $basepath = $basedirectory.fullname
@@ -32,9 +36,11 @@ function Get-ModuleManifestPath {
     join-path $basepath "$moduleName.psd1"
 }
 
-function Get-ModuleFromManifest {
-    $moduleManifestPath = Get-ModuleManifestPath
-    test-modulemanifestsafe $moduleManifestPath -verbose
+function Get-ModuleFromManifest($moduleManifestPath, $moduleReferencePath) {
+    # Work around a defect in test-modulemanifest by generating
+    # placeholder manifest files for dependencies. This is necessary
+    # to enable the module to be publishable later.
+    Test-ModuleManifestWithModulePath $moduleManifestPath $moduleReferencePath
 }
 
 function Get-OutputDirectory {
@@ -45,11 +51,6 @@ function Get-OutputDirectory {
 
 function Get-ModuleOutputRootDirectory {
     join-path (Get-OutputDirectory) $moduleOutputSubdirectory
-}
-
-function Get-ModuleOutputDirectory {
-    $module = Get-ModuleFromManifest
-    join-path (Get-OutputDirectory) "$moduleOutputSubdirectory/$($module.name)/$($module.version)"
 }
 
 function Validate-Nugetpresent {
@@ -132,11 +133,6 @@ function build-module {
 
     $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
     validate-prerequisites @verifyInstalledLibrariesArgument
-
-    # Work around a defect in test-modulemanifest by generating
-    # placeholder manifest files for dependencies. This is necessary
-    # to enable the module to be publishable later.
-    Generate-SyntheticVersionedNestedModules (Get-ModuleManifestPath)
 
     mkdir $targetDirectory | out-null
 
@@ -250,41 +246,47 @@ function publish-modulebuild {
         throw "More than one '.psd1' PowerShell module manifest files found at path '$moduleSourceDirectory'"
     }
 
-    $module = Test-ModuleManifestSafe $manifestPaths[0].fullname
-
     if ( (get-psrepository $destinationRepositoryName 2>$null) -eq $null ) {
         throw "Unable to find destination repository '$destinationRepositoryName' -- supply the correct repository name or register one with register-psrepository"
     }
 
-    $augmentedPath = (Get-ModuleOutputRootDirectory) + ';' + $env:psmodulepath
+    $moduleRootDirectory = split-path -parent (split-path -parent $moduleSourceDirectory)
+    $targetModuleManifestPath = $manifestPaths[0].fullname
 
-    # Build a script block for execution in another process that
-    # alters the psmodulepath environment variable so that
-    # the synthetic modules are picked up by publish-module
-    $publishModuleScript = [ScriptBlock]::Create("si env:psmodulepath '$augmentedPath';publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose -force")
+    Generate-ReferenceModules $targetModuleManifestPath $moduleRootDirectory
 
-    # Run a separate powershell process to publish the module and
-    # avoid polluting this process's environment variables
-    powershell -noprofile -noninteractive -command ($publishModuleScript)
+    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose -force" $moduleRootDirectory
 }
 
-function Get-ModuleFromManifestSafe ( $manifestPath ) {
+function Invoke-CommandWithModulePath($command, $modulePath) {
+    # Note that the path must be augmented rather than replaced
+    # in order for modules related to package management to be loaded
+    $commandScript = [Scriptblock]::Create("si env:psmodulepath `"`$env:psmodulepath;$modulePath`";$command")
+    powershell -noprofile -noninteractive -command ($commandScript)
+}
+
+function Get-ModuleMetadataFromManifest ( $manifestPath ) {
     # Load the module contents and deserialize it by evaluating
     # it (module files  are just hash tables expressed as PowerShell script)
     $moduleContentLines = get-content $manifestPath
-    $moduleContentLines | out-string | iex
+    $moduleData = $moduleContentLines | out-string | iex
+    $moduleData['Name'] = get-modulenamefrommanifestpath $manifestPath
+    $moduledata
 }
 
-function Generate-SyntheticVersionedNestedModules($manifestPath) {
-    $moduleData = Get-ModuleFromManifestSafe $manifestPath
+# Work around a defect in test-modulemanifest by generating
+# placeholder manifest files for dependencies. This is necessary
+# to enable the module to be publishable later.
+function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
+    $moduleData = Get-ModuleMetadataFromManifest $manifestPath
 
     # Only create the versioned modules -- publish-module
     # and test-modulemanifest can handled unversioned nested modules
-    # without errors, its the versioned ones that must be present
+    # without errors, it's the versioned ones that must be present
     # to work around the defect
     $moduleData.NestedModules | foreach {
         if ( $_ -is [HashTable] ) {
-            $nestedModuleDirectory = join-path (Get-ModuleOutputRootDirectory) (join-path $_.ModuleName $_.ModuleVersion)
+            $nestedModuleDirectory = join-path $referenceModuleRoot (join-path $_.ModuleName $_.ModuleVersion)
             mkdir -force $nestedModuleDirectory | out-null
             $syntheticModuleManifest = join-path $nestedModuleDirectory "$($_.ModuleName).psd1"
             set-content $syntheticModuleManifest @'
@@ -298,67 +300,7 @@ GUID = '9b0f5599-0498-459c-9a47-125787b1af19'
     }
 }
 
-# Function to work around known defect
-# in the Test-ModuleManifest cmdlet
-function Test-ModuleManifestSafe( $manifestPath ) {
-    # For nestmodules, there is a defect in Test-ModuleManifest
-    # where if instead of specifying a module as a versionless string
-    # a hashtable is specified, Test-ModuleManifest will fail unless
-    # it can find that actual module on the system with the version
-    # specified in the hash table.
-
-    # To work around this issue, we'll replace the hashtable with
-    # a versionless string module name
-
-    $moduleData = Get-ModuleFromManifestSafe $manifestPath
-
-    $originalModulePath = (gi $manifestPath).fullname
-    $originalmoduleName = ((split-path -leaf $manifestPath) -split '.', 0, 'simplematch')[0]
-    $originalNestedModules = $moduleData.NestedModules
-    $originalPrivateData = $moduleData.PrivateData
-
-    # Remember just the module names from nested module hashes
-    $moduleData.NestedModules = $originalNestedModules | foreach {
-        if ( $_ -is [HashTable] ) {
-            $_.ModuleName
-        } else {
-            $_
-        }
-    }
-
-    # In order to pass this data to new-modulemanifest, it is
-    # actually embedded within another member, so move it
-    # up a level so new-modulemanifest does the right thing
-    $moduleData.PrivateData = $moduleData.PrivateData.PSData
-
-    # Now create a new temporary one from the augmented original,
-    # and use splatting to pass the members since the command's
-    # parameter names map 1-1 with the file format
-    $filteredManifestPath = $manifestPath + ".tmp.psd1"
-    new-modulemanifest $filteredManifestPath @moduleData
-
-    $filteredManifest = Test-ModuleManifest $filteredManifestPath -verbose
-
-    rm $filteredManifestPath
-
-    # Return the filtered manifest -- it is missing accurate
-    # Representations of nestedmodules and PrivateData, but
-    # these are not currently used in the build process,
-    # and we can always return the original values in a separate
-    # object in the future if they are needed
-#    $filteredManifest
-
-    $safeManifest = @{}
-
-    $filteredManifest | gm -membertype Properties | foreach {
-        $safeManifest[$_.name] = $filteredManifest | select -expandproperty $_.name
-    }
-
-    $safeManifest.NestedModules = $originalNestedModules
-    $safeManifest.PrivateData = $originalPrivateData
-    $safeManifest['Path'] = $originalModulePath
-    $safeManifest['Name'] = $originalModuleName
-
-    $safeManifest
+function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
+    Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
 }
 

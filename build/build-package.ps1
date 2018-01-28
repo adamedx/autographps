@@ -16,16 +16,26 @@ param($targetDirectory = $null, [switch] $noclean)
 
 . "$psscriptroot/common-build-functions.ps1"
 
+$moduleManifestPath = Get-ModuleManifestPath
+$moduleOutputDirectory = new-moduleoutputdirectory $targetDirectory (! $noclean.ispresent)
+$moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
+
+Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
+
+$module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
+
 $inputs = @(
-    (get-modulefrommanifest),
-    (new-moduleoutputdirectory $targetDirectory (! $noclean.ispresent))
+    $module,
+    $moduleOutputDirectory
 )
 
 $nugetPackagePath = build-nugetpackage $inputs[0] $inputs[1] -includeInstalledLibraries
+
 write-host "Package successfully built at '$nugetPackagePath'"
 
 $nocleanArgument = @{noclean=$noclean}
 $moduleOutputPath = build-module $inputs[0] $inputs[1] @nocleanArgument -includeInstalledlibraries
+
 write-host "Module placed at '$moduleOutputPath'."
 
 write-host -foregroundcolor green "Build succeeded."

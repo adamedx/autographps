@@ -16,12 +16,18 @@ param($targetRepository = 'psgallery', $targetDirectory = $null, [switch] $nocle
 
 . "$psscriptroot/common-build-functions.ps1"
 
-$moduleOutputPath = Get-ModuleOutputDirectory
+$moduleManifestPath = Get-ModuleManifestPath
+$moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
+
+Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
+
+$module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
+$moduleOutputPath = join-path (Get-OutputDirectory) "$moduleOutputSubdirectory/$($module.name)/$($module.version)"
 
 write-host "Publishing module at '$moduleOutputPath' to PS module repository '$targetRepository'..."
 
 $forceArgument = @{force=$force}
 
-publish-modulebuild $moduleOutputPath $targetRepository @forceArgument
+publish-modulebuild $moduleOutputPath $targetRepository @forceArgument | out-null
 
 write-host -foregroundcolor green "Publish succeeded."
