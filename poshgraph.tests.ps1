@@ -27,6 +27,8 @@ Describe "Poshgraph application" {
                 'invoke-graphrequest',
                 'get-graphversion',
                 'get-graphschema',
+                'connect-graph',
+                'disconnect-graph',
                 'get-graphtoken')
 
             $manifest.ExportedFunctions.count | Should BeExactly $expectedFunctions.length

@@ -21,6 +21,10 @@ ScriptClass GraphConnection {
     $GraphEndpoint = strict-val [PSCustomObject]
     $Scopes = strict-val [Object[]]
 
+    static {
+        $SessionConnection = strict-val [PSCustomObject]
+    }
+
     function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
@@ -35,11 +39,39 @@ ScriptClass GraphConnection {
     }
 
     static {
+        function GetSessionConnection {
+            $this.SessionConnection
+        }
+
+        function SetSessionConnection($connection) {
+            $this.SessionConnection = $connection
+        }
+
+        function DisconnectSession {
+            if (IsSessionConnected) {
+                SetSessionConnection $null
+            } else {
+                throw "Cannot disconnect from Graph because there was no such connection."
+            }
+        }
+
+        function IsSessionConnected {
+            $this.SessionConnection -ne $null
+        }
+
         function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames) {
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication $::.Application.AppId
             $identity = new-so GraphIdentity $app
             new-so GraphConnection $endpoint $identity $ScopeNames
+        }
+
+        function GetDefaultConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames) {
+            if ( $graphType -eq [GraphType]::AADGraph -or ! (IsSessionConnected) ) {
+                NewSimpleConnection $graphType $cloud $ScopeNames
+            } else {
+                GetSessionConnection
+            }
         }
     }
 }

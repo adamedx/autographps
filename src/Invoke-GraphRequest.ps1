@@ -77,12 +77,7 @@ function Invoke-GraphRequest {
     }
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $connectionArguments = if ( $AADGraph.ispresent ) {
-            @{AADGraph = $AADGraph}
-        } else {
-            @{Cloud=$Cloud;ScopeNames=$MSGraphScopeNames}
-        }
-        New-GraphConnection @connectionArguments
+        $::.GraphConnection |=> GetDefaultConnection $graphType $cloud $MSGraphScopeNames
     } else {
         $Connection
     }
