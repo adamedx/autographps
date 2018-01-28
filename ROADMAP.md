@@ -57,6 +57,7 @@
 * Use content-type of response for deserialization
 * add paging interface to graph enumeration commands
 * Fix identity function names
+* Get custom appid to work
 
 ### Postponed
 

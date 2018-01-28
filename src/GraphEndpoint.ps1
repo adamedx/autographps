@@ -17,6 +17,7 @@ enum GraphCloud {
     ChinaCloud
     GermanyCloud
     USGovernmentCloud
+    Unknown
 }
 
 enum GraphType {
@@ -63,6 +64,7 @@ ScriptClass GraphEndpoint {
             [Uri] $GraphEndpoint,
             [Uri] $AuthenticationEndpoint
         )
+
         $this.Type = $GraphType
         $endpoints = if ($GraphEndpoint -eq $null) {
             if ($graphType -eq [GraphType]::MSGraph) {

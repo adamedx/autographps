@@ -41,10 +41,10 @@ function New-GraphConnection {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
             new-so GraphEndpoint $Cloud $graphType
         } else {
-            new-so GraphEndpoint $GraphEndpointUri $AuthenticationEndpointUri
+            new-so GraphEndpoint ([GraphCloud]::Unknown) ([Graphtype]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri
         }
 
-        $app = new-so GraphApplication $connectionAppId
+        $app = new-so GraphApplication $AppId
         $identity = new-so GraphIdentity $app
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }
