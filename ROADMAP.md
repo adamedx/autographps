@@ -18,6 +18,7 @@
 * Session support
 * Enable token refresh
 * Enable app-only auth
+* entity templates
 * invoke-graphappregistry
 * security for token
 * set-graphconfig
@@ -39,6 +40,7 @@
 * Explore graph as an idempotent DSC resource
   * REST resource
   * Graph resource
+* Graphlets -- modules built on this that expose specific parts of the graph
 
 ### Done
 

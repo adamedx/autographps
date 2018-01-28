@@ -91,10 +91,9 @@ ScriptClass GraphIdentity {
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
         $redirectUri = "http://localhost"
 
-        # Value of '2' comes from 'Auto' of enumeration [Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]
-        $promptBehaviorValueRefreshSession = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
+        $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
 
-        $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValueRefreshSession
+        $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValue
 
         $authResult = $adalAuthContext.AcquireTokenAsync(
             $graphEndpoint.Graph,
