@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add signout
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
@@ -15,7 +16,6 @@
 * scope browser
 * Refactor directories
 * Add unit tests for parameters
-* Session support
 * Enable token refresh
 * Enable app-only auth
 * entity templates
@@ -58,6 +58,7 @@
 * add paging interface to graph enumeration commands
 * Fix identity function names
 * Get custom appid to work
+* Session support
 
 ### Postponed
 

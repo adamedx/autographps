@@ -73,7 +73,7 @@ function Get-GraphSchema {
     )
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
+        $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
     } else {
         $Connection
     }
