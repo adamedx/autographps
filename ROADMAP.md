@@ -18,6 +18,8 @@
 * Add unit tests for parameters
 * Enable token refresh
 * Enable app-only auth
+* Graph tracing
+* Graph trace replay
 * entity templates
 * invoke-graphappregistry
 * security for token
@@ -59,6 +61,7 @@
 * Fix identity function names
 * Get custom appid to work
 * Session support
+* Add connection support to test-graph
 
 ### Postponed
 

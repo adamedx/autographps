@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script RESTRequest)
 . (import-script GraphEndpoint)
+. (import-script GraphConnection)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
@@ -23,15 +24,26 @@ $AlternatePropertyMapping = @{
 function Test-Graph {
     [cmdletbinding()]
     param(
-        [parameter(parametersetname='KnownClouds')] [GraphCloud] $cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='CustomEndpoint', mandatory=$true)] [Uri] $endpointUri,
+        [parameter(parametersetname='KnownClouds')]
+        [GraphCloud] $Cloud,
+
+        [parameter(parametersetname='Connection', mandatory=$true)]
+        [PSCustomObject] $Connection,
+
+        [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
+        [Uri] $EndpointUri,
+
         [switch] $Json
     )
 
-    $graphEndpointUri = if ($endpointUri -eq $null ) {
-        (new-so GraphEndpoint $cloud).Graph
-    } else {
+    $graphEndpointUri = if ( $Connection -ne $null ) {
+        $Connection.GraphEndpoint.Graph
+    } elseif ( $Cloud -ne $null ) {
+        (new-so GraphEndpoint $Cloud).Graph
+    } elseif ( $endpointUri -ne $null ) {
         $endpointUri
+    } else {
+        ('GraphConnection' |::> GetDefaultConnection ([GraphType]::MSGraph) ([GraphCloud]::Public)).GraphEndpoint.Graph
     }
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')
