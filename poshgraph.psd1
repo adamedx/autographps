@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.72'
+ModuleVersion = '0.5.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -24,10 +24,10 @@ GUID = '524a2b17-37b1-43c2-aa55-6c19692c6450'
 Author = 'Adam Edwards'
 
 # Company or vendor of this module
-CompanyName = 'AfroSoft'
+CompanyName = 'Afrosoft'
 
 # Copyright statement for this module
-Copyright = '(c) 2017 Adam Edwards.'
+Copyright = '(c) 2018 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interaction'
