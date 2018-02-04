@@ -16,7 +16,17 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Poshgraph application" {
     $manifestLocation   = Join-Path $here 'poshgraph.psd1'
-    $manifest = Test-ModuleManifest -Path $manifestlocation -ErrorAction Stop -WarningAction SilentlyContinue
+
+    function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
+        # Load the module contents and deserialize it by evaluating
+        # it (module files  are just hash tables expressed as PowerShell script)
+        $moduleContentLines = get-content $manifestPath
+        $moduleData = $moduleContentLines | out-string | iex
+        $moduleData['Name'] = $moduleName
+        $moduledata
+    }
+
+    $manifest = Get-ModuleMetadataFromManifest 'poshgraph' $manifestlocation
 
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
@@ -27,15 +37,17 @@ Describe "Poshgraph application" {
                 'invoke-graphrequest',
                 'get-graphversion',
                 'get-graphschema',
+                'get-grapherror',
                 'connect-graph',
                 'disconnect-graph',
                 'get-graphtoken')
 
-            $manifest.ExportedFunctions.count | Should BeExactly $expectedFunctions.length
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
+
             $expectedFunctions | foreach {
-                if ( $manifest.exportedfunctions[$_] -ne $null ) {
+                if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }

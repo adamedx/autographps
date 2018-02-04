@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script New-GraphConnection)
 . (import-script GraphRequest)
+. (import-script GraphErrorRecorder)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
@@ -43,6 +44,8 @@ function Invoke-GraphRequest {
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
+
+    $::.GraphErrorRecorder |=> StartRecording
 
     $defaultVersion = $null
     $graphType = if ($Connection -ne $null ) {
@@ -105,6 +108,7 @@ function Invoke-GraphRequest {
     $query = $null
     $countError = $false
     $optionalCountResult = $null
+
     if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
         write-verbose 'Including the total count of results'
         $query = '$count'

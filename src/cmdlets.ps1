@@ -19,6 +19,7 @@
 . (import-script Get-GraphItem)
 . (import-script Get-GraphToken)
 . (import-script Get-GraphSchema)
+. (import-script Get-GraphError)
 . (import-script Connect-Graph)
 . (import-script Disconnect-Graph)
 
