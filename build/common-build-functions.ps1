@@ -289,13 +289,13 @@ function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
             $nestedModuleDirectory = join-path $referenceModuleRoot (join-path $_.ModuleName $_.ModuleVersion)
             mkdir -force $nestedModuleDirectory | out-null
             $syntheticModuleManifest = join-path $nestedModuleDirectory "$($_.ModuleName).psd1"
-            set-content $syntheticModuleManifest @'
+            set-content $syntheticModuleManifest @"
 # Synthetic module -- for publishing dependent module only
 @{
-ModuleVersion = '0.11.53'
-GUID = '9b0f5599-0498-459c-9a47-125787b1af19'
+ModuleVersion = '$($_.ModuleVersion)'
+GUID = '$($_.GUID)'
 }
-'@
+"@
         }
     }
 }

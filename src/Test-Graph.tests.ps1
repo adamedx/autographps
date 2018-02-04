@@ -27,7 +27,7 @@ Describe "The Test-Graph cmdlet" {
     Context "when receiving a successful response from Graph" {
         BeforeAll {
             remove-module -force 'poshgraph' 2>$null
-            import-module stdposh -force
+            import-module scriptclass -force
             import-module $manifestlocation -force
         }
 

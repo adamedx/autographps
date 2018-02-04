@@ -33,7 +33,7 @@ $packageLocation = if ( $packagePath -ne $null ) {
     $packageDirectory = join-path  $basepath 'pkg'
     $packages = ls $packageDirectory -filter "$($packageName)*.nupkg"
     if ( $packages -isnot [System.IO.FileSystemInfo] ) {
-        throw "Found more than one .nupkg file matching stdposh.*.nupkg in directory '$packageDirectory'. Delete the directory, rebuild, and retry this script."
+        throw "Found more than one .nupkg file matching $($packageName)*.nupkg in directory '$packageDirectory'. Delete the directory, rebuild, and retry this script."
     }
     $packages[0].fullname
 }
