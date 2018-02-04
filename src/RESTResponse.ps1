@@ -41,16 +41,11 @@ ScriptClass RESTResponse {
     }
 
     static {
-        function GetErrorResponseDetails([System.Net.WebException] $requestException) {
-            $response = $_.exception.response
-            $responseStream = $_.exception.response.getresponsestream()
+        function GetErrorResponseDetails([System.Net.WebResponse] $response) {
+            $responseStream = $response.getresponsestream()
             $reader = New-Object System.IO.StreamReader($responseStream)
             $errorMessage = $reader.ReadToEnd()
-
-            [PSCustomObject] @{
-                response = $response
-                message = $errorMessage
-            }
+            $errorMessage
         }
     }
 

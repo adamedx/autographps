@@ -3,6 +3,7 @@
 ## To-do items -- prioritized
 
 * Add signout
+* Update build steps
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
