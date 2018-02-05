@@ -131,6 +131,9 @@ ScriptClass RESTRequest {
         write-verbose ' '
         write-verbose "Response Headers:"
         write-verbose "*****************`n"
-        _write-headersverbose $response.headers
+
+        if ( $response -ne $null ) {
+            _write-headersverbose $response.headers
+        }
     }
 }

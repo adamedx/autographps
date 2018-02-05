@@ -1,5 +1,6 @@
 pkg/*
 lib/*
+.psrepo/*
 NuGet.Config
 localnuget.config
 poshgraph.psd1.tmp.psd1

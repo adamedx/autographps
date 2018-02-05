@@ -21,6 +21,10 @@ function Get-SourceRootDirectory {
     (get-item (split-path -parent $psscriptroot)).fullname
 }
 
+function Get-DevModuleDirectory {
+    join-path (Get-SourceRootDirectory) '.psrepo'
+}
+
 function Get-ModuleName {
     (get-item (split-path -parent $psscriptroot)).name
 }
@@ -83,7 +87,7 @@ function Validate-Prerequisites {
 }
 
 function Clean-BuildDirectories {
-    $libPath =     join-path $psscriptroot '../lib'
+    $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
         join-path $psscriptroot '../lib' | rm -r -force
     }
@@ -92,6 +96,12 @@ function Clean-BuildDirectories {
 
     if (test-path $outputDirectory) {
         $outputDirectory | rm -r -force
+    }
+
+    $devPublishLocation = Get-DevModuleDirectory
+
+    if (test-path $devPublishLocation) {
+        $devPublishLocation | rm -r -force
     }
 }
 
@@ -302,5 +312,193 @@ GUID = '$($_.GUID)'
 
 function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
     Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
+}
+
+function installPackage( $packageName, $version, $source, $destination ) {
+    write-verbose "Attempting to install package '$packageName' version '$version' from source '$source' to destination '$destination'"
+    $verboseLevel = if ( $verbosepreference -eq 'SilentlyContinue' ) {
+        'normal'
+    } else {
+        'detailed'
+    }
+
+    $versionArgument = if ( $version -ne $null ) {
+        "-version '$version'"
+    } else {
+        ' '
+    }
+
+    # Use nuget to install the package since install-module
+    # will only install to allusers or current user powershell
+    # module standard path :(
+    $installCommand = "nuget.exe install '$packageName' $versionArgument -source '$source' -outputdirectory '$destination' -verbosity $verboseLevel -prerelease"
+
+    write-verbose "Executing command $installCommand"
+    $result = invoke-expression $installCommand
+    $commandResult = $lastexitcode
+    if ( $lastexitcode -ne 0 ) {
+        throw "Command failed with exit status '$commandResult'`n$($result)"
+    }
+    write-verbose "Successfully installed '$packageName'"
+}
+
+$defaultPackageSourceUri = 'https://www.powershellgallery.com/api/v2/'
+$defaultPackageSource = 'PSGalleryNuget'
+
+function Get-DefaultPackageSource($noRegister = $false) {
+    $source = get-packagesource $defaultPackageSource -erroraction silentlycontinue
+
+    if ( $source -ne $null ) {
+        $defaultPackageSource
+    } else {
+        if (! $noRegister ) {
+            Register-packagesource $defaultPackageSource -location $defaultPackageSourceUri -provider nuget | out-null
+        }
+        $defaultPackageSource
+    }
+}
+
+function publish-modulelocal {
+    [cmdletbinding()]
+    param ( $customSource = $null, $customRepoLocation = $null )
+    write-verbose "Publishing module to local destination with custom module source '$customSource' and custom output location '$customRepoLocation'"
+    $dependencySource = if ( $customSource -eq $null ) {
+        Get-DefaultPackageSource
+    } else {
+        $customSource
+    }
+
+    $moduleName = Get-ModuleName
+    $moduleManifestPath = Get-ModuleManifestPath
+    $moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
+
+    Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
+
+    $module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
+    $modulePath = join-path $moduleOutputRootDirectory $moduleName
+    $modulePathVersioned = join-path $modulePath $module.Version
+
+    write-verbose "Publishing module '$module' from build location '$modulePathVersioned'..."
+
+    # Make sure the module is actually built
+    if ( ! ( test-path $modulePathVersioned ) ) {
+        throw "No module exists at $modulePath"
+    }
+
+    $repoLocation = if ( $customRepoLocation -eq $null ) {
+        $defaultLocation = Get-DevModuleDirectory
+        if ( ! (test-path $defaultLocation) ) {
+            mkdir $defaultLocation | out-null
+        }
+        $defaultLocation
+    } else {
+        $customRepoLocation
+    }
+
+    write-verbose "Using location '$repoLocation' as the output location"
+
+    # Working around some strange behavior when there is only one
+    # item in the directory and ls gives back a non-array...
+    $existingFiles = @()
+    $existingFiles += (ls $repolocation -filter *)
+
+    $existingFiles | foreach {
+        rm $_.fullname -r -force
+    }
+
+    # Working around more strange behaviors when dealing with more than
+    # one item in the collection
+    $nestedModuleCount = 0
+    $nestedModules = if ( $module.nestedModules -ne $null ) {
+        $nestedModuleCount = if ( $module.nestedModules -is [object[]] ) {
+            $module.nestedModules.length
+        } else {
+            1
+        }
+        $module.nestedModules
+    } else {
+        @()
+    }
+
+    write-verbose "Found $nestedModuleCount module dependencies from module manifest"
+
+    $nestedModules | foreach {
+        $nestedModuleVersion = $null
+        $nestedModuleName = if ( $_ -isnot [Object[]] ) {
+            $nestedModuleVersion = $_.Version
+            $_.Name.tostring()
+        } else {
+            $_.tostring()
+        }
+
+        write-verbose "Looking all new packages installed after installing dependency $nestedModuleName with version $nestedModuleVersion"
+        $preInstallPackageSnapshot = ls -directory $repolocation
+        installPackage $nestedModuleName $nestedModuleVersion $dependencySource $repoLocation
+        $postInstallPackageSnapshot = ls -directory $repolocation
+
+        $newPackages = if ( $preinstallPackageSnapshot -eq $null ) {
+            $postInstallPackageSnapshot
+        } else {
+            diff $preinstallPackageSnapshot $postInstallPackageSnapshot | foreach {
+                $_.inputObject
+            }
+        }
+
+        write-verbose "Renaming installed powershell modules in '$repoLocation' from package name format to powershell module format"
+
+        if ( $newPackages -ne $null ) {
+            $packageCount = if ($newPackages -is [object[]]) {
+                $newPackages.length
+            } else {
+                1
+            }
+
+            write-verbose "Found $packageCount new packages after installing '$nestedModuleName' version '$nestedModuleVersion'"
+
+            $newPackages | foreach {
+                $packageName = $_.name
+                $packageDirectoryPath = join-path $repolocation $packageName
+                $nestedModuleUnversionedPath = join-path $repolocation "$nestedModuleName"
+
+                write-verbose "Found package '$packageName'"
+
+                if ( test-path $nestedModuleUnversionedPath) {
+                    rm -r -force $nestedModuleUnversionedPath
+                }
+
+                $nestedModuleManifests = (ls $repoLocation -r -filter *.psd1)
+
+                # Check for a powershell manifest -- don't rename this package if we don't
+                # find a powershell module manifest, which is a strong hint that it is
+                # actually a powershell module and not some other sort of dependent
+                # package. This is a fairly unlikely special case though...
+                if ( $nestedModuleManifests -eq $null ) {
+                    write-verbose "Skipping package '$packageName' because no powershell module manifest was detected"
+                    continue
+                }
+
+                $nestedModuleDestination = if ( $nestedModuleVersion -ne $null ) {
+                    join-path $nestedModuleUnversionedPath $nestedModuleVersion
+                } else {
+                    $nestedModuleUnversionedPath
+                }
+
+                write-verbose "Renaming '$packageDirectoryPath' to '$nestedModuleDestination'"
+                mkdir -force (split-path -parent $nestedModuleDestination) | out-null
+                mv $packageDirectoryPath $nestedModuleDestination
+            }
+        } else {
+            throw "Dependency $nestedModuleName with $nestedModuleVersion was installed but package was detected in directory '$repoLocation'"
+        }
+    }
+
+    $targetModuleDestination = join-path $repolocation $moduleName
+    if ( test-path $targetModuleDestination ) {
+        rm -r -force $targetModuleDestination
+    }
+
+    write-verbose "Copying target module '$modulepath' from build output to publish location '$repoLocation'"
+    cp -r $modulePath $repolocation
+    $repoLocation
 }
 
