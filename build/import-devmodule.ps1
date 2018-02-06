@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param([switch] $NoNewShell)
+param($InitialCommand = $null, [switch] $NoNewShell)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -21,12 +21,13 @@ $currentpsmodulepath = gi env:psmodulepath
 $devDirectory = Get-DevModuleDirectory
 if (! $NoNewShell.ispresent) {
     $newpsmodulepath = $devDirectory + ';' + $currentpsmodulepath.value
-    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName' -verbose" | out-null
+    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand -verbose" | out-null
     return
 }
 
 write-host -foregroundcolor yellow "Run the following command to import the module into your current session:"
 write-host -foregroundcolor cyan "`n`t. ($($myinvocation.mycommand.path) -nonewshell)`n"
+
 $scriptBlock = @"
     # You can also run these commands directly in your PowerShell session
 
