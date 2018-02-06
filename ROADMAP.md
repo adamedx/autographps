@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Add signout
-* Update build steps
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
@@ -63,6 +62,7 @@
 * Get custom appid to work
 * Session support
 * Add connection support to test-graph
+* Update build steps
 
 ### Postponed
 
