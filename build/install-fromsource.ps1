@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($sourceDependencyRepository = $null)
+[cmdletbinding(positionalbinding=$false)]
+param($DependencyRepository = $null, $Scope = 'CurrentUser')
 
 & "$psscriptroot/clean-build.ps1"
 
 & "$psscriptroot/build-package.ps1" -Downloaddependencies
 
-& "$psscriptroot/publish-moduletodev.ps1" $sourceDependencyRepository
+& "$psscriptroot/publish-moduletodev.ps1" $DependencyRepository
 
-& "$psscriptroot/import-devmodule.ps1" "$psscriptroot/welcome.ps1"
+& "$psscriptroot/install-devmodule.ps1" $Scope
 
-write-host -foregroundcolor green "Quickstart succeeded."
+
 

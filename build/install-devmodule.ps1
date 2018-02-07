@@ -13,17 +13,19 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param($sourceDependencyRepository = $null, $targetDirectory)
+param($scope = 'CurrentUser')
 
 . "$psscriptroot/common-build-functions.ps1"
 
 $moduleName = Get-ModuleName
+$repository = get-temporarymodulepsrepository $moduleName (Get-DevRepoDirectory)
 
-$locations = publish-modulelocal $sourceDependencyRepository $targetDirectory -verbose
+try {
+    install-module $moduleName -repository $repository -scope $scope -verbose -force
+} finally {
+    unregister-psrepository $repository
+}
 
-$moduleLocation = $locations.importablemoduledirectory
-$repoLocation = $locations.modulepackagerepositorydirectory
+write-host "Successfully installed module '$moduleName' with scope '$scope'."
+write-host -foregroundcolor green "Installation succeeded."
 
-write-host "Module '$moduleName' and its dependencies published to importable module location '$moduleLocation'."
-write-host "A nuget package for the module and packages for dependencies were published to nuget compatible directory '$repoLocation'"
-write-host -foregroundcolor green "Publish to local developer location succeeded."

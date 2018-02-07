@@ -21,7 +21,8 @@ $currentpsmodulepath = gi env:psmodulepath
 $devDirectory = Get-DevModuleDirectory
 if (! $NoNewShell.ispresent) {
     $newpsmodulepath = $devDirectory + ';' + $currentpsmodulepath.value
-    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand -verbose" | out-null
+    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
+    write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
 }
 

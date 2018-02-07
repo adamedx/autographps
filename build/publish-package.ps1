@@ -52,6 +52,6 @@ if ( $pushresult -ne 0 ) {
     throw "Command '$nugetpushcmd' failed with exit status '$pushresult'"
 }
 
-write-host -f green "Publish succeeded."
+write-host -foregroundcolor green "Publish NuGet package succeeded."
 
 

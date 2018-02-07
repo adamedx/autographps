@@ -30,4 +30,5 @@ $forceArgument = @{force=$force}
 
 publish-modulebuild $moduleOutputPath $targetRepository @forceArgument | out-null
 
-write-host -foregroundcolor green "Publish succeeded."
+write-host "Module '$($module.name)' successfully published to repository $targetRepository."
+write-host -foregroundcolor green "Publish module succeeded."

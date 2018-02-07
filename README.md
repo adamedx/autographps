@@ -10,19 +10,26 @@ The project is in the earliest stages of development and almost but not quite ye
 * The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
 * (Optional): [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally
 
+## Installation
+Currently, to install PoshGraph you must build the module from source. This is easy -- just run the following PowerShell commands to build and then install the module for your user PowerShell context:
+
+    git clone https://github.com/adamedx/poshgraph
+    cd poshgraph
+    .\build\install-fromsource.ps1
+
 ## Quickstart -- try it now!
-Follow these steps on your workstation to start **PoshGraph**:
+Quickstart is a way to try out Posh Graph without installing it. Follow these steps on your workstation to start **PoshGraph**:
 
 * [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
   `git clone https://github.com/adamedx/poshgraph`
 
 * Within a **PowerShell** terminal, `cd` to the extracted or cloned directory
-* Execute the install command:
+* Execute the command for **QuickStart**:
 
   `.\build\quickstart.ps1`
 
-This will download dependencies, build the PoshGraph modiule, and launch a new PowerShell console with the module imported. You can execute a PoshGraph command like the following in the console -- try it:
+This will download dependencies, build the PoshGraph module, and launch a new PowerShell console with the module imported. You can execute a PoshGraph command like the following in the console -- try it:
 
   `Test-Graph`
 
@@ -39,10 +46,12 @@ This should return something like the following:
     TimeLocal  : 2/6/2018 6:05:09 AM
     TimeUtc    : 2/6/2018 6:05:09 AM
 
-See the section **Building PoshGraph** for additional ways to install the module.
+If you need to launch another console with Posh Graph, you can just run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
+
+    .\build\import-devmodule.ps1
 
 ## Usage
-After you've installed the module, use **PoshGraph** from any PowerShell session.
+After you've installed the module, use **Posh Graph** from any PowerShell session.
 
 ### Get connected
 
@@ -104,7 +113,7 @@ The connection may be reused until the token acquired by the initial authenticat
 That's it for now -- there are many more cmdlets to arrive soon!
 
 ## Contributing/Development
-The project is not yet ready for contributors, but suggestions on features or other advice are welcome while I establish a baseline.
+The project is not yet ready for contributors, but suggestions on features or other advice are welcome while we establish a baseline.
 
 License and Authors
 -------------------

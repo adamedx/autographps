@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,10 @@ function Get-SourceRootDirectory {
 }
 
 function Get-DevModuleDirectory {
+    join-path (Get-SourceRootDirectory) '.devmodule'
+}
+
+function Get-DevRepoDirectory {
     join-path (Get-SourceRootDirectory) '.psrepo'
 }
 
@@ -360,8 +364,9 @@ function Get-DefaultPackageSource($noRegister = $false) {
 
 function publish-modulelocal {
     [cmdletbinding()]
-    param ( $customSource = $null, $customRepoLocation = $null )
-    write-verbose "Publishing module to local destination with custom module source '$customSource' and custom output location '$customRepoLocation'"
+    param ( $customSource = $null, $customModuleLocation = $null, $customRepoLocation = $null )
+
+    write-verbose "Publishing module to local destination with custom module source '$customSource' and custom output location '$customModuleLocation'"
     $dependencySource = if ( $customSource -eq $null ) {
         Get-DefaultPackageSource
     } else {
@@ -385,26 +390,55 @@ function publish-modulelocal {
         throw "No module exists at $modulePath"
     }
 
-    $repoLocation = if ( $customRepoLocation -eq $null ) {
+@'
+    $devModuleLocation = if ( $customModuleLocation -eq $null ) {
         $defaultLocation = Get-DevModuleDirectory
         if ( ! (test-path $defaultLocation) ) {
             mkdir $defaultLocation | out-null
         }
         $defaultLocation
     } else {
-        $customRepoLocation
+        $customModuleLocation
     }
 
-    write-verbose "Using location '$repoLocation' as the output location"
+    $PsRepoLocation = if ( $customRepoLocation -eq $null ) {
+        $defaultRepoLocation = Get-DevRepoDirectory
+        if ( ! (test-path $defaultRepoLocation) ) {
+            mkdir $defaultRepoLocation | out-null
+        }
+        $defaultRepoLocation
+    } else {
+        $customRepoLocation
+    }
+'@ | out-null
 
     # Working around some strange behavior when there is only one
     # item in the directory and ls gives back a non-array...
-    $existingFiles = @()
-    $existingFiles += (ls $repolocation -filter *)
+    $locations = @(@((Get-DevModuleDirectory), $customModuleLocation), @((Get-DevRepoDirectory), $customRepoLocation)) | foreach {
+        $targetDirectory = if ( $_[1] -eq $null ) {
+            $defaultLocation = $_[0]
+            if ( ! (test-path $defaultLocation) ) {
+                mkdir $defaultLocation | out-null
+            }
+            $defaultLocation
+        } else {
+            $_[1]
+        }
 
-    $existingFiles | foreach {
-        rm $_.fullname -r -force
+        $existingFiles = @()
+        $existingFiles += (ls $targetDirectory -filter *)
+
+        $existingFiles | foreach {
+            rm $_.fullname -r -force
+        }
+        $targetDirectory
     }
+
+    $devModuleLocation = $locations[0]
+    $PsRepoLocation = $locations[1]
+
+    write-verbose "Using location '$devModuleLocation' as the output location for modules"
+    write-verbose "Using location '$PsRepoLocation' as the local package repository for module packages"
 
     # Working around more strange behaviors when dealing with more than
     # one item in the collection
@@ -431,10 +465,10 @@ function publish-modulelocal {
             $_.tostring()
         }
 
-        write-verbose "Looking all new packages installed after installing dependency $nestedModuleName with version $nestedModuleVersion"
-        $preInstallPackageSnapshot = ls -directory $repolocation
-        installPackage $nestedModuleName $nestedModuleVersion $dependencySource $repoLocation
-        $postInstallPackageSnapshot = ls -directory $repolocation
+        write-verbose "Looking at all new packages installed after installing dependency $nestedModuleName with version $nestedModuleVersion"
+        $preInstallPackageSnapshot = ls -directory $devModuleLocation
+        installPackage $nestedModuleName $nestedModuleVersion $dependencySource $devModuleLocation
+        $postInstallPackageSnapshot = ls -directory $devModuleLocation
 
         $newPackages = if ( $preinstallPackageSnapshot -eq $null ) {
             $postInstallPackageSnapshot
@@ -444,7 +478,7 @@ function publish-modulelocal {
             }
         }
 
-        write-verbose "Renaming installed powershell modules in '$repoLocation' from package name format to powershell module format"
+        write-verbose "Renaming installed powershell modules in '$devModuleLocation' from package name format to powershell module format"
 
         if ( $newPackages -ne $null ) {
             $packageCount = if ($newPackages -is [object[]]) {
@@ -456,49 +490,98 @@ function publish-modulelocal {
             write-verbose "Found $packageCount new packages after installing '$nestedModuleName' version '$nestedModuleVersion'"
 
             $newPackages | foreach {
-                $packageName = $_.name
-                $packageDirectoryPath = join-path $repolocation $packageName
-                $nestedModuleUnversionedPath = join-path $repolocation "$nestedModuleName"
-
-                write-verbose "Found package '$packageName'"
-
-                if ( test-path $nestedModuleUnversionedPath) {
-                    rm -r -force $nestedModuleUnversionedPath
-                }
-
-                $nestedModuleManifests = (ls $repoLocation -r -filter *.psd1)
-
-                # Check for a powershell manifest -- don't rename this package if we don't
-                # find a powershell module manifest, which is a strong hint that it is
-                # actually a powershell module and not some other sort of dependent
-                # package. This is a fairly unlikely special case though...
-                if ( $nestedModuleManifests -eq $null ) {
-                    write-verbose "Skipping package '$packageName' because no powershell module manifest was detected"
-                    continue
-                }
-
-                $nestedModuleDestination = if ( $nestedModuleVersion -ne $null ) {
-                    join-path $nestedModuleUnversionedPath $nestedModuleVersion
-                } else {
-                    $nestedModuleUnversionedPath
-                }
-
-                write-verbose "Renaming '$packageDirectoryPath' to '$nestedModuleDestination'"
-                mkdir -force (split-path -parent $nestedModuleDestination) | out-null
-                mv $packageDirectoryPath $nestedModuleDestination
+                $packageFilePath = join-path $_.fullname ($_.name + '.nupkg')
+                cp $packageFilePath $PsRepoLocation
             }
+
+            Rename-PackagesAsModules $newPackages $devModuleLocation
+
         } else {
-            throw "Dependency $nestedModuleName with $nestedModuleVersion was installed but package was detected in directory '$repoLocation'"
+            throw "Dependency $nestedModuleName with $nestedModuleVersion was installed but package was detected in directory '$devModuleLocation'"
         }
     }
 
-    $targetModuleDestination = join-path $repolocation $moduleName
+    $targetModuleDestination = join-path $devModuleLocation $moduleName
     if ( test-path $targetModuleDestination ) {
         rm -r -force $targetModuleDestination
     }
 
-    write-verbose "Copying target module '$modulepath' from build output to publish location '$repoLocation'"
-    cp -r $modulePath $repolocation
-    $repoLocation
+    # Copy the built module to the location where its dependencies already exist
+    cp -r $modulePath $devModulelocation
+
+    $modulePackagePath = join-path (Get-OutputDirectory) nuget
+    $modulePackage = ls $modulePackagePath -filter "$moduleName.*.nupkg"
+
+    # Try to use an existing nuget package produced by the build -- if it exists
+    if ( $modulePackagePath -ne $null -and $modulePackagePath.length -gt 0 ) {
+        write-verbose "Copying target module '$modulepath' from build output to publish location '$devModuleLocation'"
+        cp $modulePackage.fullname $PsRepoLocation
+    } else {
+        # Fall back to just using the module that was built -- this is
+        # *much* slower than using an existing nuget package
+        $repository = get-temporarymodulepsrepository $moduleName $PsRepoLocation
+        write-verbose "Publishing target module '$modulepath' from build output to publish location '$devModuleLocation'"
+        try {
+            publish-modulebuild $modulePathVersioned $repository
+        } finally {
+            unregister-psrepository $repository
+        }
+    }
+
+    [PSCustomObject]@{ImportableModuleDirectory=$devModuleLocation;ModulePackageRepositoryDirectory=$PsRepoLocation}
 }
 
+function Rename-PackagesAsModules( $moduleFileItems, $destination ) {
+    $newPackages | foreach {
+        $packageName = $_.name
+        $packageDirectoryPath = join-path $destination $packageName
+        $nestedModuleUnversionedPath = join-path $destination "$nestedModuleName"
+
+        write-verbose "Found package '$packageName'"
+
+        if ( test-path $nestedModuleUnversionedPath) {
+            rm -r -force $nestedModuleUnversionedPath
+        }
+
+        $nestedModuleManifests = (ls $destination -r -filter *.psd1)
+
+        # Check for a powershell manifest -- don't rename this package if we don't
+        # find a powershell module manifest, which is a strong hint that it is
+        # actually a powershell module and not some other sort of dependent
+        # package. This is a fairly unlikely special case though...
+        if ( $nestedModuleManifests -eq $null ) {
+            write-verbose "Skipping package '$packageName' because no powershell module manifest was detected"
+            continue
+        }
+
+        $nestedModuleDestination = if ( $nestedModuleVersion -ne $null ) {
+            join-path $nestedModuleUnversionedPath $nestedModuleVersion
+        } else {
+            $nestedModuleUnversionedPath
+        }
+
+        write-verbose "Renaming '$packageDirectoryPath' to '$nestedModuleDestination'"
+        mkdir -force (split-path -parent $nestedModuleDestination) | out-null
+        mv $packageDirectoryPath $nestedModuleDestination
+    }
+}
+
+function get-temporarymodulepsrepository($moduleName, $repositoryPath)  {
+
+    $localPSRepositoryName = "__$($moduleName)__localdev"
+    $localPSRepositoryDirectory = $repositoryPath
+
+    if ( ! ( test-path $localPSRepositoryDirectory ) ) {
+        throw "Directory '$localPSRepositoryDirectory' does not exist"
+    }
+
+    $existingRepository = get-psrepository $localPSRepositoryName -erroraction silentlycontinue
+
+    if ( $existingRepository -ne $null ) {
+        unregister-psrepository $localPSRepositoryName
+    }
+
+    register-psrepository $localPSRepositoryName $localPSRepositoryDirectory
+
+    $localPSRepositoryName
+}
