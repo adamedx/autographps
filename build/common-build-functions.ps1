@@ -346,20 +346,36 @@ function installPackage( $packageName, $version, $source, $destination ) {
     write-verbose "Successfully installed '$packageName'"
 }
 
-$defaultPackageSourceUri = 'https://www.powershellgallery.com/api/v2/'
-$defaultPackageSource = 'PSGalleryNuget'
+$defaultFallbackPackageSourceUri = 'https://www.powershellgallery.com/api/v2/'
+$defaultPSModuleSource = 'PSGallery'
+
+function Get-DefaultPackageSourceName {
+    ("__PSGallery_{0}__" -f (Get-ModuleName) )
+}
+
+function Clear-TemporaryPackageSources {
+   unregister-packagesource (Get-DefaultPackageSourceName) -force
+}
 
 function Get-DefaultPackageSource($noRegister = $false) {
-    $source = get-packagesource $defaultPackageSource -erroraction silentlycontinue
+    $defaultSourceName = Get-DefaultPackageSourceName
 
-    if ( $source -ne $null ) {
-        $defaultPackageSource
+    write-verbose "Checking for default PS Repository source '$defaultPSModuleSource'..."
+    $defaultPSGetSource = get-psrepository $defaultPSModuleSource -erroraction silentlycontinue
+
+    $sourceUri = if ( $defaultPSGetSource -ne $null ) {
+        write-verbose "Found '$defaultPSGetSource' PS repository source, will use its uri: $($defaultPSGetSource.sourcelocation)"
+        $defaultPSGetSource.sourcelocation
     } else {
-        if (! $noRegister ) {
-            Register-packagesource $defaultPackageSource -location $defaultPackageSourceUri -provider nuget | out-null
-        }
-        $defaultPackageSource
+        write-verbose "PS repository source '$defaultPSGetSource' not found, will use default of '$defaultPSGetSource'"
+        $defaultFallbackPackageSourceUri
     }
+
+    if (! $noRegister ) {
+        Register-packagesource $defaultSourceName -location $sourceUri -provider nuget | out-null
+    }
+
+    $defaultSourceName
 }
 
 function publish-modulelocal {
