@@ -14,7 +14,7 @@
 
 . "$psscriptroot/common-build-functions.ps1"
 
-Clear-temporarypackagesources
+clear-TemporaryPSModuleSources
 
 clean-builddirectories
 

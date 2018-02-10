@@ -102,10 +102,16 @@ function Clean-BuildDirectories {
         $outputDirectory | rm -r -force
     }
 
-    $devPublishLocation = Get-DevModuleDirectory
+    $devModuleLocation = Get-DevModuleDirectory
 
-    if (test-path $devPublishLocation) {
-        $devPublishLocation | rm -r -force
+    if (test-path $devModuleLocation) {
+        $devModuleLocation | rm -r -force
+    }
+
+    $devRepoLocation = Get-DevRepoDirectory
+
+    if (test-path $devRepoLocation) {
+        $devRepoLocation | rm -r -force
     }
 }
 
@@ -318,64 +324,47 @@ function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
     Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
 }
 
-function installPackage( $packageName, $version, $source, $destination ) {
-    write-verbose "Attempting to install package '$packageName' version '$version' from source '$source' to destination '$destination'"
-    $verboseLevel = if ( $verbosepreference -eq 'SilentlyContinue' ) {
-        'normal'
-    } else {
-        'detailed'
-    }
-
-    $versionArgument = if ( $version -ne $null ) {
-        "-version '$version'"
-    } else {
-        ' '
-    }
-
-    # Use nuget to install the package since install-module
-    # will only install to allusers or current user powershell
-    # module standard path :(
-    $installCommand = "nuget.exe install '$packageName' $versionArgument -source '$source' -outputdirectory '$destination' -verbosity $verboseLevel -prerelease"
-
-    write-verbose "Executing command $installCommand"
-    $result = invoke-expression $installCommand
-    $commandResult = $lastexitcode
-    if ( $lastexitcode -ne 0 ) {
-        throw "Command failed with exit status '$commandResult'`n$($result)"
-    }
-    write-verbose "Successfully installed '$packageName'"
+function Get-DefaultPSModuleSourceName {
+    'PSGallery'
 }
 
-$defaultFallbackPackageSourceUri = 'https://www.powershellgallery.com/api/v2/'
-$defaultPSModuleSource = 'PSGallery'
+function Get-DefaultRepositoryFallbackUri {
+    'https://www.powershellgallery.com/api/v2/'
+}
 
-function Get-DefaultPackageSourceName {
+function Get-TemporaryPSModuleSourceName {
     ("__PSGallery_{0}__" -f (Get-ModuleName) )
 }
 
-function Clear-TemporaryPackageSources {
-   unregister-packagesource (Get-DefaultPackageSourceName) -force
+function Clear-TemporaryPSModuleSources {
+    $temporarySource = Get-TemporaryPSModuleSourceName
+    if ( ( Get-PSRepository $temporarySource -erroraction silentlycontinue ) -ne $null ) {
+        unregister-PSrepository $temporarySource
+    }
 }
 
-function Get-DefaultPackageSource($noRegister = $false) {
-    $defaultSourceName = Get-DefaultPackageSourceName
+function Get-DefaultPSModuleSource($noRegister = $false) {
+    $defaultSourceName = Get-DefaultPSModuleSourceName
 
-    write-verbose "Checking for default PS Repository source '$defaultPSModuleSource'..."
-    $defaultPSGetSource = get-psrepository $defaultPSModuleSource -erroraction silentlycontinue
+    write-verbose "Checking for default PS Repository source '$defaultSourceName'..."
+    $defaultPSGetSource = get-psrepository $defaultSourceName -erroraction silentlycontinue
 
-    $sourceUri = if ( $defaultPSGetSource -ne $null ) {
-        write-verbose "Found '$defaultPSGetSource' PS repository source, will use its uri: $($defaultPSGetSource.sourcelocation)"
-        $defaultPSGetSource.sourcelocation
+    $defaultSource = if ( $defaultPSGetSource -ne $null ) {
+        write-verbose "Found default repository source '$defaultSourceName', will use it"
+        $defaultSourceName
+    } elseif (! $noRegister ) {
+        $temporarySource = Get-TemporaryPSModuleSourceName
+        $sourceUri = Get-DefaultRepositoryFallbackUri
+        write-verbose "PS repository source '$defaultPSGetSource' not found, will create new source"
+        write-verbose "Creating '$temporarySource' with uri '$sourceUri'"
+        Unregister-psrepository $temporarySource -erroraction silentlycontinue
+        Register-psrepository $temporarySource -sourcelocation (Get-DefaultRepositoryFallbackUri)
+        $temporarySource
     } else {
-        write-verbose "PS repository source '$defaultPSGetSource' not found, will use default of '$defaultPSGetSource'"
-        $defaultFallbackPackageSourceUri
+        write-verbose "Default module repository '$defaultSourceName' does not exist and caller did not specifed not to create it, caller must handle creating it"
     }
 
-    if (! $noRegister ) {
-        Register-packagesource $defaultSourceName -location $sourceUri -provider nuget | out-null
-    }
-
-    $defaultSourceName
+    $defaultSource
 }
 
 function publish-modulelocal {
@@ -384,7 +373,7 @@ function publish-modulelocal {
 
     write-verbose "Publishing module to local destination with custom module source '$customSource' and custom output location '$customModuleLocation'"
     $dependencySource = if ( $customSource -eq $null ) {
-        Get-DefaultPackageSource
+        Get-DefaultPSModuleSource
     } else {
         $customSource
     }
@@ -405,28 +394,6 @@ function publish-modulelocal {
     if ( ! ( test-path $modulePathVersioned ) ) {
         throw "No module exists at $modulePath"
     }
-
-@'
-    $devModuleLocation = if ( $customModuleLocation -eq $null ) {
-        $defaultLocation = Get-DevModuleDirectory
-        if ( ! (test-path $defaultLocation) ) {
-            mkdir $defaultLocation | out-null
-        }
-        $defaultLocation
-    } else {
-        $customModuleLocation
-    }
-
-    $PsRepoLocation = if ( $customRepoLocation -eq $null ) {
-        $defaultRepoLocation = Get-DevRepoDirectory
-        if ( ! (test-path $defaultRepoLocation) ) {
-            mkdir $defaultRepoLocation | out-null
-        }
-        $defaultRepoLocation
-    } else {
-        $customRepoLocation
-    }
-'@ | out-null
 
     # Working around some strange behavior when there is only one
     # item in the directory and ls gives back a non-array...
@@ -454,7 +421,8 @@ function publish-modulelocal {
     $PsRepoLocation = $locations[1]
 
     write-verbose "Using location '$devModuleLocation' as the output location for modules"
-    write-verbose "Using location '$PsRepoLocation' as the local package repository for module packages"
+    write-verbose "Using location '$PsRepoLocation' as the local package destination repository for module packages"
+    write-verbose "Using PS Repository '$dependencySource' as the source for package dependencies"
 
     # Working around more strange behaviors when dealing with more than
     # one item in the collection
@@ -481,40 +449,8 @@ function publish-modulelocal {
             $_.tostring()
         }
 
-        write-verbose "Looking at all new packages installed after installing dependency $nestedModuleName with version $nestedModuleVersion"
-        $preInstallPackageSnapshot = ls -directory $devModuleLocation
-        installPackage $nestedModuleName $nestedModuleVersion $dependencySource $devModuleLocation
-        $postInstallPackageSnapshot = ls -directory $devModuleLocation
-
-        $newPackages = if ( $preinstallPackageSnapshot -eq $null ) {
-            $postInstallPackageSnapshot
-        } else {
-            diff $preinstallPackageSnapshot $postInstallPackageSnapshot | foreach {
-                $_.inputObject
-            }
-        }
-
-        write-verbose "Renaming installed powershell modules in '$devModuleLocation' from package name format to powershell module format"
-
-        if ( $newPackages -ne $null ) {
-            $packageCount = if ($newPackages -is [object[]]) {
-                $newPackages.length
-            } else {
-                1
-            }
-
-            write-verbose "Found $packageCount new packages after installing '$nestedModuleName' version '$nestedModuleVersion'"
-
-            $newPackages | foreach {
-                $packageFilePath = join-path $_.fullname ($_.name + '.nupkg')
-                cp $packageFilePath $PsRepoLocation
-            }
-
-            Rename-PackagesAsModules $newPackages $devModuleLocation
-
-        } else {
-            throw "Dependency $nestedModuleName with $nestedModuleVersion was installed but package was detected in directory '$devModuleLocation'"
-        }
+        # Download the module -- and its dependencies into the local module location
+        save-module -name $nestedModuleName -requiredversion $nestedModuleVersion -repository $dependencysource -path $devModuleLocation
     }
 
     $targetModuleDestination = join-path $devModuleLocation $moduleName
@@ -545,41 +481,6 @@ function publish-modulelocal {
     }
 
     [PSCustomObject]@{ImportableModuleDirectory=$devModuleLocation;ModulePackageRepositoryDirectory=$PsRepoLocation}
-}
-
-function Rename-PackagesAsModules( $moduleFileItems, $destination ) {
-    $newPackages | foreach {
-        $packageName = $_.name
-        $packageDirectoryPath = join-path $destination $packageName
-        $nestedModuleUnversionedPath = join-path $destination "$nestedModuleName"
-
-        write-verbose "Found package '$packageName'"
-
-        if ( test-path $nestedModuleUnversionedPath) {
-            rm -r -force $nestedModuleUnversionedPath
-        }
-
-        $nestedModuleManifests = (ls $destination -r -filter *.psd1)
-
-        # Check for a powershell manifest -- don't rename this package if we don't
-        # find a powershell module manifest, which is a strong hint that it is
-        # actually a powershell module and not some other sort of dependent
-        # package. This is a fairly unlikely special case though...
-        if ( $nestedModuleManifests -eq $null ) {
-            write-verbose "Skipping package '$packageName' because no powershell module manifest was detected"
-            continue
-        }
-
-        $nestedModuleDestination = if ( $nestedModuleVersion -ne $null ) {
-            join-path $nestedModuleUnversionedPath $nestedModuleVersion
-        } else {
-            $nestedModuleUnversionedPath
-        }
-
-        write-verbose "Renaming '$packageDirectoryPath' to '$nestedModuleDestination'"
-        mkdir -force (split-path -parent $nestedModuleDestination) | out-null
-        mv $packageDirectoryPath $nestedModuleDestination
-    }
 }
 
 function get-temporarymodulepsrepository($moduleName, $repositoryPath)  {
