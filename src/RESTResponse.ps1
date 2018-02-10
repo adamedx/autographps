@@ -42,10 +42,14 @@ ScriptClass RESTResponse {
 
     static {
         function GetErrorResponseDetails([System.Net.WebResponse] $response) {
-            $responseStream = $response.getresponsestream()
-            $reader = New-Object System.IO.StreamReader($responseStream)
-            $errorMessage = $reader.ReadToEnd()
-            $errorMessage
+            if ( $response -ne $null ) {
+                $responseStream = $response.getresponsestream()
+                if ( $responseStream -ne $null ) {
+                    $reader = New-Object System.IO.StreamReader($responseStream)
+                    $errorMessage = $reader.ReadToEnd()
+                    $errorMessage
+                }
+            }
         }
     }
 

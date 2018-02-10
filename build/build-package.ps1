@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($targetDirectory = $null, [switch] $noclean)
+param($targetDirectory = $null, [switch] $noclean, [switch] $DownloadDependencies)
 
 . "$psscriptroot/common-build-functions.ps1"
+
+if ( $DownloadDependencies.ispresent ) {
+    $installScriptPath = join-path (get-sourcerootdirectory) 'build\install.ps1'
+    & $installScriptPath | out-null
+}
 
 $moduleManifestPath = Get-ModuleManifestPath
 $moduleOutputDirectory = new-moduleoutputdirectory $targetDirectory (! $noclean.ispresent)

@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. "$psscriptroot/common-build-functions.ps1"
+[cmdletbinding(positionalbinding=$false)]
+param($DependencyRepository = $null, $Scope = 'CurrentUser')
 
-clear-TemporaryPSModuleSources
+& "$psscriptroot/clean-build.ps1"
 
-clean-builddirectories
+& "$psscriptroot/build-package.ps1" -Downloaddependencies
+
+& "$psscriptroot/publish-moduletodev.ps1" $DependencyRepository
+
+& "$psscriptroot/install-devmodule.ps1" $Scope
+
 
 

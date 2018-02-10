@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.0'
+ModuleVersion = '0.7.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.12.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.12.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('get-graphitem', 'Test-Graph', 'Get-GraphVersion', 'new-graphconnection', 'invoke-graphrequest', 'get-graphtoken', 'get-graphschema', 'get-grapherror', 'connect-graph', 'disconnect-graph')
@@ -95,13 +95,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('MSGraph', 'Graph')
 
         # A URL to the license for this module.
-        # LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
+        LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/adamedx/poshgraph'
 
         # A URL to an icon representing this module.
         # IconUri = ''

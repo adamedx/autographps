@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[cmdletbinding()]
+param($scope = 'CurrentUser')
+
 . "$psscriptroot/common-build-functions.ps1"
 
-clear-TemporaryPSModuleSources
+$moduleName = Get-ModuleName
+$repository = get-temporarymodulepsrepository $moduleName (Get-DevRepoDirectory)
 
-clean-builddirectories
+try {
+    install-module $moduleName -repository $repository -scope $scope -verbose -force
+} finally {
+    unregister-psrepository $repository
+}
 
+write-host "Successfully installed module '$moduleName' with scope '$scope'."
+write-host -foregroundcolor green "Installation succeeded."
 

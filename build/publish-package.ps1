@@ -24,7 +24,7 @@ $basepath = (get-item (split-path -parent $psscriptroot)).fullname
 $feedUri = if ( $targetFeedUri -ne $null ) {
     $targetFeedUri
 } else {
-    'https://adamedx.pkgs.visualstudio.com/_packaging/SecretPackages/nuget/v3/index.json'
+    throw 'Default targetFeedUri Not Yet Implemented'
 }
 
 $packageLocation = if ( $packagePath -ne $null ) {
@@ -52,6 +52,6 @@ if ( $pushresult -ne 0 ) {
     throw "Command '$nugetpushcmd' failed with exit status '$pushresult'"
 }
 
-write-host -f green "Publish succeeded."
+write-host -foregroundcolor green "Publish NuGet package succeeded."
 
 

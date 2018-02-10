@@ -112,7 +112,7 @@ ScriptClass RESTRequest {
     function _write-responseverbose( $response, $content ) {
         write-verbose ' '
         write-verbose 'Response:'
-        write-verbose '*********'
+        write-verbose '********'
         if ( $response -ne $null ) {
             $response | out-string | write-verbose
         } else {
@@ -130,7 +130,10 @@ ScriptClass RESTRequest {
 
         write-verbose ' '
         write-verbose "Response Headers:"
-        write-verbose "*****************`n"
-        _write-headersverbose $response.headers
+        write-verbose "****************`n"
+
+        if ( $response -ne $null ) {
+            _write-headersverbose $response.headers
+        }
     }
 }

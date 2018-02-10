@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,14 @@ $moduleOutputSubdirectory = 'modules'
 
 function Get-SourceRootDirectory {
     (get-item (split-path -parent $psscriptroot)).fullname
+}
+
+function Get-DevModuleDirectory {
+    join-path (Get-SourceRootDirectory) '.devmodule'
+}
+
+function Get-DevRepoDirectory {
+    join-path (Get-SourceRootDirectory) '.psrepo'
 }
 
 function Get-ModuleName {
@@ -83,7 +91,7 @@ function Validate-Prerequisites {
 }
 
 function Clean-BuildDirectories {
-    $libPath =     join-path $psscriptroot '../lib'
+    $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
         join-path $psscriptroot '../lib' | rm -r -force
     }
@@ -92,6 +100,18 @@ function Clean-BuildDirectories {
 
     if (test-path $outputDirectory) {
         $outputDirectory | rm -r -force
+    }
+
+    $devModuleLocation = Get-DevModuleDirectory
+
+    if (test-path $devModuleLocation) {
+        $devModuleLocation | rm -r -force
+    }
+
+    $devRepoLocation = Get-DevRepoDirectory
+
+    if (test-path $devRepoLocation) {
+        $devRepoLocation | rm -r -force
     }
 }
 
@@ -229,11 +249,24 @@ function build-nugetpackage {
     $packagePath
 }
 
+function Get-RepositoryKeyFromFile($path) {
+    $fileData = get-content $path
+    $keyContent = if ( $fileData -is [string] ) {
+        $fileData
+    } else {
+        $fileData[0]
+    }
+
+    $keyContent.trim()
+}
+
+
 function publish-modulebuild {
     [cmdletbinding()]
     param(
         $moduleSourceDirectory = $null,
         $destinationRepositoryName = $null,
+        $repositoryKey = $null,
         [switch] $force)
 
     $manifestPaths = ls $moduleSourceDirectory -filter *.psd1
@@ -255,14 +288,36 @@ function publish-modulebuild {
 
     Generate-ReferenceModules $targetModuleManifestPath $moduleRootDirectory
 
-    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose -force" $moduleRootDirectory
+    $optionalArguments = ''
+
+    if ( $force ) {
+        $optionalArguments += '-force'
+        }
+
+    if ( $repositoryKey -ne $null ) {
+        $optionalArguments += " -nugetapikey = $repositoryKey"
+    }
+
+    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
+
     # Note that the path must be augmented rather than replaced
-    # in order for modules related to package management to be loaded
+    # in order for modules related to package management to be loade
     $commandScript = [Scriptblock]::Create("si env:psmodulepath `"`$env:psmodulepath;$modulePath`";$command")
-    powershell -noprofile -noninteractive -command ($commandScript)
+
+    write-verbose "Executing command '$commandScript'"
+    $result = powershell -noprofile -command ($commandScript)
+
+    # Use of the powershell command with a script block may not result in an exception
+    # when the script block throws an exception. However, $? is reliably set to a failure code in this case, so we check for that
+    # and use the captured stderr redirected to stdout and throw it
+    if ( ! $? ) {
+        throw "Failed to execute publishing command '$command' using module path '$modulePath' with error information '$result'"
+    }
+
+    $result
 }
 
 function Get-ModuleMetadataFromManifest ( $manifestPath ) {
@@ -304,3 +359,181 @@ function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
     Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
 }
 
+function Get-DefaultPSModuleSourceName {
+    'PSGallery'
+}
+
+function Get-DefaultRepositoryFallbackUri {
+    'https://www.powershellgallery.com/api/v2/'
+}
+
+function Get-TemporaryPSModuleSourceName {
+    ("__PSGallery_{0}__" -f (Get-ModuleName) )
+}
+
+function Clear-TemporaryPSModuleSources {
+    $temporarySource = Get-TemporaryPSModuleSourceName
+    if ( ( Get-PSRepository $temporarySource -erroraction silentlycontinue ) -ne $null ) {
+        unregister-PSrepository $temporarySource
+    }
+}
+
+function Get-DefaultPSModuleSource($noRegister = $false) {
+    $defaultSourceName = Get-DefaultPSModuleSourceName
+
+    write-verbose "Checking for default PS Repository source '$defaultSourceName'..."
+    $defaultPSGetSource = get-psrepository $defaultSourceName -erroraction silentlycontinue
+
+    $defaultSource = if ( $defaultPSGetSource -ne $null ) {
+        write-verbose "Found default repository source '$defaultSourceName', will use it"
+        $defaultSourceName
+    } elseif (! $noRegister ) {
+        $temporarySource = Get-TemporaryPSModuleSourceName
+        $sourceUri = Get-DefaultRepositoryFallbackUri
+        write-verbose "PS repository source '$defaultPSGetSource' not found, will create new source"
+        write-verbose "Creating '$temporarySource' with uri '$sourceUri'"
+        Unregister-psrepository $temporarySource -erroraction silentlycontinue
+        Register-psrepository $temporarySource -sourcelocation (Get-DefaultRepositoryFallbackUri)
+        $temporarySource
+    } else {
+        write-verbose "Default module repository '$defaultSourceName' does not exist and caller did not specifed not to create it, caller must handle creating it"
+    }
+
+    $defaultSource
+}
+
+function publish-modulelocal {
+    [cmdletbinding()]
+    param ( $customSource = $null, $customModuleLocation = $null, $customRepoLocation = $null )
+
+    write-verbose "Publishing module to local destination with custom module source '$customSource' and custom output location '$customModuleLocation'"
+    $dependencySource = if ( $customSource -eq $null ) {
+        Get-DefaultPSModuleSource
+    } else {
+        $customSource
+    }
+
+    $moduleName = Get-ModuleName
+    $moduleManifestPath = Get-ModuleManifestPath
+    $moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
+
+    Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
+
+    $module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
+    $modulePath = join-path $moduleOutputRootDirectory $moduleName
+    $modulePathVersioned = join-path $modulePath $module.Version
+
+    write-verbose "Publishing module '$module' from build location '$modulePathVersioned'..."
+
+    # Make sure the module is actually built
+    if ( ! ( test-path $modulePathVersioned ) ) {
+        throw "No module exists at $modulePath"
+    }
+
+    # Working around some strange behavior when there is only one
+    # item in the directory and ls gives back a non-array...
+    $locations = @(@((Get-DevModuleDirectory), $customModuleLocation), @((Get-DevRepoDirectory), $customRepoLocation)) | foreach {
+        $targetDirectory = if ( $_[1] -eq $null ) {
+            $defaultLocation = $_[0]
+            if ( ! (test-path $defaultLocation) ) {
+                mkdir $defaultLocation | out-null
+            }
+            $defaultLocation
+        } else {
+            $_[1]
+        }
+
+        $existingFiles = @()
+        $existingFiles += (ls $targetDirectory -filter *)
+
+        $existingFiles | foreach {
+            rm $_.fullname -r -force
+        }
+        $targetDirectory
+    }
+
+    $devModuleLocation = $locations[0]
+    $PsRepoLocation = $locations[1]
+
+    write-verbose "Using location '$devModuleLocation' as the output location for modules"
+    write-verbose "Using location '$PsRepoLocation' as the local package destination repository for module packages"
+    write-verbose "Using PS Repository '$dependencySource' as the source for package dependencies"
+
+    # Working around more strange behaviors when dealing with more than
+    # one item in the collection
+    $nestedModuleCount = 0
+    $nestedModules = if ( $module.nestedModules -ne $null ) {
+        $nestedModuleCount = if ( $module.nestedModules -is [object[]] ) {
+            $module.nestedModules.length
+        } else {
+            1
+        }
+        $module.nestedModules
+    } else {
+        @()
+    }
+
+    write-verbose "Found $nestedModuleCount module dependencies from module manifest"
+
+    $nestedModules | foreach {
+        $nestedModuleVersion = $null
+        $nestedModuleName = if ( $_ -isnot [Object[]] ) {
+            $nestedModuleVersion = $_.Version
+            $_.Name.tostring()
+        } else {
+            $_.tostring()
+        }
+
+        # Download the module -- and its dependencies into the local module location
+        save-module -name $nestedModuleName -requiredversion $nestedModuleVersion -repository $dependencysource -path $devModuleLocation
+    }
+
+    $targetModuleDestination = join-path $devModuleLocation $moduleName
+    if ( test-path $targetModuleDestination ) {
+        rm -r -force $targetModuleDestination
+    }
+
+    # Copy the built module to the location where its dependencies already exist
+    cp -r $modulePath $devModulelocation
+
+    $modulePackagePath = join-path (Get-OutputDirectory) nuget
+    $modulePackage = ls $modulePackagePath -filter "$moduleName.*.nupkg"
+
+    # Try to use an existing nuget package produced by the build -- if it exists
+    if ( $modulePackagePath -ne $null -and $modulePackagePath.length -gt 0 ) {
+        write-verbose "Copying target module '$modulepath' from build output to publish location '$devModuleLocation'"
+        cp $modulePackage.fullname $PsRepoLocation
+    } else {
+        # Fall back to just using the module that was built -- this is
+        # *much* slower than using an existing nuget package
+        $repository = get-temporarymodulepsrepository $moduleName $PsRepoLocation
+        write-verbose "Publishing target module '$modulepath' from build output to publish location '$devModuleLocation'"
+        try {
+            publish-modulebuild $modulePathVersioned $repository
+        } finally {
+            unregister-psrepository $repository
+        }
+    }
+
+    [PSCustomObject]@{ImportableModuleDirectory=$devModuleLocation;ModulePackageRepositoryDirectory=$PsRepoLocation}
+}
+
+function get-temporarymodulepsrepository($moduleName, $repositoryPath)  {
+
+    $localPSRepositoryName = "__$($moduleName)__localdev"
+    $localPSRepositoryDirectory = $repositoryPath
+
+    if ( ! ( test-path $localPSRepositoryDirectory ) ) {
+        throw "Directory '$localPSRepositoryDirectory' does not exist"
+    }
+
+    $existingRepository = get-psrepository $localPSRepositoryName -erroraction silentlycontinue
+
+    if ( $existingRepository -ne $null ) {
+        unregister-psrepository $localPSRepositoryName
+    }
+
+    register-psrepository $localPSRepositoryName $localPSRepositoryDirectory
+
+    $localPSRepositoryName
+}
