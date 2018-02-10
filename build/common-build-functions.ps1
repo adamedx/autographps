@@ -249,11 +249,24 @@ function build-nugetpackage {
     $packagePath
 }
 
+function Get-RepositoryKeyFromFile($path) {
+    $fileData = get-content $path
+    $keyContent = if ( $fileData -is [string] ) {
+        $fileData
+    } else {
+        $fileData[0]
+    }
+
+    $keyContent.trim()
+}
+
+
 function publish-modulebuild {
     [cmdletbinding()]
     param(
         $moduleSourceDirectory = $null,
         $destinationRepositoryName = $null,
+        $repositoryKey = $null,
         [switch] $force)
 
     $manifestPaths = ls $moduleSourceDirectory -filter *.psd1
@@ -275,14 +288,36 @@ function publish-modulebuild {
 
     Generate-ReferenceModules $targetModuleManifestPath $moduleRootDirectory
 
-    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose -force" $moduleRootDirectory
+    $optionalArguments = ''
+
+    if ( $force ) {
+        $optionalArguments += '-force'
+        }
+
+    if ( $repositoryKey -ne $null ) {
+        $optionalArguments += " -nugetapikey = $repositoryKey"
+    }
+
+    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
+
     # Note that the path must be augmented rather than replaced
-    # in order for modules related to package management to be loaded
+    # in order for modules related to package management to be loade
     $commandScript = [Scriptblock]::Create("si env:psmodulepath `"`$env:psmodulepath;$modulePath`";$command")
-    powershell -noprofile -noninteractive -command ($commandScript)
+
+    write-verbose "Executing command '$commandScript'"
+    $result = powershell -noprofile -command ($commandScript)
+
+    # Use of the powershell command with a script block may not result in an exception
+    # when the script block throws an exception. However, $? is reliably set to a failure code in this case, so we check for that
+    # and use the captured stderr redirected to stdout and throw it
+    if ( ! $? ) {
+        throw "Failed to execute publishing command '$command' using module path '$modulePath' with error information '$result'"
+    }
+
+    $result
 }
 
 function Get-ModuleMetadataFromManifest ( $manifestPath ) {

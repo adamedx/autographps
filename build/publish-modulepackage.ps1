@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($targetRepository = 'psgallery', $targetDirectory = $null, [switch] $noclean, [switch] $force)
+[cmdletbinding()]
+param($targetRepository = 'psgallery', $repositoryKeyFile = $null, [switch] $noclean, [switch] $force)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -22,13 +23,18 @@ $moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
 Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
 
 $module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
+
 $moduleOutputPath = join-path (Get-OutputDirectory) "$moduleOutputSubdirectory/$($module.name)/$($module.version)"
 
 write-host "Publishing module at '$moduleOutputPath' to PS module repository '$targetRepository'..."
 
+$repositoryKey = if ( $repositoryKeyFile -ne $null ) {
+    Get-RepositoryKeyFromFile $repositoryKeyFile
+}
+
 $forceArgument = @{force=$force}
 
-publish-modulebuild $moduleOutputPath $targetRepository @forceArgument | out-null
+publish-modulebuild $moduleOutputPath $targetRepository $repositoryKey @forceArgument | out-null
 
 write-host "Module '$($module.name)' successfully published to repository $targetRepository."
 write-host -foregroundcolor green "Publish module succeeded."
