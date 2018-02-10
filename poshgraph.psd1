@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.7.2'
+ModuleVersion = '0.7.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -104,7 +104,7 @@ PrivateData = @{
         ProjectUri = 'https://github.com/adamedx/poshgraph'
 
         # A URL to an icon representing this module.
-        # IconUri = ''
+        IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
