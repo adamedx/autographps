@@ -295,7 +295,7 @@ function publish-modulebuild {
         }
 
     if ( $repositoryKey -ne $null ) {
-        $optionalArguments += " -nugetapikey = $repositoryKey"
+        $optionalArguments += " -nugetapikey $repositoryKey"
     }
 
     Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
