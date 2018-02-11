@@ -5,7 +5,7 @@ PoshGraph
 
 ----
 
-**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog of the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
@@ -51,7 +51,7 @@ cd poshgraph
 ```
 
 ## How to explore with PoshGraph
-After you've installed the module, use **PoshGraph** from any PowerShell session.
+After you've installed the module, use PoshGraph from any PowerShell session.
 
 ### Get started -- simple commands
 
@@ -64,7 +64,7 @@ Get-GraphItem me
 
 After you respond to authentication prompts from `Connect-Graph` cmdlet, `GetGraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object. The output will be as described in an earlier section.
 
-Since `Connect-Graph` establishes a logical "session," you can continue to execute commands without being asked to re-authenticate, e.g.
+Since `Connect-Graph` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g.
 
 ```powershell
 PS> get-graphitem organization
@@ -94,7 +94,9 @@ Now you can execute the following commands to read OneDrive file data and your c
 
 ```powershell
 PS> get-graphitem me/contacts | select displayname
+```
 
+```
 displayName
 -----------
 Cosmo Jones
@@ -111,7 +113,7 @@ history.md
 graphsearch.ps1
 ```
 
-Note that the subject of scopes and authorization in general is currently one of the most difficult aspects of Graph to understand. You'll need to consult the [documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are needed to access different locations of the Graph. In some cases, you will be unable to obtain the required scope without an action by your system administrator, or you will need to authenticate with an application identity rather than your user identity.
+Note that the subject of scopes and authorization in general is currently one of the most difficult aspects of Graph to understand. You'll need to consult the [permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are needed to access different locations of the Graph. In some cases, you will be unable to obtain the required scope without an action by your system administrator, or you will need to authenticate with an application identity rather than your user identity.
 
 Future modifications to PoshGraph will address the usability of scopes and authorization.
 
@@ -155,7 +157,7 @@ The project is almost ready for contributors; suggestions on features or other a
 * [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally
 
 ### Quickstart -- learn about the Graph
-The Quickstart is a way to try out PoshGraph without installing it. In the future it will feature an interactive tutorial, and is also useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
+The Quickstart is a way to try out PoshGraph without installing the PoshGraph module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
 
 * [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
@@ -166,7 +168,7 @@ The Quickstart is a way to try out PoshGraph without installing it. In the futur
 
   `.\build\quickstart.ps1`
 
-This will download dependencies, build the PoshGraph module, and launch a new PowerShell console with the module imported. You can execute a PoshGraph command like the following in the console -- try it:
+This will download dependencies, build the PoshGraph module, and launch a new PowerShell console with the module imported. You can execute a PoshGraph cmdlet like the following in the console -- try it:
 
   `Test-Graph`
 
@@ -193,7 +195,7 @@ These commmands can also be used when testing modifications you make to PoshGrap
 
 Tests are implemented using Pester. To ensure you have the latest version of Pester on our developer system, visit the [Pester site](https://github.com/pester/Pester) for instructions on installing Pester.
 
-To test, execute the PowerShell command below from the root of the repository
+To test, use PowerShell to execute the command below from the root of the repository
 
 ```powershell
 invoke-pester
