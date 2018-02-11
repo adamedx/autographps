@@ -42,12 +42,12 @@ Describe "Poshgraph application" {
                 'disconnect-graph',
                 'get-graphtoken')
 
-            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
+            $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
             $expectedFunctions | foreach {
-                if ( $manifest.FunctionsToExport -contains $_ ) {
+                if ( $manifest.CmdletsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }

@@ -14,6 +14,6 @@
 
 import-module 'scriptclass'
 
-$functions = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph')
+$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph')
 
-export-modulemember -function $functions
+export-modulemember -cmdlet $cmdlets
