@@ -9,14 +9,12 @@ PoshGraph is a PowerShell-based CLI for exploring the [Microsoft Graph](https://
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
-## Prerequisites
-**PoshGraph** requires the following:
-* A **Windows 10** operating system or later
-* The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
-* (Optional): [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally
+## System requirements
+
+**PoshGraph** requires Windows 10 and PowerShell 5.0.
 
 ## Installation and usage
-PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com), so just run the following command to install PoshGraph into your user profile:
+PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install PoshGraph into your user profile:
 
 ```powershell
 Install-Module PoshGraph -scope currentuser
@@ -148,7 +146,15 @@ Most functionality of AAD Graph is currently available in MS Graph itself, and i
 
 The project is almost ready for contributors; suggestions on features or other advice are welcome while we establish a baseline.
 
-## Quickstart -- learn about the Graph
+### Developer prerequisites
+
+**PoshGraph** development requires the following:
+
+* A **Windows 10** operating system or later
+* The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
+* [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally
+
+### Quickstart -- learn about the Graph
 The Quickstart is a way to try out PoshGraph without installing it. In the future it will feature an interactive tutorial, and is also useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
 
 * [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
@@ -177,7 +183,7 @@ This should return something like the following:
     TimeLocal  : 2/6/2018 6:05:09 AM
     TimeUtc    : 2/6/2018 6:05:09 AM
 
-If you need to launch another console with Posh Graph, you can just run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
+If you need to launch another console with Posh Graph, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
 
     .\build\import-devmodule.ps1
 
