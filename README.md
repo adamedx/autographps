@@ -5,13 +5,13 @@ PoshGraph
 
 ----
 
-PoshGraph is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog of the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog of the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
 ## System requirements
 
-**PoshGraph** requires Windows 10 and PowerShell 5.0.
+PoshGraph requires Windows 10 and PowerShell 5.0.
 
 ## Installation and usage
 PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install PoshGraph into your user profile:
@@ -20,7 +20,7 @@ PoshGraph is available through the [PowerShell Gallery](https://www.powershellga
 Install-Module PoshGraph -scope currentuser
 ```
 
-Once that's finished, you can use a PoshGraph cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](ttps://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once that's finished, you can use a PoshGraph cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> get-graphitem me
