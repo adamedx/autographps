@@ -42,20 +42,12 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
-    iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination'" | out-host
+    iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec" | out-host
 
-    # Rename any powershell modules so they can be imported from the containing folder
-    ls $packagesDestination -r '*.psd1' | foreach {
-        $source = $_.directory.fullname
-        $destination = (join-path (split-path -parent $_.directory.fullname) $_.basename)
-        if ( ! (test-path $destination) ) {
-            write-host -foregroundcolor cyan "Moving '$source' to '$destination'"
-            mv $source $destination
-            mkdir $source | out-null
-        } else {
-            write-host "Skipping move of '$source' to '$destination' because it already exists"
-        }
-    }
+
+    # Remove everything that is not .net45 -- otherwise there will be binaries
+    # for 5 or more additional packages!
+    ls lib\*\lib\* | where { $_.name -ne 'net45' } | rm -r -force
 }
 
 InstallDependencies $clean

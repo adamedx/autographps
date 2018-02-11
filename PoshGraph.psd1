@@ -12,7 +12,7 @@
 RootModule = 'poshgraph.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.7.7'
+ModuleVersion = '0.7.8'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Modulus Group'
 Copyright = '(c) 2018 Adam Edwards.'
 
 # Description of the functionality provided by this module
-Description = 'CLI for Microsoft Graph and Azure Active Directory Graph interaction'
+Description = 'CLI for Microsoft Graph interaction'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
