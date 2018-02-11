@@ -14,7 +14,7 @@ The project is in the earliest stages of development and almost but not quite ye
 PoshGraph requires Windows 10 and PowerShell 5.0.
 
 ## Installation and usage
-PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install PoshGraph into your user profile:
+PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install the latest stable release of PoshGraph into your user profile:
 
 ```powershell
 Install-Module PoshGraph -scope currentuser
