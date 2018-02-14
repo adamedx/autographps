@@ -24,15 +24,20 @@ Describe "The Test-Graph cmdlet" {
         $result
     }
 
+    BeforeAll {
+        remove-module -force scriptclass -erroraction silentlycontinue
+        import-module -force scriptclass
+    }
+
     Context "when receiving a successful response from Graph" {
         BeforeAll {
-            remove-module -force 'poshgraph' 2>$null
+            remove-module -force 'poshgraph' -erroraction silentlycontinue
             import-module scriptclass -force
             import-module $manifestlocation -force
         }
 
         AfterAll {
-            remove-module -force 'poshgraph' 2>$null
+            remove-module -force 'poshgraph' -erroractio silentlycontinue
         }
 
         It "should succeed when given no parameters" {

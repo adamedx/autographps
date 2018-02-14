@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import-module 'scriptclass'
-
 $cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph')
+
+. "$psscriptroot/src/graph.ps1"
 
 export-modulemember -cmdlet $cmdlets

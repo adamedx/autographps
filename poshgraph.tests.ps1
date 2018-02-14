@@ -15,7 +15,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Poshgraph application" {
-    $manifestLocation   = Join-Path $here 'poshgraph.psd1'
+    $manifestLocation = Join-Path $here 'poshgraph.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
@@ -27,6 +27,14 @@ Describe "Poshgraph application" {
     }
 
     $manifest = Get-ModuleMetadataFromManifest 'poshgraph' $manifestlocation
+
+    BeforeAll {
+        remove-module -force scriptclass -erroraction silentlycontinue
+        import-module -force scriptclass
+    }
+
+    AfterAll {
+    }
 
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {

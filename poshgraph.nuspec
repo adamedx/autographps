@@ -13,7 +13,7 @@
     <copyright>Copyright 2017</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
-      <dependency id="scriptclass" version="0.12.6" />
+      <dependency id="scriptclass" version="0.12.9" />
     </dependencies>
   </metadata>
   <files>
