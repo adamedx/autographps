@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'poshgraph.psm1'
+# RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.7.14'
+ModuleVersion = '0.7.15'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.12.9';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.12.10';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @()
