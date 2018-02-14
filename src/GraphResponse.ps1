@@ -74,11 +74,13 @@ ScriptClass GraphResponse {
     function NormalizePSObject([PSObject] $psobject) {
         $result = @{}
 
-        $psobject | gm -membertype properties | select -expandproperty name | foreach {
-            $memberName = $_
-            $memberValue = $psobject | select -expandproperty $memberName
-            $normalizedValue = $memberValue
-            $result[$memberName] = $normalizedValue
+        if ( $psobject -ne $null ) {
+            $psobject | gm -membertype properties | select -expandproperty name | foreach {
+                $memberName = $_
+                $memberValue = $psobject | select -expandproperty $memberName
+                $normalizedValue = $memberValue
+                $result[$memberName] = $normalizedValue
+            }
         }
         $result
     }
