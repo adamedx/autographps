@@ -27,6 +27,8 @@ function Get-GraphItem {
 
         [switch] $Json,
 
+        [HashTable] $Headers = $null,
+
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
@@ -41,6 +43,7 @@ function Get-GraphItem {
         RelativeUri=$ItemRelativeUri
         Version=$Version
         JSON=$Json
+        Headers=$Headers
         First=$pscmdlet.pagingparameters.first
         Skip=$pscmdlet.pagingparameters.skip
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount

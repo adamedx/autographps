@@ -15,18 +15,35 @@
 . (import-script GraphEndpoint)
 . (import-script GraphIdentity)
 . (import-script GraphConnection)
-. (import-script Application)
 
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
-        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][String[]] $ScopeNames = @('User.Read'),
-        [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
-        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][Guid] $AppIdSecret,
-        [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
-        [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
+        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='custom')]
+        [switch] $AADGraph,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [String[]] $ScopeNames = @('User.Read'),
+
+        [parameter(parametersetname='msgraph')]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='custom')]
+        [Guid] $AppId,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [Guid] $AppIdSecret,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom', mandatory=$true)]
+        [Uri] $GraphEndpointUri = $null,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom', mandatory=$true)]
+        [Uri] $AuthenticationEndpointUri = $null
     )
 
     $graphType = if ( $AADGraph.ispresent ) {

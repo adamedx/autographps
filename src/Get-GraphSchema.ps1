@@ -20,55 +20,38 @@
 function Get-GraphSchema {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0,parametersetname='GetSchemaExistingConnection',mandatory=$true)]
-        [parameter(position=0,parametersetname='ListSchemasExistingConnection',mandatory=$true)]
-        [parameter(position=0,parametersetname='GetSchema',mandatory=$true)]
-        [parameter(position=0,parametersetname='ListSchemas',mandatory=$true)]
+        [parameter(position=0, parametersetname='GetSingleNamespace', mandatory=$true)]
+        [parameter(position=0, parametersetname='ListSchemas')]
         [String] $Namespace = $null,
 
-        [parameter(position=1, parametersetname='GetSchemaExistingConnection', mandatory=$true)]
-        [parameter(position=1, parametersetname='GetSchema', mandatory=$true)]
+        [parameter(position=1, parametersetname='GetSingleNamespace')]
         [String] $SchemaVersion = $null,
 
-        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='GetSchemaGraphObject', mandatory=$true)]
+        [parameter(parametersetname='SchemasForVersionObject', mandatory=$true)]
         [PSCustomObject] $VersionObject,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='GetSchemaGraphApiVersion', mandatory=$true)]
+        [parameter(parametersetname='SchemasForApiVersion', mandatory=$true)]
         [String] $ApiVersion = $null,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')]
-        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection')]
-        [parameter(parametersetname='GetSchemaGraphApiVersion')]
-        [parameter(parametersetname='GetSchemaGraphObject')]
+        [parameter(parametersetname='SchemasForApiVersion')]
+        [parameter(parametersetname='SchemasForSchemaVersion')]
+        [parameter(parametersetname='ListSchemas')]
         [String[]] $NamespaceList = $null,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection')]
-        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection')]
-        [parameter(parametersetname='GetSchemaGraphApiVersion')]
-        [parameter(parametersetname='GetSchemaGraphObject')]
-        [parameter(parametersetname='GetSchema')]
+
+        [parameter(parametersetname='SchemasForApiVersion')]
+        [parameter(parametersetname='SchemasForVersionObject')]
+        [parameter(parametersetname='GetSingleNamespace')]
         [switch] $Xml,
 
-        [parameter(parametersetname='ListSchemasExistingConnection', mandatory=$true)]
         [parameter(parametersetname='ListSchemas', mandatory=$true)]
         [switch] $ListSchemas,
 
-        [parameter(parametersetname='ListSchemasExistingConnection')]
         [parameter(parametersetname='ListSchemas')]
         [switch] $Json,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersion')]
-        [parameter(parametersetname='GetSchemaGraphObject')]
-        [parameter(parametersetname='GetSchema')]
-        [parameter(parametersetname='ListSchemas')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
-        [parameter(parametersetname='GetSchemaGraphApiVersionExistingConnection',mandatory=$true)]
-        [parameter(parametersetname='GetSchemaGraphObjectExistingConnection',mandatory=$true)]
-        [parameter(parametersetname='GetSchema',mandatory=$true)]
-        [parameter(parametersetname='ListSchemas')]
         [PSCustomObject] $Connection = $null
     )
 
@@ -95,8 +78,13 @@ function Get-GraphSchema {
     $graphVersion = if ( $SchemaVersion -eq $null -or $SchemaVersion.length -eq 0 ) {
         if ( $VersionObject -ne $null ) {
             $VersionObject
-        } elseif ( $ApiVersion -ne $null) {
-            get-graphversion -Connection $graphConnection -version $ApiVersion
+        } else {
+            $sourceApiVersion = if ( $ApiVersion -ne $null -and $ApiVersion -ne '' ) {
+                $apiVersion
+            } else {
+                'v1.0'
+            }
+            get-graphversion -Connection $graphConnection -version $sourceApiVersion
         }
     }
 
@@ -108,6 +96,8 @@ function Get-GraphSchema {
 
         if ( $NameSpaceList -ne $null ) {
             $NamespaceList
+        } elseif ( $Namespace -ne $null ) {
+            @($Namespace)
         } else {
             $graphSchemaVersions.keys
         }
@@ -122,7 +112,7 @@ function Get-GraphSchema {
         $apiVersionDisplay = if ( $apiVersion -ne $null ) {
             "'$apiVersion'"
         } else {
-            ''
+            'v1.0'
         }
 
         if ($graphSchemaVersion -eq $null) {

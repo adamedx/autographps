@@ -37,7 +37,7 @@ ScriptClass GraphEndpoint {
                 Graph='https://microsoftgraph.chinacloudapi.cn'
             }
             [GraphCloud]::GermanyCloud = @{
-                Authentication='https://windows.microsoftonline.de'
+                Authentication='https://login.microsoftonline.de/common'
                 Graph='https://graph.microsoft.de'
             }
             [GraphCloud]::USGovernmentCloud = @{

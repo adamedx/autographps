@@ -35,6 +35,8 @@ function Invoke-GraphRequest {
 
         [switch] $JSON,
 
+        [HashTable] $Headers = $null,
+
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
@@ -119,7 +121,7 @@ function Invoke-GraphRequest {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
-        $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $null $null
+        $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
         $request |=> SetBody $Payload
         $graphResponse = $request |=> Invoke $skipCount
         $skipCount = $null

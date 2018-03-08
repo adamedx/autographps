@@ -26,7 +26,7 @@ Once that's finished, you can use a PoshGraph cmdlet like `Get-GraphItem` below 
 PS> get-graphitem me
 ```
 
-After you've responeded to the authentication prompt, you should see output that represents your user object similar to the following:
+After you've responded to the authentication prompt, you should see output that represents your user object similar to the following:
 
     id                : 82f53da9-b996-4227-b268-c20564ceedf7
     officeLocation    : 7/3191
