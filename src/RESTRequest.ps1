@@ -69,7 +69,7 @@ ScriptClass RESTRequest {
             write-verbose "Request Body: `n`n$($this.body)`n`n"
 
             $httpResponse = try {
-                Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent @optionalArguments
+                Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
             } catch [System.Net.WebException] {
                 $response = $_.exception.response
                 $responseStream = ($::.RestResponse |=> GetErrorResponseDetails $response)
