@@ -116,7 +116,7 @@ function Invoke-GraphRequest {
         $query = '$count'
     }
 
-    while ( $graphRelativeUri -ne $null -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
+    while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }

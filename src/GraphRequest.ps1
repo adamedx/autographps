@@ -26,13 +26,15 @@ ScriptClass GraphRequest {
 
     function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
         $uriString = if ( $uri.scheme -ne $null ) {
-            $uri.tostring()
+            $uri.AbsoluteUri
         } else {
-            $graphConnection.GraphEndpoint.Graph.tostring() + $uri.tostring()
+            $graphConnection.GraphEndpoint.Graph.tostring() + $uri.originalstring
         }
 
         $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
         $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uriQueryLength))
+
+
         $this.Connection = $GraphConnection
         $this.RelativeUri = $uri
         $this.Uri = $uriNoQuery
