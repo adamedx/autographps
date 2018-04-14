@@ -35,7 +35,9 @@ ScriptClass GraphConnection {
     }
 
     function Connect {
-        $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
+        if ($this.Identity) {
+            $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
+        }
     }
 
     static {
@@ -59,16 +61,18 @@ ScriptClass GraphConnection {
             $this.SessionConnection -ne $null
         }
 
-        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames) {
+        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication $::.Application.AppId
-            $identity = new-so GraphIdentity $app
+            $identity = if ( ! $anonymous ) {
+                new-so GraphIdentity $app
+            }
             new-so GraphConnection $endpoint $identity $ScopeNames
         }
 
-        function GetDefaultConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames) {
+        function GetDefaultConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
             if ( $graphType -eq [GraphType]::AADGraph -or ! (IsSessionConnected) ) {
-                NewSimpleConnection $graphType $cloud $ScopeNames
+                NewSimpleConnection $graphType $cloud $ScopeNames $anonymous
             } else {
                 GetSessionConnection
             }

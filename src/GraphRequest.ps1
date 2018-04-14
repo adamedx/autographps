@@ -48,7 +48,9 @@ ScriptClass GraphRequest {
 
         $this.Connection |=> Connect
 
-        $this.Headers['Authorization'] = $graphConnection.Identity.token.CreateAuthorizationHeader()
+        if ($graphConnection.Identity) {
+            $this.Headers['Authorization'] = $graphConnection.Identity.token.CreateAuthorizationHeader()
+        }
     }
 
     function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null) {
