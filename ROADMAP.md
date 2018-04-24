@@ -2,6 +2,12 @@
 
 ## To-do items -- prioritized
 
+* Get-GraphUri
+* Get-GraphItem -offline # offline retrieves type data, requires metadata download
+* Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
+* # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
+* Get-GraphTypeData -typename -graphitem
+* Update-GraphMetadata
 * Add signout
 * Simple samples
 * Publish first preview / alpha
@@ -27,7 +33,6 @@
 * invoke-graphaction
 * generate nuspec
 * Find a better name!
-  * Rename stdposh to ScriptClass
 * README
 * Extended Samples
 * Publish to psgallery
@@ -63,6 +68,7 @@
 * Session support
 * Add connection support to test-graph
 * Update build steps
+* Rename stdposh to ScriptClass
 
 ### Postponed
 
