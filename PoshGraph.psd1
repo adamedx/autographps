@@ -72,7 +72,18 @@ NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.13.0';Guid='9b0f55
 FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = @('get-graphitem', 'Test-Graph', 'Get-GraphVersion', 'new-graphconnection', 'invoke-graphrequest', 'get-graphtoken', 'get-graphschema', 'get-grapherror', 'connect-graph', 'disconnect-graph')
+    CmdletsToExport = @(
+        'get-graphitem',
+        'Test-Graph',
+        'Get-GraphVersion',
+        'new-graphconnection',
+        'invoke-graphrequest',
+        'get-graphtoken',
+        'get-graphschema',
+        'get-grapherror',
+        'connect-graph',
+        'disconnect-graph'
+    )
 
 # Variables to export from this module
 # VariablesToExport = @()
@@ -87,7 +98,34 @@ AliasesToExport = @()
 # ModuleList = @('')
 
 # List of all files packaged with this module
-FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\cmdlets.ps1', '.\src\test-graph.ps1', '.\src\graphendpoint.ps1', '.\src\restrequest.ps1', '.\src\restresponse.ps1', '.\src\Get-GraphToken.ps1', '.\src\invoke-graphrequest.ps1', '.\src\get-graphitem.ps1', '.\src\get-graphversion.ps1', '.\src\graphapplication.ps1', '.\src\graphrequest.ps1', '.\src\graphresponse.ps1', '.\src\grapherrorrecorder.ps1', '.\src\get-graphschema.ps1', '.\src\get-graphitem.ps1', '.\src\get-grapherror.ps1', '.\src\graphidentity.ps1', '.\src\application.ps1', '.\src\new-graphconnection.ps1', '.\src\connect-graph.ps1', '.\src\disconnect-graph.ps1', '.\src\graph.ps1','.\src\GraphConnection.ps1', '.\build\install.ps1')
+    FileList = @(
+        '.\poshgraph.psd1',
+        '.\poshgraph.psm1',
+        '.\src\cmdlets.ps1',
+        '.\src\test-graph.ps1',
+        '.\src\graphendpoint.ps1'
+        '.\src\restrequest.ps1',
+        '.\src\restresponse.ps1',
+        '.\src\Get-GraphToken.ps1',
+        '.\src\invoke-graphrequest.ps1',
+        '.\src\get-graphitem.ps1',
+        '.\src\get-graphversion.ps1',
+        '.\src\graphapplication.ps1',
+        '.\src\graphrequest.ps1',
+        '.\src\graphresponse.ps1',
+        '.\src\grapherrorrecorder.ps1',
+        '.\src\get-graphschema.ps1',
+        '.\src\get-graphitem.ps1',
+        '.\src\get-grapherror.ps1',
+        '.\src\graphidentity.ps1',
+        '.\src\application.ps1',
+        '.\src\new-graphconnection.ps1',
+        '.\src\connect-graph.ps1',
+        '.\src\disconnect-graph.ps1',
+        '.\src\graph.ps1',
+        '.\src\GraphConnection.ps1',
+        '.\build\install.ps1'
+    )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
