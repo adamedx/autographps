@@ -124,6 +124,17 @@ AliasesToExport = @()
         '.\src\disconnect-graph.ps1',
         '.\src\graph.ps1',
         '.\src\GraphConnection.ps1',
+        '.\src\common\ProgressWriter.ps1',
+        '.\src\metadata\metadata.ps1',
+        '.\src\metadata\Entity.ps1',
+        '.\src\metadata\EntityEdge.ps1',
+        '.\src\metadata\EntityGraph.ps1',
+        '.\src\metadata\EntityVertex.ps1',
+        '.\src\metadata\GraphBuilder.ps1',
+        '.\src\metadata\GraphContext.ps1',
+        '.\src\metadata\GraphDataModel.ps1',
+        '.\src\metadata\GraphSegment.ps1',
+        '.\src\metadata\SegmentParser.ps1',
         '.\build\install.ps1'
     )
 
