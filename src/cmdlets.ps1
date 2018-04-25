@@ -22,4 +22,6 @@
 . (import-script Get-GraphError)
 . (import-script Connect-Graph)
 . (import-script Disconnect-Graph)
+. (import-script cmdlets\Update-GraphMetadata)
+
 

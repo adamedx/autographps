@@ -23,14 +23,21 @@ ScriptClass GraphBuilder {
     $dataModel = $null
     $namespace = $null
     $percentComplete = 0
+    $metadata = $null
 
-    function __initialize($graphContext) {
+    function __initialize($graphContext, $metadata = $null) {
         $this.graphContext = $graphContext
+        $this.metadata = $metadata
     }
 
     function NewGraph {
         if ( ! $this.dataModel ) {
-            $metadata = $this.GraphContext |=> GetMetadata
+            $metadata = if ($this.metadata)  {
+                write-verbose "NewGraph: Using existing metadata instead of downloading"
+                $this.metadata
+            } else {
+                $this.GraphContext |=> GetMetadata
+            }
             $this.dataModel = new-so GraphDataModel $metadata
             $this.namespace = $this.dataModel |=> GetNamespace
         }
@@ -233,19 +240,27 @@ ScriptClass GraphBuilder {
         $graphVersionsPending = @{}
         $graphVersions = @{}
 
-        function GetGraph($apiVersion = 'v1.0', $connection) {
+        function GetGraph($apiVersion = 'v1.0', $connection, $metadata = $null) {
 #            (__GetGraph $apiVersion $connection).Graph
-            $graphJob = GetGraphAsync $apiVersion $connection
-            WaitForGraphAsync $graphJob
+            $graphid = $::.GraphContext |=> GetContextId $connection $apiversion
+            $graph = $this.graphVersions[$graphId]
+            if ( $graph ) {
+                $graph
+            } else {
+                $graphJob = GetGraphAsync $apiVersion $connection $metadata
+                WaitForGraphAsync $graphJob
+            }
         }
 
-        function GetGraphAsync($apiVersion = 'v1.0', $connection) {
+        function GetGraphAsync($apiVersion = 'v1.0', $connection, $metadata = $null) {
             $graphid = $::.GraphContext |=> GetContextId $connection $apiversion
             $existingJob = $this.graphVersionsPending[$graphId]
             if ( $existingJob ) {
+                write-verbose "Found existing job '$existingJob.job.id' for '$graphId'"
                 $existingJob
             } else {
-                 __GetGraphAsync $graphId $apiVersion $connection
+                write-verbose "No existing job for '$graphId' -- queueing up a new job"
+                 __GetGraphAsync $graphId $apiVersion $connection $metadata
             }
         }
 
@@ -253,45 +268,86 @@ ScriptClass GraphBuilder {
             $graphId = $graphAsyncResult.Id
             $submittedVersion = $this.graphVersionsPending[$graphId]
 
-            if ( ! $submittedVersion ) {
-                throw "No request was every submitted to build graph with id '$graphId'"
+            $jobNotFound = if ( ! $submittedVersion ) {
+                write-verbose "No existing job found for '$graphId'"
+                $true
+            } elseif ($submittedVersion.job.id -ne $graphAsyncResult.job.id ) {
+                write-verbose "Found job for '$graphId', but queued job '$($submittedVersion.job.id)' does not match requested job '$($graphAsyncResult.job.id)'"
             }
+
+            if ( $jobNotFound ) {
+                write-verbose "No existing job found for '$graphId', checking for it in completed versions"
+                $existingVersion = $this.GraphVersions[$graphId]
+                if ( $existingVersion[$graphId] ) {
+                    write-verbose "Found completed version for '$graphId', returning it"
+                    return $existingVersion
+                }
+                throw "No queued version found for '$graphId'"
+            }
+
+            write-verbose "Found unfinished job '$($submittedVersion.job.id)' for graph '$graphId' -- waiting for it"
 
             # This is only retrieved by the first caller for this job --
             # subsequent jobs return $null
-            $jobResult = receive-job -wait $graphAsyncResult.Job
+            $jobResult = receive-job -wait $submittedVersion.Job
 
             if ( $jobResult ) {
                 # Only one caller will set this for a given job since
                 # receive-job only returns a non-null result for the
                 # first caller
-                $this.graphVersions[$graphId] = $jobResult.Graph
+                write-verbose "Successfully retrieved job result for $($submittedVersion.job.id) for graph '$graphId'"
+                if ( $this.graphVersionsPending[$graphId] ) {
+                    write-verbose "Removing pending version for job '$($submittedVersion.job.id)' for grpah '$graphId'"
+                    $this.graphVersions[$graphId] = $jobResult.Graph
+                    $this.graphVersionsPending.Remove($graphId)
+                    remove-job $submittedVersion.job -force
+                } else {
+                    write-verbose "Completed job '$($submittedVersion.job.id)' for graph '$graphid', but no pending version found, so this is a no-op"
+                }
             } else {
                 # The call may have been completed by someone else --
                 # this is common since we always wait on the async
                 # result, so if more than one caller asks for a graph,
                 # all but the first will hit this path
+                write-verbose "Job '$($submittedVersion.job.id)' for graph '$graphId' completed wtih no result -- another caller may have already completed the call"
 
                 # If it was completed, it should be listed in graphversions
+                if ( $this.graphVersionsPending[$graphId] ) {
+                    write-verbose "Removing pending version for job '$submittedVersion.job.id' for grpah '$graphId'"
+                    $this.graphVersionsPending.Remove($graphId)
+                    remove-job $submittedVersion.job -force
+                }
+
                 $completedGraph = $this.graphVersions[$graphId]
                 if ( ! $completedGraph ) {
-                    throw "No pending or successful job for building graph with id '$graphId'"
+                    throw "No pending or successful job '$($submittedVersion.job.id)' for building graph with id '$graphId'"
                 }
             }
 
+            write-verbose "Successfully returning graph '$graphid' from job '$($submittedversion.job.id)'"
             $this.graphVersions[$graphId]
         }
 
-        function __GetGraphAsync($graphId, $apiVersion, $connection) {
+        function CancelPendingGraph($apiVersion, $connection) {
+            $graphid = $::.GraphContext |=> GetContextId $connection $apiversion
+            $pendingGraph = $this.graphVersionsPending[$graphid]
+            if ( $pendingGraph ) {
+                $pendingGraph.job | stop-job
+                $this.graphVersionsPending.Remove($graphId)
+            }
+        }
+
+        function __GetGraphAsync($graphId, $apiVersion, $connection, $metadata) {
             $dependencyModule = get-module 'poshgraph'
             $thiscode = join-path $psscriptroot metadata.ps1
-            $graphLoadJob = start-job { param($module, $scriptsourcepath, $version, $graphConnection) import-module $module; . $scriptsourcepath;  ($::.GraphBuilder |=> __GetGraph $version $graphConnection) } -argumentlist $dependencymodule, $thiscode, $apiVersion, $connection
+            $graphLoadJob = start-job { param($module, $scriptsourcepath, $version, $graphConnection, $schemadata) import-module $module; . $scriptsourcepath;  ($::.GraphBuilder |=> __GetGraph $version $graphConnection $schemadata) } -argumentlist $dependencymodule, $thiscode, $apiVersion, $connection, $metadata -name "PoshGraph metadata download for '$graphId'"
             $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
+            write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
             $this.graphVersionsPending[$graphId] = $graphAsyncJob
             $graphAsyncJob
         }
 
-        function __GetGraph($apiVersion, $connection) {
+        function __GetGraph($apiVersion, $connection, $metadata) {
             $graphConnection = if ( ! $connection ) {
                 $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) -anonymous $true
             } else {
@@ -301,17 +357,9 @@ ScriptClass GraphBuilder {
             $graphContext = new-so GraphContext $graphConnection $apiVersion
             $graphId = $graphContext.id
 
-            $Testgraph = get-variable -scope global -value testrefactor -erroraction silentlycontinue
-            $graph = if ( ! $testGraph ) {
-                $this.graphVersionsPending[$graphId]
-            } else {
-                $testGraph
-            }
+            $builder = new-so GraphBuilder $graphContext $metadata
+            $graph = $builder |=> NewGraph
 
-            if ( ! $graph ) {
-                $builder = new-so GraphBuilder $graphContext
-                $graph = $builder |=> NewGraph
-            }
             [PSCustomObject]@{Graph=$graph;Id=$graphId}
         }
     }

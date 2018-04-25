@@ -2,12 +2,15 @@
 
 ## To-do items -- prioritized
 
-* Get-GraphUri
+* Get-GraphUri -- an offline api, maybe add -children flag
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
 * # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
 * Get-GraphTypeData -typename -graphitem
+* Get-GraphMetadata
 * Update-GraphMetadata
+* Refactor GraphBuilder
+* Genericize GraphContext
 * Add signout
 * Simple samples
 * Publish first preview / alpha
