@@ -120,10 +120,9 @@ ScriptClass GraphBuilder {
             }
             $transitions | foreach {
                 $transition = $_
-                $sink = $graph |=> TypeVertexFromTypeName $transition.type
+                $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
                 if ( $sink -ne $null ) {
-                    $entity = new-so Entity $transition $this.namespace
-                    $edge = new-so EntityEdge $source $sink $entity
+                    $edge = new-so EntityEdge $source $sink $transition
                     $source |=> AddEdge $edge
                 } else {
                     write-verbose "Unable to find entity type for '$($transition.type)', skipping"
@@ -262,7 +261,7 @@ ScriptClass GraphBuilder {
             $graphid = $context.id
             $existingJob = $this.graphVersionsPending[$graphId]
             if ( $existingJob ) {
-                write-verbose "Found existing job '$existingJob.job.id' for '$graphId'"
+                write-verbose "Found existing job '$($existingJob.job.id)' for '$graphId'"
                 $existingJob
             } else {
                 write-verbose "No existing job for '$graphId' -- queueing up a new job"

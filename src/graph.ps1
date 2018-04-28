@@ -15,3 +15,7 @@
 . (import-script metadata\metadata)
 . (import-script cmdlets)
 
+# Start an asynchronous load of the metadata
+$::.GraphBuilder |=> GetGraphAsync | out-null
+
+

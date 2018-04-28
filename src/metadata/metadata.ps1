@@ -23,5 +23,3 @@
 . (import-script GraphSegment)
 . (import-script SegmentParser)
 
-# Start an asynchronous load of the metadata
-$::.GraphBuilder |=> GetGraphAsync | out-null
