@@ -13,51 +13,58 @@
 # limitations under the License.
 
 ScriptClass Entity {
-    $schema = $null
     $namespace = $null
     $name = $null
     $type = $null
+    $typeData = $null
+    $navigations = $null
+
     function __initialize($schema, $namespace) {
-        $this.schema = $schema
         $this.namespace = $namespace
 
         $schemaElement = $schema | select -first 1
         $this.type = $schemaElement | select -expandproperty localname
         $this.name = $schemaElement | select -first 1 | select -expandproperty name
+        $this.typeData = GetEntityTypeData $schema
+        $this.navigations = if ( ($schema | gm navigationproperty) -ne $null ) {
+            $schema.navigationproperty | foreach {
+                [PSCustomObject]@{LocalName=$_.localname;Name=$_.name;Type=$_.type}
+            }
+        }
     }
 
     function GetEntityId {
         '{0}:{1}:{2}' -f $this.type, $this.namespace, $this.name
     }
 
-    function GetEntityTypeData {
+    function GetEntityTypeData($schema) {
         $typeData = switch ($this.type) {
             'NavigationProperty' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.schema.type
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.type
             }
             'NavigationPropertyBinding' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.schema.parameter.bindingparameter.type
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.parameter.bindingparameter.type
             }
             'Function' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.schema.ReturnType
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.ReturnType
             }
         }
 
         if ( ! $typeData ) {
             $typeName = switch ($this.type) {
                 'Singleton' {
-                    $this.schema.type
+                    $schema.type
                 }
                 'EntityType' {
-                    $::.Entity |=> QualifyName $this.namespace $this.schema.name
+                    $::.Entity |=> QualifyName $this.namespace $schema.name
                 }
                 'EntitySet' {
-                    $this.schema.entitytype
+                    $schema.entitytype
                 }
                 'Action' {
-                    if ( $this.schema | gm ReturnType ) {
-                        write-verbose "'$($this.name)' is an Action that should have no return type but it is specified to have a return type of $($this.schema.returntype.type)"
-                        $this.schema.returntype.type
+                    if ( $schema | gm ReturnType ) {
+                        write-verbose "'$($this.name)' is an Action that should have no return type but it is specified to have a return type of $($schema.returntype.type)"
+                        $schema.returntype.type
                     }
                 }
                 default {

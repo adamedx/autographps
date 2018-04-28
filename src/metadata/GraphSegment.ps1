@@ -56,14 +56,14 @@ ScriptClass GraphSegment {
             throw "Vertex segment instance name may not be supplied for '$($this.graphElement.id)', segments are pre-defined"
         }
 
-        $graphElement = if ( test-scriptobject $this.graphElement EntityEdge ) {
+        $graphElement = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
             if ( $this.GraphElement.sink |=> IsNull ) {
                 return $null
             } else {
                 $this.GraphElement.sink
             }
         } elseif ( $this.graphElement.type -eq 'EntitySet' ) {
-            $typeData = $this.graphElement.entity |=> GetEntityTypeData
+            $typeData = $this.graphElement.entity.typeData
             $graph |=> TypeVertexFromTypeName $typeData.EntityTypeName
         } else {
             throw "Unexpected vertex type '$($this.graphElement.type)' for segment '$($segment.name)'"

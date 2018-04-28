@@ -26,7 +26,7 @@ ScriptClass GraphContext {
     }
 
     function GetGraphEndpoint {
-        $endpoint = if ( $this.connection ) {
+        if ( $this.connection ) {
             $this.connection.GraphEndpoint.Graph
         } else {
             $null
@@ -49,7 +49,7 @@ ScriptClass GraphContext {
         }
 
         function __GetGraphEndpoint($connection) {
-            $endpoint = if ( $connection -ne $null ) {
+            if ( $connection -ne $null ) {
                 $connection.GraphEndpoint.Graph
             } else {
                 $null

@@ -30,7 +30,7 @@ ScriptClass EntityEdge {
         $this.source = $source
         $this.transition = $transition
 
-        $typeData = $transition |=> GetEntityTypeData
+        $typeData = $transition.typeData
         $this.oneToMany = $typeData.isCollection
 
         $this.name = if ( $transition.type -eq 'NavigationPropertyBinding' ) {

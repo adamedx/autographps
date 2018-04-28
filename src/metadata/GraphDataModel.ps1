@@ -49,16 +49,4 @@ ScriptClass GraphDataModel {
         $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing functions"
         $this.SchemaData.Edmx.DataServices.Schema.Function
     }
-
-    function GetNavigationsFromEntityType($entity) {
-        if ( ($entity | gm navigationproperty) -ne $null ) {
-            $entity.navigationproperty
-        }
-    }
-
-    function GetNavigationsFromRoot($entity) {
-        if ( ($entity | gm navigationpropertybinding) -ne $null ) {
-            $entity.navigationpropertybinding
-        }
-    }
 }

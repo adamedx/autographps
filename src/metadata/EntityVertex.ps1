@@ -20,6 +20,7 @@ ScriptClass EntityVertex {
     $entity = $null
     $type = $null
     $outgoingEdges = $null
+    $typeName = $null
 
     function __initialize($entity) {
         $this.entity = $entity
@@ -29,6 +30,7 @@ ScriptClass EntityVertex {
             $this.type = $entity.type
             $this.name = $entity.Name
             $this.id = $entity |=> GetEntityId
+            $this.typeName = $entity.typedata.EntityTypeName
         } else {
             $this.type = 'Null'
             $this.name = 'Null'

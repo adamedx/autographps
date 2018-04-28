@@ -29,11 +29,10 @@ function Update-GraphMetadata {
         [switch] $Force,
         [switch] $Wait
     )
-    if ( ! $Path ) {
-        throw "Not yet implemented!"
-    }
 
-    $metadata = [xml] (get-content $Path | out-string)
+    $metadata = if ( $Path ) {
+        [xml] (get-content $Path | out-string)
+    }
 
     if ( $Force.ispresent ) {
         $::.GraphBuilder |=> StopPendingGraph $Version $Connection

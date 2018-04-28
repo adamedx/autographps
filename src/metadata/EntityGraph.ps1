@@ -41,7 +41,7 @@ ScriptClass EntityGraph {
         $vertex = new-so EntityVertex $entity
         $this.vertices.Add($vertex.id, $vertex)
         if ( $vertex.type -eq 'EntityType' ) {
-            $this.typeVertices.Add(($vertex |=> GetEntityTypeName), $vertex)
+            $this.typeVertices.Add(($vertex.typeName), $vertex)
         } elseif ( $vertex.type -eq 'EntitySet' -or $vertex.type -eq 'Singleton' ) {
             $this.rootVertices.Add($vertex.name, $vertex)
         }

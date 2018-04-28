@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ ScriptClass GraphIdentity {
         }
 
         if ( ! $this.__AuthLibraryLoaded ) {
-            switch ( $graphEndpoint.Type ) {
+            # Cast it in case this is a deserialized object --
+            # workaround for a defect in ScriptClass
+            switch ( [GraphType] $graphEndpoint.Type ) {
                 ([GraphType]::MSGraph) {
                     import-assembly ../lib/Microsoft.Identity.Client.dll
                 }
@@ -47,7 +49,9 @@ ScriptClass GraphIdentity {
 
         write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
 
-        $this.Token = switch ($graphEndpoint.Type) {
+        # Cast it in case this is a deserialized object --
+        # workaround for a defect in ScriptClass
+        $this.Token = switch ([GraphType] $graphEndpoint.Type) {
             ([GraphType]::MSGraph) { getMSGraphToken $graphEndpoint $scopes }
             ([GraphType]::AADGraph) { getAADGraphToken $graphEndpoint $scopes }
             default {

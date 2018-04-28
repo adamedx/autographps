@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script GraphDataModel)
+. (import-script GraphContext)
 . (import-script EntityEdge)
 . (import-script EntityVertex)
 . (import-script EntityGraph)
@@ -112,15 +113,20 @@ ScriptClass GraphBuilder {
         $types | foreach {
             $source = $_
             $::.ProgressWriter |=> WriteProgress -id 2 -activity "Adding entity type navigations" -currentoperation "Processing entity $($source.name)" -percentcomplete (100 * ( $progressIndex / $progressTotal ))
-            $transitions = $this.dataModel |=> GetNavigationsFromEntityType $source.entity.schema
+            $transitions = if ( $source.entity.navigations ) {
+                $source.entity.navigations
+            } else {
+                @()
+            }
             $transitions | foreach {
-                $sink = $graph |=> TypeVertexFromTypeName $_.type
+                $transition = $_
+                $sink = $graph |=> TypeVertexFromTypeName $transition.type
                 if ( $sink -ne $null ) {
-                    $entity = new-so Entity $_ $this.namespace
+                    $entity = new-so Entity $transition $this.namespace
                     $edge = new-so EntityEdge $source $sink $entity
                     $source |=> AddEdge $edge
                 } else {
-                    write-verbose "Unable to find entity type for '$($_.type)', skipping"
+                    write-verbose "Unable to find entity type for '$($transition.type)', skipping"
                 }
             }
             $progressIndex += 1
@@ -142,7 +148,7 @@ ScriptClass GraphBuilder {
         ($graph |=> GetRootVertices).values | foreach {
             $source = $_
             $edges = if ( $source.type -eq 'Singleton' ) {
-                $typeVertex = $graph |=> TypeVertexFromTypeName ($source.entity |=> GetEntityTypeData).EntityTypeName
+                $typeVertex = $graph |=> TypeVertexFromTypeName ($source.entity.typeData).EntityTypeName
                 if ( $typeVertex -eq $null ) {
                     throw "Unable to find an entity type for type '$($source.entity.type)"
                 }
@@ -241,26 +247,26 @@ ScriptClass GraphBuilder {
         $graphVersions = @{}
 
         function GetGraph($apiVersion = 'v1.0', $connection, $metadata = $null) {
-#            (__GetGraph $apiVersion $connection).Graph
-            $graphid = $::.GraphContext |=> GetContextId $connection $apiversion
-            $graph = $this.graphVersions[$graphId]
+            $context = __GetContext $apiVersion $connection
+            $graph = $this.graphVersions[$context.id]
             if ( $graph ) {
                 $graph
             } else {
-                $graphJob = GetGraphAsync $apiVersion $connection $metadata
+                $graphJob = GetGraphAsync $apiVersion $context.Connection $metadata
                 WaitForGraphAsync $graphJob
             }
         }
 
         function GetGraphAsync($apiVersion = 'v1.0', $connection, $metadata = $null) {
-            $graphid = $::.GraphContext |=> GetContextId $connection $apiversion
+            $context = __GetContext $apiVersion $connection
+            $graphid = $context.id
             $existingJob = $this.graphVersionsPending[$graphId]
             if ( $existingJob ) {
                 write-verbose "Found existing job '$existingJob.job.id' for '$graphId'"
                 $existingJob
             } else {
                 write-verbose "No existing job for '$graphId' -- queueing up a new job"
-                 __GetGraphAsync $graphId $apiVersion $connection $metadata
+                 __GetGraphAsync $graphId $apiVersion $context.connection $metadata
             }
         }
 
@@ -289,7 +295,12 @@ ScriptClass GraphBuilder {
 
             # This is only retrieved by the first caller for this job --
             # subsequent jobs return $null
-            $jobResult = receive-job -wait $submittedVersion.Job
+            $jobException = $null
+            $jobResult = try {
+                receive-job -wait $submittedVersion.Job -erroraction stop
+            } catch {
+                $jobException = $_.exception
+            }
 
             if ( $jobResult ) {
                 # Only one caller will set this for a given job since
@@ -297,7 +308,7 @@ ScriptClass GraphBuilder {
                 # first caller
                 write-verbose "Successfully retrieved job result for $($submittedVersion.job.id) for graph '$graphId'"
                 if ( $this.graphVersionsPending[$graphId] ) {
-                    write-verbose "Removing pending version for job '$($submittedVersion.job.id)' for grpah '$graphId'"
+                    write-verbose "Removing pending version for job '$($submittedVersion.job.id)' for graph '$graphId'"
                     $this.graphVersions[$graphId] = $jobResult.Graph
                     $this.graphVersionsPending.Remove($graphId)
                     remove-job $submittedVersion.job -force
@@ -313,13 +324,17 @@ ScriptClass GraphBuilder {
 
                 # If it was completed, it should be listed in graphversions
                 if ( $this.graphVersionsPending[$graphId] ) {
-                    write-verbose "Removing pending version for job '$submittedVersion.job.id' for grpah '$graphId'"
+                    write-verbose "Removing pending version for job '$submittedVersion.job.id' for graph '$graphId'"
                     $this.graphVersionsPending.Remove($graphId)
                     remove-job $submittedVersion.job -force
                 }
 
                 $completedGraph = $this.graphVersions[$graphId]
                 if ( ! $completedGraph ) {
+                    if ( $jobException ) {
+                        throw $jobException
+                    }
+
                     throw "No pending or successful job '$($submittedVersion.job.id)' for building graph with id '$graphId'"
                 }
             }
@@ -339,8 +354,8 @@ ScriptClass GraphBuilder {
 
         function __GetGraphAsync($graphId, $apiVersion, $connection, $metadata) {
             $dependencyModule = get-module 'poshgraph'
-            $thiscode = join-path $psscriptroot metadata.ps1
-            $graphLoadJob = start-job { param($module, $scriptsourcepath, $version, $graphConnection, $schemadata) import-module $module; . $scriptsourcepath;  ($::.GraphBuilder |=> __GetGraph $version $graphConnection $schemadata) } -argumentlist $dependencymodule, $thiscode, $apiVersion, $connection, $metadata -name "PoshGraph metadata download for '$graphId'"
+            $thiscode = join-path $psscriptroot '..\graph.ps1'
+            $graphLoadJob = start-job { param($module, $scriptsourcepath, $version, $graphConnection, $schemadata) import-module $module; . $scriptsourcepath; $::.GraphBuilder |=> __GetGraph $version $graphConnection $schemadata } -argumentlist $dependencymodule, $thiscode, $apiVersion, $connection, $metadata -name "PoshGraph metadata download for '$graphId'"
             $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
             write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
             $this.graphVersionsPending[$graphId] = $graphAsyncJob
@@ -348,13 +363,7 @@ ScriptClass GraphBuilder {
         }
 
         function __GetGraph($apiVersion, $connection, $metadata) {
-            $graphConnection = if ( ! $connection ) {
-                $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) -anonymous $true
-            } else {
-                $connection
-            }
-
-            $graphContext = new-so GraphContext $graphConnection $apiVersion
+            $graphContext = new-so GraphContext $connection $apiVersion
             $graphId = $graphContext.id
 
             $builder = new-so GraphBuilder $graphContext $metadata
@@ -362,5 +371,16 @@ ScriptClass GraphBuilder {
 
             [PSCustomObject]@{Graph=$graph;Id=$graphId}
         }
+
+        function __GetContext($apiVersion, $connection) {
+            $graphConnection = if ( ! $connection ) {
+                $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) -anonymous $true
+            } else {
+                $connection
+            }
+
+            new-so GraphContext $graphConnection $apiVersion
+        }
     }
 }
+

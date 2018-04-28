@@ -67,7 +67,9 @@ function Invoke-GraphRequest {
         @('User.Read')
     }
 
-    switch ($graphType) {
+    # Cast it in case this is a deserialized object --
+    # workaround for a defect in ScriptClass
+    switch ([GraphType] $graphType) {
         ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
         ([GraphType]::MSGraph) { $defaultVersion = 'v1.0' }
         default {
