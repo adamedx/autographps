@@ -134,7 +134,7 @@ ScriptClass GraphCache {
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
-        $dependencyModule = 'poshgraph'
+        $dependencyModule = join-path $psscriptroot '..\poshgraph.psd1'
         $thiscode = join-path $psscriptroot 'graph.ps1'
 
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $verbosepreference -name "PoshGraph metadata download for '$graphId'"
