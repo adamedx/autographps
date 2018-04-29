@@ -48,6 +48,7 @@ Describe "Poshgraph application" {
                 'get-grapherror',
                 'connect-graph',
                 'disconnect-graph',
+                'update-graphmetadata',
                 'get-graphtoken')
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length

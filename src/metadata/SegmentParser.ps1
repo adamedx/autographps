@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphBuilder)
+. (import-script GraphContext)
 . (import-script GraphSegment)
 
 ScriptClass SegmentParser {
     $graph = $null
 
-    function __initialize($apiVersion, $connection, $existingGraph) {
+    function __initialize($graphContext, $existingGraph) {
         $this.graph = if ( $existingGraph ) {
             $existingGraph
         } else {
-            $graph = $::.GraphBuilder |=> GetGraph $apiVersion $connection
+            $graph = $graphContext |=> GetGraph
             $graph
         }
     }

@@ -16,6 +16,7 @@
 . (import-script Entity)
 . (import-script EntityVertex)
 . (import-script EntityEdge)
+. (import-script ..\GraphCache)
 . (import-script GraphContext)
 . (import-script GraphDataModel)
 . (import-script EntityGraph)

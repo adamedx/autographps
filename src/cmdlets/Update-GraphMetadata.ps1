@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ..\metadata\GraphBuilder)
+. (import-script ..\metadata\GraphContext)
 
 function Update-GraphMetadata {
     [cmdletbinding()]
@@ -34,13 +34,11 @@ function Update-GraphMetadata {
         [xml] (get-content $Path | out-string)
     }
 
-    if ( $Force.ispresent ) {
-        $::.GraphBuilder |=> StopPendingGraph $Version $Connection
+    $endpoint = if ($connection) {
+        $connection.GraphEndpoint.graph
     }
 
-    $asyncGraph = $::.GraphBuilder |=> GetGraphAsync $Version $Connection $metadata
+    $context = $::.GraphContext |=> GetFromConnection $connection $version
 
-    if ( $Wait.ispresent ) {
-        $::.GraphBuilder |=> WaitForGraphAsync $asyncGraph | out-null
-    }
+    $context |=> UpdateGraph $metadata $wait.ispresent $force.ispresent
 }

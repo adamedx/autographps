@@ -82,7 +82,8 @@ FunctionsToExport = @()
         'get-graphschema',
         'get-grapherror',
         'connect-graph',
-        'disconnect-graph'
+        'disconnect-graph',
+        'Update-GraphMetadata'
     )
 
 # Variables to export from this module
@@ -111,6 +112,7 @@ AliasesToExport = @()
         '.\src\get-graphitem.ps1',
         '.\src\get-graphversion.ps1',
         '.\src\graphapplication.ps1',
+        '.\src\graphcache.ps1',
         '.\src\graphrequest.ps1',
         '.\src\graphresponse.ps1',
         '.\src\grapherrorrecorder.ps1',
@@ -125,6 +127,7 @@ AliasesToExport = @()
         '.\src\graph.ps1',
         '.\src\GraphConnection.ps1',
         '.\src\common\ProgressWriter.ps1',
+        '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\metadata\metadata.ps1',
         '.\src\metadata\Entity.ps1',
         '.\src\metadata\EntityEdge.ps1',

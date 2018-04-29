@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph')
+$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph', 'Update-GraphMetadata')
 
 export-modulemember -cmdlet $cmdlets
