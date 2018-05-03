@@ -20,14 +20,12 @@ ScriptClass GraphConnection {
     $Identity = $null
     $GraphEndpoint = $null
     $Scopes = $null
-
-    static {
-        $SessionConnection = strict-val [PSCustomObject]
-    }
+    $Connected = $false
 
     function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
+        $this.Connected = $false
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
             $this.Scopes = $Scopes
@@ -35,47 +33,36 @@ ScriptClass GraphConnection {
     }
 
     function Connect {
-        if ($this.Identity) {
-            $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
+        if ( ! $this.connected ) {
+            if ($this.Identity) {
+                $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
+            }
+            $this.connected = $true
         }
     }
 
+    function Disconnect {
+        if ( $this.connected ) {
+            $this.identity |=> ClearAuthentication
+            $this.connected = $false
+        } else {
+            throw "Cannot disconnect from Graph because connection is already disconnected."
+        }
+    }
+
+    function IsConnected {
+        $this.connected
+    }
+
     static {
-        function GetSessionConnection {
-            $this.SessionConnection
-        }
-
-        function SetSessionConnection($connection) {
-            $this.SessionConnection = $connection
-        }
-
-        function DisconnectSession {
-            if (IsSessionConnected) {
-                SetSessionConnection $null
-            } else {
-                throw "Cannot disconnect from Graph because there was no such connection."
-            }
-        }
-
-        function IsSessionConnected {
-            $this.SessionConnection -ne $null
-        }
-
         function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication $::.Application.AppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app
             }
-            new-so GraphConnection $endpoint $identity $ScopeNames
-        }
 
-        function GetDefaultConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
-            if ( $graphType -eq [GraphType]::AADGraph -or ! (IsSessionConnected) ) {
-                NewSimpleConnection $graphType $cloud $ScopeNames $anonymous
-            } else {
-                GetSessionConnection
-            }
+            new-so GraphConnection $endpoint $identity $ScopeNames
         }
     }
 }

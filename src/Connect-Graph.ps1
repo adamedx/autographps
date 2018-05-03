@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script GraphConnection)
+. (import-script GraphContext)
 . (import-script New-GraphConnection)
 
 function Connect-Graph {
@@ -29,13 +30,29 @@ function Connect-Graph {
         [PSCustomObject] $Connection = $null
     )
 
-    $newSessionConnection = if ( $Connection -ne $null ) {
-        $Connection
-    } else {
-        $newConnection = new-graphconnection -scopenames $scopenames -cloud $cloud
-        $newConnection |=> Connect
-        $newConnection
+    $context = $::.GraphContext |=> GetCurrent
+
+    if ( ! $context ) {
+        throw "No current session -- unable to connect it to Graph"
     }
 
-    $::.GraphConnection |=> SetSessionConnection $newSessionConnection
+    if ( $Connection -ne $null ) {
+        write-verbose "Explicit connection was specified"
+        $newContext = new-so GraphContext $connection $context.version
+        $existingContext = 'GraphContext' |::> Get $newContext.name
+
+        $context = if ( $existingContext ) {
+            write-verbose
+            $existingContext
+        } else {
+            $::.GraphContext |=> Add $newContext
+            $newContext
+        }
+
+        $::.GraphContext |=> SetCurrentByName $context.name
+    } else {
+        $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $::.Application.AppId
+        $context |=> Update $newConnection.identity $ScopeNames '/'
+        $context.Connection |=> Connect
+    }
 }

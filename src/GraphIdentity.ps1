@@ -64,6 +64,10 @@ ScriptClass GraphIdentity {
         }
     }
 
+    function ClearAuthentication {
+        $this.token = $null
+    }
+
     function getMSGraphToken($graphEndpoint, $scopes) {
         write-verbose "Attempting to get token for MS Graph..."
         $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication

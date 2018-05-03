@@ -55,6 +55,7 @@ ScriptClass GraphEndpoint {
     $Authentication = $null
     $Graph = $null
     $Type = ([GraphType]::MSGraph)
+    $Cloud = ([GraphCloud]::Unknown)
 
     function __initialize {
         [cmdletbinding()]
@@ -66,6 +67,7 @@ ScriptClass GraphEndpoint {
         )
 
         $this.Type = $GraphType
+        $this.Cloud = $cloud
         $endpoints = if ($GraphEndpoint -eq $null) {
             if ($graphType -eq [GraphType]::MSGraph) {
                 $this.scriptclass.MSGraphCloudEndpoints[$cloud]

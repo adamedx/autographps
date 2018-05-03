@@ -38,7 +38,7 @@ function Update-GraphMetadata {
         $connection.GraphEndpoint.graph
     }
 
-    $context = $::.GraphContext |=> GetFromConnection $connection $version
+    $context = $::.GraphContext |=> GetConnection $connection
 
     $context |=> UpdateGraph $metadata $wait.ispresent $force.ispresent
 }

@@ -15,6 +15,7 @@
 . (import-script GraphRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 . (import-script Get-GraphVersion)
 
 function Get-GraphSchema {
@@ -55,11 +56,7 @@ function Get-GraphSchema {
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
-    } else {
-        $Connection
-    }
+    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
 
     $relativeBase = 'schemas'
     $headers = @{
@@ -82,7 +79,7 @@ function Get-GraphSchema {
             $sourceApiVersion = if ( $ApiVersion -ne $null -and $ApiVersion -ne '' ) {
                 $apiVersion
             } else {
-                'v1.0'
+                $::.GraphContext |=> GetVersion
             }
             get-graphversion -Connection $graphConnection -version $sourceApiVersion
         }
@@ -96,7 +93,7 @@ function Get-GraphSchema {
 
         if ( $NameSpaceList -ne $null ) {
             $NamespaceList
-        } elseif ( $Namespace -ne $null ) {
+        } elseif ( $Namespace -ne $null -and $namespace -ne '' ) {
             @($Namespace)
         } else {
             $graphSchemaVersions.keys

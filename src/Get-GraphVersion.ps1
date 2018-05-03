@@ -14,6 +14,7 @@
 
 . (import-script GraphRequest)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
@@ -37,11 +38,7 @@ function Get-GraphVersion {
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
-    } else {
-        $Connection
-    }
+    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
 
     $relativeBase = 'versions'
     $relativeUri = if ( ! $List.ispresent ) {

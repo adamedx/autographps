@@ -20,24 +20,19 @@ ScriptClass GraphContext {
     $version = $null
     $id = $null
     $name = $null
+    $url = $null
 
-    function __initialize($connection, $apiversion = 'v1.0', $name = $null) {
-        $version = if ( $apiVersion ){
-            $apiVersion
-        } else {
-            'v1.0'
-        }
-        $this.connection = if ( $connection ) {
-            $connection
-        } else {
-            $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) -anonymous $true
-        }
-        $this.version = $version
-        $this.id = $this.scriptclass |=> __GetContextId (GetEndpoint) $version
+    function __initialize($connection, $apiversion = $null, $name = $null) {
+        $graphConnection = $this.scriptclass |=> GetConnection $connection $null -anonymous $true
+        $graphVersion = $this.scriptclass |=> GetVersion $apiVersion
+
+        $this.connection = $graphConnection
+        $this.version = $graphVersion
+        $this.id = $this.scriptclass |=> __GetContextId (GetEndpoint) $apiversion
         $this.name = if ( $name ) {
             $name
         } else {
-            $this.scriptclass |=> __GetDefaultNameFromId $this.id
+            $this.scriptclass |=> __GetDefaultNameFromId $this.id $graphVersion
         }
     }
 
@@ -53,50 +48,37 @@ ScriptClass GraphContext {
         $this.connection.GraphEndpoint.Graph
     }
 
+    function Update($identity, $scopes, $location) {
+        if ($identity) {
+            $newConnection = new-so GraphConnection $this.Connection.GraphEndpoint $identity $scopes
+            $this.connection = $newConnection
+        }
+
+        if ($location) {
+            $this.url = $location
+        }
+    }
+
     static {
         $contexts = $null
-        $default = $null
+        $current = $null
         $cache = $null
 
         function __initialize {
             $this.contexts = @{}
-            $defaultContext = new-so GraphContext $null $null 'Default'
-            $this.default = $defaultContext.Name
+            $currentContext = new-so GraphContext $null $null 'Default'
+            $this.current = $currentContext.Name
             $this.cache = new-so GraphCache
-            __Add $defaultContext
+            __Add $currentContext
 
             # Start an asynchronous load of the metadata unless this is disabled
             # This is only meant for user interactive sessions and should be
             # disabled if this module is used in background jobs
             if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction silentlycontinue ) ) {
                 write-verbose "Asynchronously updating Graph metadata"
-                $defaultContext |=> UpdateGraph
+                $currentContext |=> UpdateGraph
             } else {
                 write-verbose "Found __poshgraph_no_auto_metadata variable, skipping Graph metadata update"
-            }
-        }
-
-        function NewContext($connection, $version = 'v1.0', $name = $null) {
-            $context = new-so $this.classname $connection $version $name
-            __Add $context
-            $context
-        }
-
-        function GetFromConnection($connection, $version = 'v1.0') {
-            $graphConnection = if ( $connection ) {
-                $connection
-            } else {
-                $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) -anonymous $true
-            }
-
-            $contextId = __GetContextId $graphConnection.GraphEndpoint.Graph $version
-            $defaultName = __GetDefaultNameFromId $contextId
-            $context = $this.contexts[$defaultName]
-
-            if ( $context ) {
-                $context
-            } else {
-                NewContext $connection $version $defaultName
             }
         }
 
@@ -104,14 +86,12 @@ ScriptClass GraphContext {
             $this.contexts[$name]
         }
 
-        function GetDefault($version)  {
-            if ( $this.default ) {
-                $defaultContext = $this.contexts[$this.default]
-                if ( ! $version -or $defaultContext.version -eq $version ) {
-                    $defaultContext
-                } else {
-                    GetDefaultFromConnection $defaultContext.connection $version
-                }
+        function GetCurrent  {
+            if ( $this.current ) {
+                write-verbose "Attempt to get current context -- current context is set to '$($this.current)'"
+                Get $this.current
+            } else {
+                write-verbose "Attempt to get current context -- no context is currently set"
             }
         }
 
@@ -119,12 +99,113 @@ ScriptClass GraphContext {
             $this.contexts.clone()
         }
 
-        function SetDefaultByName($name) {
+        function SetCurrentByName($name) {
             if ( ! $this.Get($name) ) {
                 throw "No such context: '$name'"
             }
 
-            $this.default = $name
+            write-verbose "Setting current context to '$name'"
+            $this.current = $name
+        }
+
+        function GetVersion($version, $context) {
+            if ( $version ) {
+                $version
+            } else {
+                $versionContext = if ( $context ) {
+                    $context
+                } else {
+                    GetCurrent
+                }
+
+                if ( $versionContext) {
+                    $versionContext.version
+                } else {
+                    'v1.0'
+                }
+            }
+        }
+
+        function GetCurrentConnection {
+            $context = GetCurrent
+            if ( $context ) {
+                $context.connection
+            }
+        }
+
+        function DisconnectCurrentConnection {
+            $context = GetCurrent
+            if ( $context ) {
+                $context.connection |=> Disconnect
+            } else {
+                throw "Cannot disconnect the current context from Graph because there is no current context."
+            }
+        }
+
+        function __IsContextConnected($context) {
+            $context -and ($context.connection |=> IsConnected)
+        }
+
+        function __GetSimpleConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
+            write-verbose "Connection request for Graph = '$graphType', Cloud = '$cloud', Anonymous = $($anonymous -eq $true)"
+            if ( $scopenames ) {
+                write-verbose "Scopes requested:"
+                $scopenames | foreach {
+                    write-verbose "`t$($_)"
+                }
+            } else {
+                write-verbose "No scopes requested"
+            }
+
+            $currentContext = GetCurrent
+
+            $sessionConnection = GetCurrentConnection
+            if ( $graphType -eq [GraphType]::AADGraph -or ! (__IsContextConnected $currentContext) -or (! $anonymous -and ! $sessionConnection.identity)) {
+                $::.GraphConnection |=> NewSimpleConnection $graphType $cloud $ScopeNames $anonymous
+            } else {
+                $sessionConnection
+            }
+        }
+
+        function GetConnection($connection = $null, $context = $null, $cloud = $null, [String[]] $scopenames = $null, $anonymous = $null) {
+            $currentContext = GetCurrent
+
+            $existingConnection = if ( $connection ) {
+                write-verbose "Using supplied connection"
+                $connection
+            } elseif ( $context ) {
+                write-verbose "Using connection from supplied context '$($context.name)'"
+                $context.connection
+            } elseif ( $currentContext ) {
+                write-verbose "Found existing connection from current context '$($currentcontext.name)'"
+                if ( ( ! $cloud -or $currentContext.cloud -eq $cloud) -and
+                     ! ($scopenames -eq 'User.Read' -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
+                     ! $anonymous
+                   ) {
+                       write-verbose "Current context is compatible with supplied arguments, will use it"
+                       $currentContext
+                   } else {
+                       write-verbose "Current context is not compatible with supplied arguments, new connection required"
+                   }
+            }
+
+            if ( $existingConnection ) {
+                write-verbose "Using an existing connection supplied directly or obtained through a context"
+                $existingConnection
+            } else {
+                write-verbose "No connection supplied and no compatible connection found from a context"
+                $namedArguments=@{Anonymous=($anonymous -eq $true)}
+                if ( $cloud ) { $namedArguments['Cloud'] = $cloud }
+                if ( $scopenames ) { $namedArguments['ScopeNames'] = $scopenames }
+
+                write-verbose "Custom arguments or no current context -- getting a new connection"
+                $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments
+                $newConnection
+            }
+        }
+
+        function Add($context) {
+            __Add $context
         }
 
         function __Add($context) {
@@ -154,14 +235,14 @@ ScriptClass GraphContext {
         }
 
         function __Set($context) {
-            $this.contexts[$context.name] = $context
+            $this.contexts.Add($context.name, $context)
         }
 
         function __GetContextId([Uri] $endpoint, $apiversion) {
             new-object Uri $endpoint, $apiversion, $false
         }
 
-        function __GetDefaultNameFromId([Uri] $contextId) {
+        function __GetDefaultNameFromId([Uri] $contextId, $version) {
             "{0}:{1}" -f $contextId.host, $version
         }
     }

@@ -15,6 +15,7 @@
 . (import-script RESTRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
@@ -43,7 +44,7 @@ function Test-Graph {
     } elseif ( $endpointUri -ne $null ) {
         $endpointUri
     } else {
-        ('GraphConnection' |::> GetDefaultConnection ([GraphType]::MSGraph) ([GraphCloud]::Public)).GraphEndpoint.Graph
+        ($::.GraphContext |=> GetConnection $null $null $Cloud 'User.Read' $true).GraphEndpoint.Graph
     }
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')

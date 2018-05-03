@@ -71,7 +71,7 @@ function Invoke-GraphRequest {
     # workaround for a defect in ScriptClass
     switch ([GraphType] $graphType) {
         ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
-        ([GraphType]::MSGraph) { $defaultVersion = 'v1.0' }
+        ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetVersion }
         default {
             throw "Unexpected identity type '$graphType'"
         }
@@ -84,7 +84,11 @@ function Invoke-GraphRequest {
     }
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection $graphType $cloud $MSGraphScopeNames
+        if ( $graphType -eq ([GraphType]::AADGraph) ) {
+            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
+        } else {
+            'GraphContext' |::> GetConnection $null $null $cloud $MSGraphScopeNames
+        }
     } else {
         $Connection
     }
