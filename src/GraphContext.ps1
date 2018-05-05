@@ -14,26 +14,25 @@
 
 . (import-script GraphCache)
 . (import-script GraphConnection)
+. (import-script LogicalGraphManager)
 
 ScriptClass GraphContext {
     $connection = $null
     $version = $null
-    $id = $null
     $name = $null
     $url = $null
 
-    function __initialize($connection, $apiversion = $null, $name = $null) {
-        $graphConnection = $this.scriptclass |=> GetConnection $connection $null -anonymous $true
-        $graphVersion = $this.scriptclass |=> GetVersion $apiVersion
+    function __initialize($connection, $apiversion, $name) {
+        if ( ! $name ) {
+            throw "Graph name must be specified"
+        }
+
+        $graphConnection = $this.scriptclass |=> GetConnection $connection $null
+        $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
         $this.connection = $graphConnection
         $this.version = $graphVersion
-        $this.id = $this.scriptclass |=> __GetContextId (GetEndpoint) $apiversion
-        $this.name = if ( $name ) {
-            $name
-        } else {
-            $this.scriptclass |=> __GetDefaultNameFromId $this.id $graphVersion
-        }
+        $this.name = $name
     }
 
     function UpdateGraph($metadata = $null, $wait = $false, $force = $false) {
@@ -60,21 +59,19 @@ ScriptClass GraphContext {
     }
 
     static {
-        $contexts = $null
         $current = $null
         $cache = $null
 
         function __initialize {
-            $this.contexts = @{}
-            $currentContext = new-so GraphContext $null $null 'Default'
+            $::.LogicalGraphManager |=> __initialize
+            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) 'Default'
             $this.current = $currentContext.Name
             $this.cache = new-so GraphCache
-            __Add $currentContext
 
             # Start an asynchronous load of the metadata unless this is disabled
             # This is only meant for user interactive sessions and should be
             # disabled if this module is used in background jobs
-            if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction silentlycontinue ) ) {
+            if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction silentlycontinue) ) {
                 write-verbose "Asynchronously updating Graph metadata"
                 $currentContext |=> UpdateGraph
             } else {
@@ -82,48 +79,22 @@ ScriptClass GraphContext {
             }
         }
 
-        function Get($name) {
-            $this.contexts[$name]
-        }
-
         function GetCurrent  {
             if ( $this.current ) {
                 write-verbose "Attempt to get current context -- current context is set to '$($this.current)'"
-                Get $this.current
+                $::.LogicalGraphManager |=> Get |=> GetContext $this.current
             } else {
                 write-verbose "Attempt to get current context -- no context is currently set"
             }
         }
 
-        function GetAll {
-            $this.contexts.clone()
-        }
-
         function SetCurrentByName($name) {
-            if ( ! $this.Get($name) ) {
+            if ( ! ($::.LogicalGraphManager |=> Get |=> GetContext $name) ) {
                 throw "No such context: '$name'"
             }
 
             write-verbose "Setting current context to '$name'"
             $this.current = $name
-        }
-
-        function GetVersion($version, $context) {
-            if ( $version ) {
-                $version
-            } else {
-                $versionContext = if ( $context ) {
-                    $context
-                } else {
-                    GetCurrent
-                }
-
-                if ( $versionContext) {
-                    $versionContext.version
-                } else {
-                    'v1.0'
-                }
-            }
         }
 
         function GetCurrentConnection {
@@ -140,6 +111,10 @@ ScriptClass GraphContext {
             } else {
                 throw "Cannot disconnect the current context from Graph because there is no current context."
             }
+        }
+
+        function GetDefaultVersion {
+            'v1.0'
         }
 
         function __IsContextConnected($context) {
@@ -232,18 +207,6 @@ ScriptClass GraphContext {
                     $asyncResult
                 }
             }
-        }
-
-        function __Set($context) {
-            $this.contexts.Add($context.name, $context)
-        }
-
-        function __GetContextId([Uri] $endpoint, $apiversion) {
-            new-object Uri $endpoint, $apiversion, $false
-        }
-
-        function __GetDefaultNameFromId([Uri] $contextId, $version) {
-            "{0}:{1}" -f $contextId.host, $version
         }
     }
 }

@@ -71,7 +71,7 @@ function Invoke-GraphRequest {
     # workaround for a defect in ScriptClass
     switch ([GraphType] $graphType) {
         ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
-        ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetVersion }
+        ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetDefaultVersion }
         default {
             throw "Unexpected identity type '$graphType'"
         }

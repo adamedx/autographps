@@ -29,11 +29,9 @@ Describe "Poshgraph application" {
     $manifest = Get-ModuleMetadataFromManifest 'poshgraph' $manifestlocation
 
     BeforeAll {
+        get-job | remove-job -force
         remove-module -force scriptclass -erroraction silentlycontinue
         import-module -force scriptclass
-    }
-
-    AfterAll {
     }
 
     Context "When loading the manifest" {
@@ -67,11 +65,13 @@ Describe "Poshgraph application" {
 
     Context "When invoking the PoshGraph application" {
         BeforeEach {
+            get-job | remove-job -force
             remove-module -force 'poshgraph' 2>$null
             import-module $manifestlocation -force
         }
 
         AfterEach {
+            get-job | remove-job -force
             remove-module -force 'poshgraph' 2>$null
         }
 

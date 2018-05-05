@@ -114,6 +114,7 @@ AliasesToExport = @()
         '.\src\graphapplication.ps1',
         '.\src\GraphCache.ps1',
         '.\src\GraphContext.ps1',
+        '.\src\LogicalGraphManager.ps1',
         '.\src\graphrequest.ps1',
         '.\src\graphresponse.ps1',
         '.\src\grapherrorrecorder.ps1',

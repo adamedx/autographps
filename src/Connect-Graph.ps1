@@ -14,6 +14,7 @@
 
 . (import-script GraphConnection)
 . (import-script GraphContext)
+. (import-script LogicalGraphManager)
 . (import-script New-GraphConnection)
 
 function Connect-Graph {
@@ -38,18 +39,10 @@ function Connect-Graph {
 
     if ( $Connection -ne $null ) {
         write-verbose "Explicit connection was specified"
-        $newContext = new-so GraphContext $connection $context.version
-        $existingContext = 'GraphContext' |::> Get $newContext.name
 
-        $context = if ( $existingContext ) {
-            write-verbose
-            $existingContext
-        } else {
-            $::.GraphContext |=> Add $newContext
-            $newContext
-        }
+        $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
 
-        $::.GraphContext |=> SetCurrentByName $context.name
+        $::.GraphContext |=> SetCurrentByName $newContext.name
     } else {
         $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $::.Application.AppId
         $context |=> Update $newConnection.identity $ScopeNames '/'
