@@ -179,18 +179,6 @@ ScriptClass GraphContext {
             }
         }
 
-        function Add($context) {
-            __Add $context
-        }
-
-        function __Add($context) {
-            if ( $this.Get($context.name) ) {
-                throw "Context '$name' already exists"
-            }
-
-            __Set $context
-        }
-
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion
