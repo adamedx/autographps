@@ -56,7 +56,7 @@ ScriptClass SegmentParser {
 
             $matchingSegment = $null
             if ( ! $enforceDynamicSegments -and ( $currentSegments -isnot [object[]] ) ) {
-                $matchingSegment = new-so GraphSegment $currentSegments[0].graphElement $targetSegmentName
+                $matchingSegment = new-so GraphSegment $currentSegments[0].graphElement $lastSegment $targetSegmentName
             } else {
                 $matchingSegment = $currentSegments | where {
                     $_.name -eq $targetSegmentName
@@ -78,16 +78,5 @@ ScriptClass SegmentParser {
 
         $segments
     }
-
-    function ToPublicSegment($segment) {
-        [PSCustomObject] @{
-            PSTypeName = $SegmentDisplayTypeName
-            Name = $segment.name
-            Type = $segment.Type
-            Version = $this.graph.apiversion
-            Endpoint = $this.graph.endpoint
-            IsDynamic = $segment.isDynamic
-            Details = $segment
-        }
-    }
 }
+

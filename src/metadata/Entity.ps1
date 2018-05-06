@@ -29,7 +29,6 @@ ScriptClass Entity {
         $this.navigations = if ( ($schema | gm navigationproperty) -ne $null ) {
             $schema.navigationproperty | foreach {
                 new-so Entity $_ $namespace
-#                [PSCustomObject]@{LocalName=$_.localname;Name=$_.name;Type=$_.type}
             }
         }
     }

@@ -51,21 +51,12 @@ ScriptClass EntityVertex {
         $this.outgoingEdges.ContainsKey($entityName)
     }
 
-    function GetEntityTypeName {
-        switch ($this.type) {
-            'Singleton' {
-                $this.entity.schema.type
-            }
-            'EntityType' {
-                $::.Entity |=> QualifyName $this.entity.namespace $this.entity.schema.name
-            }
-            'EntitySet' {
-                $this.entity.schema.entitytype
-            }
-            default {
-                throw "Unknown vertex type $($this.type) for vertex $($this.id)"
-            }
-        }
+    function GetResultTypeData {
+        $this.entity.typeData
+    }
+
+    function GetEntity {
+        $this.entity
     }
 
     static {

@@ -44,6 +44,14 @@ ScriptClass EntityEdge {
         $this.scriptclass.count = $this.scriptclass.count + 1
     }
 
+    function GetResultTypeData {
+        $this.sink |=> GetResultTypeData
+    }
+
+    function GetEntity {
+        $this.transition
+    }
+
     static {
         $count = 0
     }

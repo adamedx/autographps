@@ -23,5 +23,6 @@
 . (import-script Connect-Graph)
 . (import-script Disconnect-Graph)
 . (import-script cmdlets\Update-GraphMetadata)
+. (import-script cmdlets\Get-GraphUri)
 
 

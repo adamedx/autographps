@@ -81,6 +81,7 @@ FunctionsToExport = @()
         'get-graphtoken',
         'get-graphschema',
         'get-grapherror',
+        'Get-GraphUri',
         'connect-graph',
         'disconnect-graph',
         'Update-GraphMetadata'

@@ -18,9 +18,11 @@ ScriptClass GraphSegment {
     $name = $null
     $type = $null
     $isDynamic = $false
+    $parent = $null
 
-    function __initialize($graphElement, $instanceName = $null) {
+    function __initialize($graphElement, $parent = $null, $instanceName = $null) {
         $this.graphElement = $graphElement
+        $this.parent = $parent
 
         $isVertex = $true
         $this.leadsToVertex = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
@@ -73,7 +75,7 @@ ScriptClass GraphSegment {
             throw "Unable to determine element type for '$($this.graphElement)' for segment '$($segment.name)'"
         }
 
-        new-so GraphSegment $graphElement $segmentName
+        new-so GraphSegment $graphElement $this $segmentName
     }
 
     function NewTransitionSegments($segmentName) {
@@ -97,7 +99,7 @@ ScriptClass GraphSegment {
         }
 
         $edges | foreach {
-            new-so GraphSegment $_
+            new-so GraphSegment $_ $this
         }
     }
 
@@ -112,5 +114,18 @@ ScriptClass GraphSegment {
         } else {
             NewTransitionSegments $segmentName
         }
+    }
+
+    function ToGraphUri($graph) {
+        $currentSegment = $this
+
+        $relativeUriString = $this.name
+        while ($currentSegment.parent -ne $null) {
+            $relativeUriString = $currentSegment.parent.name, $relativeUriString -join '/'
+            $currentSegment = $currentSegment.parent
+        }
+
+        $relativeUriString = $graph.ApiVersion, $relativeUriString -join '/'
+        new-object Uri $graph.Endpoint, $relativeUriString
     }
 }
