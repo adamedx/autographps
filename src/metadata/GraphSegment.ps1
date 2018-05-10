@@ -116,7 +116,7 @@ ScriptClass GraphSegment {
         }
     }
 
-    function ToGraphUri($graph) {
+    function ToGraphUri($graph, [switch] $Relative) {
         $currentSegment = $this
 
         $relativeUriString = $this.name
@@ -125,7 +125,12 @@ ScriptClass GraphSegment {
             $currentSegment = $currentSegment.parent
         }
 
-        $relativeUriString = $graph.ApiVersion, $relativeUriString -join '/'
-        new-object Uri $graph.Endpoint, $relativeUriString
+        $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString -join '/'
+
+        if ( $Relative.ispresent ) {
+            [Uri] $relativeUriString
+        } else {
+            new-object Uri $graph.Endpoint, $relativeVersionedUriString
+        }
     }
 }

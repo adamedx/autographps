@@ -159,6 +159,16 @@ function Invoke-GraphRequest {
             $graphResponse |=> Content
         }
 
+        if ( ! $json.ispresent ) {
+            # Add __ItemContext to decorate the object with its source uri.
+            # Do this as a script method to prevent deserialization
+            $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
+            $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+            $content | foreach {
+                $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
+            }
+        }
+
         $results += $content
     }
 

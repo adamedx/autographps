@@ -51,6 +51,7 @@ ScriptClass Entity {
         }
 
         if ( ! $typeData ) {
+            $isCollection = $false
             $typeName = switch ($this.type) {
                 'Singleton' {
                     $schema.type
@@ -59,6 +60,7 @@ ScriptClass Entity {
                     $::.Entity |=> QualifyName $this.namespace $schema.name
                 }
                 'EntitySet' {
+                    $isCollection = $true
                     $schema.entitytype
                 }
                 'Action' {
@@ -71,7 +73,7 @@ ScriptClass Entity {
                     throw "Unknown entity type $($this.type) for entity name $($this.name)"
                 }
             }
-            $typeData = [PSCustomObject]@{EntityTypeName=$typeName;IsCollection=$false}
+            $typeData = [PSCustomObject]@{EntityTypeName=$typeName;IsCollection=$isCollection}
         }
 
         $typeData

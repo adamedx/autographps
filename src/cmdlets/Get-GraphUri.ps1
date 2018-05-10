@@ -12,80 +12,83 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$SegmentDisplayTypeName = 'GraphSegmentDisplayType'
+. (import-script common/SegmentHelper)
 
 function Get-GraphUri {
     [cmdletbinding()]
     param(
-        [parameter(mandatory=$true)]
-        [Uri] $uri = $null,
+        [parameter(parametersetname='FromUri', position=0, mandatory=$true)]
+        [Uri] $Uri,
 
-        [Switch] $Parents
+        [parameter(position=1)]
+        [Switch] $Parents,
+
+        [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject[]] $GraphItems
+
     )
 
     $context = $::.GraphContext |=> GetCurrent
-
     $parser = new-so SegmentParser $context
-    $segments = $parser |=> SegmentsFromUri $uri
-    $count = if ( $Parents.ispresent ) {
-        $segments.length
+
+    # This is not very honest -- we're using valuefrompipeline, but
+    # only to signal the presence of input -- we use $input because
+    # unless you use BEGIN, END, PROCESS blocks, you can't actually
+    # iterate the parameter -- $input is a way around that
+    $inputs = if ( $graphItems ) {
+        $input
     } else {
-        1
+        $Uri
     }
 
-    $segments | select -last $count | foreach {
-        __ToPublicSegment $parser $_
+    $results = @()
+
+    $inputs | foreach {
+        $graphItem = if ($GraphItems) {
+            $_
+        }
+
+        $inputUri = if ( $graphItem ) {
+            if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
+                [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
+            } else {
+                throw "Object type does not support Graph URI source"
+            }
+        } else {
+            $uri
+        }
+
+        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
+        $lastSegment = $segments | select -last 1
+
+        $instanceId = if ( $GraphItem ) {
+            $typeData = ($lastSegment.graphElement |=> GetEntity).typedata
+            if ( $typeData.IsCollection ) {
+                if ( $graphItem | gm -membertype noteproperty id ) {
+                    $graphItem.id
+                } else {
+                    '{id}'
+                }
+            }
+        }
+
+        $lastPublicSegment = $::.SegmentHelper |=> ToPublicSegment $parser $lastSegment
+
+        $count = if ( $Parents.ispresent ) {
+            if ( $segments -is [Object[]] ) { $segments.length } else { 1 }
+        } else {
+            if ( $instanceId ) { 0 } else { 1 }
+        }
+
+        $segments | select -last $count | foreach {
+            $results += ($::.SegmentHelper |=> ToPublicSegment $parser $_)
+        }
+
+        if ( $instanceId ) {
+            $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId
+            $results += $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+        }
     }
+    $results
 }
 
-function __ToPublicSegment($parser, $segment) {
-    $graph = $parser.graph
-    $Uri = $segment |=> ToGraphUri $graph
-    $entity = $segment.graphElement |=> GetEntity
-    $namespace = $entity.namespace
-    $namespaceDelimited = $namespace + '.'
-    $resultTypeData = $segment.graphElement |=> GetResultTypeData
-    $parent = $segment.parent
-
-    $isCollection = $resulttypeData.IsCollection -eq $true
-    $fullTypeName = $resultTypeData.EntityTypeName
-    $shortTypeName = if ( $fullTypeName.ToLower().StartsWith($namespaceDelimited.tolower()) ) {
-        $fullTypeName.Substring($namespaceDelimited.length)
-    } else {
-        $fullTypeName
-    }
-    $parentPath = if ( $parent ) { $parent |=> ToGraphUri $graph }
-
-    [PSCustomObject] @{
-        PSTypeName = $SegmentDisplayTypeName
-        Parent = $parentPath
-        Collection = $isCollection
-        Type = $shortTypeName
-        Name = $segment.name
-        Namespace = $namespace
-        Uri = $Uri
-        FullTypeName = $fullTypeName
-        Version = $graph.apiversion
-        Endpoint = $graph.endpoint
-        IsDynamic = $segment.isDynamic
-        Details = $segment
-    }
-}
-
-function RegisterSegmentDisplayType {
-    remove-typedata -typename $SegmentDisplayTypeName -erroraction silentlycontinue
-
-    $coreProperties = @( 'Collection', 'Type', 'Parent', 'Name')
-
-    $segmentDisplayTypeArguments = @{
-        TypeName    = $segmentDisplayTypeName
-        MemberType  = 'NoteProperty'
-        MemberName  = 'PSTypeName'
-        Value       = $SegmentDisplayTypeName
-        DefaultDisplayPropertySet = $coreProperties
-    }
-
-    Update-TypeData -force @segmentDisplayTypeArguments
-}
-
-RegisterSegmentDisplayType
