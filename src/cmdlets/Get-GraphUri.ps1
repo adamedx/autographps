@@ -17,14 +17,23 @@
 function Get-GraphUri {
     [cmdletbinding()]
     param(
+        [parameter(parametersetname='FromUriParents', position=0, mandatory=$true)]
+        [parameter(parametersetname='FromUriChildren', position=0, mandatory=$true)]
         [parameter(parametersetname='FromUri', position=0, mandatory=$true)]
         [Uri] $Uri,
 
-        [parameter(position=1)]
+        [parameter(parametersetname='FromUriChildren', mandatory=$true)]
+        [parameter(parametersetname='FromObjectChildren', mandatory=$true)]
+        [Switch] $Children,
+
+        [parameter(parametersetname='FromUriParents', mandatory=$true)]
+        [parameter(parametersetname='FromObjectParents', mandatory=$true)]
         [Switch] $Parents,
 
+        [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject[]] $GraphItems
+        [PSCustomObject[]]$GraphItems
 
     )
 
@@ -84,9 +93,28 @@ function Get-GraphUri {
             $results += ($::.SegmentHelper |=> ToPublicSegment $parser $_)
         }
 
+        $childSegments = $null
+
         if ( $instanceId ) {
             $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId
-            $results += $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+
+            $additionalSegments = if ( $Children.IsPresent ) {
+                $childSegments = $parser |=> GetChildren $idSegment | sort Name
+            } else {
+                $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+            }
+
+            $results += $additionalSegments
+        } elseif ( $Children.ispresent ) {
+            $childSegments = $parser |=> GetChildren $lastSegment | sort Name
+        }
+
+        if ( $childSegments) {
+            $publicChildSegments = $childSegments | foreach {
+                $::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment
+            }
+
+            $results += $publicChildSegments
         }
     }
     $results

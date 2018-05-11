@@ -52,7 +52,11 @@ ScriptClass EntityVertex {
     }
 
     function GetResultTypeData {
-        $this.entity.typeData
+        if ( $this.entity ) {
+            $this.entity.typeData
+        } else {
+            @{EntityTypeName='Null';IsCollection=$false}
+        }
     }
 
     function GetEntity {

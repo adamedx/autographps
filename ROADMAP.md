@@ -2,15 +2,19 @@
 
 ## To-do items -- prioritized
 
-* Get-GraphUri -- an offline api, maybe add -children flag
+* Add --children flag to get-graphuri
+* Add full uri support to get-graphitem
+* Use BEGIN, PROCESS, END in get-graphuri
+* Make context meaningful
+  * mount-graph
+  * unmount-graph
+  * set-graphlocation
+* Add display type for get-graphitem
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
 * # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
 * Get-GraphTypeData -typename -graphitem
 * Get-GraphMetadata
-* Update-GraphMetadata
-* Refactor GraphBuilder
-* Genericize GraphContext
 * Add signout
 * Simple samples
 * Publish first preview / alpha
@@ -72,6 +76,10 @@
 * Add connection support to test-graph
 * Update build steps
 * Rename stdposh to ScriptClass
+* Refactor GraphBuilder
+* Genericize GraphContext
+* Update-GraphMetadata
+* Get-GraphUri -- an offline api, with -parents flag,
 
 ### Postponed
 

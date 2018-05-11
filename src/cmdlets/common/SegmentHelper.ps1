@@ -47,7 +47,11 @@ ScriptClass SegmentHelper {
 
             # Use the return type, which for vertices is the self, but
             # for edges is the vertex to which the self leads
-            $fullTypeName = $resultTypeData.EntityTypeName
+            $fullTypeName = if ( $resultTypeData ) {
+                $resultTypeData.EntityTypeName
+            } else {
+                ''
+            }
 
             $shortTypeName = if ( $fullTypeName.ToLower().StartsWith($namespaceDelimited.tolower()) ) {
                 $fullTypeName.Substring($namespaceDelimited.length)
