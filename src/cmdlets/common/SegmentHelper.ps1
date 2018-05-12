@@ -42,6 +42,7 @@ ScriptClass SegmentHelper {
             $namespaceDelimited = $namespace + '.'
             $resultTypeData = $segment.graphElement |=> GetResultTypeData
             $parentSegment = $segment.parent
+            $entityClass = $entity.Type
 
             $isCollection = $entity.typeData.IsCollection -eq $true
 
@@ -64,6 +65,7 @@ ScriptClass SegmentHelper {
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
                 Collection = $isCollection
+                Class = $entityClass
                 Type = $shortTypeName
                 Name = $segment.name
                 Namespace = $namespace
@@ -80,7 +82,7 @@ ScriptClass SegmentHelper {
         function __RegisterSegmentDisplayType {
             remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
 
-            $coreProperties = @('Collection', 'Type', 'ParentPath', 'Name')
+            $coreProperties = @('Collection', 'Class', 'Type', 'Name')
 
             $segmentDisplayTypeArguments = @{
                 TypeName    = $this.segmentDisplayTypeName

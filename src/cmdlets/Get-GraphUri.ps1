@@ -86,7 +86,7 @@ function Get-GraphUri {
         $count = if ( $Parents.ispresent ) {
             if ( $segments -is [Object[]] ) { $segments.length } else { 1 }
         } else {
-            if ( $instanceId ) { 0 } else { 1 }
+            if ( $instanceId -or $Children.ispresent ) { 0 } else { 1 }
         }
 
         $segments | select -last $count | foreach {
@@ -109,7 +109,7 @@ function Get-GraphUri {
             $childSegments = $parser |=> GetChildren $lastSegment | sort Name
         }
 
-        if ( $childSegments) {
+        if ( $childSegments ) {
             $publicChildSegments = $childSegments | foreach {
                 $::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment
             }
