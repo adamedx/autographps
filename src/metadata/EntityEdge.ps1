@@ -26,6 +26,10 @@ ScriptClass EntityEdge {
             throw "An edge with a null source is not valid"
         }
 
+        if ( $sink |=> IsRoot ) {
+            throw "'Root' vertex may not be a sink / destination of any edge"
+        }
+
         $this.sink = $sink
         $this.source = $source
         $this.transition = $transition

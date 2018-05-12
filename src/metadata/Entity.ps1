@@ -69,6 +69,12 @@ ScriptClass Entity {
                         $schema.returntype.type
                     }
                 }
+                '__Scalar' {
+                    $schema.name
+                }
+                '__Root' {
+                    $schema.name
+                }
                 default {
                     throw "Unknown entity type $($this.type) for entity name $($this.name)"
                 }

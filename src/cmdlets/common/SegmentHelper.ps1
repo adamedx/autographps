@@ -34,16 +34,34 @@ ScriptClass SegmentHelper {
             $parser |=> SegmentsFromUri $graphUri
         }
 
+        function ToPublicSegment3($parser, $segment, $parentPublicSegment) {
+            [PSCustomObject] @{
+                PSTypeName = $this.SegmentDisplayTypeName
+                ParentPath = 'parentPath'
+                Collection = 'isCollection'
+                Class = 'entityClass'
+                Type = 'shortTypeName'
+                Name = 'segment.name'
+                Namespace = 'namespace'
+                Uri = 'Uri'
+                FullTypeName = 'fullTypeName'
+                Version = 'graph.apiversion'
+                Endpoint = 'graph.endpoint'
+                IsDynamic = 'segment.isDynamic'
+                Parent = '$ParentPublicSegment'
+                Details = '$segment'
+            }
+        }
+
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
             $graph = $parser.graph
-            $Uri = $segment |=> ToGraphUri $graph
+            $Uri = $segment.ToGraphUri($graph)
             $entity = $segment.graphElement |=> GetEntity
             $namespace = $entity.namespace
             $namespaceDelimited = $namespace + '.'
-            $resultTypeData = $segment.graphElement |=> GetResultTypeData
+            $resultTypeData = $segment.graphElement.GetResultTypeData()
             $parentSegment = $segment.parent
             $entityClass = $entity.Type
-
             $isCollection = $entity.typeData.IsCollection -eq $true
 
             # Use the return type, which for vertices is the self, but
@@ -59,9 +77,9 @@ ScriptClass SegmentHelper {
             } else {
                 $fullTypeName
             }
-            $parentPath = if ( $parentSegment ) { $parentSegment |=> ToGraphUri $graph -Relative }
 
-            [PSCustomObject] @{
+            $parentPath = if ( $parentSegment ) { $parentSegment.ToGraphUri($graph, $true) }
+            [PSCustomObject]@{
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
                 Collection = $isCollection

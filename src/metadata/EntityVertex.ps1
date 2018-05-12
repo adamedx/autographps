@@ -43,6 +43,10 @@ ScriptClass EntityVertex {
         $this.type -eq 'Null'
     }
 
+    function IsRoot {
+        $this.type -eq '__Root'
+    }
+
     function AddEdge($edge) {
         $this.outgoingEdges.Add($edge.name, $edge)
     }
@@ -66,7 +70,11 @@ ScriptClass EntityVertex {
     static {
         $count = 0
         $NullVertex = $null
+        $ScalarVertex = $null
+        $RootVertex = $null
     }
 }
 
 $::.EntityVertex.NullVertex = new-so EntityVertex $null
+$::.EntityVertex.ScalarVertex = new-so EntityVertex (new-so Entity ([PSCustomObject] @{Name='scalar';LocalName='__Scalar'}))
+$::.EntityVertex.RootVertex = new-so EntityVertex (new-so Entity ([PSCustomObject] @{Name='root';LocalName='__Root'}))

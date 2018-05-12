@@ -39,7 +39,9 @@ ScriptClass GraphSegment {
             $this.graphElement.type -eq 'EntitySet'
         }
 
-        $this.name = if ( $this.leadsToVertex -or ($isVertex -and $this.graphElement.type -eq 'Singleton') ) {
+        $this.name = if ( $isVertex -and ($this.graphElement |=> IsRoot) ) {
+            '/'
+            } elseif ( $this.leadsToVertex -or ($isVertex -and $this.graphElement.type -eq 'Singleton') ) {
              $this.graphElement.name
         } elseif ( $instanceName ) {
             $this.isDynamic = $true
@@ -116,7 +118,7 @@ ScriptClass GraphSegment {
         }
     }
 
-    function ToGraphUri($graph, [switch] $Relative) {
+    function ToGraphUri($graph, [boolean] $Relative = $false) {
         $currentSegment = $this
 
         $relativeUriString = $this.name
@@ -127,7 +129,7 @@ ScriptClass GraphSegment {
 
         $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString -join '/'
 
-        if ( $Relative.ispresent ) {
+        if ( $Relative ) {
             [Uri] $relativeUriString
         } else {
             new-object Uri $graph.Endpoint, $relativeVersionedUriString

@@ -171,7 +171,7 @@ ScriptClass GraphBuilder {
 
             $method = $_
             $source = if ( $parameters ) {
-                $bindingParameter = $parameters | where { $_.name -eq 'bindingParameter' }
+                $bindingParameter = $parameters | where { $_.name -eq 'bindingParameter' -or $_.name -eq 'bindParameter' }
                 if ( $bindingParameter ) {
                     $bindingTargetVertex = $graph |=> TypeVertexFromTypeName $bindingParameter.Type
 
@@ -200,8 +200,8 @@ ScriptClass GraphBuilder {
                     if ( $typeVertex ) {
                         $typeVertex
                     } else {
-                        write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring null vertex"
-                        $::.EntityVertex.NullVertex
+                        write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring Scalar vertex"
+                        $::.EntityVertex.ScalarVertex
                     }
                 } else {
                     $::.Entityvertex.NullVertex

@@ -28,7 +28,11 @@ ScriptClass SegmentParser {
     }
 
     function GetChildren($segment) {
-        if ( $segment -eq $null ) {
+        if ( ! $segment ) {
+            throw "Segment may not be null"
+        }
+
+        if ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices
             $childVertices.values | foreach {
                 new-so GraphSegment $_
@@ -39,12 +43,22 @@ ScriptClass SegmentParser {
     }
 
     function SegmentsFromUri([Uri] $uri, $enforceDynamicSegments = $false ) {
-        $unescapedPath = [Uri]::UnescapeDataString($uri.tostring())
+        $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
 
-        $segmentStrings = $unescapedPath -split '/'
+        $noRoot = if ( $unescapedPath[0] -eq '/' ) {
+            $unescapedPath.substring(1)
+        } else {
+            $unescapedPAth
+        }
 
-        $segments = @()
-        $lastSegment = $null
+        $segmentStrings = $noRoot -split '/'
+
+        if ( $segmentStrings[0] -eq '' ) {
+            $segmentStrings = @()
+        }
+
+        $segments = @(new-so GraphSegment $::.EntityVertex.RootVertex $null $null)
+        $lastSegment = $segments[0]
 
         $segmentStrings | foreach {
             $targetSegmentName = $_
