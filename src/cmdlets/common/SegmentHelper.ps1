@@ -34,25 +34,6 @@ ScriptClass SegmentHelper {
             $parser |=> SegmentsFromUri $graphUri
         }
 
-        function ToPublicSegment3($parser, $segment, $parentPublicSegment) {
-            [PSCustomObject] @{
-                PSTypeName = $this.SegmentDisplayTypeName
-                ParentPath = 'parentPath'
-                Collection = 'isCollection'
-                Class = 'entityClass'
-                Type = 'shortTypeName'
-                Name = 'segment.name'
-                Namespace = 'namespace'
-                Uri = 'Uri'
-                FullTypeName = 'fullTypeName'
-                Version = 'graph.apiversion'
-                Endpoint = 'graph.endpoint'
-                IsDynamic = 'segment.isDynamic'
-                Parent = '$ParentPublicSegment'
-                Details = '$segment'
-            }
-        }
-
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
             $graph = $parser.graph
             $Uri = $segment.ToGraphUri($graph)
