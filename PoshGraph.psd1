@@ -129,6 +129,7 @@ AliasesToExport = @()
         '.\src\disconnect-graph.ps1',
         '.\src\graph.ps1',
         '.\src\GraphConnection.ps1',
+        '.\src\common\GraphUtilities.ps1',
         '.\src\common\ProgressWriter.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
