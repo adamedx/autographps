@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ..\..\common\GraphUtilities)
+
 ScriptClass SegmentHelper {
     static {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
@@ -60,6 +62,9 @@ ScriptClass SegmentHelper {
             }
 
             $parentPath = if ( $parentSegment ) { $parentSegment.ToGraphUri($graph, $true) }
+            $relativeUri = $segment.ToGraphUri($graph, $true)
+            $path = $::.GraphUtilities.ToLocationUriPath($parser.context, $relativeUri)
+
             [PSCustomObject]@{
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
@@ -69,6 +74,8 @@ ScriptClass SegmentHelper {
                 Name = $segment.name
                 Namespace = $namespace
                 Uri = $Uri
+                GraphRelativeUri = $relativeUri
+                Path = $path
                 FullTypeName = $fullTypeName
                 Version = $graph.apiversion
                 Endpoint = $graph.endpoint

@@ -14,6 +14,31 @@
 
 ScriptClass GraphUtilities {
     static {
+
+        function ToLocationUriPath( $context, $relativeUri ) {
+            "{0}:{1}" -f $context.name, $relativeUri
+        }
+
+        function ParseLocationUriPath($UriPath) {
+            $context = $null
+            $isAbsolute = $false
+            $contextEnd = $UriPath.IndexOf(':')
+            $graphRelativeUri = if ( $contextEnd -eq -1 ) {
+                $isAbsolute = $UriPath[0] -eq '/'
+                $UriPath
+            } else {
+                $isAbsolute = $true
+                $context = $UriPath.substring(0, $contextEnd)
+                $UriPath.substring($contextEnd + 1, $UriPath.length - $contextEnd - 1)
+            }
+
+            [PSCustomObject]@{
+                Context=$context
+                GraphRelativeUri=$graphRelativeUri
+                IsAbsoluteUri=$isAbsolute
+            }
+        }
+
         function ParseGraphUri([Uri] $uri, $context) {
             $endpoint = $null
             $version = $null

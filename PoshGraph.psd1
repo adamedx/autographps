@@ -81,9 +81,11 @@ FunctionsToExport = @()
         'get-graphtoken',
         'get-graphschema',
         'get-grapherror',
+        'Get-GraphLocation',
         'Get-GraphUri',
         'connect-graph',
         'disconnect-graph',
+        'Set-GraphLocation',
         'Update-GraphMetadata'
     )
 
@@ -131,7 +133,9 @@ AliasesToExport = @()
         '.\src\GraphConnection.ps1',
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\ProgressWriter.ps1',
+        '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
+        '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\metadata\metadata.ps1',

@@ -2,10 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Add --children flag to get-graphuri
-* Add full uri support to get-graphitem
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
+  * get-graph
   * mount-graph
   * unmount-graph
   * set-graphlocation
@@ -80,6 +79,10 @@
 * Genericize GraphContext
 * Update-GraphMetadata
 * Get-GraphUri -- an offline api, with -parents flag,
+* Add --children flag to get-graphuri
+* Add full uri support to get-graphitem
+* Set-Graphlocation
+* Get-GraphLocation
 
 ### Postponed
 

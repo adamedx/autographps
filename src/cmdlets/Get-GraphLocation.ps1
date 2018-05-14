@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'Get-GraphLocation', 'Get-GraphUri', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph', 'Set-GraphLocation', 'Update-GraphMetadata')
+. (import-script ../metadata/SegmentParser)
+. (import-script common/SegmentHelper)
 
-export-modulemember -cmdlet $cmdlets
+function Get-GraphLocation {
+    [cmdletbinding()]
+    param()
+    $context = $::.GraphContext |=> GetCurrent
+
+    if ( ! $context ) {
+        throw "Cannot get location in the current context because no current context exists"
+    }
+
+    $parser = new-so SegmentParser $context
+
+    $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+}

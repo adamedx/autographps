@@ -17,11 +17,13 @@
 
 ScriptClass SegmentParser {
     $graph = $null
+    $context = $null
 
     function __initialize($graphContext, $existingGraph) {
         $this.graph = if ( $existingGraph ) {
             $existingGraph
         } else {
+            $this.context = $graphContext
             $graph = $graphContext |=> GetGraph
             $graph
         }

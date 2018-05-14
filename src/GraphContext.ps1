@@ -15,12 +15,13 @@
 . (import-script GraphCache)
 . (import-script GraphConnection)
 . (import-script LogicalGraphManager)
+. (import-script metadata/GraphSegment)
 
 ScriptClass GraphContext {
     $connection = $null
     $version = $null
     $name = $null
-    $url = $null
+    $location = $null
 
     function __initialize($connection, $apiversion, $name) {
         if ( ! $name ) {
@@ -33,6 +34,7 @@ ScriptClass GraphContext {
         $this.connection = $graphConnection
         $this.version = $graphVersion
         $this.name = $name
+        $this.location = $::.GraphSegment.RootSegment
     }
 
     function UpdateGraph($metadata = $null, $wait = $false, $force = $false) {
@@ -47,15 +49,15 @@ ScriptClass GraphContext {
         $this.connection.GraphEndpoint.Graph
     }
 
-    function Update($identity, $scopes, $location) {
+    function Update($identity, $scope) {
         if ($identity) {
             $newConnection = new-so GraphConnection $this.Connection.GraphEndpoint $identity $scopes
             $this.connection = $newConnection
         }
+    }
 
-        if ($location) {
-            $this.url = $location
-        }
+    function SetLocation([PSCustomObject] $location) {
+        $this.location = $location
     }
 
     static {

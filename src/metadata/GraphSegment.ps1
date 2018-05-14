@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script EntityVertex)
+
 ScriptClass GraphSegment {
     $graphElement = $null
     $leadsToVertex = $false
@@ -118,6 +120,10 @@ ScriptClass GraphSegment {
         }
     }
 
+    function IsRoot {
+        $this.GraphElement.PSTypeName -eq 'EntityVertex' -and ($this.GraphElement |=> IsRoot)
+    }
+
     function ToGraphUri($graph, [boolean] $Relative = $false) {
         $currentSegment = $this
 
@@ -135,4 +141,10 @@ ScriptClass GraphSegment {
             new-object Uri $graph.Endpoint, $relativeVersionedUriString
         }
     }
+
+    static {
+        $RootSegment = $null
+    }
 }
+
+$::.GraphSegment.RootSegment = new-so GraphSegment $::.EntityVertex.RootVertex
