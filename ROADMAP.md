@@ -2,12 +2,12 @@
 
 ## To-do items -- prioritized
 
+* Add relative path support to invoke-graphrequest
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
   * get-graph
   * mount-graph
   * unmount-graph
-  * set-graphlocation
 * Add display type for get-graphitem
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
@@ -90,6 +90,9 @@
 
 #### Stdposh improvements
 
+* Fix deserialization of scriptproperty members
+* Performance of method calls through |=> rather than .
+* Make default display of objects sane
 * Fix initializers, use scriptblock for non-string object types
 * Add private methods
 * Private fields
@@ -100,6 +103,7 @@
 #### Finished stdposh improvements
 
 * Store methods per class rather than per instance to save space
+* Fixed deserialization of scriptmethod members
 
 ## Notes on specific problems
 

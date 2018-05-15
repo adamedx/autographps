@@ -24,7 +24,11 @@ ScriptClass GraphSegment {
 
     function __initialize($graphElement, $parent = $null, $instanceName = $null) {
         $this.graphElement = $graphElement
-        $this.parent = $parent
+        $this.parent = if ( $parent ) {
+            $parent
+        } else {
+            $::.GraphSegment.RootSegment
+        }
 
         $isVertex = $true
         $this.leadsToVertex = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
@@ -124,20 +128,19 @@ ScriptClass GraphSegment {
         $this.GraphElement.PSTypeName -eq 'EntityVertex' -and ($this.GraphElement |=> IsRoot)
     }
 
-    function ToGraphUri($graph, [boolean] $Relative = $false) {
+    function ToGraphUri($graph = $null) {
         $currentSegment = $this
 
         $relativeUriString = $this.name
         while ($currentSegment.parent -ne $null) {
-            $relativeUriString = $currentSegment.parent.name, $relativeUriString -join '/'
+            $relativeUriString = ($currentSegment.parent.name).trimend('/'), $relativeUriString.trim('/') -join '/'
             $currentSegment = $currentSegment.parent
         }
 
-        $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString -join '/'
-
-        if ( $Relative ) {
+        if ( ! $graph ) {
             [Uri] $relativeUriString
         } else {
+            $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString.trimstart('/') -join '/'
             new-object Uri $graph.Endpoint, $relativeVersionedUriString
         }
     }

@@ -20,11 +20,11 @@
 function Set-GraphLocation {
     [cmdletbinding()]
     param(
-        [parameter(position=0, valuefrompipeline=$true)]
+        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
         $UriPath = $null
     )
 
-    $inputUri = if ($UriPath -is [PSCustomObject]) {
+    $inputUri = if ($UriPath -isnot [String]) {
         $UriPath | select -expandproperty path
     } else {
         $UriPath
@@ -32,6 +32,7 @@ function Set-GraphLocation {
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
 
+    $ParsedPath | write-host -fore magenta
     $currentContext = $false
     $context = if ( $ParsedPath.Context ) {
         'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.Context
@@ -46,7 +47,13 @@ function Set-GraphLocation {
 
     $parser = new-so SegmentParser $context
 
-    $location = $::.SegmentHelper |=> UriToSegments $parser $ParsedPath.GraphRelativeUri | select -last 1
+    $absolutePath = if ( $parsedPath.IsAbsoluteUri ) {
+        $parsedPath.GraphRelativeUri
+    } else {
+        $::.GraphUtilities |=> ToGraphRelativeUriPath $parsedPath.GraphRelativeUri $context
+    }
+
+    $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
 
     if ( $currentContext ) {
         $context |=> SetLocation $location

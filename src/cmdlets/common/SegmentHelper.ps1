@@ -61,9 +61,10 @@ ScriptClass SegmentHelper {
                 $fullTypeName
             }
 
-            $parentPath = if ( $parentSegment ) { $parentSegment.ToGraphUri($graph, $true) }
-            $relativeUri = $segment.ToGraphUri($graph, $true)
-            $path = $::.GraphUtilities.ToLocationUriPath($parser.context, $relativeUri)
+            $parentPath = if ( $parentSegment ) { $parentSegment.ToGraphUri($null) }
+            $relativeUri = $segment.ToGraphUri($null)
+
+            $path = $::.GraphUtilities |=> ToLocationUriPath $parser.context $relativeUri
 
             [PSCustomObject]@{
                 PSTypeName = $this.SegmentDisplayTypeName

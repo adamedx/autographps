@@ -51,7 +51,7 @@ ScriptClass GraphContext {
 
     function Update($identity, $scope) {
         if ($identity) {
-            $newConnection = new-so GraphConnection $this.Connection.GraphEndpoint $identity $scopes
+            $newConnection = new-so GraphConnection $this.Connection.GraphEndpoint $identity $scope
             $this.connection = $newConnection
         }
     }

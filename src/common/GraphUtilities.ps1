@@ -15,21 +15,43 @@
 ScriptClass GraphUtilities {
     static {
 
+        function ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
+            $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
+                $relativeUri
+            } else {
+                $graphContext = if ( $context ) {
+                    $context
+                } else {
+                    'GraphContext' |::> GetCurrent
+                }
+
+                $graph = $graphContext |=> GetGraph
+                $location = $graphContext.location |=> ToGraphUri $graph
+                $location.tostring().TrimEnd('/'), $relativeUri.tostring().trimstart('/') -join '/'
+            }
+
+            $result
+        }
+
         function ToLocationUriPath( $context, $relativeUri ) {
-            "{0}:{1}" -f $context.name, $relativeUri
+            $graphRelativeUri = ToGraphRelativeUriPath $relativeUri $context
+            "{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
         function ParseLocationUriPath($UriPath) {
             $context = $null
             $isAbsolute = $false
-            $contextEnd = $UriPath.IndexOf(':')
-            $graphRelativeUri = if ( $contextEnd -eq -1 ) {
-                $isAbsolute = $UriPath[0] -eq '/'
-                $UriPath
-            } else {
-                $isAbsolute = $true
-                $context = $UriPath.substring(0, $contextEnd)
-                $UriPath.substring($contextEnd + 1, $UriPath.length - $contextEnd - 1)
+            $graphRelativeUri = $null
+            if ( $UriPath ) {
+                $contextEnd = $UriPath.IndexOf(':')
+                $graphRelativeUri = if ( $contextEnd -eq -1 ) {
+                    $isAbsolute = $UriPath[0] -eq '/'
+                    $UriPath
+                } else {
+                    $isAbsolute = $true
+                    $context = $UriPath.substring(0, $contextEnd)
+                    $UriPath.substring($contextEnd + 1, $UriPath.length - $contextEnd - 1)
+                }
             }
 
             [PSCustomObject]@{
