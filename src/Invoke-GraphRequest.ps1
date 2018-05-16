@@ -120,7 +120,7 @@ function Invoke-GraphRequest {
         $Version
     }
 
-    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
+    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph ) ) {
         $graphConnection |=> Connect
         $graphConnection.Identity.Token.TenantId
     } else {
@@ -145,7 +145,8 @@ function Invoke-GraphRequest {
         $uriInfo.GraphRelativeUri
     }
 
-    $graphRelativeUri = $tenantQualifiedVersionSegment, $inputUriRelative -join '/'
+    $contextUri = $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
+    $graphRelativeUri = $tenantQualifiedVersionSegment.trimend('/'), $contextUri.trim('/') -join '/'
 
     $query = $null
     $countError = $false

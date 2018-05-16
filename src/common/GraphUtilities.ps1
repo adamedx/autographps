@@ -14,7 +14,6 @@
 
 ScriptClass GraphUtilities {
     static {
-
         function ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
             $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
                 $relativeUri
@@ -28,6 +27,25 @@ ScriptClass GraphUtilities {
                 $graph = $graphContext |=> GetGraph
                 $location = $graphContext.location |=> ToGraphUri $graph
                 $location.tostring().TrimEnd('/'), $relativeUri.tostring().trimstart('/') -join '/'
+            }
+
+            $result
+        }
+
+        function ToGraphRelativeUri( $relativeUri, $context = $null ) {
+            $normalizedUri = ($relativeUri -split '/' | where { $_ -ne '.' }) -join '/'
+            $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
+                $normalizedUri
+            } else {
+
+                $graphContext = if ( $context ) {
+                    $context
+                } else {
+                    'GraphContext' |::> GetCurrent
+                }
+
+                $location = $graphContext.location |=> ToGraphUri
+                $location.tostring().TrimEnd('/'), $normalizedUri.tostring().trimstart('/') -join '/'
             }
 
             $result

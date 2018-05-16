@@ -32,7 +32,6 @@ function Set-GraphLocation {
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
 
-    $ParsedPath | write-host -fore magenta
     $currentContext = $false
     $context = if ( $ParsedPath.Context ) {
         'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.Context
