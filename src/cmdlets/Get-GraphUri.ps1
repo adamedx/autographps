@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script common/SegmentHelper)
+. (import-script ../common/GraphUtilities)
 
 function Get-GraphUri {
     [cmdletbinding()]
@@ -64,7 +65,7 @@ function Get-GraphUri {
                 throw "Object type does not support Graph URI source"
             }
         } else {
-            $uri
+            $::.GraphUtilities |=> ToGraphRelativeUri $uri $context
         }
 
         $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri

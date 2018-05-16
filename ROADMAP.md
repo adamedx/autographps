@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add relative path support to invoke-graphrequest
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
   * get-graph
@@ -83,6 +82,7 @@
 * Add full uri support to get-graphitem
 * Set-Graphlocation
 * Get-GraphLocation
+* Add relative path support to invoke-graphrequest
 
 ### Postponed
 
