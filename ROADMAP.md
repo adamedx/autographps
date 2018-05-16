@@ -17,6 +17,7 @@
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
+* Add new-graphentity
 * Add set-graphitem
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names

@@ -75,7 +75,7 @@ ScriptClass SegmentHelper {
                 Name = $segment.name
                 Namespace = $namespace
                 Uri = $Uri
-                GraphRelativeUri = $relativeUri
+                GraphUri = $relativeUri
                 Path = $path
                 FullTypeName = $fullTypeName
                 Version = $graph.apiversion

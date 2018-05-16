@@ -48,9 +48,13 @@ ScriptClass SegmentParser {
         $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
 
         $noRoot = if ( $unescapedPath[0] -eq '/' ) {
-            $unescapedPath.substring(1)
+            $unescapedPath.trim('/')
         } else {
-            $unescapedPAth
+            if ($unescapedPath.length -gt 0) {
+                $unescapedPath.trim('/')
+            } else {
+                $unescapedPath
+            }
         }
 
         $segmentStrings = $noRoot -split '/'

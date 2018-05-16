@@ -61,12 +61,16 @@ function Get-GraphUri {
         $inputUri = if ( $graphItem ) {
             if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
                 [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
-            } else {
+            } elseif ( $graphItem | gm Uri ) {
+                [Uri] $graphItem.Uri
+            } else{
                 throw "Object type does not support Graph URI source"
             }
         } else {
             $::.GraphUtilities |=> ToGraphRelativeUri $uri $context
         }
+
+        write-verbose "Uri '$graphItem' translated to '$inputUri'"
 
         $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
         $lastSegment = $segments | select -last 1

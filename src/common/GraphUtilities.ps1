@@ -45,7 +45,7 @@ ScriptClass GraphUtilities {
                 }
 
                 $location = $graphContext.location |=> ToGraphUri
-                $location.tostring().TrimEnd('/'), $normalizedUri.tostring().trimstart('/') -join '/'
+                $location.tostring().TrimEnd('/'), $normalizedUri.tostring().trim('/') -join '/'
             }
 
             $result
