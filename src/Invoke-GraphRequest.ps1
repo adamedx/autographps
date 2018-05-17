@@ -146,7 +146,7 @@ function Invoke-GraphRequest {
     }
 
     $contextUri = $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
-    $graphRelativeUri = $tenantQualifiedVersionSegment.trimend('/'), $contextUri.trim('/') -join '/'
+    $graphRelativeUri = $tenantQualifiedVersionSegment.trimend('/'), $contextUri.tostring().trim('/') -join '/'
 
     $query = $null
     $countError = $false

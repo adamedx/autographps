@@ -138,7 +138,7 @@ ScriptClass GraphSegment {
         }
 
         if ( ! $graph ) {
-            [Uri] $relativeUriString
+            [Uri] ("/" + $relativeUriString.trim('/'))
         } else {
             $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString.trimstart('/') -join '/'
             new-object Uri $graph.Endpoint, $relativeVersionedUriString

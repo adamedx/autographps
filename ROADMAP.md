@@ -84,6 +84,7 @@
 * Set-Graphlocation
 * Get-GraphLocation
 * Add relative path support to invoke-graphrequest
+* Support .. in paths
 
 ### Postponed
 

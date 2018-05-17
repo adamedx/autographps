@@ -15,8 +15,45 @@
 ScriptClass GraphUtilities {
     static {
         function ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
+            __ToGraphRelativeUriPath $relativeUri $context $true
+        }
+
+        function __NormalizeBacktrack( $uriAbsoluteString ) {
+            if ( $uriAbsoluteString[0] -ne '/' ) {
+                throw "'$uriAbsoluteString' is not an absolute path"
+            }
+
+            $segments = $uriAbsoluteString -split '/'
+
+            $newSegments = new-object System.Collections.Generic.List[string]
+
+            $segments | foreach {
+                if ( $_ -eq '..' ) {
+                    if ( $newSegments.count -gt 0 ) {
+                        $newSegments.RemoveAt($newSegments.count - 1)
+                     }
+                } else {
+                    $newSegments.Add($_)
+                }
+            }
+
+            $result = $newSegments -join '/'
+
+            if ( $result[0] -ne '/' ) {
+                $result = '/' + $result
+            }
+            write-verbose "Backtrack '$uriAbsoluteString' converted to '$result'"
+            $result
+        }
+
+        function ToGraphRelativeUri( $relativeUri, $context = $null ) {
+             __ToGraphRelativeUriPath $relativeUri $context
+        }
+
+        function __ToGraphRelativeUriPath( $relativeUri, $context = $null, $QualifyPath = $false ) {
+            $normalizedUri = ($relativeUri -split '/' | where { $_ -ne '.' }) -join '/'
             $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
-                $relativeUri
+                [Uri] (__NormalizeBacktrack $normalizedUri)
             } else {
                 $graphContext = if ( $context ) {
                     $context
@@ -24,31 +61,25 @@ ScriptClass GraphUtilities {
                     'GraphContext' |::> GetCurrent
                 }
 
-                $graph = $graphContext |=> GetGraph
-                $location = $graphContext.location |=> ToGraphUri $graph
-                $location.tostring().TrimEnd('/'), $relativeUri.tostring().trimstart('/') -join '/'
+                $locationUri = $graphContext.location |=> ToGraphUri
+                $graphUri = $locationUri.tostring().trimend('/'), $normalizedUri.tostring().trim('/') -join '/'
+                $canonicalGraphUri = __NormalizeBacktrack $graphUri.tostring()
+
+                if ( $QualifyPath ) {
+                    ToQualifiedUri $canonicalGraphUri $graphContext
+                } else {
+                    $canonicalGraphUri
+                }
             }
 
             $result
         }
 
-        function ToGraphRelativeUri( $relativeUri, $context = $null ) {
-            $normalizedUri = ($relativeUri -split '/' | where { $_ -ne '.' }) -join '/'
-            $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
-                $normalizedUri
-            } else {
+        function ToQualifiedUri($graphRelativeUriString, $context) {
+            $graph = $context |=> GetGraph
 
-                $graphContext = if ( $context ) {
-                    $context
-                } else {
-                    'GraphContext' |::> GetCurrent
-                }
-
-                $location = $graphContext.location |=> ToGraphUri
-                $location.tostring().TrimEnd('/'), $normalizedUri.tostring().trim('/') -join '/'
-            }
-
-            $result
+            $relativeVersionedUriString = $graph.ApiVersion, $graphRelativeUriString.trimstart('/') -join '/'
+            new-object Uri $graph.Endpoint, $relativeVersionedUriString
         }
 
         function ToLocationUriPath( $context, $relativeUri ) {

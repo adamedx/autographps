@@ -24,10 +24,16 @@ function Set-GraphLocation {
         $UriPath = $null
     )
 
-    $inputUri = if ($UriPath -isnot [String]) {
-        $UriPath | select -expandproperty path
-    } else {
+    $inputUri = if ( $UriPath -is [String] ) {
         $UriPath
+    } elseif ( $UriPath | gm -membertype scriptmethod '__ItemContext' ) {
+        ($UriPath |=> __ItemContext | select -expandproperty RequestUri)
+    } elseif ( $UriPath | gm Uri ) {
+        $UriPath.Uri
+    } elseif ( $UriPath | gm Path ) {
+        $UriPath.path
+    } else {
+        throw "UriPath must be a valid location string or object with a path / Uri"
     }
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
