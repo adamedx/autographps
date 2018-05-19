@@ -181,6 +181,10 @@ ScriptClass GraphContext {
             }
         }
 
+        function GetMetadataStatus($context) {
+            $this.cache |=> GetMetadataStatus $context.connection.GraphEndpoint.Graph $context.version
+        }
+
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion

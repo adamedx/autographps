@@ -4,7 +4,6 @@
 
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
-  * get-graph
   * mount-graph
   * unmount-graph
 * Add display type for get-graphitem
@@ -85,6 +84,8 @@
 * Get-GraphLocation
 * Add relative path support to invoke-graphrequest
 * Support .. in paths
+* Move path manipulation to common helpers
+* get-graph
 
 ### Postponed
 

@@ -16,6 +16,14 @@
 . (import-script metadata\GraphDataModel)
 . (import-script Invoke-GraphRequest)
 
+enum MetadataStatus {
+    NotStarted
+    Pending
+    Ready
+    Failed
+    Unkown
+}
+
 ScriptClass GraphCache {
     $graphVersionsPending = @{}
     $graphVersions = @{}
@@ -128,6 +136,28 @@ ScriptClass GraphCache {
             $pendingGraph.job | stop-job
             $this.graphVersionsPending.Remove($graphId)
         }
+    }
+
+    function GetMetadataStatus($endpoint, $apiVersion) {
+        $graphid = $this.scriptclass |=> __GetGraphId $endpoint $apiversion
+        $status = [MetadataStatus]::NotStarted
+
+        if ($this.Graphversions[$graphId] -ne $null) {
+            $status = [MetadataStatus]::Ready
+        } else {
+            $pendingVersion = $this.graphVersionsPending[$graphid]
+
+            if ( $pendingVersion ) {
+                $status = switch ( $pendingVersion.job.state ) {
+                    'Completed' { [MetadataStatus]::Ready }
+                    'Running' { [MetadataStatus]::Pending }
+                    'Failed' { [MetadataStatus]::Failed }
+                    default { [MetadataStatus]::Unknown }
+                }
+            }
+        }
+
+        $status
     }
 
     function __GetGraphAsync($graphId, $endpoint, $apiVersion, $metadata) {

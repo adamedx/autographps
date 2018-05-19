@@ -91,12 +91,17 @@ ScriptClass LogicalGraphManager {
     }
 
     function GetContext($name) {
-        $contextRecord = $this.contexts[$name]
+        if ( $name -and $name -ne '' ) {
+            $contextRecord = $this.contexts[$name]
 
-        if ($contextRecord) {
-            $contextRecord.context
+            if ($contextRecord) {
+                $contextRecord.context
+            }
+        } else {
+            $this.contexts.values | select -expandproperty Context
         }
     }
+
 
     static {
         function __initialize { if ( ! $this.sessionManager ) { $this.sessionManager = new-so LogicalGraphManager } }
