@@ -28,8 +28,6 @@ function Set-GraphLocation {
         $UriPath
     } elseif ( $UriPath | gm -membertype scriptmethod '__ItemContext' ) {
         ($UriPath |=> __ItemContext | select -expandproperty RequestUri)
-    } elseif ( $UriPath | gm Uri ) {
-        $UriPath.Uri
     } elseif ( $UriPath | gm Path ) {
         $UriPath.path
     } else {

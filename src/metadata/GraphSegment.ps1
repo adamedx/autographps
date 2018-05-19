@@ -132,16 +132,17 @@ ScriptClass GraphSegment {
         $currentSegment = $this
 
         $relativeUriString = $this.name
+
         while ($currentSegment.parent -ne $null) {
-            $relativeUriString = ($currentSegment.parent.name).trimend('/'), $relativeUriString.trim('/') -join '/'
+            $relativeUriString = $::.GraphUtilities |=> JoinFragmentUri $currentSegment.parent.name $relativeUriString
             $currentSegment = $currentSegment.parent
         }
 
         if ( ! $graph ) {
-            [Uri] ("/" + $relativeUriString.trim('/'))
+            $::.GraphUtilities |=> JoinGraphUri / $relativeUriString
         } else {
-            $relativeVersionedUriString = $graph.ApiVersion, $relativeUriString.trimstart('/') -join '/'
-            new-object Uri $graph.Endpoint, $relativeVersionedUriString
+            $relativeVersionedUriString = $::.GraphUtilities |=> JoinRelativeUri $graph.ApiVersion $relativeUriString
+            $::.GraphUtilities |=> JoinAbsoluteUri $graph.Endpoint $relativeVersionedUriString
         }
     }
 

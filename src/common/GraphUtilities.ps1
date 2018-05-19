@@ -62,7 +62,7 @@ ScriptClass GraphUtilities {
                 }
 
                 $locationUri = $graphContext.location |=> ToGraphUri
-                $graphUri = $locationUri.tostring().trimend('/'), $normalizedUri.tostring().trim('/') -join '/'
+                $graphUri = JoinGraphUri $locationUri $normalizedUri
                 $canonicalGraphUri = __NormalizeBacktrack $graphUri.tostring()
 
                 if ( $QualifyPath ) {
@@ -78,8 +78,9 @@ ScriptClass GraphUtilities {
         function ToQualifiedUri($graphRelativeUriString, $context) {
             $graph = $context |=> GetGraph
 
-            $relativeVersionedUriString = $graph.ApiVersion, $graphRelativeUriString.trimstart('/') -join '/'
-            new-object Uri $graph.Endpoint, $relativeVersionedUriString
+            $relativeVersionedUriString = JoinRelativeUri $graph.ApiVersion $graphRelativeUriString
+
+            JoinAbsoluteUri $graph.Endpoint $relativeVersionedUriString
         }
 
         function ToLocationUriPath( $context, $relativeUri ) {
@@ -87,19 +88,49 @@ ScriptClass GraphUtilities {
             "{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
+        function JoinAbsoluteUri([Uri] $absoluteUri, [string] $relativeUri) {
+            if ( ! $absoluteUri.IsAbsoluteUri ) {
+                throw "Absolute uri argument '$($absoluteUri.tostring())' is not an absolute uri"
+            }
+
+            new-object Uri $absoluteUri, $relativeUri.trim('/')
+        }
+
+        function JoinRelativeUri([string] $relativeUri1, [string] $relativeUri2) {
+            if ( $relativeUri1[0] -eq '/' ) {
+                     throw "'$relativeUri1' is an absolute path"
+                 }
+
+            JoinFragmentUri $relativeUri1 $relativeUri2
+        }
+
+        function JoinFragmentUri([string] $fragmentUri1, [string] $fragmentUri2) {
+            ($fragmentUri1.trimend('/'), $fragmentUri2.trim('/') -join '/')
+        }
+
+        function JoinGraphUri([Uri] $graphUri, [string] $relativeUri) {
+            if ( $graphUri.tostring()[0] -ne '/' ) {
+                throw "Graph uri parameter '$graphUri' is not an absolute graph path"
+            }
+
+            $uriString = JoinFragmentUri $graphUri $relativeUri
+            [Uri] $uriString
+        }
+
         function ParseLocationUriPath($UriPath) {
             $context = $null
             $isAbsolute = $false
             $graphRelativeUri = $null
             if ( $UriPath ) {
-                $contextEnd = $UriPath.IndexOf(':')
+                $UriString = $UriPath.tostring()
+                $contextEnd = $UriString.IndexOf(':')
                 $graphRelativeUri = if ( $contextEnd -eq -1 ) {
-                    $isAbsolute = $UriPath[0] -eq '/'
-                    $UriPath
+                    $isAbsolute = $UriString[0] -eq '/'
+                    $UriString
                 } else {
                     $isAbsolute = $true
-                    $context = $UriPath.substring(0, $contextEnd)
-                    $UriPath.substring($contextEnd + 1, $UriPath.length - $contextEnd - 1)
+                    $context = $UriString.substring(0, $contextEnd)
+                    $UriString.substring($contextEnd + 1, $UriString.length - $contextEnd - 1)
                 }
             }
 
@@ -141,8 +172,10 @@ ScriptClass GraphUtilities {
                 throw "Invalid graph uri '$uri'"
             }
 
+            $normalized = JoinGraphUri / $relativeUri
+
             [PSCustomObject]@{
-                GraphRelativeUri = $relativeUri
+                GraphRelativeUri = $normalized
                 GraphVersion = $version
                 EndpointMatchesContext = $sameEndpoint
                 VersionMatchesContext = $sameVersion
