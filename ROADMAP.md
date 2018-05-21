@@ -4,20 +4,33 @@
 
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
-  * mount-graph
-  * unmount-graph
+  * unmount-graph -- remove-graph
+* Aliases:
+  * gls - get-graphchilditems
+  * gcd - set-graphlocation
+  * gwd - get-graphlocation
+  * ggi - get-graphitem
+* Add display type for get-graphchilditem
 * Add display type for get-graphitem
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
 * # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
+* Add copy-graphitem
+  * graph to graph copy
+  * json to graph copy
+  * graph to json copy
 * Get-GraphTypeData -typename -graphitem
 * Get-GraphMetadata
 * Add signout
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
-* Add new-graphentity
-* Add set-graphitem
+* Add new-graphentity -- PUT
+* Add set-graphitem -- PUT / PATCH
+* Add copy-graphitem
+  * graph to graph copy
+  * json to graph copy
+  * graph to json copy
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
 * add predefined scopes: https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference
@@ -40,7 +53,6 @@
 * Find a better name!
 * README
 * Extended Samples
-* Publish to psgallery
 * More tests
 * Add get-graphmetadata
 * Help
@@ -72,6 +84,7 @@
 * Get custom appid to work
 * Session support
 * Add connection support to test-graph
+* Publish to psgallery
 * Update build steps
 * Rename stdposh to ScriptClass
 * Refactor GraphBuilder
@@ -86,6 +99,8 @@
 * Support .. in paths
 * Move path manipulation to common helpers
 * get-graph
+* Make context meaningful
+  * new-graph
 
 ### Postponed
 

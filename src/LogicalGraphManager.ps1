@@ -51,7 +51,7 @@ ScriptClass LogicalGraphManager {
         $uniqueName = if ( $name -and $name -ne '' ) {
             $name
         } else {
-            "{0}:{1}" -f $graphConnection.GraphEndpoint.Graph, $version
+            $version
         }
 
         $contextName = if ( $this.contexts.containskey($uniqueName) ) {

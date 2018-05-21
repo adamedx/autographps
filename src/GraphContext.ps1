@@ -186,14 +186,16 @@ ScriptClass GraphContext {
         }
 
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
+            $deferBuild = $apiVersion -ne 'v1.0'
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion
             }
 
             if ( $wait -and ! $forceupdate ) {
-                $this.cache |=> GetGraph $endpoint $apiVersion $metadata
+                $this.cache |=> GetGraph $endpoint $apiVersion $metadata $deferBuild
             } else {
-                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata
+
+                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata $deferBuild
 
                 if ( $wait ) {
                     $this.cache |=> WaitForGraphAsync $asyncResult

@@ -35,7 +35,6 @@ function Get-GraphUri {
         [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject[]]$GraphItems
-
     )
 
     $context = $::.GraphContext |=> GetCurrent

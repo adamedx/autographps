@@ -17,9 +17,8 @@
 function Update-GraphMetadata {
     [cmdletbinding()]
     param(
-        [string] $Version = 'v1.0',
+        $GraphInfo,
 
-        [PSCustomObject] $Connection,
         [parameter(parametersetname='Path', mandatory=$true)]
         $Path = $null,
 
@@ -34,11 +33,11 @@ function Update-GraphMetadata {
         [xml] (get-content $Path | out-string)
     }
 
-    $endpoint = if ($connection) {
-        $connection.GraphEndpoint.graph
+    $context = if ( $GraphInfo ) {
+        $::.LogicalGraphManager |=> Get |=> GetContext $GraphInfo.Name
+    } else {
+        $::.GraphContext |=> GetCurrent
     }
-
-    $context = $::.GraphContext |=> GetConnection $connection
 
     $context |=> UpdateGraph $metadata $wait.ispresent $force.ispresent
 }

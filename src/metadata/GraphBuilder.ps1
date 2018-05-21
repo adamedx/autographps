@@ -25,13 +25,15 @@ ScriptClass GraphBuilder {
     $namespace = $null
     $percentComplete = 0
     $metadata = $null
+    $deferredBuild = $false
 
-    function __initialize($graphEndpoint, $version, $metadata) {
+    function __initialize($graphEndpoint, $version, $metadata, $deferredBuild) {
         $this.graphEndpoint = $graphEndpoint
         $this.version = $version
         $this.metadata = $metadata
         $this.dataModel = new-so GraphDataModel $metadata
         $this.namespace = $this.dataModel |=> GetNamespace
+        $this.deferredBuild = $deferredBuild
     }
 
     function NewGraph {
@@ -126,28 +128,11 @@ ScriptClass GraphBuilder {
     }
 
     function __CopyEntityTypeEdgesToSingletons($graph) {
-        ($graph |=> GetRootVertices).values | foreach {
-            $source = $_
-            $edges = if ( $source.type -eq 'Singleton' ) {
-                $typeVertex = $graph |=> TypeVertexFromTypeName ($source.entity.typeData).EntityTypeName
-                if ( $typeVertex -eq $null ) {
-                    throw "Unable to find an entity type for type '$($source.entity.type)"
-                }
-                $typeVertex.outgoingEdges.values | foreach {
-                    if ( ( $_ | gm transition ) -ne $null ) {
-                        $_
-                    }
-                }
-            }
-
-            $edges | foreach {
-                $sink = $_.sink
-                $transition = $_.transition
-                $edge = new-so EntityEdge $source $sink $transition
-                $source |=> AddEdge $edge
-            }
+        if ( ! $this.deferredBuild ) {
+            $this.scriptclass |=> __CopyEntityTypeEdgesToSingletons $graph
+        } else {
+            write-verbose "Deferred build set -- skipping connection of singletons to entity types to avoid deserialization depth issues"
         }
-        __UpdateProgress 100
     }
 
     function __UpdateProgress($deltaPercent) {
@@ -219,6 +204,37 @@ ScriptClass GraphBuilder {
             $targetVertex |=> AddEdge $edge
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
+        }
+    }
+
+    static {
+        function CompleteDeferredBuild($graph) {
+            write-verbose "Completing deferred build by connecting singletons"
+            __CopyEntityTypeEdgesToSingletons $graph
+        }
+
+        function __CopyEntityTypeEdgesToSingletons($graph) {
+            ($graph |=> GetRootVertices).values | foreach {
+                $source = $_
+                $edges = if ( $source.type -eq 'Singleton' ) {
+                    $typeVertex = $graph |=> TypeVertexFromTypeName ($source.entity.typeData).EntityTypeName
+                    if ( $typeVertex -eq $null ) {
+                        throw "Unable to find an entity type for type '$($source.entity.type)"
+                    }
+                    $typeVertex.outgoingEdges.values | foreach {
+                        if ( ( $_ | gm transition ) -ne $null ) {
+                            $_
+                        }
+                    }
+                }
+
+                $edges | foreach {
+                    $sink = $_.sink
+                    $transition = $_.transition
+                    $edge = new-so EntityEdge $source $sink $transition
+                    $source |=> AddEdge $edge
+                }
+            }
         }
     }
 }

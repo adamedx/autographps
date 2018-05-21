@@ -36,11 +36,9 @@ function Set-GraphLocation {
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
 
-    $currentContext = $false
     $context = if ( $ParsedPath.Context ) {
         'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.Context
     } else {
-        $currentContext = $true
         $::.GraphContext |=> GetCurrent
     }
 
@@ -58,7 +56,6 @@ function Set-GraphLocation {
 
     $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
 
-    if ( $currentContext ) {
-        $context |=> SetLocation $location
-    }
+    $context |=> SetLocation $location
+    $::.GraphContext |=> SetCurrentByName $context.name
 }

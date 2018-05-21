@@ -115,7 +115,14 @@ function Invoke-GraphRequest {
     $apiVersion = if ( $uriInfo -and $uriInfo.GraphVersion ) {
         $uriInfo.GraphVersion
     } elseif ( $Version -eq $null -or $version.length -eq 0 ) {
-        $defaultVersion
+        $currentContext = $::.GraphContext |=> GetCurrent
+        if ( $currentContext ) {
+            write-verbose "Using context Graph version '$($currentContext.Version)'"
+            $currentContext.Version
+        } else {
+            write-verbose "Using default Graph version '$defaultVersion'"
+            $defaultVersion
+        }
     } else {
         $Version
     }
