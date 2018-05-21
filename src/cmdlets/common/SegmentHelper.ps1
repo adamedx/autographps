@@ -66,9 +66,18 @@ ScriptClass SegmentHelper {
 
             $path = $::.GraphUtilities |=> ToLocationUriPath $parser.context $relativeUri
 
+            $relationship = if ( $segment.isdynamic -or $entityClass -eq 'Singleton' ) {
+                'Data'
+            } elseif ( $iscollection ) {
+                'Collection'
+            } else {
+                'Direct'
+            }
+
             [PSCustomObject]@{
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
+                Relation = $relationship
                 Collection = $isCollection
                 Class = $entityClass
                 Type = $shortTypeName
@@ -89,7 +98,7 @@ ScriptClass SegmentHelper {
         function __RegisterSegmentDisplayType {
             remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
 
-            $coreProperties = @('Collection', 'Class', 'Type', 'Name')
+            $coreProperties = @('Relation', 'Class', 'Type', 'Name')
 
             $segmentDisplayTypeArguments = @{
                 TypeName    = $this.segmentDisplayTypeName

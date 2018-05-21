@@ -23,6 +23,7 @@
 . (import-script Connect-Graph)
 . (import-script Disconnect-Graph)
 . (import-script cmdlets\Get-Graph)
+. (import-script cmdlets\Get-GraphChildItem)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\New-Graph)

@@ -111,6 +111,11 @@ function Get-GraphUri {
             $results += $additionalSegments
         } elseif ( $Children.ispresent ) {
             $childSegments = $parser |=> GetChildren $lastSegment | sort Name
+        } else {
+            if ( $GraphItem ) {
+                $lastOutputSegment = $results | select -last 1
+                $lastOutputSegment | add-member -membertype NoteProperty -name Content -value $GraphItem
+            }
         }
 
         if ( $childSegments ) {

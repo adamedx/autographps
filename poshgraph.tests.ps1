@@ -48,6 +48,7 @@ Describe "Poshgraph application" {
                 'disconnect-graph',
                 'update-graphmetadata',
                 'Get-Graph',
+                'Get-GraphChildItem',
                 'Get-GraphLocation',
                 'New-Graph',
                 'Set-GraphLocation',
