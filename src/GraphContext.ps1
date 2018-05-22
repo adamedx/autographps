@@ -125,20 +125,22 @@ ScriptClass GraphContext {
 
         function __GetSimpleConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
             write-verbose "Connection request for Graph = '$graphType', Cloud = '$cloud', Anonymous = $($anonymous -eq $true)"
-            if ( $scopenames ) {
+            $graphScopes = if ( $scopenames ) {
                 write-verbose "Scopes requested:"
                 $scopenames | foreach {
                     write-verbose "`t$($_)"
                 }
+                $scopenames
             } else {
-                write-verbose "No scopes requested"
+                write-verbose "No scopes requested, using User.Read"
+                @('User.Read')
             }
 
             $currentContext = GetCurrent
 
             $sessionConnection = GetCurrentConnection
             if ( $graphType -eq [GraphType]::AADGraph -or ! (__IsContextConnected $currentContext) -or (! $anonymous -and ! $sessionConnection.identity)) {
-                $::.GraphConnection |=> NewSimpleConnection $graphType $cloud $ScopeNames $anonymous
+                $::.GraphConnection |=> NewSimpleConnection $graphType $cloud $graphScopes $anonymous
             } else {
                 $sessionConnection
             }
@@ -156,14 +158,21 @@ ScriptClass GraphContext {
             } elseif ( $currentContext ) {
                 write-verbose "Found existing connection from current context '$($currentcontext.name)'"
                 if ( ( ! $cloud -or $currentContext.cloud -eq $cloud) -and
-                     ! ($scopenames -eq 'User.Read' -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
+                     (!$scopenames -or $scopenames -eq 'User.Read' -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
                      ! $anonymous
                    ) {
                        write-verbose "Current context is compatible with supplied arguments, will use it"
-                       $currentContext
+                        $currentContext
                    } else {
                        write-verbose "Current context is not compatible with supplied arguments, new connection required"
                    }
+            }
+
+            $connectionScopes = if ( $scopeNames ) {
+                $scopeNames
+            } else {
+                write-verbose "Scopes were not specified, adding default User.Read scope"
+                @('User.Read')
             }
 
             if ( $existingConnection ) {
@@ -173,7 +182,7 @@ ScriptClass GraphContext {
                 write-verbose "No connection supplied and no compatible connection found from a context"
                 $namedArguments=@{Anonymous=($anonymous -eq $true)}
                 if ( $cloud ) { $namedArguments['Cloud'] = $cloud }
-                if ( $scopenames ) { $namedArguments['ScopeNames'] = $scopenames }
+                $namedArguments['ScopeNames'] = $connectionScopes
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
                 $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments

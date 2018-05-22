@@ -108,6 +108,7 @@ AliasesToExport = @()
     FileList = @(
         '.\poshgraph.psd1',
         '.\poshgraph.psm1',
+        '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\test-graph.ps1',
         '.\src\graphendpoint.ps1'
@@ -144,6 +145,7 @@ AliasesToExport = @()
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\metadata\metadata.ps1',
         '.\src\metadata\Entity.ps1',

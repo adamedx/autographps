@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ../metadata/SegmentParser)
-. (import-script common/SegmentHelper)
+. (import-script common/LocationHelper)
 
 function Get-GraphLocation {
     [cmdletbinding()]
@@ -26,5 +26,5 @@ function Get-GraphLocation {
 
     $parser = new-so SegmentParser $context
 
-    $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+    $::.LocationHelper |=> ToPublicLocation $parser $context.location
 }

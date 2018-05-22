@@ -88,11 +88,14 @@ function Invoke-GraphRequest {
         }
     }
 
+    $currentContext = $null
+
     $graphConnection = if ( $Connection -eq $null ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
         } else {
-            'GraphContext' |::> GetConnection $null $null $cloud $MSGraphScopeNames
+            $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
+            $currentContext.Connection
         }
     } else {
         $Connection
@@ -115,7 +118,6 @@ function Invoke-GraphRequest {
     $apiVersion = if ( $uriInfo -and $uriInfo.GraphVersion ) {
         $uriInfo.GraphVersion
     } elseif ( $Version -eq $null -or $version.length -eq 0 ) {
-        $currentContext = $::.GraphContext |=> GetCurrent
         if ( $currentContext ) {
             write-verbose "Using context Graph version '$($currentContext.Version)'"
             $currentContext.Version

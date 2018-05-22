@@ -105,7 +105,11 @@ function Get-GraphUri {
             $additionalSegments = if ( $Children.IsPresent ) {
                 $childSegments = $parser |=> GetChildren $idSegment | sort Name
             } else {
-                $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+                $instanceSegment = $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+                if ( $graphItem ) {
+                    $instanceSegment | add-member -membertype NoteProperty -name Content -value $GraphItem
+                }
+                $instanceSegment
             }
 
             $results += $additionalSegments

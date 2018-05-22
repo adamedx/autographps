@@ -73,7 +73,7 @@ ScriptClass GraphRequest {
 
         $query = __AddQueryParameters $queryParameters
 
-        $response = __InvokeRequest $this.verb $this.uri $query $this.headers
+        $response = __InvokeRequest $this.verb $this.uri $query
         new-so GraphResponse $response
     }
 

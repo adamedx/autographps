@@ -18,8 +18,8 @@
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
     param(
-        [parameter(position=0,mandatory=$true)]
-        [Uri[]] $ItemRelativeUri,
+        [parameter(position=0)]
+        [Uri[]] $ItemRelativeUri = @('.'),
 
         [parameter(position=1, parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
@@ -66,9 +66,11 @@ function Get-GraphChildItem {
         $requestArguments['Connection'] = $Connection
     }
 
-    Invoke-GraphRequest @requestArguments | foreach {
-        $result = $_ | Get-GraphUri
-        $results += $result
+    if ( $resolvedUri.Class -ne '__Root' ) {
+        Invoke-GraphRequest @requestArguments | foreach {
+            $result = $_ | Get-GraphUri
+            $results += $result
+        }
     }
 
     if ( ! $resolvedUri.Collection ) {

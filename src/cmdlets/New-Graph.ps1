@@ -28,7 +28,7 @@ function New-Graph {
         [parameter(position=2, parametersetname='Cloud')]
         [parameter(position=2, parametersetname='Authenticated')]
         [parameter(position=2, parametersetname='Connection')]
-        [String[]] $ScopeNames,
+        [String[]] $ScopeNames = @('User.Read'),
 
         [parameter(parametersetname='Cloud', mandatory=$true)]
         [parameter(parametersetname='Authenticated')]

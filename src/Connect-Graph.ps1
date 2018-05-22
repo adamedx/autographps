@@ -44,6 +44,7 @@ function Connect-Graph {
 
         $::.GraphContext |=> SetCurrentByName $newContext.name
     } else {
+        write-verbose "Connecting context '$($context.name)'"
         $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $::.Application.AppId
         $context |=> Update $newConnection.identity $ScopeNames
         $context.Connection |=> Connect

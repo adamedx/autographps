@@ -28,6 +28,9 @@ ScriptClass GraphConnection {
         $this.Connected = $false
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
+            if ( $Identity -and ! $scopes ) {
+                throw "No scopes were specified, at least one scope must be specified"
+            }
             $this.Scopes = $Scopes
         }
     }

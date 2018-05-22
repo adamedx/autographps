@@ -2,15 +2,12 @@
 
 ## To-do items -- prioritized
 
+* Handle 403's in get-graphchilditem
+* Enable schemaless execution
+* Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
 * Make context meaningful
   * unmount-graph -- remove-graph
-* Aliases:
-  * gls - get-graphchilditems
-  * gcd - set-graphlocation
-  * gwd - get-graphlocation
-  * ggi - get-graphitem
-* Add display type for get-graphchilditem
 * Add display type for get-graphitem
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
@@ -101,6 +98,14 @@
 * get-graph
 * Make context meaningful
   * new-graph
+* Add display type for get-graphchilditem
+* Aliases:
+  * ggi Get-GraphItem
+  * gls Get-GraphChildItem
+  * gcd Set-GraphLocation
+  * gwd Get-GraphLocation
+  * ggu Get-GraphUri
+  * gg  Get-Graph
 
 ### Postponed
 

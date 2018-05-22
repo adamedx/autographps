@@ -27,9 +27,13 @@ ScriptClass GraphIdentity {
         $this.App = $app
     }
 
-    function Authenticate($graphEndpoint, $scopes = @()) {
+    function Authenticate($graphEndpoint, $scopes = $null) {
         if ($this.token -ne $null) {
             return
+        }
+
+        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
+            throw [ArgumentException]::new('No scopes specified, at least one scope is required')
         }
 
         $this.scriptclass |=> __LoadAuthLibrary $graphEndpoint.Type

@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2017, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script metadata\metadata)
-. (import-script cmdlets)
-. (import-script aliases)
+set-alias ggi Get-GraphItem
+set-alias gls Get-GraphChildItem
+set-alias gcd Set-GraphLocation
+set-alias gwd Get-GraphLocation
+set-alias ggu Get-GraphUri
+set-alias gg  Get-Graph
 
