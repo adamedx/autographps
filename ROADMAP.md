@@ -2,13 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Add prompt modification
 * Handle 403's in get-graphchilditem
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
-* Make context meaningful
-  * unmount-graph -- remove-graph
-* Add display type for get-graphitem
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
 * # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
@@ -98,6 +96,8 @@
 * get-graph
 * Make context meaningful
   * new-graph
+  * Make context meaningful
+  * remove-graph
 * Add display type for get-graphchilditem
 * Aliases:
   * ggi Get-GraphItem

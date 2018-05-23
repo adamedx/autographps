@@ -51,6 +51,7 @@ Describe "Poshgraph application" {
                 'Get-GraphChildItem',
                 'Get-GraphLocation',
                 'New-Graph',
+                'Remove-Graph',
                 'Set-GraphLocation',
                 'get-graphuri',
                 'get-graphtoken')

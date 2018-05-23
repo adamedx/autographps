@@ -86,6 +86,7 @@ FunctionsToExport = @()
         'Get-GraphLocation',
         'Get-GraphUri',
         'New-Graph',
+        'Remove-Graph',
         'connect-graph',
         'disconnect-graph',
         'Set-GraphLocation',
@@ -96,7 +97,7 @@ FunctionsToExport = @()
 # VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @()
+AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -142,6 +143,7 @@ AliasesToExport = @()
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
+        '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
