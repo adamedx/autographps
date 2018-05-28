@@ -15,7 +15,7 @@
 ScriptClass GraphUtilities {
     static {
         function ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
-            __ToGraphRelativeUriPath $relativeUri $context $true
+            $this.__ToGraphRelativeUriPath($relativeUri, $context, $true)
         }
 
         function __NormalizeBacktrack( $uriAbsoluteString ) {
@@ -53,7 +53,7 @@ ScriptClass GraphUtilities {
         function __ToGraphRelativeUriPath( $relativeUri, $context = $null, $QualifyPath = $false ) {
             $normalizedUri = ($relativeUri -split '/' | where { $_ -ne '.' }) -join '/'
             $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
-                [Uri] (__NormalizeBacktrack $normalizedUri)
+                [Uri] ($this.__NormalizeBacktrack($normalizedUri))
             } else {
                 $graphContext = if ( $context ) {
                     $context
@@ -62,11 +62,11 @@ ScriptClass GraphUtilities {
                 }
 
                 $locationUri = $graphContext.location |=> ToGraphUri
-                $graphUri = JoinGraphUri $locationUri $normalizedUri
+                $graphUri = $this.JoinGraphUri($locationUri, $normalizedUri)
                 $canonicalGraphUri = __NormalizeBacktrack $graphUri.tostring()
 
                 if ( $QualifyPath ) {
-                    ToQualifiedUri $canonicalGraphUri $graphContext
+                    $this.ToQualifiedUri($canonicalGraphUri,$graphContext)
                 } else {
                     $canonicalGraphUri
                 }
@@ -84,7 +84,7 @@ ScriptClass GraphUtilities {
         }
 
         function ToLocationUriPath( $context, $relativeUri ) {
-            $graphRelativeUri = ToGraphRelativeUriPath $relativeUri $context
+            $graphRelativeUri = $this.ToGraphRelativeUriPath($relativeUri, $context)
             "{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
@@ -93,7 +93,7 @@ ScriptClass GraphUtilities {
                 throw "Absolute uri argument '$($absoluteUri.tostring())' is not an absolute uri"
             }
 
-            new-object Uri $absoluteUri, $relativeUri.trim('/')
+            $::.GraphUtilities.JoinFragmentUri($absoluteUri, $relativeUri)
         }
 
         function JoinRelativeUri([string] $relativeUri1, [string] $relativeUri2) {
@@ -113,7 +113,7 @@ ScriptClass GraphUtilities {
                 throw "Graph uri parameter '$graphUri' is not an absolute graph path"
             }
 
-            $uriString = JoinFragmentUri $graphUri $relativeUri
+            $uriString = $this.JoinFragmentUri($graphUri, $relativeUri)
             [Uri] $uriString
         }
 

@@ -143,6 +143,8 @@ function Invoke-GraphRequest {
 
     $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
         $pscmdlet.pagingparameters.First
+    } else {
+        10
     }
 
     $skipCount = $firstIndex
