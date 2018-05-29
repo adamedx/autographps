@@ -30,6 +30,8 @@ function Get-GraphChildItem {
 
         [switch] $AbsoluteUri,
 
+        [switch] $DetailedChildren,
+
         [HashTable] $Headers = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
@@ -66,14 +68,36 @@ function Get-GraphChildItem {
         $requestArguments['Connection'] = $Connection
     }
 
+    $graphException = $false
     if ( $resolvedUri.Class -ne '__Root' ) {
-        Invoke-GraphRequest @requestArguments | foreach {
-            $result = $_ | Get-GraphUri
-            $results += $result
+        try {
+            Invoke-GraphRequest @requestArguments | foreach {
+                $result = if ( (! $resolvedUri.Collection) -or $DetailedChildren.IsPresent ) {
+                    $_ | Get-GraphUri
+                } else {
+                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                }
+
+                $results += $result
+            }
+        } catch [System.Net.WebException] {
+            $graphException = $true
+            $statusCode = $_.exception.response.statuscode
+            $_.exception | write-verbose
+            if ( $statusCode -eq 'Unauthorized' ) {
+                write-verbose "Graph endpoint returned 'Unauthorized' - ignoring failure"
+                write-warning "Graph endpoint returned 'Unauthorized', retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate additional application scopes"
+            } elseif ( $statusCode -eq 'Forbidden' ) {
+                write-verbose "Graph endpoint returned 'Forbiddden' - ignoring failure"
+            } elseif ( $statusCode -eq 'BadRequest' ) {
+                write-verbose "Graph endpoint returned 'Bad request' - metadata may be inaccurate, ignoring failure"
+            } else {
+                throw $_.exception
+            }
         }
     }
 
-    if ( ! $resolvedUri.Collection ) {
+    if ( $graphException -or ! $resolvedUri.Collection ) {
         Get-GraphUri $ItemRelativeUri[0] -children | foreach {
             $results += $_
         }

@@ -92,6 +92,32 @@ ScriptClass SegmentHelper {
                 IsDynamic = $segment.isDynamic
                 Parent = $ParentPublicSegment
                 Details = $segment
+                Content = $null
+            }
+        }
+
+        function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
+            $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.Type).EntityTypeName
+            $typeComponents = $fullTypeName -split '\.'
+            [PSCustomObject]@{
+                PSTypeName = $parentPublicSegment.pstypename
+                ParentPath = $parentPublicSegment.Path
+                Relation = 'Direct'
+                Collection = $false
+                Class = 'EntityType'
+                Type = $typeComponents[$typeComponents.length - 1]
+                Name = $graphItem.Id
+                Namespace = $parentPublicSegment.Namespace
+                Uri = new-object Uri $parentPublicSegment.Uri, $graphItem.id
+                GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $graphItem.id)
+                Path = $::.GraphUtilities.JoinFragmentUri($parentPublicSegment.path, $graphItem.Id)
+                FullTypeName = $fullTypeName
+                Version = $parentPublicSegment.Version
+                Endpoint = $parentPublicSegment.Endpoint
+                IsDynamic = $true
+                Parent = $ParentPublicSegment
+                Details = $null
+                Content = $_
             }
         }
 
