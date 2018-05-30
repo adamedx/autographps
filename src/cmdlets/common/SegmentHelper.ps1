@@ -22,6 +22,17 @@ ScriptClass SegmentHelper {
             __RegisterSegmentDisplayType
         }
 
+        function IsValidLocationClass($itemClass) {
+            switch ( $itemClass ) {
+                '__Root' { $true }
+                'Singleton' { $true }
+                'EntitySet' { $true }
+                'EntityType' { $true }
+                'NavigationProperty' { $true }
+                default { $false }
+            }
+        }
+
         function UriToSegments($parser, [Uri] $uri) {
             $graphUri = if ( $uri.IsAbsoluteUri ) {
                 $graphRelativeUri = ''

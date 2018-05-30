@@ -27,6 +27,10 @@ function Get-GraphUri {
         [parameter(parametersetname='FromObjectChildren', mandatory=$true)]
         [Switch] $Children,
 
+        [parameter(parametersetname='FromUriChildren')]
+        [parameter(parametersetname='FromObjectChildren')]
+        [Switch] $LocatableChildren,
+
         [parameter(parametersetname='FromUriParents', mandatory=$true)]
         [parameter(parametersetname='FromObjectParents', mandatory=$true)]
         [Switch] $Parents,
@@ -123,8 +127,12 @@ function Get-GraphUri {
         }
 
         if ( $childSegments ) {
-            $publicChildSegments = $childSegments | foreach {
-                $::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment
+            $publicChildSegments = @()
+            $childSegments | foreach {
+                $skipSegment = $LocatableChildren.IsPresent -and ! $::.SegmentHelper.IsValidLocationClass($_.graphElement.GetEntity().Type)
+                if ( ! $skipSegment ) {
+                    $publicChildSegments += ($::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment)
+                }
             }
 
             $results += $publicChildSegments

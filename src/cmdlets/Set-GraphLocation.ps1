@@ -56,6 +56,11 @@ function Set-GraphLocation {
 
     $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
 
+    $locationClass = $location.graphElement.GetEntity().Type
+    if ( ! $::.SegmentHelper.IsValidLocationClass($locationClass) ) {
+        throw "The path '$UriPath' of class '$locationClass' is a method or other invalid location"
+    }
+
     $context |=> SetLocation $location
     $::.GraphContext |=> SetCurrentByName $context.name
 }

@@ -2,8 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add 'mode'-like column with compressed information in list view
 * Add prompt modification
-* Handle 403's in get-graphchilditem
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
@@ -60,6 +60,7 @@
   * REST resource
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
+* Handle 403's in get-graphchilditem
 
 ### Done
 

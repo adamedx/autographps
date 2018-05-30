@@ -30,6 +30,8 @@ function Get-GraphChildItem {
 
         [switch] $AbsoluteUri,
 
+        [switch] $IncludeAll,
+
         [switch] $DetailedChildren,
 
         [HashTable] $Headers = $null,
@@ -75,7 +77,8 @@ function Get-GraphChildItem {
     }
 
     $graphException = $false
-    if ( $resolvedUri.Class -ne '__Root' ) {
+
+    if ( $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( (! $resolvedUri.Collection) -or $DetailedChildren.IsPresent ) {
@@ -104,7 +107,7 @@ function Get-GraphChildItem {
     }
 
     if ( $graphException -or ! $resolvedUri.Collection ) {
-        Get-GraphUri $ItemRelativeUri[0] -children | foreach {
+        Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
             $results += $_
         }
     }
