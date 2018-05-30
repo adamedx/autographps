@@ -45,7 +45,13 @@ function Get-GraphChildItem {
         throw [NotImplementedException]::new("Non-default context not yet implemented")
     }
 
-    $resolvedUri = Get-GraphUri $ItemRelativeUri[0]
+    $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
+        Get-GraphUri $ItemRelativeUri[0]
+    } else {
+        $context = $::.GraphContext |=> GetCurrent
+        $parser = new-so SegmentParser $context
+        $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+    }
 
     $results = @()
 
