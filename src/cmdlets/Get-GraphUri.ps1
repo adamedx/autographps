@@ -129,7 +129,7 @@ function Get-GraphUri {
         if ( $childSegments ) {
             $publicChildSegments = @()
             $childSegments | foreach {
-                $skipSegment = $LocatableChildren.IsPresent -and ! $::.SegmentHelper.IsValidLocationClass($_.graphElement.GetEntity().Type)
+                $skipSegment = $LocatableChildren.IsPresent -and ! $::.SegmentHelper.IsValidLocationClass(($_.graphElement |=> GetEntity).Type)
                 if ( ! $skipSegment ) {
                     $publicChildSegments += ($::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment)
                 }
