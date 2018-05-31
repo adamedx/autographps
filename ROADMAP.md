@@ -4,6 +4,7 @@
 
 * Add 'mode'-like column with compressed information in list view
 * Add prompt modification
+* Add offline connection
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
@@ -288,4 +289,244 @@ If the predecessor of UN is an entityset or a navigationproperty that returns a 
 
 If the predecessor of UN is a singleton or an entity identifier, then UN may be the name of any of the navigation properties of the singleton or entity
 
+
+### Example output for compressed list view
+PowerShell's default `ls` (i.e. get-childitem) and Unix's `ls` both have a "mode" column that gives compressed information about the item in the list. Output can be very repetitive for `class` and `type` fields, especially when enumerating a collection, so compressing this into one field and then using one field for something that's unique, say the actual content, could be more appealing.
+
+For example, this:
+
+    Relation   Class     Type                  Name
+    --------   -----     ----                  ----
+    Collection EntitySet contract              contracts
+    Data       Singleton deviceAppManagement   deviceAppManagement
+    Data       Singleton deviceManagement      deviceManagement
+    Collection EntitySet device                devices
+    Data       Singleton directory             directory
+    Collection EntitySet directoryObject       directoryObjects
+    Collection EntitySet directoryRole         directoryRoles
+    Collection EntitySet directoryRoleTemplate directoryRoleTemplates
+    Collection EntitySet domainDnsRecord       domainDnsRecords
+
+Could be
+
+Location (bool) , Source (bool), Kind (char), Size (bool
+
+Kind
+Entityset
+Singleton
+entityType
+Action
+Function
+Navigation
+
+
+
+-
+*
+.
+
+E
+V
+
+
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g    Action     device                devices
+     m    Function   directory             directory
+    lg    Navigation directoryObject       directoryObjects
+
+or
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-   Action     device                devices
+    -m-   Function   directory             directory
+    lg-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-?  Action     device                devices
+    -m-   Function   directory             directory
+    lg-   Navigation directoryObject       directoryObjects
+
+
+or
+no
+
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    ++*   EntitySet  contract              contracts
+    +-    Singleton  deviceAppManagement   deviceAppManagement
+    --*   EntityType deviceManagement      deviceManagement
+    -+    Action     device                devices
+    --    Function   directory             directory
+    ++    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    ++*   EntitySet  contract              contracts
+    +     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    ++    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    l+*   EntitySet  contract              contracts
+    l     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    l+    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    .+*   EntitySet  contract              contracts
+    .     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    .+    Navigation directoryObject       directoryObjects
+
+or
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >+*   EntitySet  contract              contracts
+    >     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    >+    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >+*   EntitySet  contract              contracts
+    >--   Singleton  deviceAppManagement   deviceAppManagement
+    --*   EntityType deviceManagement      deviceManagement
+    -+-   Action     device                devices
+    ---   Function   directory             directory
+    >+-   Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-   Action     device                devices
+    -m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g-   Action     device                devices
+     m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    g* >  EntitySet  contract              contracts
+    m-    Singleton  deviceAppManagement   deviceAppManagement
+    m*    EntityType deviceManagement      deviceManagement
+    g ?   Action     device                devices
+    m- >  Function   directory             directory
+    g- >  Navigation directoryObject       directoryObjects
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    g* >  EntitySet  contract              contracts
+    m     Singleton  deviceAppManagement   deviceAppManagement
+    m*    EntityType deviceManagement      deviceManagement
+    g ?   Action     device                devices
+    m  >  Function   directory             directory
+    g  >  Navigation directoryObject       directoryObjects
+
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g    Action     device                devices
+     m    Function   directory             directory
+    >g    Navigation directoryObject       directoryObjects
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g ?  Action     device                devices
+     m    Function   directory             directory
+    >g    Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g-?  Action     device                devices
+     m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    *g >  EntitySet  contract              contracts
+     m >  Singleton  deviceAppManagement   deviceAppManagement
+    *m    EntityType deviceManagement      deviceManagement
+     g?   Action     device                devices
+     m    Function   directory             directory
+     g >  Navigation directoryObject       directoryObjects
 

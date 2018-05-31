@@ -96,14 +96,14 @@ function Get-GraphChildItem {
             }
             $_.exception | write-verbose
             if ( $statusCode -eq 'Unauthorized' ) {
-                write-verbose "Graph endpoint returned 'Unauthorized' - ignoring failure"
                 write-warning "Graph endpoint returned 'Unauthorized', retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate additional application scopes"
+                throw
             } elseif ( $statusCode -eq 'Forbidden' ) {
                 write-verbose "Graph endpoint returned 'Forbiddden' - ignoring failure"
             } elseif ( $statusCode -eq 'BadRequest' ) {
                 write-verbose "Graph endpoint returned 'Bad request' - metadata may be inaccurate, ignoring failure"
             } else {
-                throw $_.exception
+                throw
             }
         }
     }

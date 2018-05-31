@@ -85,9 +85,12 @@ ScriptClass SegmentHelper {
                 'Direct'
             }
 
+            $info = $this.__GetInfoField($isCollection, $segment.isDynamic, $entityClass, $false)
+
             [PSCustomObject]@{
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
+                Info = $info
                 Relation = $relationship
                 Collection = $isCollection
                 Class = $entityClass
@@ -113,6 +116,7 @@ ScriptClass SegmentHelper {
             [PSCustomObject]@{
                 PSTypeName = $parentPublicSegment.pstypename
                 ParentPath = $parentPublicSegment.Path
+                Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
                 Relation = 'Direct'
                 Collection = $false
                 Class = 'EntityType'
@@ -128,14 +132,31 @@ ScriptClass SegmentHelper {
                 IsDynamic = $true
                 Parent = $ParentPublicSegment
                 Details = $null
-                Content = $_
+                Content = $graphItem
             }
+        }
+
+        function AddContent($publicSegment, $content) {
+            if ($publicSegment.content) {
+                throw "Segment $($segment.name) already has content"
+            }
+
+            $publicSegment.content = $content
+            $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
+        }
+
+        function __GetInfoField($isCollection, $isDynamic, $entityClass, $hasContent) {
+            $info = 0..2
+            $info[0] = if ( $isCollection ) { '*' } else { ' ' }
+            $info[1] = if ( $hasContent ) { '+' } else { ' ' }
+            $info[2] = if ( $this.IsValidLocationClass($entityClass ) ) { '>' } else { ' ' }
+            $info -join ''
         }
 
         function __RegisterSegmentDisplayType {
             remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
 
-            $coreProperties = @('Relation', 'Class', 'Type', 'Name')
+            $coreProperties = @('Info', 'Class', 'Type', 'Name')
 
             $segmentDisplayTypeArguments = @{
                 TypeName    = $this.segmentDisplayTypeName

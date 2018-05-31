@@ -111,7 +111,7 @@ function Get-GraphUri {
             } else {
                 $instanceSegment = $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
                 if ( $graphItem ) {
-                    $instanceSegment.Content = $GraphItem
+                    $::.SegmentHelper.AddContent($instanceSegment, $graphItem)
                 }
                 $instanceSegment
             }
@@ -122,7 +122,7 @@ function Get-GraphUri {
         } else {
             if ( $GraphItem ) {
                 $lastOutputSegment = $results | select -last 1
-                $lastOutputSegment.Content = $GraphItem
+                $::.SegmentHelper.AddContent($lastOutputSegment, $graphItem)
             }
         }
 
