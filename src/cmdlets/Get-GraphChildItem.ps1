@@ -78,7 +78,7 @@ function Get-GraphChildItem {
 
     $graphException = $false
 
-    if ( $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
+    if ( $resolvedUri.Class -ne '__Root' -and $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( (! $resolvedUri.Collection) -or $DetailedChildren.IsPresent ) {
@@ -91,7 +91,9 @@ function Get-GraphChildItem {
             }
         } catch [System.Net.WebException] {
             $graphException = $true
-            $statusCode = $_.exception.response.statuscode
+            $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
+                $_.exception.response.statuscode
+            }
             $_.exception | write-verbose
             if ( $statusCode -eq 'Unauthorized' ) {
                 write-verbose "Graph endpoint returned 'Unauthorized' - ignoring failure"
