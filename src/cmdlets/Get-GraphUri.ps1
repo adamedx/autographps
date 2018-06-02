@@ -31,6 +31,10 @@ function Get-GraphUri {
         [parameter(parametersetname='FromObjectChildren')]
         [Switch] $LocatableChildren,
 
+        [parameter(parametersetname='FromUriChildren')]
+        [parameter(parametersetname='FromObjectChildren')]
+        [uint16] $RecursionDepth = 1,
+
         [parameter(parametersetname='FromUriParents', mandatory=$true)]
         [parameter(parametersetname='FromObjectParents', mandatory=$true)]
         [Switch] $Parents,
@@ -56,9 +60,16 @@ function Get-GraphUri {
 
     $results = @()
 
-    $inputs | foreach {
+    $nextUris = new-object System.Collections.Generic.Queue[object[]]
+    $inputs | foreach { $nextUris.Enqueue(@(0, $_)) }
+
+    while ( $nextUris.Count -gt 0 ) {
+        $currentItem = $nextUris.Dequeue()
+        $currentDepth = $currentItem[0] + 1
+        $currentUri = $currentItem[1]
+
         $graphItem = if ($GraphItems) {
-            $_
+            $currentUri
         }
 
         $inputUri = if ( $graphItem ) {
@@ -70,7 +81,7 @@ function Get-GraphUri {
                 throw "Object type does not support Graph URI source"
             }
         } else {
-            $::.GraphUtilities |=> ToGraphRelativeUri $uri $context
+            $::.GraphUtilities |=> ToGraphRelativeUri $currentUri $context
         }
 
         write-verbose "Uri '$graphItem' translated to '$inputUri'"
@@ -116,6 +127,18 @@ function Get-GraphUri {
                 $instanceSegment
             }
 
+            if ( $currentDepth -lt $RecursionDepth  ) {
+                $additionalSegments | foreach {
+                    if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'EntityType' ) ) {
+                        if ( $_.name.startswith('{') ) {
+                            throw 'anger'
+                        }
+                        write-host $_.GraphUri
+                        $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
+                    }
+                }
+            }
+
             $results += $additionalSegments
         } elseif ( $Children.ispresent ) {
             $childSegments = $parser |=> GetChildren $lastSegment | sort Name
@@ -132,6 +155,18 @@ function Get-GraphUri {
                 $skipSegment = $LocatableChildren.IsPresent -and ! $::.SegmentHelper.IsValidLocationClass(($_.graphElement |=> GetEntity).Type)
                 if ( ! $skipSegment ) {
                     $publicChildSegments += ($::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment)
+                }
+            }
+
+            if ( $currentDepth -lt $RecursionDepth ) {
+                $publicChildSegments | foreach {
+                    if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'entitytype') ) {
+                        if ( $_.name.startswith('{') ) {
+                            throw 'anger'
+                        }
+                        write-host $_.GraphUri
+                        $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
+                    }
                 }
             }
 
