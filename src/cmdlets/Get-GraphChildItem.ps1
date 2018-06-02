@@ -116,10 +116,6 @@ function Get-GraphChildItem {
                             }
                         }
 
-#                        $contentValue = if ( $result.content | gm $contentColumnName -erroraction silentlycontinue ) {
- #                           $result.content | select -expandproperty $contentColumnName
-  #                      }
-
                         $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction silentlycontinue -expandproperty $contentColumnName)
                     }
                 }
