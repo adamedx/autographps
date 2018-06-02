@@ -24,6 +24,8 @@ function Get-GraphChildItem {
         [parameter(position=1, parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
+        [Object] $ContentColumns = $null,
+
         [String] $Version = $null,
 
         [switch] $Json,
@@ -85,6 +87,41 @@ function Get-GraphChildItem {
                     $_ | Get-GraphUri
                 } else {
                     $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                }
+
+                $translatedResult = if ( $ContentColumns ) {
+                    $ContentColumns | foreach {
+                        $specificOutputColumn = $false
+                        $outputColumnName = $_
+                        $contentColumnName = if ( $_ -is [String] ) {
+                            $_
+                        } elseif ( $_ -is [HashTable] ) {
+                            if ( $_.count -ne 1 ) {
+                                throw "Argument '$($_)' must have exactly one key, specify '@{source1=dest1}, @{source2=dest2}' instead"
+                            }
+                            $specificOutputColumn = $true
+                            $outputColumnName = $_.values[0]
+                            $_.keys[0]
+                        } else {
+                            throw "Invalid Content column '$($_.tostring())' of type '$($_.gettype())' specified -- only types [String] and [HashTable] are permitted"
+                        }
+
+                        $propertyName = if ( $specificOutputColumn ) {
+                            $outputColumnName
+                        } else {
+                            if ( $result | gm $outputColumnName -erroraction silentlycontinue ) {
+                                "__$outputColumnName"
+                            } else {
+                                $outputColumnName
+                            }
+                        }
+
+#                        $contentValue = if ( $result.content | gm $contentColumnName -erroraction silentlycontinue ) {
+ #                           $result.content | select -expandproperty $contentColumnName
+  #                      }
+
+                        $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction silentlycontinue -expandproperty $contentColumnName)
+                    }
                 }
 
                 $results += $result
