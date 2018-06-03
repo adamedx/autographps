@@ -29,7 +29,7 @@ ScriptClass SegmentParser {
         }
     }
 
-    function GetChildren($segment) {
+    function GetChildren($segment, $allowedTransitions = $null) {
         if ( ! $segment ) {
             throw "Segment may not be null"
         }
@@ -40,7 +40,7 @@ ScriptClass SegmentParser {
                 new-so GraphSegment $_
             }
         } else {
-            $segment |=> NewNextSegments $this.graph
+            $segment |=> NewNextSegments $this.graph $null $allowedTransitions
         }
     }
 

@@ -35,9 +35,17 @@ function Get-GraphUri {
         [parameter(parametersetname='FromObjectChildren')]
         [uint16] $RecursionDepth = 1,
 
+        [parameter(parametersetname='FromUriChildren')]
+        [parameter(parametersetname='FromObjectChildren')]
+        [Switch] $IncludeVirtualChildren,
+
         [parameter(parametersetname='FromUriParents', mandatory=$true)]
         [parameter(parametersetname='FromObjectParents', mandatory=$true)]
         [Switch] $Parents,
+
+        [parameter(parametersetname='FromUriChildren')]
+        [parameter(parametersetname='FromObjectChildren')]
+        [Switch] $NoCycles,
 
         [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
@@ -47,6 +55,7 @@ function Get-GraphUri {
 
     $context = $::.GraphContext |=> GetCurrent
     $parser = new-so SegmentParser $context
+
 
     # This is not very honest -- we're using valuefrompipeline, but
     # only to signal the presence of input -- we use $input because
@@ -63,6 +72,19 @@ function Get-GraphUri {
     $nextUris = new-object System.Collections.Generic.Queue[object[]]
     $inputs | foreach { $nextUris.Enqueue(@(0, $_)) }
 
+    $DisallowedLocationClasses = if ( ! $IncludeVirtualChildren.IsPresent ) {
+        @('EntityType')
+    } else {
+        @()
+    }
+
+    $validLocationClasses = if ( $LocatableChildren.ispresent ) {
+        $allLocationClasses = $::.SegmentHelper.GetValidLocationClasses()
+        $allLocationClasses | where { $_ -notin $DisallowedLocationClasses }
+    } else {
+        $null
+    }
+
     while ( $nextUris.Count -gt 0 ) {
         $currentItem = $nextUris.Dequeue()
         $currentDepth = $currentItem[0] + 1
@@ -72,11 +94,13 @@ function Get-GraphUri {
             $currentUri
         }
 
+        $uriSource = $currentUri
         $inputUri = if ( $graphItem ) {
             if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
                 [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
-            } elseif ( $graphItem | gm Uri ) {
-                [Uri] $graphItem.Uri
+            } elseif ( $graphItem | gm uri ) {
+                $uriSource = $graphItem.uri
+                [Uri] $uriSource
             } else{
                 throw "Object type does not support Graph URI source"
             }
@@ -84,10 +108,16 @@ function Get-GraphUri {
             $::.GraphUtilities |=> ToGraphRelativeUri $currentUri $context
         }
 
-        write-verbose "Uri '$graphItem' translated to '$inputUri'"
+        write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
-        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
+        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri (! $IncludeVirtualChildren.IsPresent)
         $lastSegment = $segments | select -last 1
+
+        $segmentTable = $null
+        if ( $NoCycles.IsPresent ) {
+            $segmentTable = @{}
+            $segments | foreach { $segmentTable.Add($_.graphElement, $_) }
+        }
 
         $instanceId = if ( $GraphItem ) {
             $typeData = ($lastSegment.graphElement |=> GetEntity).typedata
@@ -95,7 +125,7 @@ function Get-GraphUri {
                 if ( $graphItem | gm -membertype noteproperty id ) {
                     $graphItem.id
                 } else {
-                    '{id}'
+                    $null
                 }
             }
         }
@@ -115,10 +145,10 @@ function Get-GraphUri {
         $childSegments = $null
 
         if ( $instanceId ) {
-            $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId
+            $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId $validLocationClasses
 
             $additionalSegments = if ( $Children.IsPresent ) {
-                $childSegments = $parser |=> GetChildren $idSegment | sort Name
+                $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort Name
             } else {
                 $instanceSegment = $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
                 if ( $graphItem ) {
@@ -127,21 +157,19 @@ function Get-GraphUri {
                 $instanceSegment
             }
 
-            if ( $currentDepth -lt $RecursionDepth  ) {
-                $additionalSegments | foreach {
+            $additionalSegments | foreach {
+                if ( ! $segmentTable -or $segmentTable[$_.graphElement] ) {
                     if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'EntityType' ) ) {
-                        if ( $_.name.startswith('{') ) {
-                            throw 'anger'
-                        }
-                        write-host $_.GraphUri
                         $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
                     }
+                } else {
+                    write-verbose "$($_.name) already exists in hierarchy $($_.GraphUri)"
                 }
             }
 
             $results += $additionalSegments
         } elseif ( $Children.ispresent ) {
-            $childSegments = $parser |=> GetChildren $lastSegment | sort Name
+            $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort Name
         } else {
             if ( $GraphItem ) {
                 $lastOutputSegment = $results | select -last 1
@@ -160,12 +188,12 @@ function Get-GraphUri {
 
             if ( $currentDepth -lt $RecursionDepth ) {
                 $publicChildSegments | foreach {
-                    if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'entitytype') ) {
-                        if ( $_.name.startswith('{') ) {
-                            throw 'anger'
+                    if ( ! $segmentTable -or ( ! $segmentTable[$_.details.graphElement] ) ) {
+                        if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'entitytype') ) {
+                            $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
                         }
-                        write-host $_.GraphUri
-                        $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
+                    } else {
+                        write-verbose "$($_.name) already exists in hierarchy $($_.GraphUri)"
                     }
                 }
             }

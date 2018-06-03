@@ -34,6 +34,7 @@ ScriptClass GraphSegment {
         $this.leadsToVertex = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
             $isVertex = $false
             if ( $instanceName ) {
+                $graphElement | out-host
                 throw "An instance name '$instanceName' was specified for an edge, which already has a name"
             }
             $this.type = $this.graphElement.transition.type
@@ -61,7 +62,7 @@ ScriptClass GraphSegment {
         }
     }
 
-    function NewVertexSegment($graph, $segmentName) {
+    function NewVertexSegment($graph, $segmentName, $allowedVertexTypes) {
         if ( ! $this.leadsToVertex ) {
             throw "Vertex segment instance name may not be supplied for '$($this.graphElement.id)', segments are pre-defined"
         }
@@ -83,10 +84,14 @@ ScriptClass GraphSegment {
             throw "Unable to determine element type for '$($this.graphElement)' for segment '$($segment.name)'"
         }
 
+        if ( $graphElement.Type -notin $allowedVertextypes ) {
+            return $null
+        }
+
         new-so GraphSegment $graphElement $this $segmentName
     }
 
-    function NewTransitionSegments($segmentName) {
+    function NewTransitionSegments($segmentName, $allowedTransitionTypes = $null) {
         if ( $this.leadsToVertex ) {
             throw "Current segment $($this.graphElement.name) is static, so next segment must be dynamic"
         }
@@ -107,20 +112,22 @@ ScriptClass GraphSegment {
         }
 
         $edges | foreach {
-            new-so GraphSegment $_ $this
+            if ( ! $allowedTransitionTypes -or ($_.transition.type -in $allowedTransitionTypes) ) {
+                new-so GraphSegment $_ $this
+            }
         }
     }
 
-    function NewNextSegments($graph, $segmentName) {
+    function NewNextSegments($graph, $segmentName, $allowedTransitionTypes) {
         if ( $this.leadsToVertex ) {
-            $newVertex = NewVertexSegment $graph $segmentName
+            $newVertex = NewVertexSegment $graph $segmentName $allowedTransitionTypes
             if ( $newVertex ) {
                 $newVertex
             } else {
                 @()
             }
         } else {
-            NewTransitionSegments $segmentName
+            NewTransitionSegments $segmentName $allowedTransitionTypes
         }
     }
 

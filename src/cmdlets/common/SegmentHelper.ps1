@@ -23,17 +23,20 @@ ScriptClass SegmentHelper {
         }
 
         function IsValidLocationClass($itemClass) {
-            switch ( $itemClass ) {
-                '__Root' { $true }
-                'Singleton' { $true }
-                'EntitySet' { $true }
-                'EntityType' { $true }
-                'NavigationProperty' { $true }
-                default { $false }
-            }
+            $itemClass -in $this.GetValidLocationClasses()
         }
 
-        function UriToSegments($parser, [Uri] $uri) {
+        function GetValidLocationClasses {
+            @(
+                '__Root'
+                'Singleton',
+                'EntitySet',
+                'EntityType',
+                'NavigationProperty'
+            )
+        }
+
+        function UriToSegments($parser, [Uri] $uri, $enforceDynamicSegments = $false) {
             $graphUri = if ( $uri.IsAbsoluteUri ) {
                 $graphRelativeUri = ''
                 for ( $uriIndex = 2; $uriIndex -lt $uri.segments.length; $uriIndex++ ) {
@@ -44,7 +47,7 @@ ScriptClass SegmentHelper {
                 $uri
             }
 
-            $parser |=> SegmentsFromUri $graphUri
+            $parser |=> SegmentsFromUri $graphUri $enforceDynamicSegments
         }
 
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
