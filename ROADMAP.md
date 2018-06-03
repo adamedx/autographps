@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add 'mode'-like column with compressed information in list view
 * Add prompt modification
 * Add offline connection
 * Enable schemaless execution
@@ -108,6 +107,7 @@
   * gwd Get-GraphLocation
   * ggu Get-GraphUri
   * gg  Get-Graph
+* Add 'mode'-like column with compressed information in list view
 
 ### Postponed
 

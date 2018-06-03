@@ -173,12 +173,15 @@ function Invoke-GraphRequest {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
-        $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
-        $request |=> SetBody $Payload
-        $graphResponse = $request |=> Invoke $skipCount
+        $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
+            $request |=> SetBody $Payload
+            $request |=> Invoke $skipCount
+        }
+
         $skipCount = $null
 
-        $content = if ( $graphResponse.Entities -ne $null ) {
+        $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
             $graphRelativeUri = $graphResponse.Nextlink
             if (! $JSON.ispresent) {
                 $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
@@ -202,10 +205,12 @@ function Invoke-GraphRequest {
             }
         } else {
             $graphRelativeUri = $null
-            $graphResponse |=> Content
+            if ( $graphResponse ) {
+                $graphResponse |=> Content
+            }
         }
 
-        if ( ! $json.ispresent ) {
+        if ( $graphResponse -and ( ! $json.ispresent ) ) {
             # Add __ItemContext to decorate the object with its source uri.
             # Do this as a script method to prevent deserialization
             $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)

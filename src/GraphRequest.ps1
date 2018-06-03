@@ -55,6 +55,11 @@ ScriptClass GraphRequest {
     }
 
     function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null) {
+
+        if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
+            throw "Web request cannot proceed -- connection status is set to offline"
+        }
+
         $queryParameters = @($this.Query)
 
         if ($pageStartIndex -ne $null) {

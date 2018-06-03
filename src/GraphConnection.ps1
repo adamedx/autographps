@@ -16,16 +16,23 @@
 . (import-script GraphEndpoint)
 . (import-script GraphIdentity)
 
+enum GraphConnectionStatus {
+    Online
+    Offline
+}
+
 ScriptClass GraphConnection {
     $Identity = $null
     $GraphEndpoint = $null
     $Scopes = $null
     $Connected = $false
+    $Status = [GraphConnectionStatus]::Online
 
     function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
         $this.Connected = $false
+        $this.Status = [GraphConnectionStatus]::Online
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
             if ( $Identity -and ! $scopes ) {
@@ -42,6 +49,10 @@ ScriptClass GraphConnection {
             }
             $this.connected = $true
         }
+    }
+
+    function SetStatus( [GraphConnectionStatus] $status ) {
+        $this.Status = $status
     }
 
     function Disconnect {
