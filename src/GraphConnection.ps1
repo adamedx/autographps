@@ -43,7 +43,7 @@ ScriptClass GraphConnection {
     }
 
     function Connect {
-        if ( ! $this.connected ) {
+        if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
                 $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
             }
@@ -53,6 +53,10 @@ ScriptClass GraphConnection {
 
     function SetStatus( [GraphConnectionStatus] $status ) {
         $this.Status = $status
+    }
+
+    function GetStatus() {
+        $this.Status
     }
 
     function Disconnect {

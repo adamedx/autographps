@@ -22,7 +22,7 @@ function Get-Graph {
 
     $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
     $graphContexts |
-      where { ! $Graph -or $_.name -eq $Graph.name } | foreach {
+      where { ! $Graph -or $_.name -eq $Graph } | foreach {
           $::.ContextHelper |=> ToPublicContext $_
       }
 }

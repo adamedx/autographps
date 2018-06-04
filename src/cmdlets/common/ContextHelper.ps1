@@ -30,6 +30,8 @@ ScriptClass ContextHelper {
                 CurrentLocation = $context.location
                 Authenticated = $context.connection.Connected
                 Metadata = $::.GraphContext |=> GetMetadataStatus $context
+                ConnectionStatus = $context.connection.status
+                Details = $context
             }
         }
 

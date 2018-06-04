@@ -49,9 +49,11 @@ Describe "Poshgraph application" {
                 'update-graphmetadata',
                 'Get-Graph',
                 'Get-GraphChildItem',
+                'Get-GraphConnectionStatus',
                 'Get-GraphLocation',
                 'New-Graph',
                 'Remove-Graph',
+                'Set-GraphConnectionStatus',
                 'Set-GraphLocation',
                 'get-graphuri',
                 'get-graphtoken')

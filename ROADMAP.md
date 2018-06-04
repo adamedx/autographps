@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Add prompt modification
-* Add offline connection
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
@@ -108,6 +107,7 @@
   * ggu Get-GraphUri
   * gg  Get-Graph
 * Add 'mode'-like column with compressed information in list view
+* Add offline connection
 
 ### Postponed
 

@@ -24,9 +24,11 @@
 . (import-script Disconnect-Graph)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphChildItem)
+. (import-script cmdlets\Get-GraphConnectionStatus)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\New-Graph)
+. (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Update-GraphMetadata)
 
