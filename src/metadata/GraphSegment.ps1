@@ -21,6 +21,7 @@ ScriptClass GraphSegment {
     $type = $null
     $isDynamic = $false
     $parent = $null
+    $isVirtual = $false
 
     function __initialize($graphElement, $parent = $null, $instanceName = $null) {
         $this.graphElement = $graphElement
@@ -58,6 +59,7 @@ ScriptClass GraphSegment {
             $this.graphElement.name
         } else {
             $this.isDynamic = $true
+            $this.isVirtual = $true
             "{{{0}}}" -f $this.graphElement.name
         }
     }
@@ -84,7 +86,7 @@ ScriptClass GraphSegment {
             throw "Unable to determine element type for '$($this.graphElement)' for segment '$($segment.name)'"
         }
 
-        if ( $graphElement.Type -notin $allowedVertextypes ) {
+        if ( $allowedVertexTypes -and ($graphElement.Type -notin $allowedVertextypes) ) {
             return $null
         }
 

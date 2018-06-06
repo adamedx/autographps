@@ -29,7 +29,7 @@ ScriptClass SegmentParser {
         }
     }
 
-    function GetChildren($segment, $allowedTransitions = $null) {
+    function GetChildren($segment, $allowedTransitions = $null ) {
         if ( ! $segment ) {
             throw "Segment may not be null"
         }
@@ -44,7 +44,7 @@ ScriptClass SegmentParser {
         }
     }
 
-    function SegmentsFromUri([Uri] $uri, $enforceDynamicSegments = $false ) {
+    function SegmentsFromUri([Uri] $uri ) {
         $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
 
         $noRoot = if ( $unescapedPath[0] -eq '/' ) {
@@ -70,12 +70,12 @@ ScriptClass SegmentParser {
             $targetSegmentName = $_
             $currentSegments = GetChildren $lastSegment
 
-            if ( ! $currentSegments ) {
+            if ( ! $currentSegments -and ($currentSegments -isnot [object[]]) ) {
                 throw "No children found for '$($lastSegment.name)'"
             }
 
             $matchingSegment = $null
-            if ( ! $enforceDynamicSegments -and ( $currentSegments -isnot [object[]] ) ) {
+            if ( $currentSegments -isnot [object[]] ) {
                 $matchingSegment = new-so GraphSegment $currentSegments[0].graphElement $lastSegment $targetSegmentName
             } else {
                 $matchingSegment = $currentSegments | where {

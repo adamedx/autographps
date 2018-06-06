@@ -3,12 +3,12 @@
 ## To-do items -- prioritized
 
 * Add prompt modification
+* Add query
+* Change json to raw or nativeoutput or equivalent
+* Optimize uri parsing
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
-* Get-GraphItem -offline # offline retrieves type data, requires metadata download
-* Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
-* # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
 * Add copy-graphitem
   * graph to graph copy
   * json to graph copy
@@ -112,6 +112,12 @@
 ### Postponed
 
 * transform schema, version objects to hashtables
+
+### Abandoned
+
+* Get-GraphItem -offline # offline retrieves type data, requires metadata download
+* Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
+* # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
 
 #### Stdposh improvements
 

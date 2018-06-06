@@ -32,7 +32,7 @@ ScriptClass GraphIdentity {
             return
         }
 
-        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
+        if ( $graphEndpoint.Type -ne [GraphType]::AADGraph -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
             throw [ArgumentException]::new('No scopes specified, at least one scope is required')
         }
 

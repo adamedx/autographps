@@ -56,7 +56,6 @@ function Get-GraphUri {
     $context = $::.GraphContext |=> GetCurrent
     $parser = new-so SegmentParser $context
 
-
     # This is not very honest -- we're using valuefrompipeline, but
     # only to signal the presence of input -- we use $input because
     # unless you use BEGIN, END, PROCESS blocks, you can't actually
@@ -85,6 +84,8 @@ function Get-GraphUri {
         $null
     }
 
+    $disallowVirtualChildren = $Children.ispresent -and ! $IncludeVirtualChildren.ispresent
+
     while ( $nextUris.Count -gt 0 ) {
         $currentItem = $nextUris.Dequeue()
         $currentDepth = $currentItem[0] + 1
@@ -110,7 +111,7 @@ function Get-GraphUri {
 
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
-        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri (! $IncludeVirtualChildren.IsPresent)
+        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
         $lastSegment = $segments | select -last 1
 
         $segmentTable = $null
@@ -180,7 +181,9 @@ function Get-GraphUri {
         if ( $childSegments ) {
             $publicChildSegments = @()
             $childSegments | foreach {
-                $skipSegment = $LocatableChildren.IsPresent -and ! $::.SegmentHelper.IsValidLocationClass(($_.graphElement |=> GetEntity).Type)
+                $meetsLocationRequirement = ! $LocatableChildren.IsPresent -or $::.SegmentHelper.IsValidLocationClass(($_.graphElement |=> GetEntity).Type)
+                $meetsNonvirtualRequirement = ! $disallowVirtualChildren -or ! $_.isVirtual
+                $skipSegment = ! $meetsLocationRequirement -or ! $meetsNonvirtualRequirement
                 if ( ! $skipSegment ) {
                     $publicChildSegments += ($::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment)
                 }

@@ -36,7 +36,7 @@ ScriptClass SegmentHelper {
             )
         }
 
-        function UriToSegments($parser, [Uri] $uri, $enforceDynamicSegments = $false) {
+        function UriToSegments($parser, [Uri] $uri) {
             $graphUri = if ( $uri.IsAbsoluteUri ) {
                 $graphRelativeUri = ''
                 for ( $uriIndex = 2; $uriIndex -lt $uri.segments.length; $uriIndex++ ) {
@@ -47,7 +47,7 @@ ScriptClass SegmentHelper {
                 $uri
             }
 
-            $parser |=> SegmentsFromUri $graphUri $enforceDynamicSegments
+            $parser |=> SegmentsFromUri $graphUri
         }
 
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
