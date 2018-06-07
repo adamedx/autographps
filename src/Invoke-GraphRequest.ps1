@@ -34,7 +34,7 @@ function Invoke-GraphRequest {
 
         [String] $Version = $null,
 
-        [switch] $JSON,
+        [switch] $RawContent,
 
         [switch] $AbsoluteUri,
 
@@ -183,7 +183,7 @@ function Invoke-GraphRequest {
 
         $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
             $graphRelativeUri = $graphResponse.Nextlink
-            if (! $JSON.ispresent) {
+            if (! $RawContent.ispresent) {
                 $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                     @([PSCustomObject] $graphResponse.entities)
                 } elseif ($graphResponse.entities -is [HashTable]) {
@@ -210,7 +210,7 @@ function Invoke-GraphRequest {
             }
         }
 
-        if ( $graphResponse -and ( ! $json.ispresent ) ) {
+        if ( $graphResponse -and ( ! $RawContent.ispresent ) ) {
             # Add __ItemContext to decorate the object with its source uri.
             # Do this as a script method to prevent deserialization
             $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)

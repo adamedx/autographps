@@ -9,6 +9,7 @@
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
+* Add basic help
 * Add copy-graphitem
   * graph to graph copy
   * json to graph copy
@@ -536,3 +537,13 @@ or
      m    Function   directory             directory
      g >  Navigation directoryObject       directoryObjects
 
+### Replacing -json with -rawcontent
+
+Here are the cmdlets using -json:
+
+* Invoke-GraphRequest
+* Get-GraphItem.ps1
+* Get-GraphSchema.ps1
+* Get-GraphVersion.ps1
+* Test-Graph.ps1
+* Get-GraphChildItem.ps1

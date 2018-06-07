@@ -49,7 +49,7 @@ function Get-GraphSchema {
         [switch] $ListSchemas,
 
         [parameter(parametersetname='ListSchemas')]
-        [switch] $Json,
+        [switch] $RawContent,
 
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
@@ -65,7 +65,7 @@ function Get-GraphSchema {
     }
 
     if ( $ListSchemas.ispresent ) {
-        return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
+        return ListSchemas $graphConnection $Namespace $relativeBase $headers $RawContent.ispresent
     }
 
     $headers['Accept'] = 'application/xml'
@@ -143,7 +143,7 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
     $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
     $response = $request |=> Invoke
 
-    if ( $JSON.ispresent ) {
+    if ( $jsonOutput ) {
         $response |=> content
     } else {
         [PSCustomObject] $response.Entities

@@ -23,7 +23,7 @@ function Get-GraphVersion {
         [parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)]
         [String] $Version,
 
-        [switch] $Json,
+        [switch] $RawContent,
 
         [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)]
         [parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)]
@@ -50,7 +50,7 @@ function Get-GraphVersion {
     $request = new-so GraphRequest $graphConnection $relativeUri GET
     $response = $request |=> Invoke
 
-    if ( $JSON.ispresent ) {
+    if ( $RawContent.ispresent ) {
         $response |=> Content
     } else {
         [PSCustomObject] $response.entities

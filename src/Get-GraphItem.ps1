@@ -25,7 +25,7 @@ function Get-GraphItem {
 
         [String] $Version = $null,
 
-        [switch] $Json,
+        [switch] $RawContent,
 
         [switch] $AbsoluteUri,
 
@@ -44,7 +44,7 @@ function Get-GraphItem {
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri
         Version=$Version
-        JSON=$Json
+        RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
         Headers=$Headers
         First=$pscmdlet.pagingparameters.first

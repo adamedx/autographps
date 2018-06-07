@@ -28,7 +28,7 @@ function Get-GraphChildItem {
 
         [String] $Version = $null,
 
-        [switch] $Json,
+        [switch] $RawContent,
 
         [switch] $AbsoluteUri,
 
@@ -62,7 +62,7 @@ function Get-GraphChildItem {
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri[0]
         Version=$Version
-        JSON=$Json
+        RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
         Headers=$Headers
         First=$pscmdlet.pagingparameters.first
@@ -83,13 +83,13 @@ function Get-GraphChildItem {
     if ( $resolvedUri.Class -ne '__Root' -and $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
-                $result = if ( (! $resolvedUri.Collection) -or $DetailedChildren.IsPresent ) {
+                $result = if ( ! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) {
                     $_ | Get-GraphUri
                 } else {
                     $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
                 }
 
-                $translatedResult = if ( $ContentColumns ) {
+                $translatedResult = if ( ! $RawContent.IsPresent -and $ContentColumns ) {
                     $ContentColumns | foreach {
                         $specificOutputColumn = $false
                         $outputColumnName = $_

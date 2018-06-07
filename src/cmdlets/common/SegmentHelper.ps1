@@ -116,6 +116,25 @@ ScriptClass SegmentHelper {
         function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
             $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.Type).EntityTypeName
             $typeComponents = $fullTypeName -split '\.'
+
+            # Objects may actually be raw json, or even binary, depending
+            # on callers specifying that they don't want objects, but the
+            # raw content value from the Graph web response
+            $Id = $graphItem | select -expandproperty id -erroraction silentlycontinue
+            $graphObject = if ( ! $Id ) {
+                if ( $graphItem -is [String] ) {
+                    $graphItem | convertto-csv -erroraction silentlycontinue
+                }
+            } else {
+                $graphItem
+            }
+
+            $itemId = if ( $Id ) {
+                $Id
+            } else {
+                '[{0}]' -f $graphItem.Gettype().name
+            }
+
             [PSCustomObject]@{
                 PSTypeName = $parentPublicSegment.pstypename
                 ParentPath = $parentPublicSegment.Path
@@ -124,11 +143,11 @@ ScriptClass SegmentHelper {
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
-                Name = $graphItem.Id
+                Name = $itemId
                 Namespace = $parentPublicSegment.Namespace
-                Uri = new-object Uri $parentPublicSegment.Uri, $graphItem.id
-                GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $graphItem.id)
-                Path = $::.GraphUtilities.JoinFragmentUri($parentPublicSegment.path, $graphItem.Id)
+                Uri = new-object Uri $parentPublicSegment.Uri, $itemId
+                GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $itemId)
+                Path = $::.GraphUtilities.JoinFragmentUri($parentPublicSegment.path, $itemId)
                 FullTypeName = $fullTypeName
                 Version = $parentPublicSegment.Version
                 Endpoint = $parentPublicSegment.Endpoint

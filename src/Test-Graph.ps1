@@ -34,7 +34,7 @@ function Test-Graph {
         [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
         [Uri] $EndpointUri,
 
-        [switch] $Json
+        [switch] $RawContent
     )
 
     $graphEndpointUri = if ( $Connection -ne $null ) {
@@ -51,7 +51,7 @@ function Test-Graph {
     $request = new-so RESTRequest $pingUri
     $response = $request |=> Invoke
 
-    if ( ! $Json.ispresent ) {
+    if ( ! $RawContent.ispresent ) {
         # The [ordered] type adapter will ensure that enumeration of items in a hashtable
         # is sorted by insertion order
         $result = [ordered] @{}
