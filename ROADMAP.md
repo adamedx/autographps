@@ -2,9 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Add prompt modification
 * Add query
-* Change json to raw or nativeoutput or equivalent
+* Add prompt modification
 * Optimize uri parsing
 * Enable schemaless execution
 * Rudimentary token auto-refresh
@@ -109,6 +108,7 @@
   * gg  Get-Graph
 * Add 'mode'-like column with compressed information in list view
 * Add offline connection
+* Change json to raw or nativeoutput or equivalent
 
 ### Postponed
 

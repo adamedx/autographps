@@ -16,12 +16,14 @@
 . (import-script GraphConnection)
 . (import-script LogicalGraphManager)
 . (import-script metadata/GraphSegment)
+. (import-script metadata/UriCache)
 
 ScriptClass GraphContext {
     $connection = $null
     $version = $null
     $name = $null
     $location = $null
+    $uriCache = $null
 
     function __initialize($connection, $apiversion, $name) {
         if ( ! $name ) {
@@ -30,6 +32,8 @@ ScriptClass GraphContext {
 
         $graphConnection = $this.scriptclass |=> GetConnection $connection $null
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
+
+        $this.uriCache = new-so UriCache
 
         $this.connection = $graphConnection
         $this.version = $graphVersion

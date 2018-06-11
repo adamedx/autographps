@@ -24,7 +24,7 @@ function Get-GraphLocation {
         throw "Cannot get location in the current context because no current context exists"
     }
 
-    $parser = new-so SegmentParser $context
+    $parser = new-so SegmentParser $context $null $true
 
     $::.LocationHelper |=> ToPublicLocation $parser $context.location
 }

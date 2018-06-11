@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script EntityVertex)
+. (import-script ../common/GraphUtilities)
 
 ScriptClass GraphSegment {
     $graphElement = $null
@@ -22,6 +23,8 @@ ScriptClass GraphSegment {
     $isDynamic = $false
     $parent = $null
     $isVirtual = $false
+    $isInVirtualPath = $false
+    $graphUri = $null
 
     function __initialize($graphElement, $parent = $null, $instanceName = $null) {
         $this.graphElement = $graphElement
@@ -61,6 +64,13 @@ ScriptClass GraphSegment {
             $this.isDynamic = $true
             $this.isVirtual = $true
             "{{{0}}}" -f $this.graphElement.name
+        }
+
+        $this.isInVirtualPath = $this.isVirtual -or ( $parent -ne $null -and $parent.IsInVirtualPath )
+        $this.GraphUri = if ( $this.parent ) {
+            $::.GraphUtilities.JoinFragmentUri($this.parent.graphUri, $this.name)
+        } else {
+            $this.name
         }
     }
 

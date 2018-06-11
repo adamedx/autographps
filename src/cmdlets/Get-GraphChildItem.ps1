@@ -53,7 +53,7 @@ function Get-GraphChildItem {
         Get-GraphUri $ItemRelativeUri[0]
     } else {
         $context = $::.GraphContext |=> GetCurrent
-        $parser = new-so SegmentParser $context
+        $parser = new-so SegmentParser $context $null $true
         $::.SegmentHelper |=> ToPublicSegment $parser $context.location
     }
 

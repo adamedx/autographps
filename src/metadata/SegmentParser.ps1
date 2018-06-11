@@ -14,19 +14,25 @@
 
 . (import-script ..\GraphContext)
 . (import-script GraphSegment)
+. (import-script UriCache)
 
 ScriptClass SegmentParser {
     $graph = $null
     $context = $null
+    $uriCache = $null
+    $cacheEntities = $false
 
-    function __initialize($graphContext, $existingGraph) {
+    function __initialize($graphContext, $existingGraph = $null, $cacheEntities = $false) {
         $this.graph = if ( $existingGraph ) {
             $existingGraph
         } else {
             $this.context = $graphContext
+            $this.UriCache = $graphContext.uriCache
             $graph = $graphContext |=> GetGraph
             $graph
         }
+
+        $this.cacheEntities = $cacheEntities
     }
 
     function GetChildren($segment, $allowedTransitions = $null ) {
@@ -34,7 +40,7 @@ ScriptClass SegmentParser {
             throw "Segment may not be null"
         }
 
-        if ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
+        $results = if ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices
             $childVertices.values | foreach {
                 new-so GraphSegment $_
@@ -42,9 +48,15 @@ ScriptClass SegmentParser {
         } else {
             $segment |=> NewNextSegments $this.graph $null $allowedTransitions
         }
+
+        if ( $this.uriCache ) {
+            $this.uriCache |=> AddUriForSegments $results $this.cacheEntities
+        }
+
+        $results
     }
 
-    function SegmentsFromUri([Uri] $uri ) {
+    function SegmentsFromUri([Uri] $uri) {
         $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
 
         $noRoot = if ( $unescapedPath[0] -eq '/' ) {
@@ -68,14 +80,22 @@ ScriptClass SegmentParser {
 
         $segmentStrings | foreach {
             $targetSegmentName = $_
-            $currentSegments = GetChildren $lastSegment
+            $cachedSegment = if ($this.UriCache) {
+                $this.uriCache |=> GetSegmentFromParent $lastSegment $targetSegmentName
+            }
+
+            $currentSegments = if ( $cachedSegment ) {
+                $cachedSegment
+            } else {
+                GetChildren $lastSegment
+            }
 
             if ( ! $currentSegments -and ($currentSegments -isnot [object[]]) ) {
                 throw "No children found for '$($lastSegment.name)'"
             }
 
             $matchingSegment = $null
-            if ( $currentSegments -isnot [object[]] ) {
+            if ( $currentSegments -isnot [object[]] -and ! $cachedSegment ) {
                 $matchingSegment = new-so GraphSegment $currentSegments[0].graphElement $lastSegment $targetSegmentName
             } else {
                 $matchingSegment = $currentSegments | where {
@@ -94,6 +114,10 @@ ScriptClass SegmentParser {
             $lastSegment = $matchingSegment
 
             $segments += $lastSegment
+
+            if ( $this.uriCache ) {
+                $this.uriCache |=> AddUriForSegments $segments $this.cacheentities
+            }
         }
 
         $segments

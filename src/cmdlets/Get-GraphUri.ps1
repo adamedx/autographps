@@ -53,9 +53,6 @@ function Get-GraphUri {
         [PSCustomObject[]]$GraphItems
     )
 
-    $context = $::.GraphContext |=> GetCurrent
-    $parser = new-so SegmentParser $context
-
     # This is not very honest -- we're using valuefrompipeline, but
     # only to signal the presence of input -- we use $input because
     # unless you use BEGIN, END, PROCESS blocks, you can't actually
@@ -65,6 +62,9 @@ function Get-GraphUri {
     } else {
         $Uri
     }
+
+    $context = $::.GraphContext |=> GetCurrent
+    $parser = new-so SegmentParser $context $null ($graphItems -ne $null)
 
     $results = @()
 
