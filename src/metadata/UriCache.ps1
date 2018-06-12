@@ -16,10 +16,16 @@
 . (import-script ../common/GraphUtilities)
 
 ScriptClass UriCache {
-    $uriTable = strict-val [HashTable] $null
+    $uriTable = strict-val ([ordered] @{}).gettype() $null
+    $maxEntries = 3
 
-    function __initialize {
-        $this.uriTable = @{}
+    function __initialize($maxEntries = $null) {
+        $this.maxEntries = if ( $maxEntries ) { $maxEntries } else { 100 }
+        $this.uriTable = [ordered] @{}
+    }
+
+    function Clear {
+        $this.uriTable.Clear()
     }
 
     function AddUriForSegments($segments, $cacheEntities = $false) {
@@ -30,8 +36,12 @@ ScriptClass UriCache {
             if ( $cacheable ) {
                 $segmentUri = $_.graphUri
 
-                if ( ! $this.uriTable.ContainsKey($segmentUri) ) {
+                if ( ! $this.uriTable[$segmentUri] ) {
                     write-verbose "Adding uri '$segmentUri' to uri cache"
+                    if ( $this.uriTable.count -ge $this.maxEntries ) {
+                        $removed = $this.uriTable.Remove( ($this.uriTable.keys | select -first 1) )
+                        write-verbose "Removing uri '$removed' from cache due to maximum entries reached"
+                    }
                     $this.UriTable.Add($segmentUri, $_)
                 }
             }
@@ -53,6 +63,11 @@ ScriptClass UriCache {
     }
 
     function GetSegmentFromUri($uri) {
-        $this.UriTable[$uri]
+        $result = $this.UriTable[$uri]
+        if ( $result ) {
+            $this.uriTable.Remove($result.graphUri) | out-null
+            $this.uriTable.Add($result.GraphUri, $result)
+        }
+        $result
     }
 }

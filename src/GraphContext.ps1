@@ -33,7 +33,7 @@ ScriptClass GraphContext {
         $graphConnection = $this.scriptclass |=> GetConnection $connection $null
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
-        $this.uriCache = new-so UriCache
+        $this.uriCache = new-so UriCache 1000
 
         $this.connection = $graphConnection
         $this.version = $graphVersion
@@ -43,6 +43,7 @@ ScriptClass GraphContext {
 
     function UpdateGraph($metadata = $null, $wait = $false, $force = $false) {
         $this.scriptclass |=> __GetGraph (GetEndpoint) $this.version $metadata $wait $force $true | out-null
+        $this.uriCache.Clear() # Need to change this to handle async retrieval of new graph
     }
 
     function GetGraph($metadata = $null, $force = $false) {

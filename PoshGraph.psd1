@@ -162,6 +162,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
         '.\src\metadata\GraphDataModel.ps1',
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
+        '.\src\metadata\UriCache.ps1',
         '.\build\install.ps1'
     )
 

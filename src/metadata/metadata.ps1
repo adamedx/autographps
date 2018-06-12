@@ -22,5 +22,6 @@
 . (import-script EntityGraph)
 . (import-script GraphBuilder)
 . (import-script GraphSegment)
+. (import-script UriCache)
 . (import-script SegmentParser)
 

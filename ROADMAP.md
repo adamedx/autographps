@@ -2,13 +2,16 @@
 
 ## To-do items -- prioritized
 
-* Add query
+* Fix bug with graph update not clearing uri cache due to async
+* optimize child retrieval
+* Add app id, user name to get-graph
 * Add prompt modification
-* Optimize uri parsing
+* Add query
 * Enable schemaless execution
 * Rudimentary token auto-refresh
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
+* Add uri completion
 * Add copy-graphitem
   * graph to graph copy
   * json to graph copy
@@ -109,6 +112,8 @@
 * Add 'mode'-like column with compressed information in list view
 * Add offline connection
 * Change json to raw or nativeoutput or equivalent
+* Optimize uri parsing
+* limit uri cache size with lru policy
 
 ### Postponed
 
