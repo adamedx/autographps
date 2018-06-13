@@ -4,8 +4,6 @@
 
 * Fix bug with graph update not clearing uri cache due to async
 * optimize child retrieval
-* Add app id, user name to get-graph
-* Add prompt modification
 * Add query
 * Enable schemaless execution
 * Rudimentary token auto-refresh
@@ -114,6 +112,8 @@
 * Change json to raw or nativeoutput or equivalent
 * Optimize uri parsing
 * limit uri cache size with lru policy
+* Add app id, user name to get-graph
+* Add prompt modification
 
 ### Postponed
 

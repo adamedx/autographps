@@ -55,6 +55,7 @@ Describe "Poshgraph application" {
                 'Remove-Graph',
                 'Set-GraphConnectionStatus',
                 'Set-GraphLocation',
+                'Set-GraphPrompt',
                 'get-graphuri',
                 'get-graphtoken')
 

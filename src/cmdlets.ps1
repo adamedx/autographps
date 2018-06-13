@@ -30,5 +30,6 @@
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLocation)
+. (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Update-GraphMetadata)
 
