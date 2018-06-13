@@ -36,6 +36,8 @@ function Get-GraphChildItem {
 
         [switch] $DetailedChildren,
 
+        [switch] $DataOnly,
+
         [HashTable] $Headers = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
@@ -141,7 +143,7 @@ function Get-GraphChildItem {
         }
     }
 
-    if ( $graphException -or ! $resolvedUri.Collection ) {
+    if ( ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
         Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
             $results += $_
         }

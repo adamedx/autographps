@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Parse odata context
 * Fix bug with graph update not clearing uri cache due to async
 * optimize child retrieval
 * Add query
