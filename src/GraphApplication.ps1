@@ -14,14 +14,15 @@
 
 . (import-script Application)
 
-enum GraphAppType {
-    AppAndUser
+enum GraphAppAuthType {
+    Delegated
     AppOnly
 }
 
 ScriptClass GraphApplication {
     $AppId = strict-val [Guid]
-    $Secret = strict-val [GraphAppType] ([GraphAppType]::AppOnly)
+    $Secret = $null
+    $AuthType = strict-val [GraphAppAuthType] ([GraphAppAuthType]::Delegated)
 
     function __initialize([Guid] $appId = $null) {
         $this.AppId = if ( $appId -ne $null ) {

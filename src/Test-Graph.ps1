@@ -15,6 +15,7 @@
 . (import-script RESTRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
@@ -33,7 +34,7 @@ function Test-Graph {
         [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
         [Uri] $EndpointUri,
 
-        [switch] $Json
+        [switch] $RawContent
     )
 
     $graphEndpointUri = if ( $Connection -ne $null ) {
@@ -43,14 +44,14 @@ function Test-Graph {
     } elseif ( $endpointUri -ne $null ) {
         $endpointUri
     } else {
-        ('GraphConnection' |::> GetDefaultConnection ([GraphType]::MSGraph) ([GraphCloud]::Public)).GraphEndpoint.Graph
+        ($::.GraphContext |=> GetConnection $null $null $Cloud 'User.Read' $true).GraphEndpoint.Graph
     }
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')
     $request = new-so RESTRequest $pingUri
     $response = $request |=> Invoke
 
-    if ( ! $Json.ispresent ) {
+    if ( ! $RawContent.ispresent ) {
         # The [ordered] type adapter will ensure that enumeration of items in a hashtable
         # is sorted by insertion order
         $result = [ordered] @{}

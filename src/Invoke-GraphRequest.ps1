@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script New-GraphConnection)
+. (import-script common/GraphUtilities)
 . (import-script GraphRequest)
 . (import-script GraphErrorRecorder)
 
@@ -33,7 +34,9 @@ function Invoke-GraphRequest {
 
         [String] $Version = $null,
 
-        [switch] $JSON,
+        [switch] $RawContent,
+
+        [switch] $AbsoluteUri,
 
         [HashTable] $Headers = $null,
 
@@ -48,6 +51,14 @@ function Invoke-GraphRequest {
     )
 
     $::.GraphErrorRecorder |=> StartRecording
+
+    if ( $AbsoluteUri.IsPresent ) {
+        if ( $RelativeUri.length -gt 1 ) {
+            throw "More than one Uri was specified when AbsoluteUri was specified -- only one Uri is allowed when AbsoluteUri is configured"
+        }
+    } elseif ( $RelativeUri[0].IsAbsoluteUri ) {
+        throw "An absolute URI was specified -- specify a URI relative to the graph host and version, or specify -AbsoluteUri"
+    }
 
     $defaultVersion = $null
     $graphType = if ($Connection -ne $null ) {
@@ -67,27 +78,58 @@ function Invoke-GraphRequest {
         @('User.Read')
     }
 
-    switch ($graphType) {
+    # Cast it in case this is a deserialized object --
+    # workaround for a defect in ScriptClass
+    switch ([GraphType] $graphType) {
         ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
-        ([GraphType]::MSGraph) { $defaultVersion = 'v1.0' }
+        ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetDefaultVersion }
         default {
             throw "Unexpected identity type '$graphType'"
         }
     }
 
-    $apiVersion = if ( $Version -eq $null -or $version.length -eq 0 ) {
-        $defaultVersion
-    } else {
-        $Version
-    }
+    $currentContext = $null
 
     $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection $graphType $cloud $MSGraphScopeNames
+        if ( $graphType -eq ([GraphType]::AADGraph) ) {
+            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
+        } else {
+            $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
+            $currentContext.Connection
+        }
     } else {
         $Connection
     }
 
-    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
+    $uriInfo = if ( $AbsoluteUri.ispresent ) {
+        write-verbose "Caller specified AbsoluteUri -- interpreting uri as absolute"
+        $specificContext = new-so GraphContext $connection $version 'local'
+        $info = $::.GraphUtilities |=> ParseGraphUri $RelativeUri[0] $connection
+        write-verbose "Absolute uri parsed as relative '$($info.GraphRelativeUri)' and version $($info.GraphVersion)"
+        if ( ! $info.IsAbsolute ) {
+            throw "Absolute Uri was specified, but given Uri was not absolute: '$($RelativeUri[0])'"
+        }
+        if ( ! $info.IsContextCompatible ) {
+            throw "The version '$version' and connection endpoint '$($Connection.GraphEndpoint.Graph)' is not compatible with the uri '$RelativeUri'"
+        }
+        $info
+    }
+
+    $apiVersion = if ( $uriInfo -and $uriInfo.GraphVersion ) {
+        $uriInfo.GraphVersion
+    } elseif ( $Version -eq $null -or $version.length -eq 0 ) {
+        if ( $currentContext ) {
+            write-verbose "Using context Graph version '$($currentContext.Version)'"
+            $currentContext.Version
+        } else {
+            write-verbose "Using default Graph version '$defaultVersion'"
+            $defaultVersion
+        }
+    } else {
+        $Version
+    }
+
+    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph ) ) {
         $graphConnection |=> Connect
         $graphConnection.Identity.Token.TenantId
     } else {
@@ -101,11 +143,21 @@ function Invoke-GraphRequest {
 
     $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
         $pscmdlet.pagingparameters.First
+    } else {
+        10
     }
 
     $skipCount = $firstIndex
     $results = @()
-    $graphRelativeUri = $tenantQualifiedVersionSegment, $RelativeUri[0] -join '/'
+
+    $inputUriRelative = if ( ! $uriInfo ) {
+        $RelativeUri[0]
+    } else {
+        $uriInfo.GraphRelativeUri
+    }
+
+    $contextUri = $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
+    $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
 
     $query = $null
     $countError = $false
@@ -121,14 +173,17 @@ function Invoke-GraphRequest {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
         }
 
-        $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
-        $request |=> SetBody $Payload
-        $graphResponse = $request |=> Invoke $skipCount
+        $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
+            $request |=> SetBody $Payload
+            $request |=> Invoke $skipCount
+        }
+
         $skipCount = $null
 
-        $content = if ( $graphResponse.Entities -ne $null ) {
+        $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
             $graphRelativeUri = $graphResponse.Nextlink
-            if (! $JSON.ispresent) {
+            if (! $RawContent.ispresent) {
                 $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                     @([PSCustomObject] $graphResponse.entities)
                 } elseif ($graphResponse.entities -is [HashTable]) {
@@ -150,7 +205,19 @@ function Invoke-GraphRequest {
             }
         } else {
             $graphRelativeUri = $null
-            $graphResponse |=> Content
+            if ( $graphResponse ) {
+                $graphResponse |=> Content
+            }
+        }
+
+        if ( $graphResponse -and ( ! $RawContent.ispresent ) ) {
+            # Add __ItemContext to decorate the object with its source uri.
+            # Do this as a script method to prevent deserialization
+            $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
+            $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+            $content | foreach {
+                $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
+            }
         }
 
         $results += $content

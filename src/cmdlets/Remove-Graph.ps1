@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'Get-Graph', 'Get-GraphChildItem', 'Get-GraphConnectionStatus', 'Get-GraphLocation', 'Get-GraphUri', 'New-Graph', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph', 'Set-GraphConnectionStatus', 'Set-GraphPrompt', 'Set-GraphLocation', 'Update-GraphMetadata')
+. (import-script ../LogicalGraphManager)
 
-export-modulemember -cmdlet $cmdlets
+function Remove-Graph {
+    [cmdletbinding()]
+    param(
+        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
+        $Name
+    )
+    $::.LogicalGraphManager |=> Get |=> RemoveContext $Name
+}

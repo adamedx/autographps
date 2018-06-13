@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script RestRequest)
 . (import-script GraphResponse)
 
 ScriptClass GraphRequest {
@@ -54,6 +55,10 @@ ScriptClass GraphRequest {
     }
 
     function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null) {
+        if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
+            throw "Web request cannot proceed -- connection status is set to offline"
+        }
+
         $queryParameters = @($this.Query)
 
         if ($pageStartIndex -ne $null) {
@@ -72,7 +77,7 @@ ScriptClass GraphRequest {
 
         $query = __AddQueryParameters $queryParameters
 
-        $response = __InvokeRequest $this.verb $this.uri $query $this.headers
+        $response = __InvokeRequest $this.verb $this.uri $query
         new-so GraphResponse $response
     }
 

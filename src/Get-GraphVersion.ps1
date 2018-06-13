@@ -14,6 +14,7 @@
 
 . (import-script GraphRequest)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
@@ -22,7 +23,7 @@ function Get-GraphVersion {
         [parameter(position=0,parametersetname='GetVersionNewConnection', mandatory=$true)]
         [String] $Version,
 
-        [switch] $Json,
+        [switch] $RawContent,
 
         [parameter(parametersetname='ListVersionsExistingConnection',mandatory=$true)]
         [parameter(parametersetname='ListVersionsNewConnection',mandatory=$true)]
@@ -37,11 +38,7 @@ function Get-GraphVersion {
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
-    } else {
-        $Connection
-    }
+    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
 
     $relativeBase = 'versions'
     $relativeUri = if ( ! $List.ispresent ) {
@@ -53,7 +50,7 @@ function Get-GraphVersion {
     $request = new-so GraphRequest $graphConnection $relativeUri GET
     $response = $request |=> Invoke
 
-    if ( $JSON.ispresent ) {
+    if ( $RawContent.ispresent ) {
         $response |=> Content
     } else {
         [PSCustomObject] $response.entities

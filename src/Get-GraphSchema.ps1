@@ -15,6 +15,7 @@
 . (import-script GraphRequest)
 . (import-script GraphEndpoint)
 . (import-script GraphConnection)
+. (import-script GraphContext)
 . (import-script Get-GraphVersion)
 
 function Get-GraphSchema {
@@ -48,18 +49,14 @@ function Get-GraphSchema {
         [switch] $ListSchemas,
 
         [parameter(parametersetname='ListSchemas')]
-        [switch] $Json,
+        [switch] $RawContent,
 
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = if ( $Connection -eq $null ) {
-        $::.GraphConnection |=> GetDefaultConnection ([GraphType]::MSGraph) $Cloud 'User.Read'
-    } else {
-        $Connection
-    }
+    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
 
     $relativeBase = 'schemas'
     $headers = @{
@@ -68,7 +65,7 @@ function Get-GraphSchema {
     }
 
     if ( $ListSchemas.ispresent ) {
-        return ListSchemas $graphConnection $Namespace $relativeBase $headers $Json.ispresent
+        return ListSchemas $graphConnection $Namespace $relativeBase $headers $RawContent.ispresent
     }
 
     $headers['Accept'] = 'application/xml'
@@ -82,7 +79,7 @@ function Get-GraphSchema {
             $sourceApiVersion = if ( $ApiVersion -ne $null -and $ApiVersion -ne '' ) {
                 $apiVersion
             } else {
-                'v1.0'
+                $::.GraphContext |=> GetVersion
             }
             get-graphversion -Connection $graphConnection -version $sourceApiVersion
         }
@@ -96,7 +93,7 @@ function Get-GraphSchema {
 
         if ( $NameSpaceList -ne $null ) {
             $NamespaceList
-        } elseif ( $Namespace -ne $null ) {
+        } elseif ( $Namespace -ne $null -and $namespace -ne '' ) {
             @($Namespace)
         } else {
             $graphSchemaVersions.keys
@@ -146,7 +143,7 @@ function ListSchemas($graphConnection, $namespace, $relativeBase, $headers, $jso
     $request = new-so GraphRequest $graphConnection $relativeUri GET $headers
     $response = $request |=> Invoke
 
-    if ( $JSON.ispresent ) {
+    if ( $jsonOutput ) {
         $response |=> content
     } else {
         [PSCustomObject] $response.Entities

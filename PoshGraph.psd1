@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.9.0'
+ModuleVersion = '0.9.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,19 +66,41 @@ ScriptsToProcess = @('./src/graph.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.12.10';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = @('get-graphitem', 'Test-Graph', 'Get-GraphVersion', 'new-graphconnection', 'invoke-graphrequest', 'get-graphtoken', 'get-graphschema', 'get-grapherror', 'connect-graph', 'disconnect-graph')
+    CmdletsToExport = @(
+        'get-graphitem',
+        'Test-Graph',
+        'Get-GraphVersion',
+        'new-graphconnection',
+        'invoke-graphrequest',
+        'Get-Graph',
+        'get-graphtoken',
+        'get-graphschema',
+        'Get-GraphChildItem',
+        'Get-GraphConnectionStatus',
+        'get-grapherror',
+        'Get-GraphLocation',
+        'Get-GraphUri',
+        'New-Graph',
+        'Remove-Graph',
+        'Set-GraphConnectionStatus',
+        'Set-GraphPrompt',
+        'connect-graph',
+        'disconnect-graph',
+        'Set-GraphLocation',
+        'Update-GraphMetadata'
+    )
 
 # Variables to export from this module
 # VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @()
+AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -87,7 +109,64 @@ AliasesToExport = @()
 # ModuleList = @('')
 
 # List of all files packaged with this module
-FileList = @('.\poshgraph.psd1', '.\poshgraph.psm1', '.\src\cmdlets.ps1', '.\src\test-graph.ps1', '.\src\graphendpoint.ps1', '.\src\restrequest.ps1', '.\src\restresponse.ps1', '.\src\Get-GraphToken.ps1', '.\src\invoke-graphrequest.ps1', '.\src\get-graphitem.ps1', '.\src\get-graphversion.ps1', '.\src\graphapplication.ps1', '.\src\graphrequest.ps1', '.\src\graphresponse.ps1', '.\src\grapherrorrecorder.ps1', '.\src\get-graphschema.ps1', '.\src\get-graphitem.ps1', '.\src\get-grapherror.ps1', '.\src\graphidentity.ps1', '.\src\application.ps1', '.\src\new-graphconnection.ps1', '.\src\connect-graph.ps1', '.\src\disconnect-graph.ps1', '.\src\graph.ps1','.\src\GraphConnection.ps1', '.\build\install.ps1')
+    FileList = @(
+        '.\poshgraph.psd1',
+        '.\poshgraph.psm1',
+        '.\src\aliases.ps1',
+        '.\src\cmdlets.ps1',
+        '.\src\test-graph.ps1',
+        '.\src\graphendpoint.ps1'
+        '.\src\restrequest.ps1',
+        '.\src\restresponse.ps1',
+        '.\src\Get-GraphToken.ps1',
+        '.\src\invoke-graphrequest.ps1',
+        '.\src\get-graphitem.ps1',
+        '.\src\get-graphversion.ps1',
+        '.\src\graphapplication.ps1',
+        '.\src\GraphCache.ps1',
+        '.\src\GraphContext.ps1',
+        '.\src\LogicalGraphManager.ps1',
+        '.\src\graphrequest.ps1',
+        '.\src\graphresponse.ps1',
+        '.\src\grapherrorrecorder.ps1',
+        '.\src\get-graphschema.ps1',
+        '.\src\get-graphitem.ps1',
+        '.\src\get-grapherror.ps1',
+        '.\src\graphidentity.ps1',
+        '.\src\application.ps1',
+        '.\src\new-graphconnection.ps1',
+        '.\src\connect-graph.ps1',
+        '.\src\disconnect-graph.ps1',
+        '.\src\graph.ps1',
+        '.\src\GraphConnection.ps1',
+        '.\src\common\GraphUtilities.ps1',
+        '.\src\common\ProgressWriter.ps1',
+        '.\src\cmdlets\Get-Graph.ps1',
+        '.\src\cmdlets\Get-GraphChildItem.ps1',
+        '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
+        '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphUri.ps1',
+        '.\src\cmdlets\New-Graph.ps1',
+        '.\src\cmdlets\Remove-Graph.ps1',
+        '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
+        '.\src\cmdlets\Set-GraphLocation.ps1',
+        '.\src\cmdlets\Set-GraphPrompt.ps1',
+        '.\src\cmdlets\Update-GraphMetadata.ps1',
+        '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\LocationHelper.ps1',
+        '.\src\cmdlets\common\SegmentHelper.ps1',
+        '.\src\metadata\metadata.ps1',
+        '.\src\metadata\Entity.ps1',
+        '.\src\metadata\EntityEdge.ps1',
+        '.\src\metadata\EntityGraph.ps1',
+        '.\src\metadata\EntityVertex.ps1',
+        '.\src\metadata\GraphBuilder.ps1',
+        '.\src\metadata\GraphDataModel.ps1',
+        '.\src\metadata\GraphSegment.ps1',
+        '.\src\metadata\SegmentParser.ps1',
+        '.\src\metadata\UriCache.ps1',
+        '.\build\install.ps1'
+    )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{

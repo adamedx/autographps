@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,36 +18,31 @@
 ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
     $Token = strict-val [PSCustomObject] $null
-    $__AuthLibraryLoaded = $false
+
+    static {
+        $__AuthLibraryLoaded = $null
+    }
 
     function __initialize([PSCustomObject] $App) {
         $this.App = $app
     }
 
-    function Authenticate($graphEndpoint, $scopes = @()) {
+    function Authenticate($graphEndpoint, $scopes = $null) {
         if ($this.token -ne $null) {
             return
         }
 
-        if ( ! $this.__AuthLibraryLoaded ) {
-            switch ( $graphEndpoint.Type ) {
-                ([GraphType]::MSGraph) {
-                    import-assembly ../lib/Microsoft.Identity.Client.dll
-                }
-                ([GraphType]::AADGraph) {
-                    import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
-                }
-                default {
-                    throw "Unexpected graph type '$($graphEndpoint.Type)'"
-                }
-            }
-
-            $this.__AuthLibraryLoaded = $true
+        if ( $graphEndpoint.Type -ne [GraphType]::AADGraph -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
+            throw [ArgumentException]::new('No scopes specified, at least one scope is required')
         }
+
+        $this.scriptclass |=> __LoadAuthLibrary $graphEndpoint.Type
 
         write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
 
-        $this.Token = switch ($graphEndpoint.Type) {
+        # Cast it in case this is a deserialized object --
+        # workaround for a defect in ScriptClass
+        $this.Token = switch ([GraphType] $graphEndpoint.Type) {
             ([GraphType]::MSGraph) { getMSGraphToken $graphEndpoint $scopes }
             ([GraphType]::AADGraph) { getAADGraphToken $graphEndpoint $scopes }
             default {
@@ -57,6 +52,38 @@ ScriptClass GraphIdentity {
 
         if ($this.token -eq $null) {
             throw "Failed to acquire token, no additional error information"
+        }
+    }
+
+    function ClearAuthentication {
+        $this.token = $null
+    }
+
+    static {
+        function __LoadAuthLibrary([GraphType] $graphType) {
+            if ( $this.__AuthLibraryLoaded -eq $null ) {
+                $this.__AuthLibraryLoaded = @{}
+            }
+
+            if ( ! $this.__AuthLibraryLoaded[$graphType] ) {
+                # Cast it in case this is a deserialized object --
+                # workaround for a defect in ScriptClass
+                switch ( [GraphType] $graphType ) {
+                    ([GraphType]::MSGraph) {
+                        import-assembly ../lib/Microsoft.Identity.Client.dll
+                    }
+                    ([GraphType]::AADGraph) {
+                        import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+                    }
+                    default {
+                        throw "Unexpected graph type '$graphType'"
+                    }
+                }
+
+                $this.__AuthLibraryLoaded[$graphType] = $true
+            } else {
+                write-verbose "Library already loaded for graph type '$graphType'"
+            }
         }
     }
 

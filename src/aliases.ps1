@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @('get-graphitem', 'new-graphconnection', 'Test-Graph', 'Get-GraphVersion', 'invoke-graphrequest', 'get-graphtoken', 'Get-Graph', 'Get-GraphChildItem', 'Get-GraphConnectionStatus', 'Get-GraphLocation', 'Get-GraphUri', 'New-Graph', 'get-grapherror', 'get-graphschema', 'connect-graph', 'disconnect-graph', 'Set-GraphConnectionStatus', 'Set-GraphPrompt', 'Set-GraphLocation', 'Update-GraphMetadata')
+set-alias ggi Get-GraphItem
+set-alias gls Get-GraphChildItem
+set-alias gcd Set-GraphLocation
+set-alias gwd Get-GraphLocation
+set-alias ggu Get-GraphUri
+set-alias gg  Get-Graph
 
-export-modulemember -cmdlet $cmdlets

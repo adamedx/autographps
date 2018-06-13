@@ -1,4 +1,4 @@
-# Copyright 2017, Adam Edwards
+# Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,9 +52,10 @@ ScriptClass GraphEndpoint {
         }
     }
 
-    $Authentication = strict-val [Uri]
-    $Graph = strict-val [Uri]
-    $Type = strict-val [GraphType]
+    $Authentication = $null
+    $Graph = $null
+    $Type = ([GraphType]::MSGraph)
+    $Cloud = ([GraphCloud]::Unknown)
 
     function __initialize {
         [cmdletbinding()]
@@ -66,6 +67,7 @@ ScriptClass GraphEndpoint {
         )
 
         $this.Type = $GraphType
+        $this.Cloud = $cloud
         $endpoints = if ($GraphEndpoint -eq $null) {
             if ($graphType -eq [GraphType]::MSGraph) {
                 $this.scriptclass.MSGraphCloudEndpoints[$cloud]

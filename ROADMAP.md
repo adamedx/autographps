@@ -2,11 +2,30 @@
 
 ## To-do items -- prioritized
 
+* Fix bug with graph update not clearing uri cache due to async
+* optimize child retrieval
+* Add query
+* Enable schemaless execution
+* Rudimentary token auto-refresh
+* Use BEGIN, PROCESS, END in get-graphuri
+* Add basic help
+* Add uri completion
+* Add copy-graphitem
+  * graph to graph copy
+  * json to graph copy
+  * graph to json copy
+* Get-GraphTypeData -typename -graphitem
+* Get-GraphMetadata
 * Add signout
 * Simple samples
 * Publish first preview / alpha
 * Add anonymous connections for use with test-graph item, metadata
-* Add set-graphitem
+* Add new-graphentity -- PUT
+* Add set-graphitem -- PUT / PATCH
+* Add copy-graphitem
+  * graph to graph copy
+  * json to graph copy
+  * graph to json copy
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
 * add predefined scopes: https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference
@@ -27,10 +46,8 @@
 * invoke-graphaction
 * generate nuspec
 * Find a better name!
-  * Rename stdposh to ScriptClass
 * README
 * Extended Samples
-* Publish to psgallery
 * More tests
 * Add get-graphmetadata
 * Help
@@ -43,6 +60,7 @@
   * REST resource
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
+* Handle 403's in get-graphchilditem
 
 ### Done
 
@@ -62,14 +80,56 @@
 * Get custom appid to work
 * Session support
 * Add connection support to test-graph
+* Publish to psgallery
 * Update build steps
+* Rename stdposh to ScriptClass
+* Refactor GraphBuilder
+* Genericize GraphContext
+* Update-GraphMetadata
+* Get-GraphUri -- an offline api, with -parents flag,
+* Add --children flag to get-graphuri
+* Add full uri support to get-graphitem
+* Set-Graphlocation
+* Get-GraphLocation
+* Add relative path support to invoke-graphrequest
+* Support .. in paths
+* Move path manipulation to common helpers
+* get-graph
+* Make context meaningful
+  * new-graph
+  * Make context meaningful
+  * remove-graph
+* Add display type for get-graphchilditem
+* Aliases:
+  * ggi Get-GraphItem
+  * gls Get-GraphChildItem
+  * gcd Set-GraphLocation
+  * gwd Get-GraphLocation
+  * ggu Get-GraphUri
+  * gg  Get-Graph
+* Add 'mode'-like column with compressed information in list view
+* Add offline connection
+* Change json to raw or nativeoutput or equivalent
+* Optimize uri parsing
+* limit uri cache size with lru policy
+* Add app id, user name to get-graph
+* Add prompt modification
 
 ### Postponed
 
 * transform schema, version objects to hashtables
 
+### Abandoned
+
+* Get-GraphItem -offline # offline retrieves type data, requires metadata download
+* Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
+* # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
+
 #### Stdposh improvements
 
+* Fix deserialization of scriptproperty members
+* Performance of method calls through |=> rather than .
+* Make default display of objects sane
 * Fix initializers, use scriptblock for non-string object types
 * Add private methods
 * Private fields
@@ -80,6 +140,7 @@
 #### Finished stdposh improvements
 
 * Store methods per class rather than per instance to save space
+* Fixed deserialization of scriptmethod members
 
 ## Notes on specific problems
 
@@ -241,3 +302,253 @@ If the predecessor of UN is an entityset or a navigationproperty that returns a 
 If the predecessor of UN is a singleton or an entity identifier, then UN may be the name of any of the navigation properties of the singleton or entity
 
 
+### Example output for compressed list view
+PowerShell's default `ls` (i.e. get-childitem) and Unix's `ls` both have a "mode" column that gives compressed information about the item in the list. Output can be very repetitive for `class` and `type` fields, especially when enumerating a collection, so compressing this into one field and then using one field for something that's unique, say the actual content, could be more appealing.
+
+For example, this:
+
+    Relation   Class     Type                  Name
+    --------   -----     ----                  ----
+    Collection EntitySet contract              contracts
+    Data       Singleton deviceAppManagement   deviceAppManagement
+    Data       Singleton deviceManagement      deviceManagement
+    Collection EntitySet device                devices
+    Data       Singleton directory             directory
+    Collection EntitySet directoryObject       directoryObjects
+    Collection EntitySet directoryRole         directoryRoles
+    Collection EntitySet directoryRoleTemplate directoryRoleTemplates
+    Collection EntitySet domainDnsRecord       domainDnsRecords
+
+Could be
+
+Location (bool) , Source (bool), Kind (char), Size (bool
+
+Kind
+Entityset
+Singleton
+entityType
+Action
+Function
+Navigation
+
+
+
+-
+*
+.
+
+E
+V
+
+
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g    Action     device                devices
+     m    Function   directory             directory
+    lg    Navigation directoryObject       directoryObjects
+
+or
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-   Action     device                devices
+    -m-   Function   directory             directory
+    lg-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    lg*   EntitySet  contract              contracts
+    lm-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-?  Action     device                devices
+    -m-   Function   directory             directory
+    lg-   Navigation directoryObject       directoryObjects
+
+
+or
+no
+
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    ++*   EntitySet  contract              contracts
+    +-    Singleton  deviceAppManagement   deviceAppManagement
+    --*   EntityType deviceManagement      deviceManagement
+    -+    Action     device                devices
+    --    Function   directory             directory
+    ++    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    ++*   EntitySet  contract              contracts
+    +     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    ++    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    l+*   EntitySet  contract              contracts
+    l     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    l+    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    .+*   EntitySet  contract              contracts
+    .     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    .+    Navigation directoryObject       directoryObjects
+
+or
+ok
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >+*   EntitySet  contract              contracts
+    >     Singleton  deviceAppManagement   deviceAppManagement
+      *   EntityType deviceManagement      deviceManagement
+     +    Action     device                devices
+          Function   directory             directory
+    >+    Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >+*   EntitySet  contract              contracts
+    >--   Singleton  deviceAppManagement   deviceAppManagement
+    --*   EntityType deviceManagement      deviceManagement
+    -+-   Action     device                devices
+    ---   Function   directory             directory
+    >+-   Navigation directoryObject       directoryObjects
+
+or
+no
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+    -m*   EntityType deviceManagement      deviceManagement
+    -g-   Action     device                devices
+    -m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g-   Action     device                devices
+     m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    g* >  EntitySet  contract              contracts
+    m-    Singleton  deviceAppManagement   deviceAppManagement
+    m*    EntityType deviceManagement      deviceManagement
+    g ?   Action     device                devices
+    m- >  Function   directory             directory
+    g- >  Navigation directoryObject       directoryObjects
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    g* >  EntitySet  contract              contracts
+    m     Singleton  deviceAppManagement   deviceAppManagement
+    m*    EntityType deviceManagement      deviceManagement
+    g ?   Action     device                devices
+    m  >  Function   directory             directory
+    g  >  Navigation directoryObject       directoryObjects
+
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g    Action     device                devices
+     m    Function   directory             directory
+    >g    Navigation directoryObject       directoryObjects
+
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m    Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g ?  Action     device                devices
+     m    Function   directory             directory
+    >g    Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    >g*   EntitySet  contract              contracts
+    >m-   Singleton  deviceAppManagement   deviceAppManagement
+     m*   EntityType deviceManagement      deviceManagement
+     g-?  Action     device                devices
+     m-   Function   directory             directory
+    >g-   Navigation directoryObject       directoryObjects
+
+or
+
+    Info  Class      Type                  Name
+    ----  -----      ----                  ----
+    *g >  EntitySet  contract              contracts
+     m >  Singleton  deviceAppManagement   deviceAppManagement
+    *m    EntityType deviceManagement      deviceManagement
+     g?   Action     device                devices
+     m    Function   directory             directory
+     g >  Navigation directoryObject       directoryObjects
+
+### Replacing -json with -rawcontent
+
+Here are the cmdlets using -json:
+
+* Invoke-GraphRequest
+* Get-GraphItem.ps1
+* Get-GraphSchema.ps1
+* Get-GraphVersion.ps1
+* Test-Graph.ps1
+* Get-GraphChildItem.ps1
