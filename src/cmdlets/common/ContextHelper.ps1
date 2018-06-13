@@ -21,6 +21,16 @@ ScriptClass ContextHelper {
         }
 
         function ToPublicContext( $context ) {
+            $tokenData = $context.connection.identity.token
+
+            $userId = $null
+            $scopes = $null
+
+            if ( $tokenData ) {
+                $userId = $tokenData.User.DisplayableId
+                $scopes = $tokenData.scopes
+            }
+
             [PSCustomObject]@{
                 PSTypeName = $this.ContextDisplayTypeName
                 Name = $context.name
@@ -31,6 +41,10 @@ ScriptClass ContextHelper {
                 Authenticated = $context.connection.Connected
                 Metadata = $::.GraphContext |=> GetMetadataStatus $context
                 ConnectionStatus = $context.connection.status
+                ApplicationId = $context.connection.identity.app.appid
+                AuthType = $context.connection.identity.app.authtype
+                UserId = $userId
+                Scopes = $scopes
                 Details = $context
             }
         }
