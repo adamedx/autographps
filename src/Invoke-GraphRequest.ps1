@@ -26,11 +26,15 @@ function Invoke-GraphRequest {
         [parameter(position=1)]
         [String] $Verb = 'GET',
 
-        [parameter(position=2, parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
-
-        [parameter(position=3)]
+        [parameter(position=2)]
         $Payload = $null,
+
+        [String] $Query = $null,
+
+        [String] $ODataFilter = $null,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
+        [String[]] $ScopeNames = $null,
 
         [String] $Version = $null,
 
@@ -51,6 +55,12 @@ function Invoke-GraphRequest {
     )
 
     $::.GraphErrorRecorder |=> StartRecording
+
+    if ( $Query ) {
+        if ( $ODataFilter ) {
+            throw [ArgumentException]::new("'ODataFilter' and 'Query' options may not both be specified")
+        }
+    }
 
     if ( $AbsoluteUri.IsPresent ) {
         if ( $RelativeUri.length -gt 1 ) {
@@ -76,6 +86,12 @@ function Invoke-GraphRequest {
         $ScopeNames
     } else {
         @('User.Read')
+    }
+
+    $requestQuery = if ( $Query ) {
+        $Query
+    } elseif ( $ODataFilter ) {
+        '$filter={0}' -f $ODataFilter
     }
 
     # Cast it in case this is a deserialized object --
@@ -159,14 +175,8 @@ function Invoke-GraphRequest {
     $contextUri = $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
     $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
 
-    $query = $null
     $countError = $false
     $optionalCountResult = $null
-
-    if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
-        write-verbose 'Including the total count of results'
-        $query = '$count'
-    }
 
     while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
@@ -174,7 +184,7 @@ function Invoke-GraphRequest {
         }
 
         $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
-            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $null
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $requestQuery
             $request |=> SetBody $Payload
             $request |=> Invoke $skipCount
         }

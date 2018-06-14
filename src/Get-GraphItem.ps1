@@ -20,7 +20,12 @@ function Get-GraphItem {
         [parameter(position=0,mandatory=$true)]
         [Uri[]] $ItemRelativeUri,
 
-        [parameter(position=1, parametersetname='MSGraphNewConnection')]
+        [parameter(position=1)]
+        [String] $Query = $null,
+
+        [String] $ODataFilter = $null,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
         [String] $Version = $null,
@@ -43,6 +48,8 @@ function Get-GraphItem {
 
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri
+        Query = $Query
+        ODataFilter = $ODataFilter
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
