@@ -33,6 +33,8 @@ function Invoke-GraphRequest {
 
         [String] $ODataFilter = $null,
 
+        [String[]] $Select = $null,
+
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
@@ -57,8 +59,8 @@ function Invoke-GraphRequest {
     $::.GraphErrorRecorder |=> StartRecording
 
     if ( $Query ) {
-        if ( $ODataFilter ) {
-            throw [ArgumentException]::new("'ODataFilter' and 'Query' options may not both be specified")
+        if ( $ODataFilter -or $Select ) {
+            throw [ArgumentException]::new("'ODataFilter' and 'Select' options may not specified with 'Query'")
         }
     }
 
@@ -90,8 +92,20 @@ function Invoke-GraphRequest {
 
     $requestQuery = if ( $Query ) {
         $Query
-    } elseif ( $ODataFilter ) {
-        '$filter={0}' -f $ODataFilter
+    } else {
+        $queryParameters = [string[]] @()
+
+        if ( $Select ) {
+            $queryParameters += @('$select={0}') -f ($Select -join ',')
+        }
+
+        if ( $ODataFilter ) {
+            $queryParameters += @('$filter={0}' -f $ODataFilter)
+        }
+
+        if ( $queryParameters.length -gt 0 ) {
+            $queryParameters
+        }
     }
 
     # Cast it in case this is a deserialized object --

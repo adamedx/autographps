@@ -25,6 +25,8 @@ function Get-GraphItem {
 
         [String] $ODataFilter = $null,
 
+        [String[]] $Select = $null,
+
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
@@ -50,6 +52,7 @@ function Get-GraphItem {
         RelativeUri=$ItemRelativeUri
         Query = $Query
         ODataFilter = $ODataFilter
+        Select = $Select
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri

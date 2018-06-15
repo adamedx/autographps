@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Fix exception throw in poshgraph
+* Add $expand
 * Make appid substitution nicer
 * Show content in default list view?
 * Change listview content from name to id?
@@ -134,6 +134,7 @@
 * Add app id, user name to get-graph
 * Add prompt modification
 * Add query
+* Add $select
 
 ### Postponed
 
