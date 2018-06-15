@@ -21,7 +21,16 @@ function Get-GraphChildItem {
         [parameter(position=0)]
         [Uri[]] $ItemRelativeUri = @('.'),
 
-        [parameter(position=1, parametersetname='MSGraphNewConnection')]
+        [parameter(position=1)]
+        [String] $Query = $null,
+
+        [String] $ODataFilter = $null,
+
+        [String[]] $Select = $null,
+
+        [String[]] $Expand = $null,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
         [Object] $ContentColumns = $null,
@@ -63,6 +72,10 @@ function Get-GraphChildItem {
 
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri[0]
+        Query = $Query
+        ODataFilter = $ODataFilter
+        Select = $Select
+        Expand = $Expand
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri

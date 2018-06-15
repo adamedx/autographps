@@ -35,12 +35,15 @@ ScriptClass GraphRequest {
         $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
         $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uriQueryLength))
 
-
         $this.Connection = $GraphConnection
         $this.RelativeUri = $uri
         $this.Uri = $uriNoQuery
         $this.Verb = $verb
-        $this.Query = __AddQueryParameters $uri.query, $query
+
+        $queryParams = @($uri.query)
+        $queryParams += $query
+        $this.Query = __AddQueryParameters $queryParams
+
         $this.Headers = if ( $headers -ne $null ) {
             $headers
         } else {
@@ -59,7 +62,11 @@ ScriptClass GraphRequest {
             throw "Web request cannot proceed -- connection status is set to offline"
         }
 
-        $queryParameters = @($this.Query)
+        $queryParameters = if ( $this.Query -is [object[]] ) {
+            $this.Query
+        } else {
+            @($this.Query)
+        }
 
         if ($pageStartIndex -ne $null) {
             $queryParameters += (__NewODataParameter 'skip' $pageStartIndex)
@@ -96,7 +103,7 @@ ScriptClass GraphRequest {
         $restRequest |=> Invoke
     }
 
-    function __AddQueryParameters([String[]] $parameters) {
+    function __AddQueryParameters($parameters) {
         $components = @()
 
         $parameters | foreach {
