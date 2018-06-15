@@ -35,6 +35,8 @@ function Invoke-GraphRequest {
 
         [String[]] $Select = $null,
 
+        [String[]] $Expand = $null,
+
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
@@ -97,6 +99,10 @@ function Invoke-GraphRequest {
 
         if ( $Select ) {
             $queryParameters += @('$select={0}') -f ($Select -join ',')
+        }
+
+        if ( $Expand ) {
+            $queryParameters += @('$expand={0}') -f ($Expand -join ',')
         }
 
         if ( $ODataFilter ) {

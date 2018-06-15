@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Add $expand
+* Add fuzzy select
+* Add find-property, find-type
 * Make appid substitution nicer
 * Show content in default list view?
 * Change listview content from name to id?
@@ -15,7 +16,7 @@
 * TOS, Privacy
 * LastGraphRequest
 * Get-RequestLog
-* Add ODataFilter, -Filter
+* Add more complex filter
 * Link to scopes docs when unauthorized
 * Delay schema parsing at startup
 * Make gls, gcd ignore schema parsing when not ready
@@ -135,6 +136,8 @@
 * Add prompt modification
 * Add query
 * Add $select
+* Add $expand
+* Add ODataFilter
 
 ### Postponed
 

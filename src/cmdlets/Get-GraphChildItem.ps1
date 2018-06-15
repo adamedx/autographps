@@ -28,6 +28,8 @@ function Get-GraphChildItem {
 
         [String[]] $Select = $null,
 
+        [String[]] $Expand = $null,
+
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
@@ -73,6 +75,7 @@ function Get-GraphChildItem {
         Query = $Query
         ODataFilter = $ODataFilter
         Select = $Select
+        Expand = $Expand
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
