@@ -143,13 +143,14 @@ function Get-GraphChildItem {
                 $_.exception.response.statuscode
             }
             $_.exception | write-verbose
-            if ( $statusCode -eq 'Unauthorized' ) {
-                write-warning "Graph endpoint returned 'Unauthorized', retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate additional application scopes"
-                throw
-            } elseif ( $statusCode -eq 'Forbidden' ) {
-                write-verbose "Graph endpoint returned 'Forbiddden' - ignoring failure"
+            if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
+                write-warning "Graph endpoint returned 'Unauthorized' accessing '$($requestArguments.RelativeUri)'. Retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate application scopes. See this location for documentation on scopes that may apply to this part of the Graph: 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'."
+                $lastError = get-grapherror
+                if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
+                    $lastError.ResponseStream | write-warning
+                }
             } elseif ( $statusCode -eq 'BadRequest' ) {
-                write-verbose "Graph endpoint returned 'Bad request' - metadata may be inaccurate, ignoring failure"
+                write-verbose "Graph endpoint returned 'Bad request' - ignoring failure"
             } else {
                 throw
             }
