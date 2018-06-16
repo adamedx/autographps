@@ -16,8 +16,6 @@
 
 ScriptClass LogicalGraphManager {
     $contexts = $null
-    $lowestIndex = 0
-    $highestIndex = 0
 
     function __initialize {
         if ( $this.scriptclass.sessionmanager -ne $null ) {
@@ -47,7 +45,6 @@ ScriptClass LogicalGraphManager {
             $parentContext.connection
         }
 
-        $addIndex = -1
         $uniqueName = if ( $name -and $name -ne '' ) {
             $name
         } else {
@@ -55,20 +52,22 @@ ScriptClass LogicalGraphManager {
         }
 
         $contextName = if ( $this.contexts.containskey($uniqueName) ) {
-            $addIndex = $this.lowestIndex
-            "{0}{1}" -f $uniqueName, $addIndex
+            $secondName = "{0}_{1}" -f $uniqueName, $this.contexts.count
+
+            if ( $this.contexts.containskey($secondName) ) {
+                $secondName = "{0}_{1}" -f $uniqueName, $this.ScriptClass.idGenerator.Next()
+                if ( $this.contexts.containskey($secondName) ) {
+                    $secondName = "{0}_{1}" -f $uniqueName, (new-guid).tostring()
+                }
+            }
+            $secondName
         } else {
             $uniqueName
         }
 
         $context = new-so GraphContext $graphConnection $version $contextName
 
-        $this.contexts.Add($contextName, [PSCustomObject]@{Context=$context;Index=$addIndex})
-
-        if ( $addIndex -eq -1 ) {
-            $this.lowestIndex = ( $this.highestIndex + 1 ) % 0xFFFFFF
-            $this.highestIndex = $this.lowestIndex
-        }
+        $this.contexts.Add($contextName, [PSCustomObject]@{Context=$context})
 
         $context
     }
@@ -80,14 +79,6 @@ ScriptClass LogicalGraphManager {
         }
 
         $this.contexts.remove($name)
-
-        if ($contextRecord.Index -lt $this.lowestIndex) {
-            $this.lowestIndex = $contextRecord.index
-        }
-
-        if ($contextRecord.Index -gt $this.highestIndex) {
-            $this.highestIndex = $this.highestIndex - 1
-        }
     }
 
     function GetContext($name) {
@@ -106,6 +97,7 @@ ScriptClass LogicalGraphManager {
     static {
         function __initialize { if ( ! $this.sessionManager ) { $this.sessionManager = new-so LogicalGraphManager } }
         $sessionManager = $null
+        $idGenerator = [Random]::new([int32] ([DateTime]::now.Ticks % 0XFFFFFFFF))
         function Get {
             $this.sessionManager
         }

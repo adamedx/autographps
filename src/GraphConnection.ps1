@@ -51,6 +51,23 @@ ScriptClass GraphConnection {
         }
     }
 
+    function GetToken {
+        if (! $this.Identity) {
+            throw [ArgumentException]::new('Cannot obtain a token for this connection because the connection is anonymous')
+        }
+
+        if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
+            if ( $this.GraphEndpoint.Type -eq [GraphType]::MSGraph ) {
+                # Trust the library's token cache to get a new token if necessary
+                $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes $true
+            } else {
+                Connect
+            }
+        }
+
+        $this.Identity.Token
+    }
+
     function SetStatus( [GraphConnectionStatus] $status ) {
         $this.Status = $status
     }

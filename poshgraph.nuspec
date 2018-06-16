@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line explorer for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2018</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
       <dependency id="scriptclass" version="0.13.6" />
@@ -24,7 +24,7 @@
     <file src="poshgraph.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
-    <file src="lib\Microsoft.Identity.Client.1.1.0-preview\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.1.1.0-preview\lib\net45" />
+    <file src="lib\Microsoft.Identity.Client.1.1.4-preview0002\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.1.1.4-preview0002\lib\net45" />
     <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.3.16.0\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.3.16.0\lib\net45" />
   </files>
 </package>

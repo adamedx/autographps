@@ -2,31 +2,36 @@
 
 ## To-do items -- prioritized
 
-* Add fuzzy select
-* Add find-property, find-type
-* Make appid substitution nicer
+* Add reply url to new-graphconnection
+
 * Show content in default list view?
 * Change listview content from name to id?
 * Make public graph items have id instead of name
-* Make content-columns auto-avoid collisions
-* Make graph drive collision nicer
-* Make default graph drive just be v1.0
-* Make connect-graph connect in the custom case
-* Auto-refresh token when expired
+* Link to scopes docs when unauthorized
 * TOS, Privacy
 * LastGraphRequest
-* Get-RequestLog
-* Add more complex filter
-* Link to scopes docs when unauthorized
 * Delay schema parsing at startup
 * Make gls, gcd ignore schema parsing when not ready
+
 * Parse odata context
+
+* Add app creation
+* Add app enumeration
+* Add app updating
+
+* Add fuzzy select
+* Add find-property, find-type
+
+* Get-RequestLog
+* Add more complex filter
+* Add regex to gls
+
 * Refactor invoke-graphrequest to request builder
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
 * optimize child retrieval
 * Enable schemaless execution
-* Rudimentary token auto-refresh
+* Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
 * Add uri completion
@@ -138,6 +143,12 @@
 * Add $select
 * Add $expand
 * Add ODataFilter
+* Make default graph drive just be v1.0
+* Make appid substitution nicer
+* Make connect-graph connect in the custom case
+* Make content-columns auto-avoid collisions
+* Rudimentary token auto-refresh
+* Make graph drive collision nicer
 
 ### Postponed
 

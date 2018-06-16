@@ -50,10 +50,9 @@ ScriptClass GraphRequest {
             @{'Content-Type'='application/json'}
         }
 
-        $this.Connection |=> Connect
-
         if ($graphConnection.Identity) {
-            $this.Headers['Authorization'] = $graphConnection.Identity.token.CreateAuthorizationHeader()
+            $token = $graphConnection |=> GetToken
+            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
         }
     }
 

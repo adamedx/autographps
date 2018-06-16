@@ -20,12 +20,13 @@
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(parametersetname='simple', position=0)]
-        [parameter(parametersetname='custom', position=0)]
         [String[]] $ScopeNames = @('User.Read'),
 
         [parameter(parametersetname='simple')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='simple')]
+        [string] $AppId = $null,
 
         [parameter(parametersetname='custom',mandatory=$true)]
         [PSCustomObject] $Connection = $null
@@ -43,9 +44,16 @@ function Connect-Graph {
         $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
 
         $::.GraphContext |=> SetCurrentByName $newContext.name
+        $context.Connection |=> Connect
     } else {
         write-verbose "Connecting context '$($context.name)'"
-        $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $::.Application.AppId
+        $applicationId = if ( $AppId ) {
+            [Guid] $AppId
+        } else {
+            $::.Application.AppId
+        }
+
+        $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $applicationId
         $context |=> Update $newConnection.identity $ScopeNames
         $context.Connection |=> Connect
     }
