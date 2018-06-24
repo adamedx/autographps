@@ -2,16 +2,16 @@
 
 ## To-do items -- prioritized
 
+* Add content option
 * Add reply url to new-graphconnection
 
 * Show content in default list view?
 * Change listview content from name to id?
 * Make public graph items have id instead of name
-* Link to scopes docs when unauthorized
 * TOS, Privacy
 * LastGraphRequest
 * Delay schema parsing at startup
-* Make gls, gcd ignore schema parsing when not ready
+* optimize child retrieval
 
 * Parse odata context
 
@@ -29,7 +29,6 @@
 * Refactor invoke-graphrequest to request builder
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
-* optimize child retrieval
 * Enable schemaless execution
 * Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
@@ -149,6 +148,9 @@
 * Make content-columns auto-avoid collisions
 * Rudimentary token auto-refresh
 * Make graph drive collision nicer
+* Link to scopes docs when unauthorized
+* Fix bug where context is assumed to be current rather than from uri
+* Make gls, gcd have ability to ignore schema parsing when not ready
 
 ### Postponed
 

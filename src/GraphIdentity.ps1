@@ -134,7 +134,6 @@ ScriptClass GraphIdentity {
         $result = $authResult.Result
 
         if ( $authResult.IsFaulted ) {
-            $authResult | out-host
             throw $authResult.Exception
         }
         $result

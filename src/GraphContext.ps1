@@ -87,6 +87,10 @@ ScriptClass GraphContext {
             }
         }
 
+        function FindContext($endpoint, $apiVersion) {
+            $::.LogicalGraphManager |=> Get |=> FindContext $endpoint $apiVersion
+        }
+
         function GetCurrent  {
             if ( $this.current ) {
                 write-verbose "Attempt to get current context -- current context is set to '$($this.current)'"

@@ -51,15 +51,14 @@ ScriptClass SegmentHelper {
         }
 
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
-            $graph = $parser.graph
-            $Uri = $segment.ToGraphUri($graph)
+            $Uri = $segment.ToGraphUriFromEndpoint($parser.context.connection.GraphEndpoint.Graph, $parser.context.Version)
             $entity = $segment.graphElement |=> GetEntity
-            $namespace = $entity.namespace
+            $namespace = if ( $entity ) { $entity.namespace } else {'Null' }
             $namespaceDelimited = $namespace + '.'
             $resultTypeData = $segment.graphElement.GetResultTypeData()
             $parentSegment = $segment.parent
-            $entityClass = $entity.Type
-            $isCollection = $entity.typeData.IsCollection -eq $true
+            $entityClass = if ( $entity ) { $entity.Type } else { 'Null' }
+            $isCollection = if ( $entity ) { $entity.typeData.IsCollection -eq $true } else { $false }
 
             # Use the return type, which for vertices is the self, but
             # for edges is the vertex to which the self leads
@@ -104,8 +103,8 @@ ScriptClass SegmentHelper {
                 GraphUri = $relativeUri
                 Path = $path
                 FullTypeName = $fullTypeName
-                Version = $graph.apiversion
-                Endpoint = $graph.endpoint
+                Version = $parser.context.version
+                Endpoint = $parser.context.connection.graphEndpoint.Graph
                 IsDynamic = $segment.isDynamic
                 Parent = $ParentPublicSegment
                 Details = $segment
@@ -121,13 +120,6 @@ ScriptClass SegmentHelper {
             # on callers specifying that they don't want objects, but the
             # raw content value from the Graph web response
             $Id = $graphItem | select -expandproperty id -erroraction silentlycontinue
-            $graphObject = if ( ! $Id ) {
-                if ( $graphItem -is [String] ) {
-                    $graphItem | convertto-csv -erroraction silentlycontinue
-                }
-            } else {
-                $graphItem
-            }
 
             $itemId = if ( $Id ) {
                 $Id

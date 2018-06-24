@@ -93,6 +93,14 @@ ScriptClass LogicalGraphManager {
         }
     }
 
+    function FindContext($endpoint, $version) {
+        $this.contexts.values | foreach {
+            if ( $_.context.connection.graphEndpoint.Graph.tostring() -eq $endpoint -and $_.context.version -eq $version ) {
+                return $_.context
+            }
+        }
+    }
+
 
     static {
         function __initialize { if ( ! $this.sessionManager ) { $this.sessionManager = new-so LogicalGraphManager } }

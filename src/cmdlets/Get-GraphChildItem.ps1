@@ -47,6 +47,8 @@ function Get-GraphChildItem {
 
         [switch] $DataOnly,
 
+        [Switch] $IgnoreMissingMetadata,
+
         [HashTable] $Headers = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
@@ -60,12 +62,25 @@ function Get-GraphChildItem {
         throw [NotImplementedException]::new("Non-default context not yet implemented")
     }
 
+    $context = $null
+
     $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
-        Get-GraphUri $ItemRelativeUri[0]
+        $metadataArgument = @{IgnoreMissingMetadata=$IgnoreMissingMetadata}
+        Get-GraphUri $ItemRelativeUri[0] @metadataArgument
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
         $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+    }
+
+    if ( ! $context ) {
+        $components = $resolvedUri.Path -split ':'
+
+        if ( $components.length -gt 2) {
+            throw "'$($resolvedUri.Path)' is not a valid graph location uri"
+        }
+
+        $context = $::.logicalgraphmanager.Get().contexts[$components[0]].context
     }
 
     $results = @()
@@ -95,10 +110,12 @@ function Get-GraphChildItem {
 
     $graphException = $false
 
-    if ( $resolvedUri.Class -ne '__Root' -and $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
+    $ignoreMetadata = $IgnoreMissingMetadata.IsPresent -and ($resolvedUri.Class -eq 'Null')
+
+    if ( $resolvedUri.Class -ne '__Root' -and ($::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata)) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
-                $result = if ( ! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) {
+                $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                     $_ | Get-GraphUri
                 } else {
                     $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
@@ -157,7 +174,11 @@ function Get-GraphChildItem {
         }
     }
 
-    if ( ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
+    if ( $ignoreMetadata ) {
+        write-warning "Metadata for Graph is not ready and 'IgnoreMissingMetadata' was specified, only returning responses from Graph"
+    }
+
+    if ( ! $ignoreMetadata -and ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
         Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
             $results += $_
         }

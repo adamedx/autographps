@@ -38,7 +38,6 @@ ScriptClass GraphSegment {
         $this.leadsToVertex = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
             $isVertex = $false
             if ( $instanceName ) {
-                $graphElement | out-host
                 throw "An instance name '$instanceName' was specified for an edge, which already has a name"
             }
             $this.type = $this.graphElement.transition.type
@@ -148,6 +147,14 @@ ScriptClass GraphSegment {
     }
 
     function ToGraphUri($graph = $null) {
+        if ( ! $graph ) {
+            ToGraphUriFromEndpoint
+        } else {
+            ToGraphUriFromEndpoint $graph.Endpoint $graph.ApiVersion
+        }
+    }
+
+    function ToGraphUriFromEndpoint($graphEndpointUri = $null, $graphVersion = $null) {
         $currentSegment = $this
 
         $relativeUriString = $this.name
@@ -157,17 +164,19 @@ ScriptClass GraphSegment {
             $currentSegment = $currentSegment.parent
         }
 
-        if ( ! $graph ) {
+        if ( ! $graphEndpointUri ) {
             $::.GraphUtilities |=> JoinGraphUri / $relativeUriString
         } else {
-            $relativeVersionedUriString = $::.GraphUtilities |=> JoinRelativeUri $graph.ApiVersion $relativeUriString
-            $::.GraphUtilities |=> JoinAbsoluteUri $graph.Endpoint $relativeVersionedUriString
+            $relativeVersionedUriString = $::.GraphUtilities |=> JoinRelativeUri $graphVersion $relativeUriString
+            $::.GraphUtilities |=> JoinAbsoluteUri $graphEndpointUri $relativeVersionedUriString
         }
     }
 
     static {
         $RootSegment = $null
+        $NullSegment = $null
     }
 }
 
 $::.GraphSegment.RootSegment = new-so GraphSegment $::.EntityVertex.RootVertex
+$::.GraphSegment.NullSegment = new-so GraphSegment $::.Entityvertex.NullVertex
