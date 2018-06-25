@@ -2,16 +2,13 @@
 
 ## To-do items -- prioritized
 
-* Add content option
-* Add reply url to new-graphconnection
-
 * Show content in default list view?
 * Change listview content from name to id?
 * Make public graph items have id instead of name
-* TOS, Privacy
-* LastGraphRequest
-* Delay schema parsing at startup
+* TOS, Privacy:
+  https://developer.microsoft.com/en-us/graph/docs/misc/terms-of-use
 * optimize child retrieval
+* Rearrange source
 
 * Parse odata context
 
@@ -61,6 +58,7 @@
 * Add unit tests for parameters
 * Enable token refresh
 * Enable app-only auth
+* Add reply url to new-graphconnection -- only works with confidential client
 * Graph tracing
 * Graph trace replay
 * entity templates
@@ -151,10 +149,12 @@
 * Link to scopes docs when unauthorized
 * Fix bug where context is assumed to be current rather than from uri
 * Make gls, gcd have ability to ignore schema parsing when not ready
+* LastGraphRequest
 
 ### Postponed
 
 * transform schema, version objects to hashtables
+* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
 
 ### Abandoned
 

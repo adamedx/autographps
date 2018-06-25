@@ -97,7 +97,7 @@ FunctionsToExport = @()
     )
 
 # Variables to export from this module
-# VariablesToExport = @()
+VariablesToExport = @('LastGraphItems')
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
@@ -153,6 +153,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\metadata\metadata.ps1',

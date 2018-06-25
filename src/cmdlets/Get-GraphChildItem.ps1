@@ -14,6 +14,7 @@
 
 . (import-script ../Invoke-GraphRequest)
 . (import-script Get-GraphUri)
+. (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
@@ -55,7 +56,9 @@ function Get-GraphChildItem {
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [string] $ResultVariable = $null
     )
 
     if ( $Version -or $Connection -or ($Cloud -ne ([GraphCloud]::Public)) ) {
@@ -184,5 +187,7 @@ function Get-GraphChildItem {
         }
     }
 
+    $targetResultVariable = __GetResultVariable $ResultVariable
+    $targetResultVariable.value = $results
     $results
 }
