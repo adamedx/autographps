@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script Invoke-GraphRequest)
+. (import-script cmdlets/common/ItemResultHelper)
 
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
@@ -47,7 +48,9 @@ function Get-GraphItem {
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [string] $ResultVariable = $null
     )
 
     $requestArguments = @{
@@ -75,6 +78,11 @@ function Get-GraphItem {
         $requestArguments['Connection'] = $Connection
     }
 
-    Invoke-GraphRequest @requestArguments
+    $localResult = $null
+    $targetResultVariable = __GetResultVariable $ResultVariable
+
+    Invoke-GraphRequest @requestArguments | tee -variable localResult
+
+    $targetResultVariable.value = $localResult
 }
 

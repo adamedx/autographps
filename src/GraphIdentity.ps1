@@ -21,6 +21,15 @@ ScriptClass GraphIdentity {
 
     static {
         $__AuthLibraryLoaded = $null
+        $__TokenCache = $null
+
+        function __InitializeTokenCache {
+            if ( ! $this.__TokenCache ) {
+                # TODO: Understand why this doesn't seem to cache anything,
+                # or at least the cache is not used in token acquisition :(
+                $this.__TokenCache = New-Object "Microsoft.Identity.Client.TokenCache"
+            }
+        }
     }
 
     function __initialize([PSCustomObject] $App) {
@@ -28,8 +37,19 @@ ScriptClass GraphIdentity {
     }
 
     function Authenticate($graphEndpoint, $scopes = $null) {
-        if ($this.token -ne $null) {
-            return
+        if ( $this.token -ne $null) {
+            if ( $graphEndpoint.Type -eq [GraphType]::MSGraph ) {
+                $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
+                write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
+
+                if ( $tokenTimeLeft.TotalMinutes -ge 2 ) {
+                    return
+                } else {
+                    write-verbose 'Requesting new token since existing token is expired or near expiration'
+                }
+            } else {
+                return
+            }
         }
 
         if ( $graphEndpoint.Type -ne [GraphType]::AADGraph -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
@@ -89,7 +109,10 @@ ScriptClass GraphIdentity {
 
     function getMSGraphToken($graphEndpoint, $scopes) {
         write-verbose "Attempting to get token for MS Graph..."
-        $msaAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication
+
+        $this.scriptclass |=> __InitializeTokenCache
+        $msalAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication, $this.scriptclass.__TokenCache
+
         $requestedScopes = new-object System.Collections.Generic.List[string]
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
@@ -98,7 +121,10 @@ ScriptClass GraphIdentity {
             $requestedScopes.Add($_)
         }
 
-        $authResult = $msaAuthContext.AcquireTokenAsync($requestedScopes)
+        # TODO: Understand how to make this use a cached refresh token
+        # to avoid user interaction. We can pass in an extra parameter
+        # IUsee from $this.Token.User, but that makes no difference
+        $authResult = $msalAuthContext.AcquireTokenAsync($requestedScopes)
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
         if ( $authResult.Status -eq 'Faulted' ) {
@@ -134,3 +160,4 @@ ScriptClass GraphIdentity {
         $authResult.Result
     }
 }
+

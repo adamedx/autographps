@@ -23,7 +23,6 @@ ScriptClass GraphRequest {
     $Body = strict-val [String]
     $Query = $null
     $Headers = $null
-    $DefaultPageSize = strict-val [int32] 10
 
     function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
         $uriString = if ( $uri.scheme -ne $null ) {
@@ -50,10 +49,9 @@ ScriptClass GraphRequest {
             @{'Content-Type'='application/json'}
         }
 
-        $this.Connection |=> Connect
-
         if ($graphConnection.Identity) {
-            $this.Headers['Authorization'] = $graphConnection.Identity.token.CreateAuthorizationHeader()
+            $token = $graphConnection |=> GetToken
+            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
         }
     }
 

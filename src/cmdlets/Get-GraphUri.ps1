@@ -47,6 +47,11 @@ function Get-GraphUri {
         [parameter(parametersetname='FromObjectChildren')]
         [Switch] $NoCycles,
 
+        [Switch] $IgnoreMissingMetadata,
+
+        [parameter(parametersetname='FromObject')]
+        [String] $GraphScope = $null,
+
         [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
@@ -62,9 +67,6 @@ function Get-GraphUri {
     } else {
         $Uri
     }
-
-    $context = $::.GraphContext |=> GetCurrent
-    $parser = new-so SegmentParser $context $null ($graphItems -ne $null)
 
     $results = @()
 
@@ -86,6 +88,10 @@ function Get-GraphUri {
 
     $disallowVirtualChildren = $Children.ispresent -and ! $IncludeVirtualChildren.ispresent
 
+    $context = if ( $GraphScope ) {
+        $::.Logicalgraphmanager.Get().contexts[$GraphScope].context
+    }
+
     while ( $nextUris.Count -gt 0 ) {
         $currentItem = $nextUris.Dequeue()
         $currentDepth = $currentItem[0] + 1
@@ -97,7 +103,7 @@ function Get-GraphUri {
 
         $uriSource = $currentUri
         $inputUri = if ( $graphItem ) {
-            if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
+            $unparsedUri = if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
                 [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
             } elseif ( $graphItem | gm uri ) {
                 $uriSource = $graphItem.uri
@@ -105,11 +111,22 @@ function Get-GraphUri {
             } else{
                 throw "Object type does not support Graph URI source"
             }
+            $parsedUri = $::.GraphUtilities |=> ParseGraphUri $unparsedUri
+            $context = $parsedUri.MatchedContext
+            $parsedUri.GraphRelativeUri
         } else {
-            $::.GraphUtilities |=> ToGraphRelativeUri $currentUri $context
+            $parsedLocation = $::.ContextHelper |=> ParseGraphRelativeLocation $currentUri
+            $context = $parsedLocation.context
+            $parsedLocation.GraphRelativeUri
         }
 
+        $parser = new-so SegmentParser $context $null ($graphItems -ne $null)
+
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
+
+        if ( $IgnoreMissingMetadata.IsPresent -and (($::.GraphContext |=> GetMetadataStatus $context) -ne [MetadataStatus]::Ready) ) {
+            return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
+        }
 
         $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
         $lastSegment = $segments | select -last 1

@@ -2,31 +2,32 @@
 
 ## To-do items -- prioritized
 
-* Add fuzzy select
-* Add find-property, find-type
-* Make appid substitution nicer
 * Show content in default list view?
 * Change listview content from name to id?
 * Make public graph items have id instead of name
-* Make content-columns auto-avoid collisions
-* Make graph drive collision nicer
-* Make default graph drive just be v1.0
-* Make connect-graph connect in the custom case
-* Auto-refresh token when expired
-* TOS, Privacy
-* LastGraphRequest
+* TOS, Privacy:
+  https://developer.microsoft.com/en-us/graph/docs/misc/terms-of-use
+* optimize child retrieval
+* Rearrange source
+
+* Parse odata context
+
+* Add app creation
+* Add app enumeration
+* Add app updating
+
+* Add fuzzy select
+* Add find-property, find-type
+
 * Get-RequestLog
 * Add more complex filter
-* Link to scopes docs when unauthorized
-* Delay schema parsing at startup
-* Make gls, gcd ignore schema parsing when not ready
-* Parse odata context
+* Add regex to gls
+
 * Refactor invoke-graphrequest to request builder
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
-* optimize child retrieval
 * Enable schemaless execution
-* Rudimentary token auto-refresh
+* Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
 * Add uri completion
@@ -57,6 +58,7 @@
 * Add unit tests for parameters
 * Enable token refresh
 * Enable app-only auth
+* Add reply url to new-graphconnection -- only works with confidential client
 * Graph tracing
 * Graph trace replay
 * entity templates
@@ -138,10 +140,21 @@
 * Add $select
 * Add $expand
 * Add ODataFilter
+* Make default graph drive just be v1.0
+* Make appid substitution nicer
+* Make connect-graph connect in the custom case
+* Make content-columns auto-avoid collisions
+* Rudimentary token auto-refresh
+* Make graph drive collision nicer
+* Link to scopes docs when unauthorized
+* Fix bug where context is assumed to be current rather than from uri
+* Make gls, gcd have ability to ignore schema parsing when not ready
+* LastGraphRequest
 
 ### Postponed
 
 * transform schema, version objects to hashtables
+* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
 
 ### Abandoned
 

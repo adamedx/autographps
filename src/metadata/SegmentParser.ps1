@@ -28,17 +28,23 @@ ScriptClass SegmentParser {
         } else {
             $this.context = $graphContext
             $this.UriCache = $graphContext.uriCache
-            $graph = $graphContext |=> GetGraph
-            $graph
         }
 
         $this.cacheEntities = $cacheEntities
+    }
+
+    function __initializeGraph {
+        if ( ! $this.graph ) {
+            $this.graph = $this.context |=> GetGraph
+        }
     }
 
     function GetChildren($segment, $allowedTransitions = $null ) {
         if ( ! $segment ) {
             throw "Segment may not be null"
         }
+
+        __initializeGraph
 
         $results = if ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices
@@ -57,6 +63,8 @@ ScriptClass SegmentParser {
     }
 
     function SegmentsFromUri([Uri] $uri) {
+        __initializeGraph
+
         $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
 
         $noRoot = if ( $unescapedPath[0] -eq '/' ) {

@@ -135,8 +135,8 @@ ScriptClass GraphUtilities {
             }
 
             [PSCustomObject]@{
-                Context=$context
-                GraphRelativeUri=$graphRelativeUri
+                ContextName=$context
+                RelativeUri=$graphRelativeUri
                 IsAbsoluteUri=$isAbsolute
             }
         }
@@ -147,6 +147,7 @@ ScriptClass GraphUtilities {
             $sameEndpoint = $true
             $sameVersion = $true
             $isAbsolute = $uri.IsAbsoluteUri
+            $matchedContext = $null
 
             $relativeUri = if ( $isAbsolute ) {
                 $endpoint = [Uri] ('https://{0}' -f $uri.host)
@@ -156,6 +157,8 @@ ScriptClass GraphUtilities {
                         $graphRelativeUri += $uri.segments[$uriIndex]
                     }
                     $uri.segments[1].trim('/')
+                } else {
+                    throw [ArgumentException]::new("Invalid uri '$($uri.tostring())'")
                 }
 
                 if ( $context ) {
@@ -174,12 +177,23 @@ ScriptClass GraphUtilities {
 
             $normalized = JoinGraphUri / $relativeUri
 
+            $matchedContext = if ( $isAbsolute )  {
+                if ( $context -and ($sameEndpoint -and $sameVersion) ) {
+                    $context
+                } else {
+                    $::.GraphContext |=> FindContext $endpoint $version
+                }
+            } else {
+                $::.GraphContext.GetCurrent()
+            }
+
             [PSCustomObject]@{
                 GraphRelativeUri = $normalized
                 GraphVersion = $version
                 EndpointMatchesContext = $sameEndpoint
                 VersionMatchesContext = $sameVersion
                 IsContextCompatible = $sameEndpoint -and $sameVersion
+                MatchedContext = $matchedContext
                 IsAbsolute = $isAbsolute
             }
         }

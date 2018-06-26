@@ -34,14 +34,19 @@ ScriptClass GraphCache {
     }
 
     function GetGraph($endpoint, $apiVersion = 'v1.0', $metadata = $null, $deferredBuild = $false) {
-        $graphId = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion
-        $graph = $this.graphVersions[$graphId]
+        $graph = FindGraph $endpoint $apiVersion
+
         if ( $graph ) {
             $graph
         } else {
             $graphJob = GetGraphAsync $endpoint $apiVersion $metadata $deferredBuild
             WaitForGraphAsync $graphJob
         }
+    }
+
+    function FindGraph($endpoint, $apiVersion) {
+        $graphId = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion
+        $this.graphVersions[$graphId]
     }
 
     function GetGraphAsync($endpoint, $apiVersion = 'v1.0', $metadata = $null, $deferredBuild = $false) {

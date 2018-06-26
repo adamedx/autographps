@@ -14,6 +14,7 @@
 
 . (import-script ../Invoke-GraphRequest)
 . (import-script Get-GraphUri)
+. (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
@@ -47,25 +48,42 @@ function Get-GraphChildItem {
 
         [switch] $DataOnly,
 
+        [Switch] $IgnoreMissingMetadata,
+
         [HashTable] $Headers = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [string] $ResultVariable = $null
     )
 
     if ( $Version -or $Connection -or ($Cloud -ne ([GraphCloud]::Public)) ) {
         throw [NotImplementedException]::new("Non-default context not yet implemented")
     }
 
+    $context = $null
+
     $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
-        Get-GraphUri $ItemRelativeUri[0]
+        $metadataArgument = @{IgnoreMissingMetadata=$IgnoreMissingMetadata}
+        Get-GraphUri $ItemRelativeUri[0] @metadataArgument
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
         $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+    }
+
+    if ( ! $context ) {
+        $components = $resolvedUri.Path -split ':'
+
+        if ( $components.length -gt 2) {
+            throw "'$($resolvedUri.Path)' is not a valid graph location uri"
+        }
+
+        $context = $::.logicalgraphmanager.Get().contexts[$components[0]].context
     }
 
     $results = @()
@@ -95,10 +113,12 @@ function Get-GraphChildItem {
 
     $graphException = $false
 
-    if ( $resolvedUri.Class -ne '__Root' -and $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) ) {
+    $ignoreMetadata = $IgnoreMissingMetadata.IsPresent -and ($resolvedUri.Class -eq 'Null')
+
+    if ( $resolvedUri.Class -ne '__Root' -and ($::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata)) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
-                $result = if ( ! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) {
+                $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                     $_ | Get-GraphUri
                 } else {
                     $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
@@ -125,7 +145,7 @@ function Get-GraphChildItem {
                             $outputColumnName
                         } else {
                             if ( $result | gm $outputColumnName -erroraction silentlycontinue ) {
-                                "__$outputColumnName"
+                                "_$outputColumnName"
                             } else {
                                 $outputColumnName
                             }
@@ -143,24 +163,31 @@ function Get-GraphChildItem {
                 $_.exception.response.statuscode
             }
             $_.exception | write-verbose
-            if ( $statusCode -eq 'Unauthorized' ) {
-                write-warning "Graph endpoint returned 'Unauthorized', retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate additional application scopes"
-                throw
-            } elseif ( $statusCode -eq 'Forbidden' ) {
-                write-verbose "Graph endpoint returned 'Forbiddden' - ignoring failure"
+            if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
+                write-warning "Graph endpoint returned 'Unauthorized' accessing '$($requestArguments.RelativeUri)'. Retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate application scopes. See this location for documentation on scopes that may apply to this part of the Graph: 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'."
+                $lastError = get-grapherror
+                if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
+                    $lastError.ResponseStream | write-warning
+                }
             } elseif ( $statusCode -eq 'BadRequest' ) {
-                write-verbose "Graph endpoint returned 'Bad request' - metadata may be inaccurate, ignoring failure"
+                write-verbose "Graph endpoint returned 'Bad request' - ignoring failure"
             } else {
                 throw
             }
         }
     }
 
-    if ( ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
+    if ( $ignoreMetadata ) {
+        write-warning "Metadata for Graph is not ready and 'IgnoreMissingMetadata' was specified, only returning responses from Graph"
+    }
+
+    if ( ! $ignoreMetadata -and ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
         Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
             $results += $_
         }
     }
 
+    $targetResultVariable = __GetResultVariable $ResultVariable
+    $targetResultVariable.value = $results
     $results
 }

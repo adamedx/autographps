@@ -68,10 +68,11 @@ ScriptClass GraphContext {
     static {
         $current = $null
         $cache = $null
+        $defaultContextName = 'v1.0'
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
-            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) 'Default'
+            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) $this.defaultContextName
             $this.current = $currentContext.Name
             $this.cache = new-so GraphCache
 
@@ -84,6 +85,10 @@ ScriptClass GraphContext {
             } else {
                 write-verbose "Found __poshgraph_no_auto_metadata variable, skipping Graph metadata update"
             }
+        }
+
+        function FindContext($endpoint, $apiVersion) {
+            $::.LogicalGraphManager |=> Get |=> FindContext $endpoint $apiVersion
         }
 
         function GetCurrent  {
