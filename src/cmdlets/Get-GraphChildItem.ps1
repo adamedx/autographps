@@ -145,7 +145,7 @@ function Get-GraphChildItem {
                             $outputColumnName
                         } else {
                             if ( $result | gm $outputColumnName -erroraction silentlycontinue ) {
-                                "__$outputColumnName"
+                                "_$outputColumnName"
                             } else {
                                 $outputColumnName
                             }

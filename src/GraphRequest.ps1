@@ -23,7 +23,6 @@ ScriptClass GraphRequest {
     $Body = strict-val [String]
     $Query = $null
     $Headers = $null
-    $DefaultPageSize = strict-val [int32] 10
 
     function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
         $uriString = if ( $uri.scheme -ne $null ) {

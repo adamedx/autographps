@@ -93,7 +93,7 @@ function Invoke-GraphRequest {
     }
 
     $requestQuery = if ( $Query ) {
-        $Query
+        @($Query)
     } else {
         $queryParameters = [string[]] @()
 
@@ -112,6 +112,11 @@ function Invoke-GraphRequest {
         if ( $queryParameters.length -gt 0 ) {
             $queryParameters
         }
+    }
+
+    if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
+        write-verbose 'Including the total count of results'
+        $requestQuery += '$count'
     }
 
     # Cast it in case this is a deserialized object --
@@ -177,8 +182,9 @@ function Invoke-GraphRequest {
         $pscmdlet.pagingparameters.Skip
     }
 
+    $maxReturnedResults = $null
     $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
-        $pscmdlet.pagingparameters.First
+        $pscmdlet.pagingparameters.First | tee -variable maxReturnedResults
     } else {
         10
     }
@@ -268,5 +274,9 @@ function Invoke-GraphRequest {
         $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
     }
 
-    $results
+    if ( $maxReturnedResults ) {
+        $results | select -first $maxReturnedResults
+    } else {
+        $results
+    }
 }
