@@ -51,6 +51,11 @@ ScriptClass SegmentHelper {
         }
 
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
+
+            if ( $segment.decoration ) {
+                return $segment.decoration
+            }
+
             $Uri = $segment.ToGraphUriFromEndpoint($parser.context.connection.GraphEndpoint.Graph, $parser.context.Version)
             $entity = $segment.graphElement |=> GetEntity
             $namespace = if ( $entity ) { $entity.namespace } else {'Null' }
@@ -89,7 +94,7 @@ ScriptClass SegmentHelper {
 
             $info = $this.__GetInfoField($isCollection, $segment.isDynamic, $entityClass, $false)
 
-            [PSCustomObject]@{
+            $result = [PSCustomObject] @{
                 PSTypeName = $this.SegmentDisplayTypeName
                 ParentPath = $parentPath
                 Info = $info
@@ -110,6 +115,9 @@ ScriptClass SegmentHelper {
                 Details = $segment
                 Content = $null
             }
+
+            $segment |=> Decorate $result
+            $result
         }
 
         function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
@@ -127,7 +135,7 @@ ScriptClass SegmentHelper {
                 '[{0}]' -f $graphItem.Gettype().name
             }
 
-            [PSCustomObject]@{
+            [PSCustomObject] @{
                 PSTypeName = $parentPublicSegment.pstypename
                 ParentPath = $parentPublicSegment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
@@ -152,7 +160,7 @@ ScriptClass SegmentHelper {
 
         function AddContent($publicSegment, $content) {
             if ($publicSegment.content) {
-                throw "Segment $($segment.name) already has content"
+                throw "Segment $($publicSegment.name) already has content"
             }
 
             $publicSegment.content = $content

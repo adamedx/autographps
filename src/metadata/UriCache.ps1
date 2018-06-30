@@ -28,7 +28,7 @@ ScriptClass UriCache {
         $this.uriTable.Clear()
     }
 
-    function AddUriForSegments($segments, $cacheEntities = $false) {
+    function AddUriForSegments($segments, $cacheEntities = $false, $parentSegment = $null) {
         $segments | foreach {
 
             $cacheable = $_ -ne $null -and ! $_.isDynamic -or $cacheEntities
@@ -42,8 +42,15 @@ ScriptClass UriCache {
                         $removed = $this.uriTable.Remove( ($this.uriTable.keys | select -first 1) )
                         write-verbose "Removing uri '$removed' from cache due to maximum entries reached"
                     }
-                    $this.UriTable.Add($segmentUri, $_)
+                    $this.UriTable.Add($segmentUri, @{Segment=$_;Children=$null})
                 }
+            }
+        }
+
+        if ( $parentSegment -and ( ! $parentSegment.isDynamic -or $cacheEntities ) ) {
+            $parentEntry = $this.uriTable[$parentSegment.graphUri]
+            if ( $parentEntry -and $parentEntry.Children -eq $null ) {
+                $parentEntry.Children = $segments
             }
         }
     }
@@ -63,11 +70,25 @@ ScriptClass UriCache {
     }
 
     function GetSegmentFromUri($uri) {
-        $result = $this.UriTable[$uri]
+        $result = __GetSegmentDataFromUri($uri)
         if ( $result ) {
-            $this.uriTable.Remove($result.graphUri) | out-null
-            $this.uriTable.Add($result.GraphUri, $result)
+            $result.Segment
         }
-        $result
+    }
+
+    function GetChildSegmentsFromUri($uri) {
+        $result = __GetSegmentDataFromUri($uri)
+        if ( $result ) {
+            $result.Children
+        }
+    }
+
+    function __GetSegmentDataFromUri($uri) {
+        $result = $this.uriTable[$uri]
+        if ( $result ) {
+            $this.uriTable.Remove($result.Segment.graphUri) | out-null
+            $this.uriTable.Add($result.Segment.GraphUri, $result)
+            $result
+        }
     }
 }

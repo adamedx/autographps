@@ -168,7 +168,8 @@ function Get-GraphUri {
             $additionalSegments = if ( $Children.IsPresent ) {
                 $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort Name
             } else {
-                $instanceSegment = $::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment
+                # Create a new public segment since we are going to modify it
+                $instanceSegment = ($::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment).psobject.copy()
                 if ( $graphItem ) {
                     $::.SegmentHelper.AddContent($instanceSegment, $graphItem)
                 }
@@ -190,7 +191,8 @@ function Get-GraphUri {
             $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort Name
         } else {
             if ( $GraphItem ) {
-                $lastOutputSegment = $results | select -last 1
+                # Create a new public segment since we are going to modify it
+                $lastOutputSegment = ($results | select -last 1).psobject.copy()
                 $::.SegmentHelper.AddContent($lastOutputSegment, $graphItem)
             }
         }

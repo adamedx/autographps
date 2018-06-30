@@ -25,6 +25,7 @@ ScriptClass GraphSegment {
     $isVirtual = $false
     $isInVirtualPath = $false
     $graphUri = $null
+    $decoration = $null
 
     function __initialize($graphElement, $parent = $null, $instanceName = $null) {
         $this.graphElement = $graphElement
@@ -71,6 +72,14 @@ ScriptClass GraphSegment {
         } else {
             $this.name
         }
+    }
+
+    function Decorate($data) {
+        if ($this.decoration) {
+            throw 'Segment already has decoration data'
+        }
+
+        $this.decoration = $data
     }
 
     function NewVertexSegment($graph, $segmentName, $allowedVertexTypes) {
@@ -160,15 +169,15 @@ ScriptClass GraphSegment {
         $relativeUriString = $this.name
 
         while ($currentSegment.parent -ne $null) {
-            $relativeUriString = $::.GraphUtilities |=> JoinFragmentUri $currentSegment.parent.name $relativeUriString
+            $relativeUriString = $::.GraphUtilities.JoinFragmentUri($currentSegment.parent.name, $relativeUriString)
             $currentSegment = $currentSegment.parent
         }
 
         if ( ! $graphEndpointUri ) {
-            $::.GraphUtilities |=> JoinGraphUri / $relativeUriString
+            $::.GraphUtilities.JoinGraphUri('/', $relativeUriString)
         } else {
-            $relativeVersionedUriString = $::.GraphUtilities |=> JoinRelativeUri $graphVersion $relativeUriString
-            $::.GraphUtilities |=> JoinAbsoluteUri $graphEndpointUri $relativeVersionedUriString
+            $relativeVersionedUriString = $::.GraphUtilities.JoinRelativeUri($graphVersion, $relativeUriString)
+            $::.GraphUtilities.JoinAbsoluteUri($graphEndpointUri, $relativeVersionedUriString)
         }
     }
 
