@@ -5,10 +5,16 @@
 * Show content in default list view?
 * Change listview content from name to id?
 * Make public graph items have id instead of name
-* TOS, Privacy:
-  https://developer.microsoft.com/en-us/graph/docs/misc/terms-of-use
-* optimize child retrieval
+* Make content column actually add the columns
+* switch to 3 columns by default -- remove class
+* Move some data to info, possibly show rwx
 * Rearrange source
+* Make it ignore metadata failure by default for gls
+* Add default metadata
+
+* Add auto-complete for scopes
+* Add auto-complete for ggu
+* Add auto-complete for gls
 
 * Parse odata context
 
@@ -150,6 +156,10 @@
 * Fix bug where context is assumed to be current rather than from uri
 * Make gls, gcd have ability to ignore schema parsing when not ready
 * LastGraphRequest
+* TOS, Privacy:
+  https://developer.microsoft.com/en-us/graph/docs/misc/terms-of-use
+* optimize child retrieval
+* add back whatif support
 
 ### Postponed
 

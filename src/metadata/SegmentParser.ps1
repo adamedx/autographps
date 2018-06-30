@@ -46,20 +46,41 @@ ScriptClass SegmentParser {
 
         __initializeGraph
 
-        $results = if ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
+        $existingChildren = if ( $this.uriCache ) {
+            $this.uriCache |=> GetChildSegmentsFromUri $segment.graphUri
+        }
+
+        $results = if ($existingChildren ) {
+            $existingChildren
+        } elseif ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices
             $childVertices.values | foreach {
                 new-so GraphSegment $_
             }
         } else {
-            $segment |=> NewNextSegments $this.graph $null $allowedTransitions
+            $segment |=> NewNextSegments $this.graph $null $null
         }
 
         if ( $this.uriCache ) {
-            $this.uriCache |=> AddUriForSegments $results $this.cacheEntities
+            $parentSegment = if ( ! $existingChildren ) { $segment }
+            $this.uriCache |=> AddUriForSegments $results $this.cacheEntities $parentSegment
         }
 
-        $results
+        $filteredResults = if ( ! $allowedTransitions ) {
+            $results
+        } else {
+            $results | where {
+                if ( $_.graphElement.PSTypeName -eq 'EntityVertex' ) {
+                    $_.graphElement.Type -in $allowedTransitions
+                } elseif ( $_.graphElement.PSTypeName -eq 'EntityEdge' ) {
+                    $_.graphElement.transition.Type -in $allowedTransitions
+                } else {
+                    throw "Unexpected type '$($_.graphElement.PSTypeName)'"
+                }
+            }
+        }
+
+        $filteredResults
     }
 
     function SegmentsFromUri([Uri] $uri) {

@@ -17,7 +17,7 @@
 . (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0)]
         [Uri[]] $ItemRelativeUri = @('.'),

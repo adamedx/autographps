@@ -98,10 +98,10 @@ ScriptClass GraphUtilities {
 
         function JoinRelativeUri([string] $relativeUri1, [string] $relativeUri2) {
             if ( $relativeUri1[0] -eq '/' ) {
-                     throw "'$relativeUri1' is an absolute path"
-                 }
+                throw "'$relativeUri1' is an absolute path"
+            }
 
-            JoinFragmentUri $relativeUri1 $relativeUri2
+            $this.JoinFragmentUri($relativeUri1, $relativeUri2)
         }
 
         function JoinFragmentUri([string] $fragmentUri1, [string] $fragmentUri2) {

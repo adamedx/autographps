@@ -18,7 +18,7 @@
 . (import-script GraphErrorRecorder)
 
 function Invoke-GraphRequest {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0, mandatory=$true)]
         [Uri[]] $RelativeUri,
