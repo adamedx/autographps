@@ -73,11 +73,19 @@ ScriptClass RESTResponse {
     }
 
     function HasJsonContent {
-        ($this.contentTypeData['application/json'] -ne $null)
+        if ( $this.contentTypeData ) {
+            ($this.contentTypeData['application/json'] -ne $null)
+        } else {
+            $false
+        }
     }
 
     function HasXmlContent {
-        ($this.contentTypeData['application/xml'] -ne $null)
+        if ( $this.contentTypeData ) {
+            ($this.contentTypeData['application/xml'] -ne $null)
+        } else {
+            $false
+        }
     }
 
     function GetDeserializedContent([boolean] $includeCorrectedInput = $false) {
