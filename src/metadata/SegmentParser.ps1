@@ -50,7 +50,7 @@ ScriptClass SegmentParser {
             $this.uriCache |=> GetChildSegmentsFromUri $segment.graphUri
         }
 
-        $results = if ($existingChildren ) {
+        $results = if ($existingChildren) {
             $existingChildren
         } elseif ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices

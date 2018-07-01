@@ -3,20 +3,41 @@
 ## To-do items -- prioritized
 
 * Rearrange source
-* Local metadata cache
+* Minor doc update
+
+* Release
 
 * Add auto-complete for scopes
 * Add auto-complete for ggu
 * Add auto-complete for gls
 
-* Parse odata context
+* Release
+
+* Add welcome command
+* Major doc update
+
+* Release
 
 * Add app creation
 * Add app enumeration
 * Add app updating
 
+* Release
+
+* Samples
+
+* Release
+
+* User research
+
+* Release
+
+* Parse odata context
+
 * Add fuzzy select
 * Add find-property, find-type
+
+* Local metadata cache
 
 * Get-RequestLog
 * Add more complex filter
