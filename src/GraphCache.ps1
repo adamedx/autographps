@@ -89,7 +89,9 @@ ScriptClass GraphCache {
         # subsequent jobs return $null
         $jobException = $null
         $jobResult = try {
-            __Preference__ShowNotReadyMetadataWarning
+            if ( (get-job $submittedVersion.job.id).State -eq 'Running' ) {
+                __Preference__ShowNotReadyMetadataWarning
+            }
             receive-job -wait $submittedVersion.Job -erroraction stop
         } catch {
             $jobException = $_.exception

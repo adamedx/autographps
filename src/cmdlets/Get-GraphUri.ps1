@@ -99,7 +99,6 @@ function Get-GraphUri {
         $currentUri = $currentItem[1]
 
         $graphItem = if ($GraphItems) {
-            write-host 'graphitem mode'
             $currentUri
         }
 
