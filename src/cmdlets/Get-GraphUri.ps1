@@ -134,10 +134,6 @@ function Get-GraphUri {
             return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
         }
 
-        if ( ! $contextReady ) {
-            __Preference__ShowNotReadyMetadataWarning
-        }
-
         $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
         $lastSegment = $segments | select -last 1
 
