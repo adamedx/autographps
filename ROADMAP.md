@@ -184,6 +184,7 @@
 * fix scope args on get-graphschema, get-graphversion
 * Rearrange source
 * Refactor directories
+* Minor source cleanup
 
 ### Postponed
 
