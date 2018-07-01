@@ -39,6 +39,7 @@
 * Test schema and basic tests offline
 * Unauthenticated functional tests
 * Parse odata context
+* Background runspace jobs
 
 * Add fuzzy select
 * Add find-property, find-type
