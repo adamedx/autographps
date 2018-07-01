@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../GraphContext)
+. (import-script ../Client/GraphContext)
 . (import-script Get-Graph)
 
 if ( get-variable __graphOriginalPrompt -erroraction silentlycontinue ) {

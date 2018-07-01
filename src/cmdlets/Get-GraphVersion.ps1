@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphRequest)
-. (import-script GraphConnection)
-. (import-script GraphContext)
+. (import-script ../REST/GraphRequest)
+. (import-script ../Client/GraphConnection)
+. (import-script ../Client/GraphContext)
 
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]
@@ -38,7 +38,12 @@ function Get-GraphVersion {
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
+    $graphConnection = if ( $connection ) {
+        $connection
+    } else {
+        $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
+        $currentContext.Connection
+    }
 
     $relativeBase = 'versions'
     $relativeUri = if ( ! $List.ispresent ) {

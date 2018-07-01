@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphErrorRecorder)
+. (import-script ../REST/GraphErrorRecorder)
 
 function Get-GraphError {
     [cmdletbinding()]

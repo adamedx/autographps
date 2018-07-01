@@ -15,8 +15,8 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "The Test-Graph cmdlet" {
-    $manifestLocation   = Join-Path $here '..\poshgraph.psd1'
-    $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\testassets\graphping200.json"
+    $manifestLocation   = Join-Path $here '..\..\poshgraph.psd1'
+    $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
 
     Mock Invoke-WebRequest {
         $result = $graphPing200Response | convertfrom-json

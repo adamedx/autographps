@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../Invoke-GraphRequest)
+. (import-script Invoke-GraphRequest)
 . (import-script Get-GraphUri)
 . (import-script common/PreferenceHelper)
 . (import-script common/ItemResultHelper)

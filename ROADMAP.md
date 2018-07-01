@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* fix scope args on get-graphschema, get-graphversion
+* Fix preferencehelper issue
+* Fix install-devmodule
+
 * Rearrange source
 * Minor doc update
 

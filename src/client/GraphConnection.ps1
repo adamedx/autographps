@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script Application)
-. (import-script GraphEndpoint)
+. (import-script ../GraphService/GraphEndpoint)
 . (import-script GraphIdentity)
 
 enum GraphConnectionStatus {

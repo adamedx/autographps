@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RESTRequest)
-. (import-script GraphEndpoint)
-. (import-script GraphConnection)
-. (import-script GraphContext)
+. (import-script ../REST/RESTRequest)
+. (import-script ../GraphService/GraphEndpoint)
+. (import-script ../Client/GraphConnection)
+. (import-script ../Client/GraphContext)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
