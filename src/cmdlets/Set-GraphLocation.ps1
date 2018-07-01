@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../LogicalGraphManager)
 . (import-script ../common/GraphUtilities)
+. (import-script ../Client/LogicalGraphManager)
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
 

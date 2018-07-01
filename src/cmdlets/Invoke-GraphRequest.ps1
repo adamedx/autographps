@@ -13,9 +13,9 @@
 # limitations under the License.
 
 . (import-script New-GraphConnection)
-. (import-script common/GraphUtilities)
-. (import-script GraphRequest)
-. (import-script GraphErrorRecorder)
+. (import-script ../common/GraphUtilities)
+. (import-script ../REST/GraphRequest)
+. (import-script ../REST/GraphErrorRecorder)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]

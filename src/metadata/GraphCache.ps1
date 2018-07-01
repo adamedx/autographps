@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script common\ProgressWriter)
-. (import-script cmdlets\common\PreferenceHelper)
-. (import-script metadata\GraphDataModel)
-. (import-script Invoke-GraphRequest)
+. (import-script ..\common\ProgressWriter)
+. (import-script ..\cmdlets\common\PreferenceHelper)
+. (import-script GraphDataModel)
+. (import-script GraphBuilder)
+. (import-script ..\cmdlets\Invoke-GraphRequest)
 
 enum MetadataStatus {
     NotStarted
@@ -184,8 +185,8 @@ ScriptClass GraphCache {
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
-        $dependencyModule = join-path $psscriptroot '..\poshgraph.psd1'
-        $thiscode = join-path $psscriptroot 'graph.ps1'
+        $dependencyModule = join-path $psscriptroot '..\..\poshgraph.psd1'
+        $thiscode = join-path $psscriptroot '..\graph.ps1'
 
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $deferGraphBuild, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata $deferGraphBuild } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $deferBuild, $verbosepreference  -name "PoshGraph metadata download for '$graphId'"
 

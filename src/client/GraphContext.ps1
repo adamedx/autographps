@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphCache)
-. (import-script GraphConnection)
-. (import-script LogicalGraphManager)
-. (import-script metadata/GraphSegment)
-. (import-script metadata/UriCache)
+. (import-script ../metadata/GraphCache)
+. (import-script ../metadata/GraphSegment)
+. (import-script ../metadata/UriCache)
+. (import-script ../Client/GraphConnection)
+. (import-script ../Client/LogicalGraphManager)
 
 ScriptClass GraphContext {
     $connection = $null

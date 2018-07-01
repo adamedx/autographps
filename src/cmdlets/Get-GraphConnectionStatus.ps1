@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-. (import-script ../GraphContext)
-. (import-script ../LogicalGraphManager)
+. (import-script ../Client/GraphContext)
+. (import-script ../Client/LogicalGraphManager)
 
 function Get-GraphConnectionStatus {
     [cmdletbinding()]

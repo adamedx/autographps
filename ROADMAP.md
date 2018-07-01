@@ -2,7 +2,11 @@
 
 ## To-do items -- prioritized
 
-* Rearrange source
+* Fix preferencehelper source file relative path issue
+* Fix install-devmodule
+* Add auto-prompt and preference
+* Minor source rearrangement
+
 * Minor doc update
 
 * Release
@@ -32,6 +36,8 @@
 
 * Release
 
+* Test schema and basic tests offline
+* Unauthenticated functional tests
 * Parse odata context
 
 * Add fuzzy select
@@ -43,6 +49,7 @@
 * Add more complex filter
 * Add regex to gls
 
+* Authenticated functional tests
 * Refactor invoke-graphrequest to request builder
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
@@ -70,11 +77,8 @@
 * add versions to schema, version objects
 * consistency in apiversion, schemaversion names
 * add predefined scopes: https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference
-* Add -filter to get-graphitem
-* Add -filter to get-graphschema
 * common scopes -- use dynamicparam
 * scope browser
-* Refactor directories
 * Add unit tests for parameters
 * Enable token refresh
 * Enable app-only auth
@@ -175,12 +179,18 @@
 * optimize child retrieval
 * add back whatif support
 * Make it ignore metadata failure by default for gls
+* Fix bug in parsing relative uris in get-graphuri
+* fix scope args on get-graphschema, get-graphversion
+* Rearrange source
+* Refactor directories
 
 ### Postponed
 
 * transform schema, version objects to hashtables
 * Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
 * Make content column actually add the columns
+* Add -filter to get-graphitem
+* Add -filter to get-graphschema
 
 ### Abandoned
 

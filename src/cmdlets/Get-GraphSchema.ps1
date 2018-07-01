@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphRequest)
-. (import-script GraphEndpoint)
-. (import-script GraphConnection)
-. (import-script GraphContext)
+. (import-script ../REST/GraphRequest)
+. (import-script ../GraphService/GraphEndpoint)
+. (import-script ../Client/GraphConnection)
+. (import-script ../Client/GraphContext)
 . (import-script Get-GraphVersion)
 
 function Get-GraphSchema {
@@ -56,7 +56,12 @@ function Get-GraphSchema {
         [PSCustomObject] $Connection = $null
     )
 
-    $graphConnection = $::.GraphContext |=> GetConnection $connection $null ([GraphType]::MSGraph) $Cloud 'User.Read'
+    $graphConnection = if ( $connection ) {
+        $connection
+    } else {
+        $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
+        $currentContext.Connection
+    }
 
     $relativeBase = 'schemas'
     $headers = @{

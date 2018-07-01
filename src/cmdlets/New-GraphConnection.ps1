@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphEndpoint)
-. (import-script GraphIdentity)
-. (import-script GraphConnection)
+. (import-script ../GraphService/GraphEndpoint)
+. (import-script ../Client/GraphIdentity)
+. (import-script ../Client/GraphConnection)
 
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false)]

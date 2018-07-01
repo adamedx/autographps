@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../LogicalGraphManager)
+. (import-script ../Client/LogicalGraphManager)
 
 function Remove-Graph {
     [cmdletbinding()]

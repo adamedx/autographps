@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphEndpoint)
+. (import-script ../GraphService/GraphEndpoint)
 . (import-script GraphApplication)
 
 ScriptClass GraphIdentity {
@@ -90,10 +90,10 @@ ScriptClass GraphIdentity {
                 # workaround for a defect in ScriptClass
                 switch ( [GraphType] $graphType ) {
                     ([GraphType]::MSGraph) {
-                        import-assembly ../lib/Microsoft.Identity.Client.dll
+                        import-assembly ../../lib/Microsoft.Identity.Client.dll
                     }
                     ([GraphType]::AADGraph) {
-                        import-assembly ../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+                        import-assembly ../../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
                     }
                     default {
                         throw "Unexpected graph type '$graphType'"
