@@ -66,7 +66,7 @@ ScriptClass ContextHelper {
 
             @{
                 Context = $context
-                GraphRelativeUri = if ( $relativeUri -eq '.' ) { $context.Location.graphUri } else { $relativeUri }
+                GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
             }
         }
 
