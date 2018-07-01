@@ -2,28 +2,42 @@
 
 ## To-do items -- prioritized
 
-* Show content in default list view?
-* Change listview content from name to id?
-* Make public graph items have id instead of name
-* Make content column actually add the columns
-* switch to 3 columns by default -- remove class
-* Move some data to info, possibly show rwx
 * Rearrange source
-* Make it ignore metadata failure by default for gls
-* Add default metadata
+* Minor doc update
+
+* Release
 
 * Add auto-complete for scopes
 * Add auto-complete for ggu
 * Add auto-complete for gls
 
-* Parse odata context
+* Release
+
+* Add welcome command
+* Major doc update
+
+* Release
 
 * Add app creation
 * Add app enumeration
 * Add app updating
 
+* Release
+
+* Samples
+
+* Release
+
+* User research
+
+* Release
+
+* Parse odata context
+
 * Add fuzzy select
 * Add find-property, find-type
+
+* Local metadata cache
 
 * Get-RequestLog
 * Add more complex filter
@@ -160,17 +174,24 @@
   https://developer.microsoft.com/en-us/graph/docs/misc/terms-of-use
 * optimize child retrieval
 * add back whatif support
+* Make it ignore metadata failure by default for gls
 
 ### Postponed
 
 * transform schema, version objects to hashtables
 * Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
+* Make content column actually add the columns
 
 ### Abandoned
 
 * Get-GraphItem -offline # offline retrieves type data, requires metadata download
 * Get-GraphChildItems -offline # offline retrieves type data, requires metadata download
 * # So offline allows you to set an offline mode in the drive provider -- providers will have both offline and online, or maybe metadata itself is a drive
+* Show content in default list view?
+* Change listview content from name to id?
+* Make public graph items have id instead of name
+* switch to 3 columns by default -- remove class
+* Move some data to info, possibly show rwx
 
 #### Stdposh improvements
 
@@ -599,3 +620,13 @@ Here are the cmdlets using -json:
 * Get-GraphVersion.ps1
 * Test-Graph.ps1
 * Get-GraphChildItem.ps1
+
+
+### Another try at the 'Info' column
+
+The 'Class' column is not very useful -- other than at the root, it's always the same for all results when actions and funtions are excluded, which is the normal case.
+
+So let's stick it in the Info column.
+'\>' is equivalent to 'not executable.'
+
+Hmm, didn't like it :(.

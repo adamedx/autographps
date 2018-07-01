@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script common\ProgressWriter)
+. (import-script cmdlets\common\PreferenceHelper)
 . (import-script metadata\GraphDataModel)
 . (import-script Invoke-GraphRequest)
 
@@ -88,6 +89,9 @@ ScriptClass GraphCache {
         # subsequent jobs return $null
         $jobException = $null
         $jobResult = try {
+            if ( (get-job $submittedVersion.job.id).State -eq 'Running' ) {
+                __Preference__ShowNotReadyMetadataWarning
+            }
             receive-job -wait $submittedVersion.Job -erroraction stop
         } catch {
             $jobException = $_.exception

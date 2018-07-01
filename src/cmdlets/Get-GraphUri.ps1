@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script common/SegmentHelper)
+. (import-script common/PreferenceHelper)
 . (import-script ../common/GraphUtilities)
 
 function Get-GraphUri {
@@ -124,7 +125,11 @@ function Get-GraphUri {
 
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
-        if ( $IgnoreMissingMetadata.IsPresent -and (($::.GraphContext |=> GetMetadataStatus $context) -ne [MetadataStatus]::Ready) ) {
+        $mustIgnoreMissingMetadata = $IgnoreMissingMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+
+        $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+
+        if ( $mustIgnoreMissingMetadata -and ! $contextReady ) {
             return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
         }
 
@@ -194,6 +199,9 @@ function Get-GraphUri {
                 # Create a new public segment since we are going to modify it
                 $lastOutputSegment = ($results | select -last 1).psobject.copy()
                 $::.SegmentHelper.AddContent($lastOutputSegment, $graphItem)
+                # Replace the segment in the collection with a new one
+                # This is a rather convoluted approach :( -- needs a rewrite
+                $results[$results.length - 1] = $lastOutputSegment
             }
         }
 

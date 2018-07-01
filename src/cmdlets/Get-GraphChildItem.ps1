@@ -14,6 +14,7 @@
 
 . (import-script ../Invoke-GraphRequest)
 . (import-script Get-GraphUri)
+. (import-script common/PreferenceHelper)
 . (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
@@ -48,7 +49,7 @@ function Get-GraphChildItem {
 
         [switch] $DataOnly,
 
-        [Switch] $IgnoreMissingMetadata,
+        [Switch] $RequireMetadata,
 
         [HashTable] $Headers = $null,
 
@@ -67,13 +68,22 @@ function Get-GraphChildItem {
 
     $context = $null
 
+    $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+
     $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
-        $metadataArgument = @{IgnoreMissingMetadata=$IgnoreMissingMetadata}
+        $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
         Get-GraphUri $ItemRelativeUri[0] @metadataArgument
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
-        $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+
+        $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+
+        if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
+            $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
+        } else {
+            $::.SegmentHelper |=> ToPublicSegment $parser $context.location
+        }
     }
 
     if ( ! $context ) {
@@ -113,7 +123,7 @@ function Get-GraphChildItem {
 
     $graphException = $false
 
-    $ignoreMetadata = $IgnoreMissingMetadata.IsPresent -and ($resolvedUri.Class -eq 'Null')
+    $ignoreMetadata = ! $mustWaitForMissingMetadata -and ($resolvedUri.Class -eq 'Null')
 
     if ( $resolvedUri.Class -ne '__Root' -and ($::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata)) {
         try {
@@ -178,7 +188,7 @@ function Get-GraphChildItem {
     }
 
     if ( $ignoreMetadata ) {
-        write-warning "Metadata for Graph is not ready and 'IgnoreMissingMetadata' was specified, only returning responses from Graph"
+        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning responses from Graph"
     }
 
     if ( ! $ignoreMetadata -and ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
