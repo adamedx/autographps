@@ -6,7 +6,8 @@
 * Fix install-devmodule
 * Add auto-prompt and preference
 * Minor source rearrangement
-
+* Add hint of additional records
+* Better error messages when path not found
 * Minor doc update
 
 * Release
