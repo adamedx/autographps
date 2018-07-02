@@ -6,7 +6,8 @@
 * Fix install-devmodule
 * Add auto-prompt and preference
 * Minor source rearrangement
-
+* Add hint of additional records
+* Better error messages when path not found
 * Minor doc update
 
 * Release
@@ -39,6 +40,7 @@
 * Test schema and basic tests offline
 * Unauthenticated functional tests
 * Parse odata context
+* Background runspace jobs
 
 * Add fuzzy select
 * Add find-property, find-type
@@ -183,6 +185,7 @@
 * fix scope args on get-graphschema, get-graphversion
 * Rearrange source
 * Refactor directories
+* Minor source cleanup
 
 ### Postponed
 

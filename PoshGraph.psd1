@@ -73,26 +73,26 @@ FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @(
-        'get-graphitem',
-        'Test-Graph',
-        'Get-GraphVersion',
-        'new-graphconnection',
-        'invoke-graphrequest',
+        'Disconnect-Graph',
+        'Connect-Graph',
         'Get-Graph',
-        'get-graphtoken',
-        'get-graphschema',
         'Get-GraphChildItem',
         'Get-GraphConnectionStatus',
-        'get-grapherror',
+        'Get-GraphError',
+        'Get-GraphItem',
         'Get-GraphLocation',
+        'Get-GraphSchema',
+        'Get-GraphToken',
         'Get-GraphUri',
+        'Get-GraphVersion',
+        'Invoke-GraphRequest',
         'New-Graph',
+        'New-GraphConnection',
         'Remove-Graph',
         'Set-GraphConnectionStatus',
-        'Set-GraphPrompt',
-        'connect-graph',
-        'disconnect-graph',
         'Set-GraphLocation',
+        'Set-GraphPrompt',
+        'Test-Graph',
         'Update-GraphMetadata'
     )
 
@@ -172,7 +172,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
