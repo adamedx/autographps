@@ -114,6 +114,7 @@ ScriptClass SegmentHelper {
                 Parent = $ParentPublicSegment
                 Details = $segment
                 Content = $null
+                Preview = $null
             }
 
             $segment |=> Decorate $result
@@ -155,6 +156,7 @@ ScriptClass SegmentHelper {
                 Parent = $ParentPublicSegment
                 Details = $null
                 Content = $graphItem
+                Preview = $this.__GetPreview($graphItem, $itemId)
             }
         }
 
@@ -163,22 +165,61 @@ ScriptClass SegmentHelper {
                 throw "Segment $($publicSegment.name) already has content"
             }
 
+            if ($publicSegment.Preview) {
+                throw "Segment $($publicSegment.name) already has a Preview"
+            }
+
             $publicSegment.content = $content
+            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.Name)
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
         }
 
+        function __GetPreview($content, $defaultValue) {
+            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Id
+            if ( $previewProperties.Name ) {
+                $previewProperties.Name
+            } elseif ( $previewProperties.DisplayName ) {
+                $previewProperties.DisplayName
+            } elseif ( $previewProperties.Title ) {
+                $previewProperties.Title
+            } elseif ( $previewProperties.FileName ) {
+                $previewProperties.FileName
+            } elseif ( $previewProperties.Subject ) {
+                $previewProperties.Subject
+            } elseif ( $previewProperties.Id ) {
+                $previewProperties.Id
+            } else {
+                $defaultValue
+            }
+        }
+
         function __GetInfoField($isCollection, $isDynamic, $entityClass, $hasContent) {
-            $info = 0..2
-            $info[0] = if ( $isCollection ) { '*' } else { ' ' }
-            $info[1] = if ( $hasContent ) { '+' } else { ' ' }
-            $info[2] = if ( $this.IsValidLocationClass($entityClass ) ) { '>' } else { ' ' }
+            $info = 0..3
+            $info[0] = $this.__EntityClassToSymbol($entityClass)
+            $info[1] = if ( $isCollection ) { '*' } else { ' ' }
+            $info[2] = if ( $hasContent ) { '+' } else { ' ' }
+            $info[3] = if ( $this.IsValidLocationClass($entityClass ) ) { '>' } else { ' ' }
             $info -join ''
+        }
+
+        function __EntityClassToSymbol($entityClass) {
+            switch ($entityClass) {
+                'EntityType'         { 't' }
+                'NavigationProperty' { 'n' }
+                'EntitySet'          { 'e' }
+                'Singleton'          { 's' }
+                'Function'           { 'f' }
+                'Action'             { 'a' }
+                'Null'               { '-' }
+                '__Root'             { '/' }
+                default              { '?' }
+            }
         }
 
         function __RegisterSegmentDisplayType {
             remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
 
-            $coreProperties = @('Info', 'Class', 'Type', 'Name')
+            $coreProperties = @('Info', 'Type', 'Preview', 'Name')
 
             $segmentDisplayTypeArguments = @{
                 TypeName    = $this.segmentDisplayTypeName

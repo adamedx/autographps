@@ -63,4 +63,6 @@ function Set-GraphLocation {
 
     $context |=> SetLocation $location
     $::.GraphContext |=> SetCurrentByName $context.name
+
+    __AutoConfigurePrompt $context
 }

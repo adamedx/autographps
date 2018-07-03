@@ -23,6 +23,8 @@ if ( get-variable __graphOriginalPrompt -erroraction silentlycontinue ) {
 
 $__GraphOriginalPrompt = $null
 
+$GraphPromptColorPreference = $null
+
 $__GraphDefaultPrompt = {
     $graph = get-graph ($::.GraphContext |=> GetCurrent).name
     $userToken = $graph.details.connection.identity.token
@@ -38,7 +40,8 @@ $__GraphDefaultPrompt = {
     }
 
     if ( $userOutput -or $locationOutput ) {
-        write-host -foreground darkgreen "$($userOutput)$($connectionStatus)$($locationOutput)"
+        $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
+        write-host -foreground $promptColor "$($userOutput)$($connectionStatus)$($locationOutput)"
     }
 }
 
