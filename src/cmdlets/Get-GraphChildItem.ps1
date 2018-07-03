@@ -191,10 +191,13 @@ function Get-GraphChildItem {
         write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning responses from Graph"
     }
 
-    if ( ! $ignoreMetadata -and ! $DataOnly.IsPresent -and ($graphException -or ! $resolvedUri.Collection) ) {
-        Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
-            $results += $_
+    if ( ! $DataOnly.ispresent ) {
+        if ( ! $ignoreMetadata -and ($graphException -or ! $resolvedUri.Collection) ) {
+            Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
+                $results += $_
+            }
         }
+        __AutoConfigurePrompt $context
     }
 
     $targetResultVariable = __GetResultVariable $ResultVariable

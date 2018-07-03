@@ -4,9 +4,9 @@
 
 * Fix preferencehelper source file relative path issue
 * Fix install-devmodule
-* Add auto-prompt and preference
 * Minor source rearrangement
 * Add hint of additional records
+* Add continue feature?
 * Better error messages when path not found
 * Minor doc update
 
@@ -186,6 +186,8 @@
 * Rearrange source
 * Refactor directories
 * Minor source cleanup
+* Preview column in get-graphchilditem
+* Add auto-prompt and preference
 
 ### Postponed
 

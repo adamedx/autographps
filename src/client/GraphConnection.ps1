@@ -60,6 +60,7 @@ ScriptClass GraphConnection {
             if ( $this.GraphEndpoint.Type -eq [GraphType]::MSGraph ) {
                 # Trust the library's token cache to get a new token if necessary
                 $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes $true
+                $this.connected = $true
             } else {
                 Connect
             }

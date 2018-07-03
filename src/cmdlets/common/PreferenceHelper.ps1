@@ -29,3 +29,25 @@ function __Preference__ShowNotReadyMetadataWarning {
 function __Preference__MustWaitForMetadata {
     $GraphMetadataPreference -eq 'Wait' -and $GraphMetadataPreference -eq 'SilentlyWait'
 }
+
+$__GraphAutoPromptPreferenceValues = @(
+    'Manual',
+    'Auto'
+)
+
+$GraphAutoPromptPreference = 'Auto'
+
+function __AutoConfigurePrompt($context) {
+    if ( $GraphAutoPromptPreference -eq 'Auto' ) {
+        if ( $context.connection |=> IsConnected ) {
+            if ( ! $script:__GraphOriginalPrompt ) {
+                Set-GraphPrompt -Enable
+            }
+        } else {
+            if ( $script:__GraphOriginalPrompt ) {
+                Set-GraphPrompt -Disable
+            }
+        }
+    }
+}
+

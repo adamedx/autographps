@@ -204,12 +204,12 @@ ScriptClass SegmentHelper {
 
         function __EntityClassToSymbol($entityClass) {
             switch ($entityClass) {
-                'EntityType'         { 'T' }
-                'NavigationProperty' { 'N' }
-                'EntitySet'          { 'E' }
-                'Singleton'          { 'S' }
-                'Function'           { 'F' }
-                'Action'             { 'A' }
+                'EntityType'         { 't' }
+                'NavigationProperty' { 'n' }
+                'EntitySet'          { 'e' }
+                'Singleton'          { 's' }
+                'Function'           { 'f' }
+                'Action'             { 'a' }
                 'Null'               { '-' }
                 '__Root'             { '/' }
                 default              { '?' }
