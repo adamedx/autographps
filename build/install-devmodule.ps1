@@ -27,5 +27,6 @@ try {
 }
 
 write-host "Successfully installed module '$moduleName' with scope '$scope'."
+write-host -foregroundcolor yellow "You may need to restart PowerShell for changes to take effect."
 write-host -foregroundcolor green "Installation succeeded."
 
