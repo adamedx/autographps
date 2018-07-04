@@ -2,8 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Add build README
 * Fix preferencehelper source file relative path issue
-* Fix install-devmodule
+* Add -order
 * Minor source rearrangement
 * Add hint of additional records
 * Add continue feature?
@@ -188,6 +189,7 @@
 * Minor source cleanup
 * Preview column in get-graphchilditem
 * Add auto-prompt and preference
+* Fix install-devmodule
 
 ### Postponed
 
