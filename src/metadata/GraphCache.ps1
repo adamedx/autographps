@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ..\common\ProgressWriter)
-. (import-script ..\cmdlets\common\PreferenceHelper)
+. (import-script ..\common\PreferenceHelper)
 . (import-script GraphDataModel)
 . (import-script GraphBuilder)
 . (import-script ..\cmdlets\Invoke-GraphRequest)

@@ -120,7 +120,7 @@ ScriptClass SegmentParser {
             }
 
             if ( ! $currentSegments -and ($currentSegments -isnot [object[]]) ) {
-                throw "No children found for '$($lastSegment.name)'"
+                throw "Uri '$($Uri.tostring()) not found: no children found for '$($lastSegment.name)'"
             }
 
             $matchingSegment = $null
@@ -137,7 +137,7 @@ ScriptClass SegmentParser {
                     } else {
                         '<root>'
                     }
-                    throw "No matching child segment '$targetSegmentName' under segment '$parentName'"
+                    throw "Uri '$($Uri.tostring())' not found: no matching child segment '$targetSegmentName' under segment '$parentName'"
                 }
             }
             $lastSegment = $matchingSegment

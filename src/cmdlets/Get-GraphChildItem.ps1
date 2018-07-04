@@ -14,7 +14,7 @@
 
 . (import-script Invoke-GraphRequest)
 . (import-script Get-GraphUri)
-. (import-script common/PreferenceHelper)
+. (import-script ../common/PreferenceHelper)
 . (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
@@ -195,7 +195,7 @@ function Get-GraphChildItem {
     }
 
     if ( $ignoreMetadata ) {
-        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning responses from Graph"
+        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning raw responses from Graph"
     }
 
     if ( ! $DataOnly.ispresent ) {

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script RESTResponse)
+. (import-script ../common/PreferenceHelper)
 
 ScriptClass RESTRequest {
     const PoshGraphUserAgent 'PoshGraph/0.1 (Windows NT; Windows NT 10.0; en-US)'
@@ -123,10 +124,30 @@ ScriptClass RESTRequest {
         write-verbose 'Response Detail:'
         write-verbose "***************"
 
+        $bodyTruncated = $false
+        $bodyLength = 0
+        $truncationSize = 1024
+        $contentString = if ( $VerbosePreference -ne 'SilentlyContinue' ) {
+            $fullOutput = ($content | out-string)
+            $bodyLength = $fullOutput.length
+            if ( ($GraphVerboseOutputPreference -ne 'High') -and ($fullOutput.length -gt $truncationSize) ) {
+                $bodyTruncated = $true
+                $fullOutput.SubString(0, 512)
+            } else {
+                $fullOutput
+            }
+        }
+
         $bodyLines = @("`n`n")
-        $bodyLines += ($content | out-string)
+        $bodyLines += $contentString
         $bodyLines += @("`n`n")
         (-join $bodyLines) | write-verbose
+
+        if ( $bodyTruncated ) {
+            write-verbose "***Above response of length $bodyLength characters truncated to $truncationSize characters***"
+            write-verbose "***To disable truncation and see full response,***"
+            write-verbose "**set `$GraphVerboseOutputPreference to the value 'High'**"
+        }
 
         write-verbose ' '
         write-verbose "Response Headers:"

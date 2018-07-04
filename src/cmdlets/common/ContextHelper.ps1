@@ -49,27 +49,6 @@ ScriptClass ContextHelper {
             }
         }
 
-        function ParseGraphRelativeLocation($locationUri) {
-            $components = $locationUri -split ':'
-
-            if ( $components.length -gt 2) {
-                throw "'$locationUri' is not a valid graph location uri"
-            }
-
-            $relativeUri = $locationUri
-            $context = if ( $components.length -eq 1 ) {
-                $::.GraphContext |=> GetCurrent
-            } else {
-                $relativeUri = $components[1]
-                $::.logicalgraphmanager.Get().contexts[$components[0]].context
-            }
-
-            @{
-                Context = $context
-                GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
-            }
-        }
-
         function __RegisterContextDisplayType {
             remove-typedata -typename $this.ContextDisplayTypeName -erroraction silentlycontinue
 

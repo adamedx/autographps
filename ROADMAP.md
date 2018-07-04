@@ -2,12 +2,10 @@
 
 ## To-do items -- prioritized
 
-* Fix preferencehelper source file relative path issue
-* Add verbosity preference to avoid dumping entire requests
-* Minor source rearrangement
-* Add hint of additional records
-* Add continue feature?
-* Better error messages when path not found
+* CONTRIBUTING.md
+* Code of conduct
+* Issue template
+* Code review template
 * Minor doc update
 
 * Release
@@ -193,6 +191,10 @@
 * Add -order
 * Add -sort parameter alias for orderby
 * Add link to build instructions in README
+* Fix preferencehelper source file relative path issue
+* Add verbosity preference to avoid dumping entire requests
+* Minor source rearrangement
+* Better error messages when path not found
 
 ### Postponed
 
@@ -201,6 +203,8 @@
 * Make content column actually add the columns
 * Add -filter to get-graphitem
 * Add -filter to get-graphschema
+* Add hint of additional records
+* Add continue feature?
 
 ### Abandoned
 
