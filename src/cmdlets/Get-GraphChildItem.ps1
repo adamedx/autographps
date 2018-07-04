@@ -195,7 +195,7 @@ function Get-GraphChildItem {
     }
 
     if ( $ignoreMetadata ) {
-        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning responses from Graph"
+        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning raw responses from Graph"
     }
 
     if ( ! $DataOnly.ispresent ) {

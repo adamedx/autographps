@@ -116,7 +116,7 @@ function Get-GraphUri {
             $context = $parsedUri.MatchedContext
             $parsedUri.GraphRelativeUri
         } else {
-            $parsedLocation = $::.ContextHelper |=> ParseGraphRelativeLocation $currentUri
+            $parsedLocation = $::.GraphUtilities |=> ParseGraphRelativeLocation $currentUri
             $context = $parsedLocation.context
             $parsedLocation.GraphRelativeUri
         }

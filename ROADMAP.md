@@ -2,9 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Minor source rearrangement
-* Add hint of additional records
-* Add continue feature?
 * Better error messages when path not found
 * Minor doc update
 
@@ -193,6 +190,7 @@
 * Add link to build instructions in README
 * Fix preferencehelper source file relative path issue
 * Add verbosity preference to avoid dumping entire requests
+* Minor source rearrangement
 
 ### Postponed
 
@@ -201,6 +199,8 @@
 * Make content column actually add the columns
 * Add -filter to get-graphitem
 * Add -filter to get-graphschema
+* Add hint of additional records
+* Add continue feature?
 
 ### Abandoned
 
