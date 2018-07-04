@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* CONTRIBUTING.md
+* Code of conduct
+* Issue template
+* Code review template
 * Minor doc update
 
 * Release
