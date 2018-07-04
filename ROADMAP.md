@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Better error messages when path not found
 * Minor doc update
 
 * Release
@@ -191,6 +190,7 @@
 * Fix preferencehelper source file relative path issue
 * Add verbosity preference to avoid dumping entire requests
 * Minor source rearrangement
+* Better error messages when path not found
 
 ### Postponed
 
