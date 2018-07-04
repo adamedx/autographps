@@ -4,7 +4,6 @@
 
 * Fix preferencehelper source file relative path issue
 * Add verbosity preference to avoid dumping entire requests
-* Add sort parameter alias for orderby
 * Minor source rearrangement
 * Add hint of additional records
 * Add continue feature?
@@ -192,6 +191,8 @@
 * Fix install-devmodule
 * Add build README
 * Add -order
+* Add -sort parameter alias for orderby
+* Add link to build instructions in README
 
 ### Postponed
 

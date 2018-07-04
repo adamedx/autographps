@@ -32,6 +32,7 @@ function Get-GraphChildItem {
 
         [String[]] $Expand = $null,
 
+        [Alias('Sort')]
         $OrderBy = $null,
 
         [Switch] $Descending,

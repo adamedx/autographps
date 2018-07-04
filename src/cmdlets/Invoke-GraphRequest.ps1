@@ -38,6 +38,7 @@ function Invoke-GraphRequest {
 
         [String[]] $Expand = $null,
 
+        [Alias('Sort')]
         $OrderBy = $null,
 
         [Switch] $Descending,

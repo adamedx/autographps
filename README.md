@@ -37,7 +37,7 @@ After you've responded to the authentication prompt, you should see output that 
     givenName         : Starchild
     userPrincipalName : starchild@microsoft.io
     businessPhones    : +1 (313) 360 3141
-    displayName       : Starchild Okarafor
+    displayName       : Starchild Okorafor
 
 Now you're ready to use any of PoshGraph's cmdlets to access and explore Microsoft Graph!
 
@@ -148,13 +148,7 @@ Most functionality of AAD Graph is currently available in MS Graph itself, and i
 
 The project is almost ready for contributors; suggestions on features or other advice are welcome while we establish a baseline.
 
-### Developer prerequisites
-
-**PoshGraph** development requires the following:
-
-* A **Windows 10** operating system or later
-* The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
-* [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally
+See the [Build README](build/README.md) for instructions on building and testing changes to PoshGraph.
 
 ### Quickstart -- learn about the Graph
 The Quickstart is a way to try out PoshGraph without installing the PoshGraph module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
@@ -190,41 +184,6 @@ If you need to launch another console with Posh Graph, you can run the faster co
     .\build\import-devmodule.ps1
 
 These commmands can also be used when testing modifications you make to PoshGraph, and also give you an isolated environment in which to test and develop applications and tools that depend on PoshGraph.
-
-### Testing
-
-Tests are implemented using Pester. To ensure you have the latest version of Pester on our developer system, visit the [Pester site](https://github.com/pester/Pester) for instructions on installing Pester.
-
-To test, use PowerShell to execute the command below from the root of the repository
-
-```powershell
-invoke-pester
-```
-
-This will run all tests and list any errors that must be corrected prior to merging any changes you've made to the repository.
-
-### Building the module
-
-To build the module, run the following PowerShell commands
-
-```powershell
-git clone https://github.com/adamedx/PoshGraph
-cd PoshGraph
-
-# Download dependencies -- this only needs to be done once until a clean build:
-.\build\install.ps1
-
-# Actually build
-.\build\build-package.ps1
-```
-
-### Installing the build
-
-Once you've executed `build-package.ps1`, you can use the script below to copy it to a directory in `$env:psmodulepath` and import it:
-
-```powershell
-.\build\install-devmodule.ps1
-```
 
 License and Authors
 -------------------
