@@ -475,6 +475,8 @@ function publish-modulelocal {
 
     write-verbose "Found $nestedModuleCount module dependencies from module manifest"
 
+    $temporaryPackageSource = get-temporarypackagerepository $module.Name $dependencySource
+
     $nestedModules | foreach {
         $nestedModuleVersion = $null
         $nestedModuleName = if ( $_ -isnot [Object[]] ) {
@@ -484,9 +486,25 @@ function publish-modulelocal {
             $_.tostring()
         }
 
-        # Download the module -- and its dependencies into the local module location
+        # Download this this dependency into the local module location.
+        # This will enable importing the target module since its dependencies
+        # will be in the same directory with it
         save-module -name $nestedModuleName -requiredversion $nestedModuleVersion -repository $dependencysource -path $devModuleLocation
+
+        # Also download its package file to the ps repo location so that the directory can be used when
+        # installing the package from the ps repo a repository. Note that while docs say that save-package
+        # does not output a value, evidence suggests it does, so redirect any out to avoid the resulting
+        # pipeline pollution
+        save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation -erroraction silentlycontinue | out-null
+        if ( ! $? ) {
+            write-verbose "First package save attempted failed, retrying..."
+            # Sometimes save-package fails the first time, so try it again, and then it succeeds.
+            # Don't ask.
+            save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation | out-null
+        }
     }
+
+    unregister-packagesource -force $temporaryPackageSource
 
     $targetModuleDestination = join-path $devModuleLocation $moduleName
     if ( test-path $targetModuleDestination ) {
@@ -536,4 +554,23 @@ function get-temporarymodulepsrepository($moduleName, $repositoryPath)  {
     register-psrepository $localPSRepositoryName $localPSRepositoryDirectory
 
     $localPSRepositoryName
+}
+
+function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
+    write-verbose "Getting location of module dependency source '$moduleDependencySource'"
+
+    $localPackageRepositoryName = "__$($moduleName)__package_dependency"
+    $localPackageRepositoryLocation = (get-psrepository $moduleDependencySource).sourceLocation
+
+    write-verbose "Module source '$moduleDependencySource' uses location '$localPackageRepositoryLocation'"
+
+    $existingRepository = get-packagesource $localPackageRepositoryName -erroraction silentlycontinue
+
+    if ( $existingRepository -ne $null ) {
+        unregister-packagesource $localPackageRepositoryName
+    }
+
+    register-packagesource $localPackageRepositoryName $localPackageRepositoryLocation -providername nuget | out-null
+
+    $localPackageRepositoryName
 }
