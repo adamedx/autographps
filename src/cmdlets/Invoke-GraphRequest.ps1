@@ -14,6 +14,7 @@
 
 . (import-script New-GraphConnection)
 . (import-script ../common/GraphUtilities)
+. (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/GraphErrorRecorder)
 
@@ -36,6 +37,11 @@ function Invoke-GraphRequest {
         [String[]] $Select = $null,
 
         [String[]] $Expand = $null,
+
+        [Alias('Sort')]
+        $OrderBy = $null,
+
+        [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
@@ -61,8 +67,20 @@ function Invoke-GraphRequest {
     $::.GraphErrorRecorder |=> StartRecording
 
     if ( $Query ) {
-        if ( $ODataFilter -or $Select ) {
+        if ( $ODataFilter -or $Select -or $OrderBy ) {
             throw [ArgumentException]::new("'ODataFilter' and 'Select' options may not specified with 'Query'")
+        }
+    }
+
+    if ( $Descending.IsPresent -and ! $OrderBy ) {
+        throw [ArgumentException]::new("'Descending' option was specified without 'OrderBy'")
+    }
+
+    $orderQuery = if ( $OrderBy ) {
+        try {
+            $::.QueryHelper |=> GetOrderQueryFromOrderByParameters $OrderBy $Descending.IsPresent
+        } catch {
+            throw
         }
     }
 
@@ -107,6 +125,10 @@ function Invoke-GraphRequest {
 
         if ( $ODataFilter ) {
             $queryParameters += @('$filter={0}' -f $ODataFilter)
+        }
+
+        if ( $orderQuery ) {
+            $queryParameters += @('$orderBy={0}' -f $orderQuery)
         }
 
         if ( $queryParameters.length -gt 0 ) {

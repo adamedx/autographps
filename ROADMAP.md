@@ -2,9 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Add build README
 * Fix preferencehelper source file relative path issue
-* Add -order
+* Add verbosity preference to avoid dumping entire requests
 * Minor source rearrangement
 * Add hint of additional records
 * Add continue feature?
@@ -190,6 +189,10 @@
 * Preview column in get-graphchilditem
 * Add auto-prompt and preference
 * Fix install-devmodule
+* Add build README
+* Add -order
+* Add -sort parameter alias for orderby
+* Add link to build instructions in README
 
 ### Postponed
 
@@ -647,3 +650,16 @@ So let's stick it in the Info column.
 '\>' is equivalent to 'not executable.'
 
 Hmm, didn't like it :(.
+
+Update: added 'Preview' column, so we ended up removing the 'Class' column and moving it to 'Info,' so in the end we did do a version of this.
+
+### OrderBy support
+I thought it was possible to specify a named parameter more than once in a PowerShell cmdlet, looks like this is not the case. In that case, to support multi-column sorts with arbitrary ascending / descending directions, we'll have to go beyond basic parameters and add extra interpretation to the values. Unfortunate.
+
+Here's an attempt
+
+```powershell
+ggi /me/messages -first 10 -orderby Received -descending
+ggi /me/messages -first 10 -orderby Received -descending
+ggi /me/messages -first 10 -orderby @{Received=$true;Sender=$false}
+```
