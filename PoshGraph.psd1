@@ -149,6 +149,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
         '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\PreferenceHelper.ps1',
+        '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\ProgressWriter.ps1',

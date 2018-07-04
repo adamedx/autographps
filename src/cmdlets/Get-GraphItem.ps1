@@ -30,6 +30,10 @@ function Get-GraphItem {
 
         [String[]] $Expand = $null,
 
+        $OrderBy = $null,
+
+        [Switch] $Descending,
+
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $ScopeNames = $null,
 
@@ -59,6 +63,8 @@ function Get-GraphItem {
         ODataFilter = $ODataFilter
         Select = $Select
         Expand = $Expand
+        OrderBy = $OrderBy
+        Descending = $Descending
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
