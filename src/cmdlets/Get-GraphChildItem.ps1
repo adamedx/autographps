@@ -14,7 +14,7 @@
 
 . (import-script Invoke-GraphRequest)
 . (import-script Get-GraphUri)
-. (import-script common/PreferenceHelper)
+. (import-script ../common/PreferenceHelper)
 . (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {

@@ -101,6 +101,7 @@ FunctionsToExport = @()
         'GraphAutoPromptPreference',
         'GraphMetadataPreference',
         'GraphPromptColorPreference',
+        'GraphVerboseOutputPreference',
         'LastGraphItems'
     )
 
@@ -148,10 +149,10 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
-        '.\src\cmdlets\common\PreferenceHelper.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\GraphUtilities.ps1',
+        '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
         '.\src\graphservice\graphendpoint.ps1'
         '.\src\metadata\metadata.ps1',

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script RESTResponse)
-. (import-script ../cmdlets/common/preferencehelper)
+. (import-script ../common/PreferenceHelper)
 
 ScriptClass RESTRequest {
     const PoshGraphUserAgent 'PoshGraph/0.1 (Windows NT; Windows NT 10.0; en-US)'

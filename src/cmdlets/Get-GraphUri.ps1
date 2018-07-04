@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script common/SegmentHelper)
-. (import-script common/PreferenceHelper)
+. (import-script ../common/PreferenceHelper)
 . (import-script ../common/GraphUtilities)
 
 function Get-GraphUri {

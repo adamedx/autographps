@@ -2,8 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix preferencehelper source file relative path issue
-* Add verbosity preference to avoid dumping entire requests
 * Minor source rearrangement
 * Add hint of additional records
 * Add continue feature?
@@ -193,6 +191,8 @@
 * Add -order
 * Add -sort parameter alias for orderby
 * Add link to build instructions in README
+* Fix preferencehelper source file relative path issue
+* Add verbosity preference to avoid dumping entire requests
 
 ### Postponed
 
