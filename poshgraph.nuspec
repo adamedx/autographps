@@ -25,6 +25,6 @@
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
     <file src="lib\Microsoft.Identity.Client.1.1.4-preview0002\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.1.1.4-preview0002\lib\net45" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.3.16.0\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.3.16.0\lib\net45" />
+    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.3.19.0\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.3.19.0\lib\net45" />
   </files>
 </package>
