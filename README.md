@@ -119,29 +119,30 @@ Future modifications to PoshGraph will address the usability of scopes and autho
 ### Command inventory
 
 The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve signicantly along with their usage. Additional documentation will be provided for them as their status solidifies.
-
-| Cmdlet                    | Description                                                                                     |
-|---------------------------|-------------------------------------------------------------------------------------------------|
-| Connect-Graph             | Establishes an authentication and authorization context used for subsequent commands            |
-| Disconnect-Graph          | Clears authentication and authorization context used across commands                            |
-| Get-Graph                 | Gets the current list of versioned Graph service endpoints available to PoshGraph               |
-| Get-GraphConnectionStatus | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                    |
-| Get-GraphError            | Retrieves detailed errors returned from Graph in execution of the last command                  |
-| Get-GraphItem             | Given a relative (to the Graph or current location) Uri gets information about the entity       |
-| Get-GraphChildItem        | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri  |
-| Get-GraphSchema           | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
-| Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
-| Get-GraphUri              | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri           |
-| Get-GraphVersion          | Returns the set of workloads and their associated schemas for a given Graph API version         |
-| Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
-| New-Graph                 | Mounts a new Graph connection and associated metadata for availability to PoshGraph cmdlets     |
-| New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph|
-| Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                             |
-| Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
-| Set-GraphLocation         | Sets the current location in the Graph Uri hierarchy for the current Graph -- analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
-| Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                    |
-| Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint          |
-| Update-GraphMetadata      | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
+AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
+| Cmdlet                    | Alias | Description                                                                                     |
+|---------------------------|-------|-------------------------------------------------------------------------------------------------|
+| Connect-Graph             |       | Establishes authentication and authorization context used across cmdlets for the current graph  |
+| Disconnect-Graph          |       | Clears authentication and authorization context used across cmdlets for the current graph       |
+| Get-Graph                 | gg    | Gets the current list of versioned Graph service endpoints available to PoshGraph               |
+| Get-GraphChildItem        | gls   | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri  |
+| Get-GraphConnectionStatus |       | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                    |
+| Get-GraphError            | gge   | Retrieves detailed errors returned from Graph in execution of the last command                  |
+| Get-GraphItem             | ggi   | Given a relative (to the Graph or current location) Uri gets information about the entity       |
+| Get-GraphLocation         | gwd   | Retrieves the current location in the Uri hierarchy for the current graph                       |
+| Get-GraphSchema           |       | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
+| Get-GraphToken            |       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
+| Get-GraphUri              | ggu   | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri           |
+| Get-GraphVersion          |       | Returns the set of workloads and their associated schemas for a given Graph API version         |
+| Invoke-GraphRequest       |       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
+| New-Graph                 |       | Mounts a new Graph connection and associated metadata for availability to PoshGraph cmdlets     |
+| New-GraphConnection       |       | Creates an authenticated connection using advanced identity customizations for accessing a Graph|
+| Remove-Graph              |       | Unmounts a Graph previously mounted by `NewGraph`                                             |
+| Set-GraphConnectionStatus |       | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
+| Set-GraphLocation         | gcd   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
+| Set-GraphPrompt           |       | Adds connection and location context to the PowerShell prompt or disables it                    |
+| Test-Graph                |       | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint          |
+| Update-GraphMetadata      |       | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
 
 #### Limited support for Azure Active Directory (AAD) Graph
 
