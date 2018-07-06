@@ -146,7 +146,7 @@ Most functionality of AAD Graph is currently available in MS Graph itself, and i
 
 ## Contributing / Development
 
-The project is almost ready for contributors; suggestions on features or other advice are welcome while we establish a baseline.
+Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
 
 See the [Build README](build/README.md) for instructions on building and testing changes to PoshGraph.
 
