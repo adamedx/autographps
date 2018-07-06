@@ -20,6 +20,7 @@
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false)]
     param(
+        [parameter(position=0)]
         [String[]] $ScopeNames = @('User.Read'),
 
         [parameter(parametersetname='simple')]
