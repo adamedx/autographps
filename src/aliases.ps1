@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-alias ggi Get-GraphItem
-set-alias gls Get-GraphChildItem
 set-alias gcd Set-GraphLocation
-set-alias gwd Get-GraphLocation
-set-alias ggu Get-GraphUri
 set-alias gg  Get-Graph
+set-alias gge Get-GraphError
+set-alias ggi Get-GraphItem
+set-alias ggu Get-GraphUri
+set-alias gls Get-GraphChildItem
+set-alias gwd Get-GraphLocation
 
