@@ -142,7 +142,7 @@ ScriptClass GraphIdentity {
     function getAADGraphToken($graphEndpoint, $scopes) {
         write-verbose "Attempting to get token for AAD Graph..."
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
-        $redirectUri = "http://localhost"
+        $redirectUri = 'msal9825d80c-5aa0-42ef-bf13-61e12116704c://auth'
 
         $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
 
@@ -155,7 +155,7 @@ ScriptClass GraphIdentity {
             $promptBehavior)
 
         if ( $authResult.Status -eq 'Faulted' ) {
-            throw "Failed to acquire token for uri '$($graphEndpoint.Graph)' for AppID '$($this.AppId)'`n" + $authResult.exception, $authResult.exception
+            throw "Failed to acquire token for uri '$($graphEndpoint.Graph)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
         }
         $authResult.Result
     }

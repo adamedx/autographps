@@ -2,11 +2,8 @@
 
 ## To-do items -- prioritized
 
-* CONTRIBUTING.md
-* Code of conduct
-* Issue template
-* Code review template
 * Minor doc update
+* RELEASE_NOTES
 
 * Release
 
@@ -17,6 +14,7 @@
 * Release
 
 * Add welcome command
+* Tutorial
 * Major doc update
 
 * Release
@@ -195,6 +193,11 @@
 * Add verbosity preference to avoid dumping entire requests
 * Minor source rearrangement
 * Better error messages when path not found
+* CONTRIBUTING.md
+* Code of conduct
+* Issue template
+* Pull request template
+* Fix AADGraph bug where reply url seemed to be invalid
 
 ### Postponed
 
