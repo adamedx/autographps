@@ -42,7 +42,7 @@ After you've responded to the authentication prompt, you should see output that 
 Now you're ready to use any of PoshGraph's cmdlets to access and explore Microsoft Graph!
 
 ### Installing from git for developers
-For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module:
+For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
 git clone https://github.com/adamedx/poshgraph
@@ -51,26 +51,25 @@ cd poshgraph
 ```
 
 ## How to explore with PoshGraph
-After you've installed the module, use PoshGraph from any PowerShell session.
+After you've installed the module, invoke PoshGraph cmdlets from any PowerShell session.
 
 ### Get started -- simple commands
 
 **PoshGraph** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph. The easiest approach is to use the `Connect-Graph` cmdlet, after which you can execute other cmdlets such as `Get-GraphItem` which operate on the graph:
 
 ```powershell
-Connect-Graph
 Get-GraphItem me
 ```
 
-After you respond to authentication prompts from `Connect-Graph` cmdlet, `GetGraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object. The output will be as described in an earlier section.
+After you respond to authentication prompts, `GetGraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object. The output will be as described in an earlier section.
 
-Since `Connect-Graph` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g.
+Since the first execution of `Get-GraphItem` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g. a subsequent invocation like
 
 ```powershell
 PS> get-graphitem organization
 ```
 
-which will return details about your organization:
+will not prompt for credentials but immediately return details about your organization:
 
     id              : fb6df3ba-c5f5-43dd-b108-a921f1a7e759
     businessPhones  : {206 881 8080}
