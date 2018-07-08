@@ -5,7 +5,7 @@ PoshGraph
 
 ----
 
-**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you.
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
@@ -13,7 +13,7 @@ The project is in the earliest stages of development and almost but not quite ye
 
 PoshGraph requires Windows 10 and PowerShell 5.0.
 
-## Installation and usage
+## Installation and basic usage
 PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install the latest stable release of PoshGraph into your user profile:
 
 ```powershell
@@ -39,9 +39,105 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of PoshGraph's cmdlets to access and explore Microsoft Graph!
+Now you're ready to use any of PoshGraph's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
-### Installing from git for developers
+### How do I use it?
+
+If you're familiar with the Microsoft Graph REST API or you've used [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer), you know that Graph is accessed via [URI's that look like the following](https://developer.microsoft.com/en-us/graph/docs/concepts/overview#popular-requests):
+
+```
+https://graph.microsoft.com/v1.0/me/calendars
+https://graph.microsoft.com/v1.0/me/people
+https://graph.microsoft.com/v1.0/users
+```
+
+With PoshGraph cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
+
+```powershell
+Get-GraphItem me/calendars
+Get-GraphItem me/people
+Get-GraphItem users
+```
+
+These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
+
+As with any PowerShell cmdlet, you can use PoshGraph cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
+
+### More fun commands
+
+Run the command below to grant permission scopes that allow PoshGraph to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
+
+```powershell
+# You only have to do this once, not each time you use PoshGraph
+Connect-Graph User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
+```
+
+Now traverse the Graph via the `gcd` alias to "move" to a new Uri current location in the Graph. This is analgous to the usage of "cd" to change to a new current working directory in file-system oriented shells like `bash` and PowerShell:
+
+```powershell
+gcd me
+[starchild@mothership.io] v1.0:/me
+PS>
+```
+
+Notice the update to your prompt showing your authenticated identity and your new current location after invoking that last cmdlet: `[starchild@mothership.io] v1.0:/me`. **Tip:** the `gwd` alias acts like `pwd` in the file system and retrieve your current working location in the Graph.
+
+Now you can use the `gls` alias as you would `ls` in the file system relative to your current location. Here's how you can read your email:
+
+```
+[starchild@mothership.io] v1.0:/me
+PS> gls messages
+```
+
+Here are a few more commands to try -- note that you can also use absolute paths rather than paths relative to the current location
+```powershell
+# Lists your calendars, sssuming you're at /me
+gls calendars
+
+# Same thing, uses an absolute path
+gls /me/calendars
+
+# Get data about your organizationn
+gls /organization
+
+# Get all the paths at the root of the Graph
+gls /
+
+```
+
+Finally, here's one to enumerate your OneDrive files
+```
+[starchild@mothership.io] v1.0:/me
+PS> gcd drive/root/children
+gls
+[starchild@mothership.io] v1.0:/me/drive/root/children
+PS> gls
+
+Info Type      Preview       Name
+---- ----      -------       ----
+t +> driveItem Recipes       13J3XD#
+t +> driveItem Pyramid.js    13J3KD2
+```
+
+#### PoshGraph tips
+Here are a few simple tips to keep in mind as you first start using PoshGraph:
+
+**1. Permission scopes matter:** PoshGraph can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional scopes for PoshGraph, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the scopes on your behalf in order to grant them to PoshGraph.
+
+**2. PoshGraph supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to PoshGraph that will bring ease-of-use parity with the read cmdlets.
+
+**3. You can access the Beta version of the Graph API**: By default, PoshGraph is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- just use the following commands to "mount" the `beta` version and set the current location to its root:
+
+```powershell
+new-graph beta
+    gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
+```
+
+And that bring us to this **Warning**: *PoshGraph takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
+
+For a much more detailed description of PoshGraph's usage and capabilities, including advanced query and authentication features, see the [WALKTHROUGH](docs/WALKTHROUGH.md).
+
+## Installing from git for developers
 For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
@@ -50,76 +146,10 @@ cd poshgraph
 .\build\install-fromsource.ps1
 ```
 
-## How to explore with PoshGraph
-After you've installed the module, invoke PoshGraph cmdlets from any PowerShell session.
+## Command inventory
 
-### Get started -- simple commands
+The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve significantly along with their usage. Additional documentation will be provided for them as their status solidifies.
 
-**PoshGraph** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph. The easiest approach is to use the `Connect-Graph` cmdlet, after which you can execute other cmdlets such as `Get-GraphItem` which operate on the graph:
-
-```powershell
-Get-GraphItem me
-```
-
-After you respond to authentication prompts, `GetGraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object. The output will be as described in an earlier section.
-
-Since the first execution of `Get-GraphItem` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g. a subsequent invocation like
-
-```powershell
-PS> get-graphitem organization
-```
-
-will not prompt for credentials but immediately return details about your organization:
-
-    id              : fb6df3ba-c5f5-43dd-b108-a921f1a7e759
-    businessPhones  : {206 881 8080}
-    city            : Seattle
-    displayName     : Akana
-    postalCode      : 98144
-    state           : Washington
-    street          : 101 23rd Avenue Suite X
-
-### Expanding your scope
-
-The commands above are trivial demonstrations of Graph. In particular, they only require the authorization scope known as `User.Read`. More interesting explorations of the Graph require that you request additional [scopes](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) when you connect to the Graph.
-
-Here's how you can request the `Files.Read` and `Contacts.Read` scopes in addition to `User.Read` -- the additional scopes enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
-
-```powershell
-Connect-Graph 'User.Read', 'Files.Read', 'Contacts.Read'
-```
-
-Now you can execute the following commands to read OneDrive file data and your contact information:
-
-```powershell
-PS> get-graphitem me/contacts | select displayname
-```
-
-```
-displayName
------------
-Cosmo Jones
-Akeelah Smith
-John Henry
-Deandre George
-
-PS> get-graphitem me/drive/root/children | select name
-
-name
-----
-grocerylist.md
-history.md
-graphsearch.ps1
-```
-
-Note that the subject of scopes and authorization in general is currently one of the most difficult aspects of Graph to understand. You'll need to consult the [permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are needed to access different locations of the Graph. In some cases, you will be unable to obtain the required scope without an action by your system administrator, or you will need to authenticate with an application identity rather than your user identity.
-
-Future modifications to PoshGraph will address the usability of scopes and authorization.
-
-### Command inventory
-
-The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve signicantly along with their usage. Additional documentation will be provided for them as their status solidifies.
-AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
 | Cmdlet                    | Alias | Description                                                                                     |
 |---------------------------|-------|-------------------------------------------------------------------------------------------------|
 | Connect-Graph             |       | Establishes authentication and authorization context used across cmdlets for the current graph  |
@@ -144,7 +174,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggi', 'gls', 'gwd')
 | Test-Graph                |       | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint          |
 | Update-GraphMetadata      |       | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
 
-#### Limited support for Azure Active Directory (AAD) Graph
+### Limited support for Azure Active Directory (AAD) Graph
 
 Some PoshGraph cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
 
