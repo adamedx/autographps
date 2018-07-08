@@ -5,22 +5,42 @@ PoshGraph
 
 ----
 
-**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a command-line analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you.
+* [Overview](#Overview)
+* [Installation](#Installation)
+* [Using PoshGraph](#using-poshgraph)
+* [Developer installation from source](#developer-installation-from-source)
+* [Command inventory](#command-inventory)
+* [Contributing and development](#contributing-and-development)
+* [Quickstart](#quickstart)
+* [License and authors](#license-and-authors)
+
+## Overview
+
+**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). PoshGraph enables powerful command-line access to the Microsoft Graph REST API gateway to a growing list of services such as
+
+* Azure Ative Directory (AAD)
+* OneDrive
+* Exchange / Outlook
+* SharePoint
+* And many more!
+
+If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you.
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
-## System requirements
+### System requirements
 
 PoshGraph requires Windows 10 and PowerShell 5.0.
 
-## Installation and basic usage
+## Installation
 PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install the latest stable release of PoshGraph into your user profile:
 
 ```powershell
 Install-Module PoshGraph -scope currentuser
 ```
 
-Once that's finished, you can use a PoshGraph cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+## Using PoshGraph
+Once you've installed, you can use a PoshGraph cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> get-graphitem me
@@ -74,7 +94,7 @@ Connect-Graph User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
 
 Now traverse the Graph via the `gcd` alias to "move" to a new Uri current location in the Graph. This is analgous to the usage of "cd" to change to a new current working directory in file-system oriented shells like `bash` and PowerShell:
 
-```powershell
+```
 gcd me
 [starchild@mothership.io] v1.0:/me
 PS>
@@ -109,7 +129,6 @@ Finally, here's one to enumerate your OneDrive files
 ```
 [starchild@mothership.io] v1.0:/me
 PS> gcd drive/root/children
-gls
 [starchild@mothership.io] v1.0:/me/drive/root/children
 PS> gls
 
@@ -137,7 +156,7 @@ And that bring us to this **Warning**: *PoshGraph takes some time to get fully r
 
 For a much more detailed description of PoshGraph's usage and capabilities, including advanced query and authentication features, see the [WALKTHROUGH](docs/WALKTHROUGH.md).
 
-## Installing from git for developers
+## Developer installation from source
 For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
@@ -184,13 +203,13 @@ Get-GraphItem me -aadgraph
 
 Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of PoshGraph.
 
-## Contributing / Development
+## Contributing and development
 
 Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
 
 See the [Build README](build/README.md) for instructions on building and testing changes to PoshGraph.
 
-### Quickstart -- learn about the Graph
+## Quickstart
 The Quickstart is a way to try out PoshGraph without installing the PoshGraph module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
 
 * [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
@@ -225,7 +244,7 @@ If you need to launch another console with Posh Graph, you can run the faster co
 
 These commmands can also be used when testing modifications you make to PoshGraph, and also give you an isolated environment in which to test and develop applications and tools that depend on PoshGraph.
 
-License and Authors
+License and authors
 -------------------
 Copyright:: Copyright (c) 2018 Adam Edwards
 
