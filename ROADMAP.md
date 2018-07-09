@@ -4,7 +4,7 @@
 
 * Test Release
 
-* Fix Application.ps1 -- class may not have initialized
+* Fix publishmoduletodev to use module publishing rather than nuget
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
 * document semver in build.md
@@ -222,6 +222,7 @@
 * Pull request template
 * Fix AADGraph bug where reply url seemed to be invalid
 * Initial doc update
+* Fix Application.ps1 -- class may not have initialized
 
 ### Postponed
 
