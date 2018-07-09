@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Application)
 . (import-script ../GraphService/GraphEndpoint)
 . (import-script GraphIdentity)
 
@@ -93,7 +92,7 @@ ScriptClass GraphConnection {
     static {
         function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
             $endpoint = new-so GraphEndpoint $cloud $graphType
-            $app = new-so GraphApplication $::.Application.AppId
+            $app = new-so GraphApplication
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app
             }

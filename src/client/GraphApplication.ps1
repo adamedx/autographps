@@ -24,11 +24,11 @@ ScriptClass GraphApplication {
     $Secret = $null
     $AuthType = strict-val [GraphAppAuthType] ([GraphAppAuthType]::Delegated)
 
-    function __initialize([Guid] $appId = $null) {
+    function __initialize($appId = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
-            $::.Application.AppId
+            '9825d80c-5aa0-42ef-bf13-61e12116704c'
         }
     }
 }

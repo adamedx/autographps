@@ -4,6 +4,10 @@
 
 * Test Release
 
+* Fix Application.ps1 -- class may not have initialized
+* Investigate console.writeline background thread
+* Coding standards -- SOLID, casing, method call syntax
+* document semver in build.md
 * Minor doc update
 * RELEASE_NOTES
 
@@ -52,6 +56,10 @@
 * Unauthenticated functional tests
 * Parse odata context
 * Background runspace jobs
+
+* Add CI
+
+* Release
 
 * Add fuzzy select
 * Add find-property, find-type
