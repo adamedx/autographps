@@ -4,7 +4,7 @@
 
 * Test Release
 
-* Fix Application.ps1
+* Fix Application.ps1 -- class may not have initialized
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
 * document semver in build.md
