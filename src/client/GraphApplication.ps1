@@ -28,7 +28,7 @@ ScriptClass GraphApplication {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
-            '9825d80c-5aa0-42ef-bf13-61e12116704c'
+            $::.Application.AppId
         }
     }
 }

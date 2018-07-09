@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.2'
+ModuleVersion = '0.10.4'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -121,6 +121,7 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
+        '.\src\client\Application.ps1',
         '.\src\client\graphapplication.ps1',
         '.\src\client\GraphConnection.ps1',
         '.\src\client\GraphContext.ps1',
@@ -134,17 +135,18 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\get-grapherror.ps1',
         '.\src\cmdlets\get-graphitem.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
-        '.\src\cmdlets\get-graphversion.ps1',
-        '.\src\cmdlets\invoke-graphrequest.ps1',
+        '.\src\cmdlets\Get-GraphVersion.ps1',
+        '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\new-graphconnection.ps1',
+        '.\src\cmdlets\New-GraphConnection.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
-        '.\src\cmdlets\test-graph.ps1',
+        '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
@@ -166,11 +168,11 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\UriCache.ps1',
-        '.\src\REST\grapherrorrecorder.ps1',
-        '.\src\REST\graphrequest.ps1',
-        '.\src\REST\graphresponse.ps1',
-        '.\src\REST\restrequest.ps1',
-        '.\src\REST\restresponse.ps1'
+        '.\src\REST\GraphErrorRecorder.ps1',
+        '.\src\REST\GraphRequest.ps1',
+        '.\src\REST\GraphResponse.ps1',
+        '.\src\REST\RestRequest.ps1',
+        '.\src\REST\RestResponse.ps1'
     )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
