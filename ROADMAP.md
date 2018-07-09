@@ -4,6 +4,8 @@
 
 * Test Release
 
+* Coding standards -- SOLID, casing, method call syntax
+* document semver in build.md
 * Minor doc update
 * RELEASE_NOTES
 
@@ -52,6 +54,10 @@
 * Unauthenticated functional tests
 * Parse odata context
 * Background runspace jobs
+
+* Add CI
+
+* Release
 
 * Add fuzzy select
 * Add find-property, find-type
