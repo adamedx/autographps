@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.2'
+ModuleVersion = '0.10.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -121,6 +121,7 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
+        '.\src\client\Application.ps1',
         '.\src\client\graphapplication.ps1',
         '.\src\client\GraphConnection.ps1',
         '.\src\client\GraphContext.ps1',
