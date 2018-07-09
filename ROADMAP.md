@@ -2,20 +2,24 @@
 
 ## To-do items -- prioritized
 
+* Test Release
+
 * Minor doc update
 * RELEASE_NOTES
 
 * Release
 
+* change $graphverbosepreference to $graphverboselevelpreference
+* Motivation.md
+* docs on set-graphprompt, new-graph
+* docs on new-graphconnection, connect-graph
+* docs on update-graphmetadata
+* fix -expand issues
+* fix parent issues in public segment
+
 * Add auto-complete for scopes
 * Add auto-complete for ggu
 * Add auto-complete for gls
-
-* Release
-
-* Add welcome command
-* Tutorial
-* Major doc update
 
 * Release
 
@@ -25,12 +29,23 @@
 
 * Release
 
+* Add app-only mode
+
 * Samples
+* Bugfixes
+
+* Release
+
+* Add welcome command
+* Tutorial
+* Major doc update
 
 * Release
 
 * User research
 
+* Bugfixes
+* Usability changes
 * Release
 
 * Test schema and basic tests offline
@@ -198,6 +213,7 @@
 * Issue template
 * Pull request template
 * Fix AADGraph bug where reply url seemed to be invalid
+* Initial doc update
 
 ### Postponed
 

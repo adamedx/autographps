@@ -8,15 +8,16 @@ PoshGraph
 * [Overview](#Overview)
 * [Installation](#Installation)
 * [Using PoshGraph](#using-poshgraph)
-* [Developer installation from source](#developer-installation-from-source)
+* [Common uses](#common-uses)
 * [Command inventory](#command-inventory)
+* [Developer installation from source](#developer-installation-from-source)
 * [Contributing and development](#contributing-and-development)
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
 ## Overview
 
-**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). PoshGraph enables powerful command-line access to the Microsoft Graph REST API gateway to a growing list of services such as
+**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). PoshGraph enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
 * Azure Ative Directory (AAD)
 * OneDrive
@@ -55,7 +56,7 @@ After you've responded to the authentication prompt, you should see output that 
     mail              : starchild@mothership.io
     jobTitle          : Professor
     givenName         : Starchild
-    userPrincipalName : starchild@microsoft.io
+    userPrincipalName : starchild@mothership.io
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
@@ -152,18 +153,21 @@ new-graph beta
     gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
 ```
 
-And that bring us to this **Warning**: *PoshGraph takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
+And that brings us to this **Warning**: *PoshGraph takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
 
 For a much more detailed description of PoshGraph's usage and capabilities, including advanced query and authentication features, see the [WALKTHROUGH](docs/WALKTHROUGH.md).
 
-## Developer installation from source
-For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
+## Common uses
 
-```powershell
-git clone https://github.com/adamedx/poshgraph
-cd poshgraph
-.\build\install-fromsource.ps1
-```
+PoshGraph is your PowerShell interface to the Microsoft Graph REST API. In what contexts is such a tool useful? Here are several:
+
+* **Developer - Graph education:** The Microsoft Graph is aimed at developers, and just as Graph Explorer helps developers learn how to make API calls to the Graph and debug them, PoshGraph offers the same capability, with the added benefit of the CLI's speed and automation
+* **Developer - testing and debugging:** PoshGraph makes it trivial to reproduce errors you encounter in your application's REST calls to the Graph -- simply use the same credentials, REST method, and Uri in one of the Graph cmdlets, and you can obtain diagnostics without rebuilding your application or otherwise altering it to isolate failure cases and add debugging information. PoshGraph is also useful for pursuing ad hoc "what if"-style investigations of Graph functionality that is new to you or understanding Graph's corner cases without building a new application.
+* **System administration:** Sysadmins manage the same services such as AAD, Exchange, and SharePoint that are exposed by the Microsoft Graph. Sysadmins are also heavy users of PowerShell. PoshGraph allows administrators to author PowerShell automation that takes full advantage of the management capabilities constantly being added to Microsoft Graph. Your existing PowerShell automation can be enhanced with PoshGraph or included in new tools based on it.
+* **Developer - management tools:** Configuration management and system administration tools are popular output for developers, particularly in OSS communities. PoshGraph offers developers building PowerShell-based configuration management tools for their users a key library that solves authentication, modeling, querying, and deserialization. Graph calls with PoshGraph are typically one-liners requiring little in the way of setup, a quality that enhances your productivity as a developer.
+* **Enthusiast / power user:** Users who enjoy learning about what powers their software will find PoshGraph a great way to not only learn about Graph, but exploit its capabilities to do things such as advanced e-mail or photo management through Exchange and OneDrive, implement their own backup features with OneDrive and SharePoint, or simply automate common tasks.
+
+There are probably many more uses for PoshGraph, as wide-ranging as the Graph itself.
 
 ## Command inventory
 
@@ -202,6 +206,15 @@ Get-GraphItem me -aadgraph
 ```
 
 Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of PoshGraph.
+
+## Developer installation from source
+For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
+
+```powershell
+git clone https://github.com/adamedx/poshgraph
+cd poshgraph
+.\build\install-fromsource.ps1
+```
 
 ## Contributing and development
 
