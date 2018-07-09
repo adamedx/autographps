@@ -4,6 +4,8 @@
 
 * Test Release
 
+* Fix Application.ps1
+* Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
 * document semver in build.md
 * Minor doc update
