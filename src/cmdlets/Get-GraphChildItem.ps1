@@ -175,6 +175,15 @@ function Get-GraphChildItem {
                 $results += $result
             }
         } catch [System.Net.WebException] {
+            # In some cases, we want to allow the user to make a mistake that results in an error from Graph
+            # but allows the cmdlet to continue to enumerate child segments known from local metadata. For
+            # example, the application may not have the scopes to perform a GET on some URI which means Graph
+            # has to return a 4xx, but its still valid to enumerate children since the question of what
+            # segments may follow a given segment is not affected by scope. Without this accommodation,
+            # exploration of the Graph with this cmdlet would be tricky as you'd need to have every possible
+            # scope to avoid hitting blocking errors. It's quite possible that you *can't* get all the scopes
+            # anyway (you may need admin approval), but you should still be able to see what's possible, especially
+            # since that question is one this cmdlet can answer. :)
             $graphException = $true
             $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
                 $_.exception.response.statuscode
@@ -186,9 +195,12 @@ function Get-GraphChildItem {
                 if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
                     $lastError.ResponseStream | write-warning
                 }
-            } elseif ( $statusCode -eq 'BadRequest' ) {
-                write-verbose "Graph endpoint returned 'Bad request' - ignoring failure"
             } else {
+                # Note that there may be other errors, such as 'BadRequest' that deserve a warning rather than failure,
+                # so we should consider adding others if the cases can be narrowed sufficiently to avoid other
+                # undesirable side effects of continuing on an error. An even better workaround may be command-completion,
+                # which would (and should!) be scoped to purely local operations -- this would give visibility as to
+                # the next segments without a request to Graph that could fail.
                 throw
             }
         }
