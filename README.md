@@ -19,7 +19,7 @@ PoshGraph
 
 **PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). PoshGraph enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
-* Azure Ative Directory (AAD)
+* Azure Active Directory (AAD)
 * OneDrive
 * Exchange / Outlook
 * SharePoint
