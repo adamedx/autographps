@@ -24,7 +24,7 @@ ScriptClass GraphApplication {
     $Secret = $null
     $AuthType = strict-val [GraphAppAuthType] ([GraphAppAuthType]::Delegated)
 
-    function __initialize([Guid] $appId = $null) {
+    function __initialize($appId = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
