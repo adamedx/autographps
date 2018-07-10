@@ -207,7 +207,7 @@ function Get-GraphChildItem {
     }
 
     if ( $ignoreMetadata ) {
-        write-warning "Metadata for Graph is not ready and 'RequireMetadata' was not specified, only returning raw responses from Graph"
+        write-warning "Metadata processing for Graph is in progress -- responses from Graph without metadata will be returned. Override with /connect the '-RequireMetadata' option to force a wait until processing is complete"
     }
 
     if ( ! $DataOnly.ispresent ) {
