@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.4'
+ModuleVersion = '0.10.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -73,8 +73,8 @@ FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @(
-        'Disconnect-Graph',
         'Connect-Graph',
+        'Disconnect-Graph',
         'Get-Graph',
         'Get-GraphChildItem',
         'Get-GraphConnectionStatus',
@@ -153,6 +153,7 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
+        '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
@@ -181,7 +182,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'Microsoft Graph')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'

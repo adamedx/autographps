@@ -2,9 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Test Release
-
-* Fix publishmoduletodev to use module publishing rather than nuget
+* Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
 * document semver in build.md
@@ -13,8 +11,16 @@
 
 * Release
 
+* Clean up utilities, special-case, duplicate code in get-graphuri, invoke-graphrequest, get-graphitem, get-graphchilditem
+* Make gcd work without hanging for new graphs
+
+* Investigate metadata perf optimization -- perform:
+  * Discover roots only
+  * Just-in-time discovery of types
+  * Just-in-time resolution of navigation properties
+
 * change $graphverbosepreference to $graphverboselevelpreference
-* Motivation.md
+
 * docs on set-graphprompt, new-graph
 * docs on new-graphconnection, connect-graph
 * docs on update-graphmetadata
@@ -223,6 +229,9 @@
 * Fix AADGraph bug where reply url seemed to be invalid
 * Initial doc update
 * Fix Application.ps1 -- class may not have initialized
+* Motivation.md
+* Update get-graphitem to give gls authorization warnings.
+* Fix publishmoduletodev to use module publishing rather than nuget
 
 ### Postponed
 
@@ -233,6 +242,7 @@
 * Add -filter to get-graphschema
 * Add hint of additional records
 * Add continue feature?
+* Test Release
 
 ### Abandoned
 

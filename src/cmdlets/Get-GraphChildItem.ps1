@@ -15,6 +15,7 @@
 . (import-script Invoke-GraphRequest)
 . (import-script Get-GraphUri)
 . (import-script ../common/PreferenceHelper)
+. (import-script ../common/GraphAccessDeniedException)
 . (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
@@ -74,6 +75,7 @@ function Get-GraphChildItem {
     $context = $null
 
     $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+    $assumeRoot = $false
 
     $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
         $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
@@ -85,7 +87,8 @@ function Get-GraphChildItem {
         $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
         if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
-            $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
+            $assumeRoot = $true
+            $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.RootSegment
         } else {
             $::.SegmentHelper |=> ToPublicSegment $parser $context.location
         }
@@ -130,9 +133,11 @@ function Get-GraphChildItem {
 
     $graphException = $false
 
-    $ignoreMetadata = ! $mustWaitForMissingMetadata -and ($resolvedUri.Class -eq 'Null')
+    $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-    if ( $resolvedUri.Class -ne '__Root' -and ($::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata)) {
+    if ( $resolvedUri.Class -eq '__Root' ) {
+        $results += $resolvedUri
+    } elseif ( $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata ) {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
@@ -174,7 +179,7 @@ function Get-GraphChildItem {
 
                 $results += $result
             }
-        } catch [System.Net.WebException] {
+        } catch [GraphAccessDeniedException] {
             # In some cases, we want to allow the user to make a mistake that results in an error from Graph
             # but allows the cmdlet to continue to enumerate child segments known from local metadata. For
             # example, the application may not have the scopes to perform a GET on some URI which means Graph
@@ -185,29 +190,17 @@ function Get-GraphChildItem {
             # anyway (you may need admin approval), but you should still be able to see what's possible, especially
             # since that question is one this cmdlet can answer. :)
             $graphException = $true
-            $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
-                $_.exception.response.statuscode
-            }
             $_.exception | write-verbose
-            if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
-                write-warning "Graph endpoint returned 'Unauthorized' accessing '$($requestArguments.RelativeUri)'. Retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate application scopes. See this location for documentation on scopes that may apply to this part of the Graph: 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'."
-                $lastError = get-grapherror
-                if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
-                    $lastError.ResponseStream | write-warning
-                }
-            } else {
-                # Note that there may be other errors, such as 'BadRequest' that deserve a warning rather than failure,
-                # so we should consider adding others if the cases can be narrowed sufficiently to avoid other
-                # undesirable side effects of continuing on an error. An even better workaround may be command-completion,
-                # which would (and should!) be scoped to purely local operations -- this would give visibility as to
-                # the next segments without a request to Graph that could fail.
-                throw
+            write-warning $_.exception.message
+            $lastError = get-grapherror
+            if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
+                $lastError.ResponseStream | write-warning
             }
         }
     }
 
     if ( $ignoreMetadata ) {
-        write-warning "Metadata processing for Graph is in progress -- responses from Graph without metadata will be returned. Override with /connect the '-RequireMetadata' option to force a wait until processing is complete"
+        write-warning "Metadata processing for Graph is in progress -- responses from Graph will be returned but no metadata will be added. You can retry this cmdlet later or retry it now with the '-RequireMetadata' option to force a wait until processing is complete in order to obtain the complete response."
     }
 
     if ( ! $DataOnly.ispresent ) {

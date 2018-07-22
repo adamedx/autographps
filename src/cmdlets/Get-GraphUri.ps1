@@ -112,8 +112,9 @@ function Get-GraphUri {
             } else{
                 throw "Object type does not support Graph URI source"
             }
-            $parsedUri = $::.GraphUtilities |=> ParseGraphUri $unparsedUri
-            $context = $parsedUri.MatchedContext
+
+            $parsedUri = $::.GraphUtilities |=> ParseGraphRelativeLocation $unparsedUri
+            $context = $parsedUri.Context
             $parsedUri.GraphRelativeUri
         } else {
             $parsedLocation = $::.GraphUtilities |=> ParseGraphRelativeLocation $currentUri

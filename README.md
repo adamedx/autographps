@@ -34,7 +34,7 @@ The project is in the earliest stages of development and almost but not quite ye
 PoshGraph requires Windows 10 and PowerShell 5.0.
 
 ## Installation
-PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com); run the following command to install the latest stable release of PoshGraph into your user profile:
+PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph); run the following command to install the latest stable release of PoshGraph into your user profile:
 
 ```powershell
 Install-Module PoshGraph -scope currentuser
@@ -150,7 +150,7 @@ Here are a few simple tips to keep in mind as you first start using PoshGraph:
 
 ```powershell
 new-graph beta
-    gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
+gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
 ```
 
 And that brings us to this **Warning**: *PoshGraph takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.

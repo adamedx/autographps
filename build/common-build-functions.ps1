@@ -514,23 +514,22 @@ function publish-modulelocal {
     # Copy the built module to the location where its dependencies already exist
     cp -r $modulePath $devModulelocation
 
-    $modulePackagePath = join-path (Get-OutputDirectory) nuget
-    $modulePackage = ls $modulePackagePath -filter "$moduleName.*.nupkg"
-
-    # Try to use an existing nuget package produced by the build -- if it exists
-    if ( $modulePackagePath -ne $null -and $modulePackagePath.length -gt 0 ) {
-        write-verbose "Copying target module '$modulepath' from build output to publish location '$devModuleLocation'"
-        cp $modulePackage.fullname $PsRepoLocation
-    } else {
-        # Fall back to just using the module that was built -- this is
-        # *much* slower than using an existing nuget package
-        $repository = get-temporarymodulepsrepository $moduleName $PsRepoLocation
-        write-verbose "Publishing target module '$modulepath' from build output to publish location '$devModuleLocation'"
-        try {
-            publish-modulebuild $modulePathVersioned $repository
-        } finally {
-            unregister-psrepository $repository
-        }
+    # Use the module that was built -- this is *much* slower than using an
+    # existing nuget package built via nuget.exe, but that package is
+    # artificial in that it does not validate dependencies or the set of
+    # files specified in the manifest, so publishing via this approach
+    # offers higher confidence that if this package is installed from the
+    # local publishing source, it will install when promoted to a public
+    # repository. In the past, a module with files missing from the list
+    # was published publicly, and as a result that module failed to install.
+    # This method allows us to catch that error locally prior to making
+    # the module public.
+    $repository = get-temporarymodulepsrepository $moduleName $PsRepoLocation
+    write-verbose "Publishing target module '$modulepath' from build output to publish location '$devModuleLocation'"
+    try {
+        publish-modulebuild $modulePathVersioned $repository
+    } finally {
+         unregister-psrepository $repository
     }
 
     [PSCustomObject]@{ImportableModuleDirectory=$devModuleLocation;ModulePackageRepositoryDirectory=$PsRepoLocation}

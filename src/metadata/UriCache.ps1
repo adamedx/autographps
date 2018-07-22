@@ -31,7 +31,7 @@ ScriptClass UriCache {
     function AddUriForSegments($segments, $cacheEntities = $false, $parentSegment = $null) {
         $segments | foreach {
 
-            $cacheable = $_ -ne $null -and ! $_.isDynamic -or $cacheEntities
+            $cacheable = ($_ -ne $null) -and (! $_.isDynamic -or $cacheEntities)
 
             if ( $cacheable ) {
                 $segmentUri = $_.graphUri
