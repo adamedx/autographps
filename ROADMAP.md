@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Refactor into posh-graph core sdk and poshgraph ux
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
