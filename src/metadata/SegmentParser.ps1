@@ -129,7 +129,7 @@ ScriptClass SegmentParser {
             } else {
                 $matchingSegment = $currentSegments | where {
                     $_.name -eq $targetSegmentName
-                }
+                } | select -first 1
 
                 if ( ! $matchingSegment ) {
                     $parentName = if ( $lastSegment ) {

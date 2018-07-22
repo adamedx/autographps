@@ -14,6 +14,7 @@
 
 . (import-script New-GraphConnection)
 . (import-script ../common/GraphUtilities)
+. (import-script ../common/GraphAccessDeniedException)
 . (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/GraphErrorRecorder)
@@ -88,7 +89,7 @@ function Invoke-GraphRequest {
         if ( $RelativeUri.length -gt 1 ) {
             throw "More than one Uri was specified when AbsoluteUri was specified -- only one Uri is allowed when AbsoluteUri is configured"
         }
-    } elseif ( $RelativeUri[0].IsAbsoluteUri ) {
+    } elseif ( $RelativeUri[0].IsAbsoluteUri -and ! (! $RelativeUri[0].Host) ) {
         throw "An absolute URI was specified -- specify a URI relative to the graph host and version, or specify -AbsoluteUri"
     }
 
@@ -157,8 +158,7 @@ function Invoke-GraphRequest {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
         } else {
-            $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
-            $currentContext.Connection
+            'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
         }
     } else {
         $Connection
@@ -166,16 +166,22 @@ function Invoke-GraphRequest {
 
     $uriInfo = if ( $AbsoluteUri.ispresent ) {
         write-verbose "Caller specified AbsoluteUri -- interpreting uri as absolute"
-        $specificContext = new-so GraphContext $connection $version 'local'
-        $info = $::.GraphUtilities |=> ParseGraphUri $RelativeUri[0] $connection
+        $specificContext = new-so GraphContext $graphConnection $version 'local'
+        $info = $::.GraphUtilities |=> ParseGraphUri $RelativeUri[0] $specificContext
         write-verbose "Absolute uri parsed as relative '$($info.GraphRelativeUri)' and version $($info.GraphVersion)"
         if ( ! $info.IsAbsolute ) {
             throw "Absolute Uri was specified, but given Uri was not absolute: '$($RelativeUri[0])'"
         }
         if ( ! $info.IsContextCompatible ) {
-            throw "The version '$version' and connection endpoint '$($Connection.GraphEndpoint.Graph)' is not compatible with the uri '$RelativeUri'"
+            throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$RelativeUri'"
         }
         $info
+    } else {
+        $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
+        @{
+            GraphRelativeUri = $info.GraphRelativeUri
+            GraphVersion = $info.context.version
+        }
     }
 
     $apiVersion = if ( $uriInfo -and $uriInfo.GraphVersion ) {
@@ -234,7 +240,24 @@ function Invoke-GraphRequest {
         $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
             $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $requestQuery
             $request |=> SetBody $Payload
-            $request |=> Invoke $skipCount
+            try {
+                $request |=> Invoke $skipCount
+            } catch [System.Net.WebException] {
+                $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
+                    $_.exception.response.statuscode
+                }
+
+                if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
+                    throw [GraphAccessDeniedException]::new($_.exception)
+                }
+
+                # Note that there may be other errors, such as 'BadRequest' that deserve a warning rather than failure,
+                # so we should consider adding others if the cases can be narrowed sufficiently to avoid other
+                # undesirable side effects of continuing on an error. An even better workaround may be command-completion,
+                # which would (and should!) be scoped to purely local operations -- this would give visibility as to
+                # the next segments without a request to Graph that could fail.
+                throw
+            }
         }
 
         $skipCount = $null

@@ -34,7 +34,6 @@ ScriptClass GraphContext {
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
         $this.uriCache = new-so UriCache 1000
-
         $this.connection = $graphConnection
         $this.version = $graphVersion
         $this.name = $name
@@ -94,7 +93,8 @@ ScriptClass GraphContext {
         function GetCurrent  {
             if ( $this.current ) {
                 write-verbose "Attempt to get current context -- current context is set to '$($this.current)'"
-                $::.LogicalGraphManager |=> Get |=> GetContext $this.current
+                $manager = $::.LogicalGraphManager |=> Get
+                $manager |=> GetContext $this.current
             } else {
                 write-verbose "Attempt to get current context -- no context is currently set"
             }
@@ -172,7 +172,7 @@ ScriptClass GraphContext {
                      ! $anonymous
                    ) {
                        write-verbose "Current context is compatible with supplied arguments, will use it"
-                        $currentContext
+                        $currentContext.connection
                    } else {
                        write-verbose "Current context is not compatible with supplied arguments, new connection required"
                    }

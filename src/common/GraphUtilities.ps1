@@ -162,7 +162,14 @@ ScriptClass GraphUtilities {
                 }
 
                 if ( $context ) {
-                    $sameEndpoint = $graphRelativeUri -eq $context.connection.GraphEndpoint.Graph
+                    $sameEndpoint = if ( $context.connection -and $context.connection.GraphEndpoint ) {
+                        $userAbsoluteUri = $uri.absoluteuri
+                        $userEndpoint = $userAbsoluteUri.substring(0, $userAbsoluteUri.length - $uri.PathAndQuery.length).trimend('/')
+                        write-verbose ("Comparing endpoints: user: '{0}' vs. context '{1}'" -f $userEndpoint, $context.connection.GraphEndpoint.Graph)
+                        $userEndpoint -eq ($context.connection.GraphEndpoint.Graph).tostring().trimend('/')
+                    } else {
+                        $false
+                    }
                     $sameVersion = $version -eq $context.version
                 }
 
@@ -181,7 +188,7 @@ ScriptClass GraphUtilities {
                 if ( $context -and ($sameEndpoint -and $sameVersion) ) {
                     $context
                 } else {
-                    $::.GraphContext |=> FindContext $endpoint $version
+                    $::.GraphContext |=> FindContext $endpoint $version | select -first 1
                 }
             } else {
                 $::.GraphContext.GetCurrent()
@@ -205,17 +212,30 @@ ScriptClass GraphUtilities {
                 throw "'$locationUri' is not a valid graph location uri"
             }
 
-            $relativeUri = $locationUri
-            $context = if ( $components.length -eq 1 ) {
-                $::.GraphContext |=> GetCurrent
-            } else {
-                $relativeUri = $components[1]
-                $::.logicalgraphmanager.Get().contexts[$components[0]].context
-            }
+            # Handle absolute web uri's, e.g. https://mygraph.microsoft.com/v1.0/singleton/etc
+            $locationUriAsWebUri = [Uri] $locationUri
 
-            @{
-                Context = $context
-                GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
+            if ( $locationUriAsWebUri.IsAbsoluteUri -and ( !( !$locationUriAsWebUri.host) ) -eq $true ) {
+                # This is an absolute web uri
+                $parsedUri = ParseGraphUri $locationUriAsWebUri
+                @{
+                    Context = $parsedUri.MatchedContext
+                    GraphRelativeUri = $parsedUri.GraphRelativeUri
+                }
+            } else {
+                $relativeUri = $locationUri
+                $context = if ( $components.length -eq 1 ) {
+                    $::.GraphContext |=> GetCurrent
+                } else {
+                    $relativeUri = $components[1]
+                    $graphName = $components[0]
+                    $::.logicalgraphmanager.Get().contexts[$graphName].context
+                }
+
+                @{
+                    Context = $context
+                    GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
+                }
             }
         }
     }
