@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Fix token refresh
 * Refactor into posh-graph core sdk and poshgraph ux
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
