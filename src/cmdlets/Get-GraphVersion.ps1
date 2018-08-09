@@ -41,8 +41,7 @@ function Get-GraphVersion {
     $graphConnection = if ( $connection ) {
         $connection
     } else {
-        $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
-        $currentContext.Connection
+        'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
     }
 
     $relativeBase = 'versions'

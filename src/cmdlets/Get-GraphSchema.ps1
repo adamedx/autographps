@@ -59,8 +59,7 @@ function Get-GraphSchema {
     $graphConnection = if ( $connection ) {
         $connection
     } else {
-        $currentContext = 'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
-        $currentContext.Connection
+        'GraphContext' |::> GetConnection $null $null $cloud 'User.Read'
     }
 
     $relativeBase = 'schemas'
@@ -84,7 +83,7 @@ function Get-GraphSchema {
             $sourceApiVersion = if ( $ApiVersion -ne $null -and $ApiVersion -ne '' ) {
                 $apiVersion
             } else {
-                $::.GraphContext |=> GetVersion
+                ($::.GraphContext |=> GetCurrent).version
             }
             get-graphversion -Connection $graphConnection -version $sourceApiVersion
         }
