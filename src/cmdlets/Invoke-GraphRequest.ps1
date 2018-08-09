@@ -176,7 +176,10 @@ function Invoke-GraphRequest {
             throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$RelativeUri'"
         }
         $info
-    } else {
+    } elseif ( $graphType -ne ([GraphType]::AADGraph) ) {
+        # We only parse URI's relative to context for MS Graph -- AADGraph
+        # context is not tracked, so don't try to construct a context relative
+        # AAD Graph path
         $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
         @{
             GraphRelativeUri = $info.GraphRelativeUri
