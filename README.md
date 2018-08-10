@@ -207,6 +207,12 @@ Get-GraphItem me -aadgraph
 
 Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of PoshGraph.
 
+### More about how it works
+
+If you'd like a behind the scenes look at the implementation of PoshGraph, take a look at the following article:
+
+* [Microsoft Graph via PowerShell](https://adamedx.github.io/softwarengineering/2018/08/09/Microsoft-Graph-via-PowerShell.html)
+
 ## Developer installation from source
 For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
