@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix token refresh
 * Refactor into posh-graph core sdk and poshgraph ux
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
@@ -234,6 +233,7 @@
 * Motivation.md
 * Update get-graphitem to give gls authorization warnings.
 * Fix publishmoduletodev to use module publishing rather than nuget
+* Fix token refresh
 
 ### Postponed
 

@@ -25,8 +25,7 @@ ScriptClass GraphIdentity {
 
         function __InitializeTokenCache {
             if ( ! $this.__TokenCache ) {
-                # TODO: Understand why this doesn't seem to cache anything,
-                # or at least the cache is not used in token acquisition :(
+                # Initialize this cache once per process
                 $this.__TokenCache = New-Object "Microsoft.Identity.Client.TokenCache"
             }
         }
@@ -37,17 +36,11 @@ ScriptClass GraphIdentity {
     }
 
     function Authenticate($graphEndpoint, $scopes = $null) {
-        if ( $this.token -ne $null) {
-            if ( $graphEndpoint.Type -eq [GraphType]::MSGraph ) {
-                $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
-                write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
+        if ( $this.token ) {
+            $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
+            write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
 
-                if ( $tokenTimeLeft.TotalMinutes -ge 2 ) {
-                    return
-                } else {
-                    write-verbose 'Requesting new token since existing token is expired or near expiration'
-                }
-            } else {
+            if ( $graphEndpoint.Type -ne [GraphType]::MSGraph ) {
                 return
             }
         }
@@ -121,10 +114,16 @@ ScriptClass GraphIdentity {
             $requestedScopes.Add($_)
         }
 
-        # TODO: Understand how to make this use a cached refresh token
-        # to avoid user interaction. We can pass in an extra parameter
-        # IUsee from $this.Token.User, but that makes no difference
-        $authResult = $msalAuthContext.AcquireTokenAsync($requestedScopes)
+        $authResult = if ( $this.token ) {
+            # Use the silent API since we already have a token that includes a
+            # refresh token -- even if our access token has expired, the refresh
+            # token can be used to get a new access token without a prompt for ux
+            $msalAuthContext.AcquireTokenSilentAsync($requestedScopes, $this.token.User)
+        } else {
+            # We have no token, so we cannot use the silent flow and a ux
+            # prompt must be shown
+            $msalAuthContext.AcquireTokenAsync($requestedScopes)
+        }
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
         if ( $authResult.Status -eq 'Faulted' ) {
@@ -134,6 +133,7 @@ ScriptClass GraphIdentity {
         $result = $authResult.Result
 
         if ( $authResult.IsFaulted ) {
+            write-verbose $authResult.Exception
             throw $authResult.Exception
         }
         $result
