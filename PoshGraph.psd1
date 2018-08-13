@@ -52,10 +52,6 @@ Description = 'CLI for Microsoft Graph interaction'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
-# RequiredModules = @(
-#     @{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
-#     @{ModuleName='poshgraph-sdk';ModuleVersion='0.0.5';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-# )
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
