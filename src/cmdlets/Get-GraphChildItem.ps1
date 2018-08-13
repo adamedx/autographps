@@ -13,7 +13,6 @@
 # limitations under the License.
 
 . (import-script Get-GraphUri)
-. (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
