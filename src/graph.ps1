@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This breaks without the import line below, but I don't think it should
+# It appears to be related to the scriptclass module and whether it is
+#
+import-module poshgraph-sdk
+
 . (import-script cmdlets)
 . (import-script aliases)
 

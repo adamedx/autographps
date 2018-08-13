@@ -13,7 +13,6 @@
 # limitations under the License.
 
 . (import-script ../common/GraphUtilities)
-. (import-script ../Client/LogicalGraphManager)
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
 

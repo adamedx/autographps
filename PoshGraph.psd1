@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.7'
+ModuleVersion = '0.11.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -52,6 +52,10 @@ Description = 'CLI for Microsoft Graph interaction'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
+# RequiredModules = @(
+#     @{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+#     @{ModuleName='poshgraph-sdk';ModuleVersion='0.0.5';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+# )
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,33 +70,24 @@ ScriptsToProcess = @('./src/graph.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(
+    @{ModuleName='poshgraph-sdk';ModuleVersion='0.0.9';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+)
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @(
-        'Connect-Graph',
-        'Disconnect-Graph',
         'Get-Graph',
         'Get-GraphChildItem',
-        'Get-GraphConnectionStatus',
-        'Get-GraphError',
-        'Get-GraphItem',
         'Get-GraphLocation',
-        'Get-GraphSchema',
-        'Get-GraphToken',
         'Get-GraphUri',
-        'Get-GraphVersion',
-        'Invoke-GraphRequest',
         'New-Graph',
-        'New-GraphConnection',
         'Remove-Graph',
-        'Set-GraphConnectionStatus',
         'Set-GraphLocation',
         'Set-GraphPrompt',
-        'Test-Graph',
         'Update-GraphMetadata'
     )
 
