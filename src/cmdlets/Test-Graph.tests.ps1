@@ -13,9 +13,10 @@
 # limitations under the License.
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$manifestLocation   = Join-Path $here '..\..\poshgraph.psd1'
 
 Describe "The Test-Graph cmdlet" {
-    $manifestLocation   = Join-Path $here '..\..\poshgraph.psd1'
+
     $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
 
     Mock Invoke-WebRequest {
@@ -28,6 +29,8 @@ Describe "The Test-Graph cmdlet" {
         get-job | remove-job -force
         remove-module -force scriptclass -erroraction silentlycontinue
         import-module -force scriptclass
+        import-module -force 'poshgraph-sdk' 2>$null
+        import-module $manifestlocation -force
     }
 
     Context "when receiving a successful response from Graph" {
