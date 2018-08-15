@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
 
 function Get-GraphChildItem {
@@ -80,7 +81,7 @@ function Get-GraphChildItem {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
 
-        $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+        $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
         if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
             $assumeRoot = $true

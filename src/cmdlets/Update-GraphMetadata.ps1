@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../metadata/GraphManager)
+
 function Update-GraphMetadata {
     [cmdletbinding()]
     param(
@@ -37,5 +39,5 @@ function Update-GraphMetadata {
         $::.GraphContext |=> GetCurrent
     }
 
-    $context |=> UpdateGraph $metadata $wait.ispresent $force.ispresent
+    $::.GraphManager |=> UpdateGraph $context $metadata $wait.ispresent $force.ispresent
 }

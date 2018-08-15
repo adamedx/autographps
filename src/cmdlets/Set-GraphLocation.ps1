@@ -49,7 +49,7 @@ function Set-GraphLocation {
     $absolutePath = if ( $parsedPath.IsAbsoluteUri ) {
         $parsedPath.RelativeUri
     } else {
-        $::.GraphUtilities |=> ToGraphRelativeUriPath $parsedPath.RelativeUri $context
+        $::.LocationHelper |=> ToGraphRelativeUriPathQualified $parsedPath.RelativeUri $context
     }
 
     $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1

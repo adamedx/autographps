@@ -31,6 +31,22 @@ ScriptClass LocationHelper {
             }
         }
 
+        function ToLocationUriPath( $context, $relativeUri ) {
+            $graphRelativeUri = $this.ToGraphRelativeUriPathQualified($relativeUri, $context)
+            "{0}:{1}" -f $context.name, $graphRelativeUri
+        }
+
+        function ToGraphRelativeUriPathQualified( $relativeUri, $context = $null ) {
+            $unqualifiedPath = $::.GraphUtilities |=> __ToGraphRelativeUriPath $relativeUri $context
+            __ToQualifiedUri $unqualifiedPath $context
+        }
+
+        function __ToQualifiedUri($graphRelativeUriString, $context) {
+            $graph = $::.GraphManager |=> GetGraph $context
+            $relativeVersionedUriString = $::.GraphUtilities |=> JoinRelativeUri $graph.ApiVersion $graphRelativeUriString
+            $::.GraphUtilities |=> JoinAbsoluteUri $graph.Endpoint $relativeVersionedUriString
+        }
+
         function __RegisterLocationDisplayType {
             remove-typedata -typename $this.LocationDisplayTypeName -erroraction silentlycontinue
 

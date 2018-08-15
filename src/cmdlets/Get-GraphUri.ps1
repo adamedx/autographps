@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../metadata/GraphManager)
 . (import-script common/SegmentHelper)
 
 function Get-GraphUri {
@@ -126,7 +127,7 @@ function Get-GraphUri {
 
         $mustIgnoreMissingMetadata = $IgnoreMissingMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
 
-        $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+        $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
         if ( $mustIgnoreMissingMetadata -and ! $contextReady ) {
             return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment

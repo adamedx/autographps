@@ -47,7 +47,7 @@ function New-Graph {
 
     $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name
 
-    $context |=> UpdateGraph
+    $::.GraphManager |=>  UpdateGraph $context
 
     $::.ContextHelper |=> ToPublicContext $context
 }

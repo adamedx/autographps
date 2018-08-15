@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ..\common\ProgressWriter)
 . (import-script ..\common\PreferenceHelper)
 . (import-script GraphDataModel)
 . (import-script GraphBuilder)
-. (import-script ..\cmdlets\Invoke-GraphRequest)
 
 enum MetadataStatus {
     NotStarted
