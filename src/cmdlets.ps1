@@ -12,25 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script cmdlets\Connect-Graph)
-. (import-script cmdlets\Disconnect-Graph)
+. (import-script client/LocationContext)
+
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphChildItem)
-. (import-script cmdlets\Get-GraphConnectionStatus)
-. (import-script cmdlets\Get-GraphError)
-. (import-script cmdlets\Get-GraphItem)
 . (import-script cmdlets\Get-GraphLocation)
-. (import-script cmdlets\Get-GraphSchema)
-. (import-script cmdlets\Get-GraphToken)
 . (import-script cmdlets\Get-GraphUri)
-. (import-script cmdlets\Get-GraphVersion)
-. (import-script cmdlets\New-GraphConnection)
-. (import-script cmdlets\Invoke-GraphRequest)
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\Remove-Graph)
-. (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
-. (import-script cmdlets\Test-Graph)
 . (import-script cmdlets\Update-GraphMetadata)
 

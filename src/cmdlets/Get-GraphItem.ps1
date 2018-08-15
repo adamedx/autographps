@@ -13,7 +13,6 @@
 # limitations under the License.
 
 . (import-script Invoke-GraphRequest)
-. (import-script common/ItemResultHelper)
 
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]

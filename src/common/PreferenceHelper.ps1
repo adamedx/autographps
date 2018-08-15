@@ -51,9 +51,3 @@ function __AutoConfigurePrompt($context) {
     }
 }
 
-$__GraphVerboseOutputPreferenceValues = @(
-    'Normal',
-    'High'
-)
-
-$GraphVerboseOutputPreference = 'Normal'

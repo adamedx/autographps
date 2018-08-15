@@ -12,8 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass Application {
+. (import-script ../metadata/GraphSegment)
+
+ScriptClass LocationContext {
     static {
-        const AppId (strict-val [Guid] '9825d80c-5aa0-42ef-bf13-61e12116704c')
+        function __initialize {
+            $::.GraphContext |=> SetDefaultLocation $::.GraphSegment.RootSegment
+            $::.GraphContext |=> GetCurrent |=> SetLocation $::.GraphSegment.RootSegment
+        }
     }
 }
+
+$::.LocationContext |=> __initialize

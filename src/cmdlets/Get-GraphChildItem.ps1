@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Invoke-GraphRequest)
+. (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
-. (import-script ../common/PreferenceHelper)
-. (import-script ../common/GraphAccessDeniedException)
-. (import-script common/ItemResultHelper)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -84,7 +81,7 @@ function Get-GraphChildItem {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
 
-        $contextReady = ($::.GraphContext |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+        $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
         if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
             $assumeRoot = $true

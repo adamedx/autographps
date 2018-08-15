@@ -13,7 +13,6 @@
 # limitations under the License.
 
 . (import-script GraphSegment)
-. (import-script ../common/GraphUtilities)
 
 ScriptClass UriCache {
     $uriTable = strict-val ([ordered] @{}).gettype() $null

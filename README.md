@@ -25,7 +25,7 @@ PoshGraph
 * SharePoint
 * And many more!
 
-If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you.
+If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [PoshGraph-SDK](https://github.com/adamedx/poshgraph-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
@@ -112,7 +112,7 @@ PS> gls messages
 
 Here are a few more commands to try -- note that you can also use absolute paths rather than paths relative to the current location
 ```powershell
-# Lists your calendars, sssuming you're at /me
+# Lists your calendars, assuming you're at /me
 gls calendars
 
 # Same thing, uses an absolute path
@@ -172,6 +172,8 @@ There are probably many more uses for PoshGraph, as wide-ranging as the Graph it
 ## Command inventory
 
 The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve significantly along with their usage. Additional documentation will be provided for them as their status solidifies.
+
+Note that since PoshGraph is built on [PoshGraph-SDK](https://github.com/adamedx/poshgraph-sdk), this list includes cmdlets from PoshGraph-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on PoshGraph-SDK rather than PoshGraph if its subset of cmdlets suits your use case.
 
 | Cmdlet                    | Alias | Description                                                                                     |
 |---------------------------|-------|-------------------------------------------------------------------------------------------------|

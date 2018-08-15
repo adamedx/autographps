@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ..\common\ProgressWriter)
 . (import-script Entity)
 . (import-script EntityVertex)
 . (import-script EntityEdge)

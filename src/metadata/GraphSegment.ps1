@@ -13,7 +13,6 @@
 # limitations under the License.
 
 . (import-script EntityVertex)
-. (import-script ../common/GraphUtilities)
 
 ScriptClass GraphSegment {
     $graphElement = $null

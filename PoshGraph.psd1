@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.7'
+ModuleVersion = '0.11.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,33 +66,24 @@ ScriptsToProcess = @('./src/graph.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(
+    @{ModuleName='poshgraph-sdk';ModuleVersion='0.1.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='scriptclass';ModuleVersion='0.13.6';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+)
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @(
-        'Connect-Graph',
-        'Disconnect-Graph',
         'Get-Graph',
         'Get-GraphChildItem',
-        'Get-GraphConnectionStatus',
-        'Get-GraphError',
-        'Get-GraphItem',
         'Get-GraphLocation',
-        'Get-GraphSchema',
-        'Get-GraphToken',
         'Get-GraphUri',
-        'Get-GraphVersion',
-        'Invoke-GraphRequest',
         'New-Graph',
-        'New-GraphConnection',
         'Remove-Graph',
-        'Set-GraphConnectionStatus',
         'Set-GraphLocation',
         'Set-GraphPrompt',
-        'Test-Graph',
         'Update-GraphMetadata'
     )
 
@@ -100,13 +91,11 @@ FunctionsToExport = @()
     VariablesToExport = @(
         'GraphAutoPromptPreference',
         'GraphMetadataPreference',
-        'GraphPromptColorPreference',
-        'GraphVerboseOutputPreference',
-        'LastGraphItems'
+        'GraphPromptColorPreference'
     )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
+AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -121,43 +110,20 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
-        '.\src\client\Application.ps1',
-        '.\src\client\graphapplication.ps1',
-        '.\src\client\GraphConnection.ps1',
-        '.\src\client\GraphContext.ps1',
-        '.\src\client\graphidentity.ps1',
-        '.\src\client\LogicalGraphManager.ps1',
-        '.\src\cmdlets\connect-graph.ps1',
-        '.\src\cmdlets\disconnect-graph.ps1',
+        '.\src\client\LocationContext.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
-        '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
-        '.\src\cmdlets\get-grapherror.ps1',
-        '.\src\cmdlets\get-graphitem.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
-        '.\src\cmdlets\Get-GraphSchema.ps1',
-        '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
-        '.\src\cmdlets\Get-GraphVersion.ps1',
-        '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\New-GraphConnection.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
-        '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
-        '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
-        '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
-        '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
-        '.\src\common\GraphAccessDeniedException.ps1',
-        '.\src\common\GraphUtilities.ps1',
         '.\src\common\PreferenceHelper.ps1',
-        '.\src\common\ProgressWriter.ps1',
-        '.\src\graphservice\graphendpoint.ps1'
         '.\src\metadata\metadata.ps1',
         '.\src\metadata\Entity.ps1',
         '.\src\metadata\EntityEdge.ps1',
@@ -166,6 +132,7 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\metadata\GraphBuilder.ps1',
         '.\src\metadata\GraphCache.ps1',
         '.\src\metadata\GraphDataModel.ps1',
+        '.\src\metadata\GraphManager.ps1',
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\UriCache.ps1',
@@ -182,7 +149,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'GraphExplorer', 'REST', 'CRUD', 'GraphAPI')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
@@ -192,6 +159,9 @@ PrivateData = @{
 
         # A URL to an icon representing this module.
         IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png'
+
+        # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
+        Prerelease = '-preview'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''

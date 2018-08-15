@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/LogicalGraphManager)
 . (import-script common/ContextHelper)
 
 function New-Graph {
@@ -49,7 +47,7 @@ function New-Graph {
 
     $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name
 
-    $context |=> UpdateGraph
+    $::.GraphManager |=>  UpdateGraph $context
 
     $::.ContextHelper |=> ToPublicContext $context
 }

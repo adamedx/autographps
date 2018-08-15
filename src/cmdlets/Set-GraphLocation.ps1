@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../common/GraphUtilities)
-. (import-script ../Client/LogicalGraphManager)
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
 
@@ -51,7 +49,7 @@ function Set-GraphLocation {
     $absolutePath = if ( $parsedPath.IsAbsoluteUri ) {
         $parsedPath.RelativeUri
     } else {
-        $::.GraphUtilities |=> ToGraphRelativeUriPath $parsedPath.RelativeUri $context
+        $::.LocationHelper |=> ToGraphRelativeUriPathQualified $parsedPath.RelativeUri $context
     }
 
     $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1

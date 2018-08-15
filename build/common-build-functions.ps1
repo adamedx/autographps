@@ -500,7 +500,7 @@ function publish-modulelocal {
             write-verbose "First package save attempted failed, retrying..."
             # Sometimes save-package fails the first time, so try it again, and then it succeeds.
             # Don't ask.
-            save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation | out-null
+            save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation -verbose 2>&1 | out-null
         }
     }
 

@@ -13,26 +13,14 @@
 # limitations under the License.
 
 $cmdlets = @(
-    'Disconnect-Graph',
-    'Connect-Graph',
     'Get-Graph',
     'Get-GraphChildItem',
-    'Get-GraphConnectionStatus',
-    'Get-GraphError',
-    'Get-GraphItem',
     'Get-GraphLocation',
-    'Get-GraphSchema',
-    'Get-GraphToken',
     'Get-GraphUri',
-    'Get-GraphVersion',
-    'Invoke-GraphRequest',
     'New-Graph',
-    'New-GraphConnection',
     'Remove-Graph',
-    'Set-GraphConnectionStatus',
     'Set-GraphLocation',
     'Set-GraphPrompt',
-    'Test-Graph',
     'Update-GraphMetadata'
 )
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../../metadata/GraphManager)
+
 ScriptClass ContextHelper {
     static {
         const ContextDisplayTypeName 'GraphContextDisplayType'
@@ -39,7 +41,7 @@ ScriptClass ContextHelper {
                 AuthEndpoint = $context.connection.GraphEndpoint.Authentication
                 CurrentLocation = $context.location
                 Authenticated = $context.connection.Connected
-                Metadata = $::.GraphContext |=> GetMetadataStatus $context
+                Metadata = $::.GraphManager |=> GetMetadataStatus $context
                 ConnectionStatus = $context.connection.status
                 ApplicationId = $context.connection.identity.app.appid
                 AuthType = $context.connection.identity.app.authtype

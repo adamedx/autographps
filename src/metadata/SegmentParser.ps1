@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ..\client\GraphContext)
 . (import-script GraphSegment)
+. (import-script GraphManager)
 . (import-script UriCache)
 
 ScriptClass SegmentParser {
@@ -27,7 +27,6 @@ ScriptClass SegmentParser {
             $existingGraph
         } else {
             $this.context = $graphContext
-            $this.UriCache = $graphContext.uriCache
         }
 
         $this.cacheEntities = $cacheEntities
@@ -35,7 +34,16 @@ ScriptClass SegmentParser {
 
     function __initializeGraph {
         if ( ! $this.graph ) {
-            $this.graph = $this.context |=> GetGraph
+            $this.graph = $::.GraphManager |=> GetGraph $this.context
+        }
+
+        if ( ! $this.UriCache ) {
+            $uriCache = $this.context |=> GetState uriCache
+            if ( ! $uriCache ) {
+                $uriCache = new-so UriCache 1000
+                $this.context |=> AddState uriCache $uriCache
+            }
+            $this.uriCache = $uriCache
         }
     }
 

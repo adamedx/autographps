@@ -37,27 +37,16 @@ Describe "Poshgraph application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'new-graphconnection',
-                'get-graphitem',
-                'test-graph',
-                'invoke-graphrequest',
-                'get-graphversion',
-                'get-graphschema',
-                'get-grapherror',
-                'connect-graph',
-                'disconnect-graph',
                 'update-graphmetadata',
                 'Get-Graph',
                 'Get-GraphChildItem',
-                'Get-GraphConnectionStatus',
                 'Get-GraphLocation',
                 'New-Graph',
                 'Remove-Graph',
-                'Set-GraphConnectionStatus',
                 'Set-GraphLocation',
                 'Set-GraphPrompt',
-                'get-graphuri',
-                'get-graphtoken')
+                'get-graphuri')
+
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
 
@@ -77,6 +66,9 @@ Describe "Poshgraph application" {
         BeforeEach {
             get-job | remove-job -force
             remove-module -force 'poshgraph' 2>$null
+            remove-module -force 'scriptclass' 2>$null
+            import-module -force 'scriptclass' 2>$null
+            import-module -force 'poshgraph-sdk' 2>$null
             import-module $manifestlocation -force
         }
 
