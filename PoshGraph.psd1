@@ -161,7 +161,8 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png'
 
         # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
-        Prerelease = '-preview'
+        # Requires PowerShellGet 1.6.0 or greater
+        # Prerelease = '-preview'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
