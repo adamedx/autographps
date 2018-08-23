@@ -162,11 +162,26 @@ PrivateData = @{
 
         # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
         # Requires PowerShellGet 1.6.0 or greater
-        # Prerelease = '-preview'
+        Prerelease = '-preview'
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = @"
+# PoshGraph 0.12.0 Release Notes
 
+## New Features
+
+* National cloud support for ``Get-GraphChildItem``, ``New-Graph`` and related commands through ``-Cloud`` options
+* Support for v1 apps and v1 authentication
+
+## New dependencies
+
+* PoshGraph-SDK 0.2.0-preview
+
+## Fixed defects
+
+* National cloud connections didn't work due to incorrect endpoints and lack of v1 authentication protocol support
+* Fix parameter binding in ``New-Graph`` that forced specification of every possible parameter
+"@
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
