@@ -216,7 +216,7 @@ ScriptClass GraphCache {
             $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
             write-progress -id 1 -activity $metadataactivity -status "In progress"
 
-            $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost
+            $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost ([GraphAuthProtocol]::Default)
             $connection = new-so GraphConnection $graphEndpoint $null $null
             $metadata = invoke-graphrequest -connection $connection '$metadata' -version $apiversion
 
