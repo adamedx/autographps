@@ -15,7 +15,7 @@
 . (import-script common/ContextHelper)
 
 function New-Graph {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='Simple')]
     param(
         [parameter(position=0)]
         $Version = 'v1.0',
@@ -26,10 +26,12 @@ function New-Graph {
         [parameter(position=2, parametersetname='Cloud')]
         [parameter(position=2, parametersetname='Authenticated')]
         [parameter(position=2, parametersetname='Connection')]
+        [parameter(position=2, parametersetname='Simple')]
         [String[]] $ScopeNames = @('User.Read'),
 
         [parameter(parametersetname='Cloud', mandatory=$true)]
         [parameter(parametersetname='Authenticated')]
+        [parameter(parametersetname='Simple')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='Cloud')]
@@ -47,7 +49,7 @@ function New-Graph {
 
     $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name
 
-    $::.GraphManager |=>  UpdateGraph $context
+    $::.GraphManager |=> UpdateGraph $context
 
     $::.ContextHelper |=> ToPublicContext $context
 }
