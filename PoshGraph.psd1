@@ -175,7 +175,7 @@ PrivateData = @{
 
 ## New dependencies
 
-* PoshGraph-SDK 0.2.0-preview
+* PoshGraph-SDK 0.2.0
 
 ## Fixed defects
 
