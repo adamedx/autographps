@@ -18,4 +18,4 @@
 
 - [ ] New test coverage was added for the new functionality
 - [ ] All project tests pass successfully
-- [ ] All commits have a sign-off for the Developer Certificate of Origin. See <https://github.com/adamedx/chef/blob/master/CONTRIBUTING.md#developer-certification-of-origin-dco>
+- [ ] All commits have a sign-off for the Developer Certificate of Origin. See <https://github.com/chef/chef/blob/master/CONTRIBUTING.md#developer-certification-of-origin-dco>

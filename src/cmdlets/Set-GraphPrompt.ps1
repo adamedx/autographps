@@ -25,15 +25,15 @@ $__GraphOriginalPrompt = $null
 $GraphPromptColorPreference = $null
 
 $__GraphDefaultPrompt = {
-    $graph = get-graph ($::.GraphContext |=> GetCurrent).name
-    $userToken = $graph.details.connection.identity.token
+    $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction silentlycontinue
+    $userToken = if ( $graph ) { $graph.details.connection.identity.token }
 
     $userOutput = $null
     $locationOutput = $null
     $connectionStatus = $null
 
     if ( $graph ) {
-        $userOutput = if ( $userToken ) { "[{0}] " -f $graph.details.connection.identity.token.user.displayableid }
+        $userOutput = if ( $userToken ) { "[{0}] " -f $graph.userId }
         $locationOutput = "{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
         $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
     }

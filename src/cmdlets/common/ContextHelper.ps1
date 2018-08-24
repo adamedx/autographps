@@ -23,15 +23,10 @@ ScriptClass ContextHelper {
         }
 
         function ToPublicContext( $context ) {
-            $tokenData = $context.connection.identity.token
+            $userInfo = $context.connection.identity |=> GetUserInformation
 
-            $userId = $null
-            $scopes = $null
-
-            if ( $tokenData ) {
-                $userId = $tokenData.User.DisplayableId
-                $scopes = $tokenData.scopes
-            }
+            $userId = $userInfo.userId
+            $scopes = $userInfo.scopes
 
             [PSCustomObject]@{
                 PSTypeName = $this.ContextDisplayTypeName
