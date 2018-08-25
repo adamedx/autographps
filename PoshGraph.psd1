@@ -162,7 +162,7 @@ PrivateData = @{
 
         # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
         # Requires PowerShellGet 1.6.0 or greater
-        Prerelease = '-preview'
+        # Prerelease = '-preview'
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
