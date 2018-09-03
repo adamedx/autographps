@@ -33,14 +33,42 @@ $__GraphDefaultPrompt = {
     $connectionStatus = $null
 
     if ( $graph ) {
-        $userOutput = if ( $userToken ) { "[{0}] " -f $graph.userId }
+        $identity = $graph.details.connection.identity
+        $identityOutput = if ( $graph.details.connection.identity.app.authtype -eq ([GraphAppAuthType]::Delegated) ) {
+            if ($userToken) {
+                $graph.userId
+            }
+        } else {
+            $tid = if ( $identity.TenantDisplayName ) {
+                $identity.TenantDisplayName
+            } else {
+                $identity.TenantDisplayId
+            }
+
+            $tenantData = if ( $tid ) {
+                'tid=' + $tid
+            }
+
+            $tenantData
+        }
+
+        $promptOutput = @()
+
+        if ( $identityOutput ) {
+            $promptOutput += $identityOutput
+        }
+
+        $versionOutput = 'ver=' + $graph.version
+
+        $promptOutput += $versionOutput
+        $connectionOutput = '[{0}] ' -f ($promptOutput -join ', ')
         $locationOutput = "{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
         $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
     }
 
-    if ( $userOutput -or $locationOutput ) {
+    if ( $connectionOutput -or $locationOutput ) {
         $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
-        write-host -foreground $promptColor "$($userOutput)$($connectionStatus)$($locationOutput)"
+        write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)$($locationOutput)"
     }
 }
 
