@@ -1,3 +1,4 @@
+
 # Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +16,31 @@
 . (import-script common/ContextHelper)
 
 function Get-Graph {
-    [cmdletbinding()]
-    param($Graph = $null)
+    [cmdletbinding(DefaultParameterSetName='byname')]
+    param(
+        [parameter(parametersetname='byname', position=0)]
+        $Graph = $null,
+
+        [parameter(parametersetname='current')]
+        [Switch] $Current
+    )
 
     $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
-    $graphContexts |
-      where { ! $Graph -or $_.name -eq $Graph } | foreach {
+
+    $targetGraph = if ( $Current.IsPresent ) {
+        ($::.GraphContext |=> GetCurrent).name
+    } else {
+        $Graph
+    }
+
+    $results = $graphContexts |
+      where { ! $targetGraph -or $_.name -eq $targetGraph } | foreach {
           $::.ContextHelper |=> ToPublicContext $_
       }
+
+    if ( $targetGraph ) {
+        $results | select *
+    } else {
+        $results
+    }
 }
