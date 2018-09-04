@@ -39,6 +39,8 @@ ScriptClass ContextHelper {
                 Metadata = $::.GraphManager |=> GetMetadataStatus $context
                 ConnectionStatus = $context.connection.status
                 ApplicationId = $context.connection.identity.app.appid
+                TenantId = $context.connection.identity.TenantDisplayId
+                TenantName = $context.connection.identity.TenantDisplayName
                 AuthType = $context.connection.identity.app.authtype
                 UserId = $userId
                 Scopes = $scopes
