@@ -130,7 +130,10 @@ function Get-GraphUri {
         $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
         if ( $mustIgnoreMissingMetadata -and ! $contextReady ) {
-            return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
+            if ( ! $Children.IsPresent ) {
+                return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
+            }
+            return @()
         }
 
         $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
