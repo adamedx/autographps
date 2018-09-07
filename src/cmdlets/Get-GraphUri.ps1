@@ -237,3 +237,4 @@ function Get-GraphUri {
     $results
 }
 
+$::.GraphUriCompletionHelper |=> RegisterArgumentCompleter Get-GraphUri Uri ([UriCompletionType]::AnyUri)

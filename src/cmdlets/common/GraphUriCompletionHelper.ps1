@@ -15,8 +15,9 @@
 . (import-script ../Get-GraphUri)
 
 enum UriCompletionType {
-    LocationUri
+    AnyUri
     LocationOrMethodUri
+    LocationUri
 }
 
 ScriptClass GraphUriCompletionHelper {
@@ -31,6 +32,11 @@ ScriptClass GraphUriCompletionHelper {
             $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $false
         }
 
+        $AnyUriArgumentCompleter = {
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $true
+        }
+
         function __UriArgumentCompleter($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter, $nonlocatable, $includeVirtual) {
             $graphUri =  $::.GraphUtilities |=> ToGraphRelativeUri $wordToComplete
 
@@ -39,8 +45,9 @@ ScriptClass GraphUriCompletionHelper {
 
         function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, [UriCompletionType] $uriCompletionType) {
             $completerBlock = switch ( $uriCompletionType ) {
-                ([UriCompletionType]::LocationUri) { $::.GraphUriCompletionHelper.LocationUriArgumentCompleter }
+                ([UriCompletionType]::AnyUri) { $::.GraphUriCompletionHelper.AnyUriArgumentCompleter }
                 ([UriCompletionType]::LocationOrMethodUri) { $::.GraphUriCompletionHelper.LocationOrMethodUriArgumentCompleter }
+                ([UriCompletionType]::LocationUri) { $::.GraphUriCompletionHelper.LocationUriArgumentCompleter }
                 default {
                     throw [ArgumentException]::new("Unknown uriCompletionType '{0}'" -f $uriCompletionType)
                 }
