@@ -74,5 +74,5 @@ function Set-GraphLocation {
     __AutoConfigurePrompt $context
 }
 
-$::.GraphUriCompletionHelper |=> RegisterArgumentCompleter Set-GraphLocation UriPath
+$::.GraphUriCompletionHelper |=> RegisterArgumentCompleter Set-GraphLocation UriPath ([UriCompletionType]::LocationUri)
 

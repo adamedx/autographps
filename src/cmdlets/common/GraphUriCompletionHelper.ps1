@@ -14,19 +14,40 @@
 
 . (import-script ../Get-GraphUri)
 
+enum UriCompletionType {
+    LocationUri
+    LocationOrMethodUri
+}
+
 ScriptClass GraphUriCompletionHelper {
     static {
-        $ArgumentCompleter = {
+        $LocationUriArgumentCompleter = {
             param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-            $graphUri =  $::.GraphUtilities |=> ToGraphRelativeUri $wordToComplete
-
-            $::.GraphUriCompletionHelper |=> __GetUriCompletions $graphUri
+            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $false $false
         }
 
-        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames) {
+        $LocationOrMethodUriArgumentCompleter = {
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $false
+        }
+
+        function __UriArgumentCompleter($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter, $nonlocatable, $includeVirtual) {
+            $graphUri =  $::.GraphUtilities |=> ToGraphRelativeUri $wordToComplete
+
+            $::.GraphUriCompletionHelper |=> __GetUriCompletions $graphUri $nonLocatable $includeVirtual
+        }
+
+        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, [UriCompletionType] $uriCompletionType) {
+            $completerBlock = switch ( $uriCompletionType ) {
+                ([UriCompletionType]::LocationUri) { $::.GraphUriCompletionHelper.LocationUriArgumentCompleter }
+                ([UriCompletionType]::LocationOrMethodUri) { $::.GraphUriCompletionHelper.LocationOrMethodUriArgumentCompleter }
+                default {
+                    throw [ArgumentException]::new("Unknown uriCompletionType '{0}'" -f $uriCompletionType)
+                }
+            }
+
             $parameterNames | foreach {
-                Register-ArgumentCompleter -commandname $command -ParameterName $_ -ScriptBlock $this.ArgumentCompleter
+                Register-ArgumentCompleter -commandname $command -ParameterName $_ -ScriptBlock $completerBlock
             }
         }
 
@@ -35,7 +56,6 @@ ScriptClass GraphUriCompletionHelper {
             $lastWord = $uriString -split '/' | select -last 1
 
             $parentUri = '/' + $uriString.substring(0, $uriString.length - $lastword.length).trimend('/').trimstart('/')
-
             $candidates = Get-GraphUri $parentUri -children -includevirtualchildren:$includeVirtual -LocatableChildren:(!$nonLocatable) -ignoremissingmetadata |
               select -expandproperty graphuri |
               select -expandproperty originalstring |
@@ -72,7 +92,7 @@ ScriptClass GraphUriCompletionHelper {
 
             $script:badarg = @($sortedItems, $sortedItemsCollection)
 
-            $matchingUris = @()
+            $matchingItems = @()
             $lastMatch = $null
 
             $interval = [int] ( $sortedItemsCollection.Count / 2 )
@@ -106,11 +126,11 @@ ScriptClass GraphUriCompletionHelper {
                         break
                     }
 
-                    $matchingUris += $candidate
+                    $matchingItems += $candidate
                 }
             }
 
-            $matchingUris
+            $matchingItems
         }
     }
 }

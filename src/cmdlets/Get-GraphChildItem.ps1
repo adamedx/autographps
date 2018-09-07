@@ -14,6 +14,7 @@
 
 . (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
+. (import-script common/GraphUriCompletionHelper)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -216,3 +217,5 @@ function Get-GraphChildItem {
     $targetResultVariable.value = $results
     $results
 }
+
+$::.GraphUriCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([UriCompletionType]::LocationOrMethodUri)
