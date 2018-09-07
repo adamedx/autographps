@@ -14,7 +14,7 @@
 
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
-. (import-script common/GraphUriCompletionHelper)
+. (import-script common/ArgumentCompletionHelper)
 
 function Set-GraphLocation {
     [cmdletbinding()]
@@ -74,5 +74,5 @@ function Set-GraphLocation {
     __AutoConfigurePrompt $context
 }
 
-$::.GraphUriCompletionHelper |=> RegisterArgumentCompleter Set-GraphLocation UriPath ([UriCompletionType]::LocationUri)
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Set-GraphLocation UriPath ([ArgumentCompletionType]::LocationUri)
 

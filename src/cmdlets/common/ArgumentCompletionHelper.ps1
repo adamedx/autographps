@@ -12,44 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../Get-GraphUri)
-
-enum UriCompletionType {
+enum ArgumentCompletionType {
     AnyUri
     LocationOrMethodUri
     LocationUri
 }
 
-ScriptClass GraphUriCompletionHelper {
+ScriptClass ArgumentCompletionHelper {
     static {
         $LocationUriArgumentCompleter = {
             param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $false $false
+            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $false $false
         }
 
         $LocationOrMethodUriArgumentCompleter = {
             param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $false
+            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $false
         }
 
         $AnyUriArgumentCompleter = {
             param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.GraphUriCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $true
+            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $true
         }
 
         function __UriArgumentCompleter($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter, $nonlocatable, $includeVirtual) {
             $graphUri =  $::.GraphUtilities |=> ToGraphRelativeUri $wordToComplete
 
-            $::.GraphUriCompletionHelper |=> __GetUriCompletions $graphUri $nonLocatable $includeVirtual
+            $::.ArgumentCompletionHelper |=> __GetUriCompletions $graphUri $nonLocatable $includeVirtual
         }
 
-        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, [UriCompletionType] $uriCompletionType) {
-            $completerBlock = switch ( $uriCompletionType ) {
-                ([UriCompletionType]::AnyUri) { $::.GraphUriCompletionHelper.AnyUriArgumentCompleter }
-                ([UriCompletionType]::LocationOrMethodUri) { $::.GraphUriCompletionHelper.LocationOrMethodUriArgumentCompleter }
-                ([UriCompletionType]::LocationUri) { $::.GraphUriCompletionHelper.LocationUriArgumentCompleter }
+        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, [ArgumentCompletionType] $completionType) {
+            $completerBlock = switch ( $completionType ) {
+                ([ArgumentCompletionType]::AnyUri) { $::.ArgumentCompletionHelper.AnyUriArgumentCompleter }
+                ([ArgumentCompletionType]::LocationOrMethodUri) { $::.ArgumentCompletionHelper.LocationOrMethodUriArgumentCompleter }
+                ([ArgumentCompletionType]::LocationUri) { $::.ArgumentCompletionHelper.LocationUriArgumentCompleter }
                 default {
-                    throw [ArgumentException]::new("Unknown uriCompletionType '{0}'" -f $uriCompletionType)
+                    throw [ArgumentException]::new("Unknown ArgumentCompletionType '{0}'" -f $completionType)
                 }
             }
 
@@ -96,8 +94,6 @@ ScriptClass GraphUriCompletionHelper {
             if ( ! $sortedItemsCollection ) {
                 $sortedItemsCollection = @($sortedItems)
             }
-
-            $script:badarg = @($sortedItems, $sortedItemsCollection)
 
             $matchingItems = @()
             $lastMatch = $null
