@@ -14,6 +14,7 @@
 # limitations under the License.
 
 . (import-script common/ContextHelper)
+. (import-script common/GraphCompletionHelper)
 
 function Get-Graph {
     [cmdletbinding(DefaultParameterSetName='byname')]
@@ -25,13 +26,13 @@ function Get-Graph {
         [Switch] $Current
     )
 
-    $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
-
     $targetGraph = if ( $Current.IsPresent ) {
         ($::.GraphContext |=> GetCurrent).name
     } else {
         $Graph
     }
+
+    $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
 
     $results = $graphContexts |
       where { ! $targetGraph -or $_.name -eq $targetGraph } | foreach {
@@ -44,3 +45,5 @@ function Get-Graph {
         $results
     }
 }
+
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-Graph Graph ([GraphCompletionType]::Name)

@@ -37,7 +37,7 @@ ScriptClass ArgumentCompletionHelper {
             }
         }
 
-        function __FindMatchesStartingWith($target, $sortedItems) {
+        function FindMatchesStartingWith($target, $sortedItems) {
             $sortedItemsCollection = try {
                 if ( $sortedItems.Count -eq 0 ) {
                     return $null
@@ -57,22 +57,23 @@ ScriptClass ArgumentCompletionHelper {
             $matchingItems = @()
             $lastMatch = $null
 
-            $interval = [int] ( $sortedItemsCollection.Count / 2 )
-            $current = $interval
+            $interval = $sortedItemsCollection.Count / 2
+            $current = $interval / 2
             $previous = -1
 
             if ( $target.length -ne 0 ) {
-                while ( $previous -ne $current ) {
-                    $interval = [int] ($interval / 2)
+                while ( [int] $previous -ne [int] $current ) {
+                    $interval /= 2
                     $previous = $current
-                    $item = $sortedItemsCollection[$current]
+                    $item = $sortedItemsCollection[[int]$current]
 
                     $comparison = $target.CompareTo($item)
+
                     if ( $comparison -gt 0 ) {
                         $current += $interval
                     } else {
                         if ( $item.StartsWith($target) ) {
-                            $lastMatch = $current
+                            $lastMatch = [int] $current
                         }
                         $current -= $interval
                     }

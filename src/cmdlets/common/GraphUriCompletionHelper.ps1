@@ -64,7 +64,7 @@ ScriptClass GraphUriCompletionHelper {
               }
 
             $completions = if ( $candidates ) {
-                $this.base |=> __FindMatchesStartingWith $lastword $candidates
+                $this.base |=> FindMatchesStartingWith $lastword $candidates
             }
 
             $prefixableParentUri = $parentUri.trimend('/')

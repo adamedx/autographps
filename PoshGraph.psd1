@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.12.0'
+ModuleVersion = '0.13.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -122,6 +122,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ArgumentCompletionHelper.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\GraphCompletionHelper.ps1',
         '.\src\cmdlets\common\GraphUriCompletionHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
