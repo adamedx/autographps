@@ -14,7 +14,7 @@
 
 . (import-script ../metadata/GraphManager)
 . (import-script common/SegmentHelper)
-. (import-script common/ArgumentCompletionHelper)
+. (import-script common/GraphUriCompletionHelper)
 
 function Get-GraphUri {
     [cmdletbinding()]
@@ -238,4 +238,4 @@ function Get-GraphUri {
     $results
 }
 
-$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphUri Uri ([ArgumentCompletionType]::AnyUri)
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphUri Uri ([GraphUriCompletionType]::AnyUri)

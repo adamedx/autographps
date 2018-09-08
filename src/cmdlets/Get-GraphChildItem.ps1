@@ -217,4 +217,4 @@ function Get-GraphChildItem {
     $results
 }
 
-$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([ArgumentCompletionType]::LocationOrMethodUri )
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([GraphUriCompletionType]::LocationOrMethodUri )

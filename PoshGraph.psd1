@@ -122,6 +122,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ArgumentCompletionHelper.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\GraphUriCompletionHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\PreferenceHelper.ps1',

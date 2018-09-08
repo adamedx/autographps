@@ -12,73 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-enum ArgumentCompletionType {
-    AnyUri
-    LocationOrMethodUri
-    LocationUri
-}
-
 ScriptClass ArgumentCompletionHelper {
     static {
-        $LocationUriArgumentCompleter = {
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $false $false
+        $__ArgumentCompleters = @{}
+
+        function __RegisterArgumentCompleterScriptBlock([ScriptBlock] $argumentCompleter, $completionType) {
+            $this.__ArgumentCompleters.Add($completionType, $argumentCompleter)
         }
 
-        $LocationOrMethodUriArgumentCompleter = {
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $false
-        }
+        function __GetCompleter($completionType) {
+            $completerBlock = $this.__ArgumentCompleters[$completionType]
 
-        $AnyUriArgumentCompleter = {
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.ArgumentCompletionHelper |=> __UriArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $true
-        }
-
-        function __UriArgumentCompleter($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter, $nonlocatable, $includeVirtual) {
-            $graphUri =  $::.GraphUtilities |=> ToGraphRelativeUri $wordToComplete
-
-            $::.ArgumentCompletionHelper |=> __GetUriCompletions $graphUri $nonLocatable $includeVirtual
-        }
-
-        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, [ArgumentCompletionType] $completionType) {
-            $completerBlock = switch ( $completionType ) {
-                ([ArgumentCompletionType]::AnyUri) { $::.ArgumentCompletionHelper.AnyUriArgumentCompleter }
-                ([ArgumentCompletionType]::LocationOrMethodUri) { $::.ArgumentCompletionHelper.LocationOrMethodUriArgumentCompleter }
-                ([ArgumentCompletionType]::LocationUri) { $::.ArgumentCompletionHelper.LocationUriArgumentCompleter }
-                default {
-                    throw [ArgumentException]::new("Unknown ArgumentCompletionType '{0}'" -f $completionType)
-                }
+            if ( ! $completerBlock ) {
+                throw [ArgumentException]::new("Unknown ArgumentCompletionType '{0}'" -f $completionType)
             }
 
+            $completerBlock
+        }
+
+        function RegisterArgumentCompleter([string] $command, [string[]] $parameterNames, $completionType) {
+            $completerBlock = __GetCompleter $completionType
             $parameterNames | foreach {
                 Register-ArgumentCompleter -commandname $command -ParameterName $_ -ScriptBlock $completerBlock
             }
         }
 
-        function __GetUriCompletions([uri] $targetUri, [bool] $nonLocatable=$false, [bool] $includeVirtual=$false) {
-            $uriString = $targetUri.tostring()
-            $lastWord = $uriString -split '/' | select -last 1
-
-            $parentUri = '/' + $uriString.substring(0, $uriString.length - $lastword.length).trimend('/').trimstart('/')
-            $candidates = Get-GraphUri $parentUri -children -includevirtualchildren:$includeVirtual -LocatableChildren:(!$nonLocatable) -ignoremissingmetadata |
-              select -expandproperty graphuri |
-              select -expandproperty originalstring |
-              foreach {
-                $_ -split '/' | select -last 1
-              }
-
-            $completions = if ( $candidates ) {
-                FindMatchesStartingWith $lastword $candidates
-            }
-
-            $prefixableParentUri = $parentUri.trimend('/')
-            $completions | foreach {
-                $prefixableParentUri, $_ -join '/'
-            }
-        }
-
-        function FindMatchesStartingWith($target, $sortedItems) {
+        function __FindMatchesStartingWith($target, $sortedItems) {
             $sortedItemsCollection = try {
                 if ( $sortedItems.Count -eq 0 ) {
                     return $null
