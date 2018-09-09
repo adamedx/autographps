@@ -26,6 +26,8 @@ function Get-GraphChildItem {
 
         [String] $ODataFilter = $null,
 
+        [String] $Search = $null,
+
         [String[]] $Select = $null,
 
         [String[]] $Expand = $null,
@@ -107,6 +109,7 @@ function Get-GraphChildItem {
         RelativeUri=$ItemRelativeUri[0]
         Query = $Query
         ODataFilter = $ODataFilter
+        Search = $Search
         Select = $Select
         Expand = $Expand
         OrderBy = $OrderBy
@@ -213,3 +216,5 @@ function Get-GraphChildItem {
     $targetResultVariable.value = $results
     $results
 }
+
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([GraphUriCompletionType]::LocationOrMethodUri )

@@ -14,12 +14,14 @@
 
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
+. (import-script common/GraphUriCompletionHelper)
 
 function Set-GraphLocation {
     [cmdletbinding()]
     param(
         [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
-        $UriPath = $null
+        $UriPath = $null,
+        [switch] $Force
     )
 
     $inputUri = if ( $UriPath -is [String] ) {
@@ -52,11 +54,18 @@ function Set-GraphLocation {
         $::.LocationHelper |=> ToGraphRelativeUriPathQualified $parsedPath.RelativeUri $context
     }
 
-    $location = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
+    $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
-    $locationClass = ($location.graphElement |=> GetEntity).Type
-    if ( ! $::.SegmentHelper.IsValidLocationClass($locationClass) ) {
-        throw "The path '$UriPath' of class '$locationClass' is a method or other invalid location"
+    $location = if ( $contextReady -or ! $Force.IsPresent ) {
+        $lastUriSegment = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
+        $locationClass = ($lastUriSegment.graphElement |=> GetEntity).Type
+        if ( ! $::.SegmentHelper.IsValidLocationClass($locationClass) ) {
+            throw "The path '$UriPath' of class '$locationClass' is a method or other invalid location"
+        }
+        $lastUriSegment
+    } else {
+        write-warning "-Force option specified and metadata is not ready, will force location change to root"
+        new-so GraphSegment $::.EntityVertex.RootVertex
     }
 
     $context |=> SetLocation $location
@@ -64,3 +73,6 @@ function Set-GraphLocation {
 
     __AutoConfigurePrompt $context
 }
+
+$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Set-GraphLocation UriPath ([GraphUriCompletionType]::LocationUri)
+
