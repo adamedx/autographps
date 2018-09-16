@@ -1,17 +1,17 @@
-# Contributing to PoshGraph
+# Contributing to AutoGraphPS
 
-Thank you for your interest in **PoshGraph**. This document describes the process for contributing to the project.
+Thank you for your interest in **AutoGraphPS**. This document describes the process for contributing to the project.
 
 ## What may I contribute?
 
-Contributions to PoshGraph may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/poshgraph/issues/new/choose).
+Contributions to AutoGraphPS may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/poshgraph/issues/new/choose).
 
 Note that all source contributions **MUST** conform to the project's [LICENSE](LICENSE.md) -- any submission in violation of the LICENSE will not be accepted.
 
 *<font color="red">Currently we are limited in our ability to accept source code submissions, so we encourage you to participate by submitting an issue. Any source code contributions are likely to take significant time to review and verify due to missing unit tests, functional tests, and continuous integration capabilities. Once we've remedied the omissions, we'll be able to confidently seek out your pull requests!</font>*
 
 ## Submission process -- DRAFT
-This section gives a preliminary look at the process for developing, submitting, and iterating on source code improvements to PoshGraph. As the project is still in early stage development and missing automation artifacts and infrastructure for validating submissions, this section should be considered advisory and our ability to take your submission at this time is limited at best.
+This section gives a preliminary look at the process for developing, submitting, and iterating on source code improvements to AutoGraphPS. As the project is still in early stage development and missing automation artifacts and infrastructure for validating submissions, this section should be considered advisory and our ability to take your submission at this time is limited at best.
 
 Submit your contribution through the following steps:
 
@@ -26,7 +26,7 @@ After your PR has incorporated the suggestions from peers and met all project st
 
 ### Developer Certificate of Origin (DCO)
 
-The PoshGraph project source is available for anyone to use and/or modify under the terms of the [LICENSE](LICENSE.md). For your code to be accepted into the project, you must publicly agree to the LICENSE. Among other stipulations, the LICENSE requires you to grant use of the intellectual property embodied in your contributions to consumers of the project, whether they are modifying the project or simply using its output.
+The AutoGraphPS project source is available for anyone to use and/or modify under the terms of the [LICENSE](LICENSE.md). For your code to be accepted into the project, you must publicly agree to the LICENSE. Among other stipulations, the LICENSE requires you to grant use of the intellectual property embodied in your contributions to consumers of the project, whether they are modifying the project or simply using its output.
 
 To faciltate your ability to assent to the terms of the LICENSE, this project uses the Developer Certificate of Origin (DCO). The DCO allows you as the contributor to assent to the conditions specified in the LICENSE. You must do so at the level of each commit you submit for merging into this repository through an explicit [DCO signoff](#dco-signoff) message in the commit.
 
@@ -87,7 +87,7 @@ If you didn't add the signoff at commit time, simply amend your commit with the 
 
 ### Coding standards
 
-PoshGraph is implemented using the PowerShell scripting language, and uses the [ScriptClass](https://github.com/adamedx/scriptclass) framework to facilitate an object-oriented programming style similar to dynamic languages such as *Python* and *Ruby* and even *Java* and *C#*. The following rules are similar to what you'd see advocated for projects using those langauges:
+AutoGraphPS is implemented using the PowerShell scripting language, and uses the [ScriptClass](https://github.com/adamedx/scriptclass) framework to facilitate an object-oriented programming style similar to dynamic languages such as *Python* and *Ruby* and even *Java* and *C#*. The following rules are similar to what you'd see advocated for projects using those langauges:
 
 * **Use `import-script` to re-use code in other files**: The `import-script` cmdlet from [ScriptClass](https://github.com/adamedx/scriptclass) is similar conceptually to the `#include` directive in *C/C++*, the `require` statement , *Ruby*, and the `import` statement in *Python*. Use that at the top of a source file
 * **Components should be packaged as `ScriptClass` classes**: The [ScriptClass](https://github.com/adamedx/scriptclass) library allows you to use the object-oriented formalism of a *class* that defines a set of software elements based on their shared defintion of state and the operations on that state. Where in object-oriented languages like *C++*, *Java*, *C#*, *Ruby*, or *Python* you'd use the keyword `class` to declare such a set or type, in this project you'd use the keyword `ScriptClass`. As in those languages, each class should be defined in its own source files -- no source file should define more than one class or cmdlet.
