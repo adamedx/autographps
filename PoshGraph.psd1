@@ -169,29 +169,24 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# PoshGraph 0.13.0 Release Notes
+# PoshGraph 0.13.1 Release Notes
 
-This release includes app-only related features from PoshGraph-SDK 0.3.0 as well as argument completion for Graph URIs and graph names.
+PoshGraph has been renamed AutoGraphPS!!!
 
-## New Features
+This package is now DEPRECATED in favor of **AutoGraphPS**. All cmdlets from
+PoshGraph are available in **AutoGraphPS**. Please install AutoGraphPS:
 
-* ``Get-GraphChildItem`` now supports app-only authentication with MS Graph through the ``New-GraphConnection`` and `Connect-Graph`` cmdlets
-* ``Set-GraphPrompt`` displays app + tenant information for app-only connections
-* ``Get-GraphChildItem`` now supports V1 token caching due to update to newer ``poshgraph-sdk`` dependency
-* ``Get-GraphChildItem``, ``Set-GraphLocation``, and ``Get-GraphUri`` now support auto-completion of Graph uri parameters once metadata has been processed
-8 ``Get-Graph``, ``Remove-Graph`` cmdlets support auto-completion of Graph name arguments
-* New ``-Force`` option for ``Set-GraphLocation`` let's you bypass the wait on metadata processing and set the location to the root of the specified graph.
-* New ``-Current`` option for ``Get-Graph`` to get the current Graph
-* Include tenant information in ``Get-Graph`` result
-* Add ``-Search`` option for ``Get-GraphChildItem`` to enable full-text search on Graph REST calls that support the OData ```$search`` query parameter
+Visit the AutoGraphPS package in PowerShell Gallery:
 
-## New dependencies
+       https://www.powershellgallery.com/packages/autographps
 
-* PoshGraph-SDK 0.3.0
+Install AutoGraphPS via
 
-## Fixed defects
+       Install-Module -Name autographps -Scope CurrentUser
 
-* See release notes for ``PoshGraph-SDK 0.3.0`` for fixes in that module that affected ``PoshGraph``
+The PoshGraph package *will no longer be updated* -- to receive the latest features
+use AutoGraphPS where ongoing development of the cmdlets from PoshGraph continues
+unabated!
 "@
     } # End of PSData hashtable
 
