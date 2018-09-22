@@ -1,7 +1,7 @@
 PoshGraph
 =========
 
-<img src="https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png" width="100">
+<img src="https://raw.githubusercontent.com/adamedx/autographps/master/assets/PoshGraphIcon.png" width="100">
 
 ----
 
@@ -14,6 +14,11 @@ PoshGraph
 * [Contributing and development](#contributing-and-development)
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
+
+## This module has been renamed!
+This branch is a snapshot of **PoshGraph** source just before the project was renamed to [AutoGraphPS](https://github.com/adamedx/autographps). Please visit [AutoGraphPS](https://github.com/adamedx/autographps) for the latest instructions on using and develping **AutoGraphPS** which carries forward all of the cmdlets and features of **PoshGraph**.
+
+Note that this repository was originally named **PoshGraph** and is now **AutoGraphPS** available at [https://github.com/adamedx/autographps](https://github.com/adamedx/autographps). There is no further development on this branch, which exists only as a record of the rename and reference point for old project outputs and external documentation that refers to the original name.
 
 ## Overview
 
@@ -37,7 +42,7 @@ PoshGraph requires Windows 10 and PowerShell 5.0.
 PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph); run the following command to install the latest stable release of PoshGraph into your user profile:
 
 ```powershell
-Install-Module PoshGraph -scope currentuser
+Install-Module AutoGraphPS -scope currentuser
 ```
 
 ## Using PoshGraph
