@@ -15,6 +15,8 @@ AutoGraphPS
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
+*This repository / project  was recently renamed from **PoshGraph** -- if you're looking for **PoshGraph**, you're in the right place!*
+
 ## Overview
 
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
