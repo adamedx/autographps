@@ -13,7 +13,7 @@
 # limitations under the License.
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$manifestLocation   = Join-Path $here '..\..\poshgraph.psd1'
+$manifestLocation   = Join-Path $here '..\..\autographps.psd1'
 
 Describe "The Test-Graph cmdlet" {
 
@@ -29,21 +29,21 @@ Describe "The Test-Graph cmdlet" {
         get-job | remove-job -force
         remove-module -force scriptclass -erroraction silentlycontinue
         import-module -force scriptclass
-        import-module -force 'poshgraph-sdk' 2>$null
+        import-module -force 'autographps-sdk' 2>$null
         import-module $manifestlocation -force
     }
 
     Context "when receiving a successful response from Graph" {
         BeforeAll {
             get-job | remove-job -force
-            remove-module -force 'poshgraph' -erroraction silentlycontinue
+            remove-module -force 'autographps' -erroraction silentlycontinue
             import-module scriptclass -force
             import-module $manifestlocation -force
         }
 
         AfterAll {
             get-job | remove-job -force
-            remove-module -force 'poshgraph' -erroractio silentlycontinue
+            remove-module -force 'autographps' -erroractio silentlycontinue
         }
 
         It "should succeed when given no parameters" {

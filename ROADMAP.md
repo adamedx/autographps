@@ -7,12 +7,7 @@
 * Add app updating
 * Release
 
-* Add app-only mode
-* Release
-
-* Add auto-complete for scopes
-* Add auto-complete for ggu
-* Add auto-complete for gls
+* Add auto-mount to set-graphlocation
 
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
@@ -234,6 +229,8 @@
 * Fix publishmoduletodev to use module publishing rather than nuget
 * Fix token refresh
 * Refactor into posh-graph core sdk and poshgraph ux
+* Add auto-complete for ggu
+* Add auto-complete for gls
 
 ### Postponed
 

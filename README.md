@@ -1,5 +1,5 @@
-PoshGraph
-=========
+AutoGraphPS
+===========
 
 <img src="https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png" width="100">
 
@@ -7,7 +7,7 @@ PoshGraph
 
 * [Overview](#Overview)
 * [Installation](#Installation)
-* [Using PoshGraph](#using-poshgraph)
+* [Using AutoGraphPS](#using-poshgraph)
 * [Common uses](#common-uses)
 * [Command inventory](#command-inventory)
 * [Developer installation from source](#developer-installation-from-source)
@@ -17,7 +17,7 @@ PoshGraph
 
 ## Overview
 
-**PoshGraph** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). PoshGraph enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
+**AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
 * OneDrive
@@ -25,23 +25,23 @@ PoshGraph
 * SharePoint
 * And many more!
 
-If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, PoshGraph was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [PoshGraph-SDK](https://github.com/adamedx/poshgraph-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
+If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/poshgraph-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
 ### System requirements
 
-PoshGraph requires Windows 10 and PowerShell 5.0.
+AutoGraphPS requires Windows 10 and PowerShell 5.0.
 
 ## Installation
-PoshGraph is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph); run the following command to install the latest stable release of PoshGraph into your user profile:
+AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
 
 ```powershell
-Install-Module PoshGraph -scope currentuser
+Install-Module AutoGraphPS -scope currentuser
 ```
 
-## Using PoshGraph
-Once you've installed, you can use a PoshGraph cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+## Using AutoGraphPS
+Once you've installed, you can use an AutoGraphPS cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> get-graphitem me
@@ -60,7 +60,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of PoshGraph's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
 ### How do I use it?
 
@@ -72,7 +72,7 @@ https://graph.microsoft.com/v1.0/me/people
 https://graph.microsoft.com/v1.0/users
 ```
 
-With PoshGraph cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
+With AutoGraphPS cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
 
 ```powershell
 Get-GraphItem me/calendars
@@ -82,14 +82,14 @@ Get-GraphItem users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use PoshGraph cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
+As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
 ### More fun commands
 
-Run the command below to grant permission scopes that allow PoshGraph to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
+Run the command below to grant permission scopes that allow AutoGraphPS to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
 
 ```powershell
-# You only have to do this once, not each time you use PoshGraph
+# You only have to do this once, not each time you use AutoGraphPS
 Connect-Graph User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
 ```
 
@@ -139,47 +139,47 @@ t +> driveItem Recipes       13J3XD#
 t +> driveItem Pyramid.js    13J3KD2
 ```
 
-#### PoshGraph tips
-Here are a few simple tips to keep in mind as you first start using PoshGraph:
+#### AutoGraphPS tips
+Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
-**1. Permission scopes matter:** PoshGraph can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional scopes for PoshGraph, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the scopes on your behalf in order to grant them to PoshGraph.
+**1. Permission scopes matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional scopes for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the scopes on your behalf in order to grant them to AutoGraphPS.
 
-**2. PoshGraph supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to PoshGraph that will bring ease-of-use parity with the read cmdlets.
+**2. AutoGraphPS supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read cmdlets.
 
-**3. You can access the Beta version of the Graph API**: By default, PoshGraph is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- just use the following commands to "mount" the `beta` version and set the current location to its root:
+**3. You can access the Beta version of the Graph API**: By default, AutoGraphPS is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- just use the following commands to "mount" the `beta` version and set the current location to its root:
 
 ```powershell
 new-graph beta
 gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
 ```
 
-And that brings us to this **Warning**: *PoshGraph takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
+And that brings us to this **Warning**: *AutoGraphPS takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
 
-For a much more detailed description of PoshGraph's usage and capabilities, including advanced query and authentication features, see the [WALKTHROUGH](docs/WALKTHROUGH.md).
+For a much more detailed description of AutoGraphPS's usage and capabilities, including advanced query and authentication features, see the [WALKTHROUGH](docs/WALKTHROUGH.md).
 
 ## Common uses
 
-PoshGraph is your PowerShell interface to the Microsoft Graph REST API. In what contexts is such a tool useful? Here are several:
+AutoGraphPS is your PowerShell interface to the Microsoft Graph REST API. In what contexts is such a tool useful? Here are several:
 
-* **Developer - Graph education:** The Microsoft Graph is aimed at developers, and just as Graph Explorer helps developers learn how to make API calls to the Graph and debug them, PoshGraph offers the same capability, with the added benefit of the CLI's speed and automation
-* **Developer - testing and debugging:** PoshGraph makes it trivial to reproduce errors you encounter in your application's REST calls to the Graph -- simply use the same credentials, REST method, and Uri in one of the Graph cmdlets, and you can obtain diagnostics without rebuilding your application or otherwise altering it to isolate failure cases and add debugging information. PoshGraph is also useful for pursuing ad hoc "what if"-style investigations of Graph functionality that is new to you or understanding Graph's corner cases without building a new application.
-* **System administration:** Sysadmins manage the same services such as AAD, Exchange, and SharePoint that are exposed by the Microsoft Graph. Sysadmins are also heavy users of PowerShell. PoshGraph allows administrators to author PowerShell automation that takes full advantage of the management capabilities constantly being added to Microsoft Graph. Your existing PowerShell automation can be enhanced with PoshGraph or included in new tools based on it.
-* **Developer - management tools:** Configuration management and system administration tools are popular output for developers, particularly in OSS communities. PoshGraph offers developers building PowerShell-based configuration management tools for their users a key library that solves authentication, modeling, querying, and deserialization. Graph calls with PoshGraph are typically one-liners requiring little in the way of setup, a quality that enhances your productivity as a developer.
-* **Enthusiast / power user:** Users who enjoy learning about what powers their software will find PoshGraph a great way to not only learn about Graph, but exploit its capabilities to do things such as advanced e-mail or photo management through Exchange and OneDrive, implement their own backup features with OneDrive and SharePoint, or simply automate common tasks.
+* **Developer - Graph education:** The Microsoft Graph is aimed at developers, and just as Graph Explorer helps developers learn how to make API calls to the Graph and debug them, AutoGraphPS offers the same capability, with the added benefit of the CLI's speed and automation
+* **Developer - testing and debugging:** AutoGraphPS makes it trivial to reproduce errors you encounter in your application's REST calls to the Graph -- simply use the same credentials, REST method, and Uri in one of the Graph cmdlets, and you can obtain diagnostics without rebuilding your application or otherwise altering it to isolate failure cases and add debugging information. AutoGraphPS is also useful for pursuing ad hoc "what if"-style investigations of Graph functionality that is new to you or understanding Graph's corner cases without building a new application.
+* **System administration:** Sysadmins manage the same services such as AAD, Exchange, and SharePoint that are exposed by the Microsoft Graph. Sysadmins are also heavy users of PowerShell. AutoGraphPS allows administrators to author PowerShell automation that takes full advantage of the management capabilities constantly being added to Microsoft Graph. Your existing PowerShell automation can be enhanced with AutoGraphPS or included in new tools based on it.
+* **Developer - management tools:** Configuration management and system administration tools are popular output for developers, particularly in OSS communities. AutoGraphPS offers developers building PowerShell-based configuration management tools for their users a key library that solves authentication, modeling, querying, and deserialization. Graph calls with AutoGraphPS are typically one-liners requiring little in the way of setup, a quality that enhances your productivity as a developer.
+* **Enthusiast / power user:** Users who enjoy learning about what powers their software will find AutoGraphPS a great way to not only learn about Graph, but exploit its capabilities to do things such as advanced e-mail or photo management through Exchange and OneDrive, implement their own backup features with OneDrive and SharePoint, or simply automate common tasks.
 
-There are probably many more uses for PoshGraph, as wide-ranging as the Graph itself.
+There are probably many more uses for AutoGraphPS, as wide-ranging as the Graph itself.
 
 ## Command inventory
 
 The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve significantly along with their usage. Additional documentation will be provided for them as their status solidifies.
 
-Note that since PoshGraph is built on [PoshGraph-SDK](https://github.com/adamedx/poshgraph-sdk), this list includes cmdlets from PoshGraph-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on PoshGraph-SDK rather than PoshGraph if its subset of cmdlets suits your use case.
+Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/adamedx/autographPS-sdk), this list includes cmdlets from AutoGraphPS-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on AutoGraphPS-SDK rather than AutoGraphPS if its subset of cmdlets suits your use case.
 
 | Cmdlet                    | Alias | Description                                                                                     |
 |---------------------------|-------|-------------------------------------------------------------------------------------------------|
 | Connect-Graph             |       | Establishes authentication and authorization context used across cmdlets for the current graph  |
 | Disconnect-Graph          |       | Clears authentication and authorization context used across cmdlets for the current graph       |
-| Get-Graph                 | gg    | Gets the current list of versioned Graph service endpoints available to PoshGraph               |
+| Get-Graph                 | gg    | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS             |
 | Get-GraphChildItem        | gls   | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri  |
 | Get-GraphConnectionStatus |       | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                    |
 | Get-GraphError            | gge   | Retrieves detailed errors returned from Graph in execution of the last command                  |
@@ -190,7 +190,7 @@ Note that since PoshGraph is built on [PoshGraph-SDK](https://github.com/adamedx
 | Get-GraphUri              | ggu   | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri           |
 | Get-GraphVersion          |       | Returns the set of workloads and their associated schemas for a given Graph API version         |
 | Invoke-GraphRequest       |       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
-| New-Graph                 |       | Mounts a new Graph connection and associated metadata for availability to PoshGraph cmdlets     |
+| New-Graph                 |       | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets   |
 | New-GraphConnection       |       | Creates an authenticated connection using advanced identity customizations for accessing a Graph|
 | Remove-Graph              |       | Unmounts a Graph previously mounted by `NewGraph`                                             |
 | Set-GraphConnectionStatus |       | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
@@ -201,22 +201,22 @@ Note that since PoshGraph is built on [PoshGraph-SDK](https://github.com/adamedx
 
 ### Limited support for Azure Active Directory (AAD) Graph
 
-Some PoshGraph cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
+Some AutoGraphPS cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
 
 ```powershell
 Get-GraphItem me -aadgraph
 ```
 
-Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of PoshGraph.
+Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS.
 
 ### More about how it works
 
-If you'd like a behind the scenes look at the implementation of PoshGraph, take a look at the following article:
+If you'd like a behind the scenes look at the implementation of AutoGraphPS, take a look at the following article:
 
 * [Microsoft Graph via PowerShell](https://adamedx.github.io/softwarengineering/2018/08/09/Microsoft-Graph-via-PowerShell.html)
 
 ## Developer installation from source
-For developers contributing to PoshGraph or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
+For developers contributing to AutoGraphPS or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
 git clone https://github.com/adamedx/poshgraph
@@ -228,12 +228,12 @@ cd poshgraph
 
 Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
 
-See the [Build README](build/README.md) for instructions on building and testing changes to PoshGraph.
+See the [Build README](build/README.md) for instructions on building and testing changes to AutoGraphPS.
 
 ## Quickstart
-The Quickstart is a way to try out PoshGraph without installing the PoshGraph module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph**:
+The Quickstart is a way to try out AutoGraphPS without installing the AutoGraphPS module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS**:
 
-* [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
+* [Download](https://github.com/adamedx/poshgrap/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
   `git clone https://github.com/adamedx/poshgraph`
 
@@ -242,7 +242,7 @@ The Quickstart is a way to try out PoshGraph without installing the PoshGraph mo
 
   `.\build\quickstart.ps1`
 
-This will download dependencies, build the PoshGraph module, and launch a new PowerShell console with the module imported. You can execute a PoshGraph cmdlet like the following in the console -- try it:
+This will download dependencies, build the AutoGraphPS module, and launch a new PowerShell console with the module imported. You can execute a AutoGraphPS cmdlet like the following in the console -- try it:
 
   `Test-Graph`
 
@@ -263,7 +263,7 @@ If you need to launch another console with Posh Graph, you can run the faster co
 
     .\build\import-devmodule.ps1
 
-These commmands can also be used when testing modifications you make to PoshGraph, and also give you an isolated environment in which to test and develop applications and tools that depend on PoshGraph.
+These commmands can also be used when testing modifications you make to AutoGraphPS, and also give you an isolated environment in which to test and develop applications and tools that depend on AutoGraphPS.
 
 License and authors
 -------------------

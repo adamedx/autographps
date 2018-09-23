@@ -1,23 +1,23 @@
 Build README
 ============
 
-This document describes how to build PoshGraph and provides additional information on build customizations and advanced development scenarios.
+This document describes how to build AutoGraphPS and provides additional information on build customizations and advanced development scenarios.
 
 ## Prerequisites
 
-**PoshGraph** development requires the following:
+**AutoGraphPS** development requires the following:
 
 * A **Windows 10** operating system or later
-* The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
-* [PowerShellGet](https://www.powershellgallery.com/packages/PowerShellGet) PowerShell module version 1.0.0.1 (default in Windows 10 versions) or [version 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0).
+* The [NuGet version 4.0 or later](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
+* [PowerShellGet](https://www.powershellgallery.com/packages/PowerShellGet) module [version 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0). Other versions are not currently supported due to known incompatibilities.
 * [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally:
 
 ```powershell
-git clone https://github.com/adamedx/PoshGraph
-cd PoshGraph
+git clone https://github.com/adamedx/AutoGraphPS
+cd AutoGraphPS
 ```
 
-Note: PowerShellGet version 1.6.6 is incompatible with PoshGraph due to a code defect. Versions other than 1.0.0.1 and 1.6.0 have not been tested; use 1.0.0.1 (default) or [install 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0) in order to build this module.
+Note: PowerShellGet version 1.6.6 is incompatible with AutoGraphPS due to a code defect. Versions other than 1.6.0 have not been tested; [install 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0) in order to build this module.
 
 ### Simple building and debugging
 The most common case is to build the module and then execute it in a new shell.
@@ -46,14 +46,44 @@ It also allows you to simply start a shell in which the module is loaded with yo
 .\build\import-devmodule.ps1
 ```
 
-The resulting shell can be used as if you had installed your module, and you can also run tests from it.
+The resulting shell can be used as if you had installed your module for ad-hoc testing, and you can also run the module's automated tests from it.
 
 #### Automated tests
-PoshGraph's automated tests can be executed by starting a shell via the previously described `import-devmodule` script and executing the following command from within the shell:
+AutoGraphPS's automated tests can be executed by starting a shell via the previously described `import-devmodule` script and executing the following command from within the shell:
 
 ```powershell
 invoke-pester
 ```
+
+#### Debugging and testing tips
+Maintaining a fast dev / test / debug loop is crucial for your productivity, and also for your sanity.
+
+Once you've invoked `publish-moduletodev` and `import-devmodule` as described above, do you need to run them every time you make a code change (i.e. after you fix a defect found from automated or ad-hoc testing)? Most of the time the answer is *no*: you can usually re-use the existing PowerShell session after refreshing the code, and even when you can't, you can usually get a new session fairly quickly. Here's how that works:
+
+* If you edit one of the module's existing source files that is already loaded into your dev session:
+  * **Dot-source:** In most cases, you an just dot-source the source file with your change. Note that some files may reset shared state and require you to dot-source other files or otherwise compensate. This is fastest of course -- only a small number of files is processed, and any variables or ad-hoc state you created in the session is still there for you to retry your scenarios.
+  * **Create a new session:** For cases where dot-sourcing resets shared state or runs into issues with double-initialization, it may be safest just to start a new session using `import-devmodule` from another PowerShell terminal (usually the one from which you first executed `import-devmodule`). This launches a fresh session without the affects of any commands executed in your previous session.
+* If you're making a change that will require an update to the module manifest (`.psd1` file) including adding or removing a source file, adding or removing a module dependency, or changing other aspects of the module manifest that affect its runtime behavior, you'll need to **rebuild the module and create a new session**.
+
+This translates into the following commands:
+
+* **Dot-source** files you've edited that are not new to the module and have simple initialization:
+
+        . .\src\cmdlets\get-graphchilditem.ps1 # Run this in the existing session where you did your testing
+
+* **Create a new session** from your existing built module if you didn't change anything about the module manifest (`.psd1` file), i.e. you haven't added or removed source files, added or removed dependencies, etc.:
+
+        # Don't run this from your dev session, use a new terminal
+        # or use the one where you originally ran import-devmodule
+        .\build\import-devmodule.ps1
+
+* **Rebuild your module** for all other cases or if you're not sure if your sessions reflect a valid state:
+
+        # Don't run this from your dev session, use a new terminal
+        # or use the one where you originally ran import-devmodule
+        .\build\build-package.ps1
+        .\build\publish-moduletodev.ps1
+        .\build\import-devmodule.ps1
 
 ## Publish the module to a PowerShell repository
 Use the command below to publish the package generated by the `build-package` command to a PowerShell Gallery compatible module repository:
@@ -62,7 +92,7 @@ Use the command below to publish the package generated by the `build-package` co
 .\build\publish-modulepackage.ps1 [your-module-repo] [ repositoryKeyFile your-access-key-if-needed]
 ```
 
-After you've published the module to a repository, you can use commands such as `install-module` targeted at that repository to install a PoshGraph module with your code changes from that repository.
+After you've published the module to a repository, you can use commands such as `install-module` targeted at that repository to install an AutoGraphPS module with your code changes from that repository.
 
 ## Clean build
 To remove all artifacts generated by the build process such as files under `pkg`, downloaded dependencies, etc., run the following command
@@ -72,6 +102,12 @@ To remove all artifacts generated by the build process such as files under `pkg`
 ```
 
 It is advisable to run this command prior to publishing the module or performing acceptance tests -- this ensures that you're testing your latest changes and that possibly hidden or removed dependencies are identified prior to module being published to a repository.
+
+After you've executed this, you'll need to include the `-downloaddependencies` option `build-package` to rebuild the package:
+
+```powershell
+.\build\build-package -downloaddependencies
+```
 
 ## Installing from source
 If you'd like to install the module from source, either to test installation itself or to make use of changes (your own or other forks / branches of the project) on your own system, you can simply run the following command
@@ -89,24 +125,24 @@ Note that this script simply automates the sequence of a clean build, build, pub
 ```
 
 ## Advanced scenarios
-The `publish-moduletodev`, `import-devmodule`, and `install-devmodule` scripts support parameters that allow you to obtain dependencies from a repository other than PowerShell Gallery. This may be required because your changes to PoshGraph are dependent on changes that you're making to a dependency (e.g. [`ScriptClass`](https://github.com/adamedx/scriptclass) that have not yet been accepted to that dependency and uploaded to PowerShell Gallery.
+The `publish-moduletodev`, `import-devmodule`, and `install-devmodule` scripts support parameters that allow you to obtain dependencies from a repository other than PowerShell Gallery. This may be required because your changes to AutoGraphPS are dependent on changes that you're making to a dependency (e.g. [`ScriptClass`](https://github.com/adamedx/scriptclass) that have not yet been accepted to that dependency and uploaded to PowerShell Gallery.
 
 In this use case, you can clone the dependency, build it, and publish it to your own repository, whether a local file-system based repository or a hosted (NuGet) module repository at some remote URI. The repository must be registered via the `Register-PSRepository` cmdlet, and then the name under which it is registered supplied to `publish-moduletodev`, `import-devmodule`, or `install-devmodule`.
 
-Without this type of feature, developers would need to manually provision dependencies for use in testing `PoshGraph`, or implement their own automation to compensate for the omission.
+Without this type of feature, developers would need to manually provision dependencies for use in testing `AutoGraphPS`, or implement their own automation to compensate for the omission.
 
 ## Build script inventory
 
-All of the build scripts used in this project are given below with their uses -- for mroe information, see the actual build scripts in this [directory](.) and review their supported options.
+All of the build scripts used in this project are given below with their uses -- for more information, see the actual build scripts in this [directory](.) and review their supported options.
 
 |   | Script                         | Purpose                                                                                        |
 |---|--------------------------------|------------------------------------------------------------------------------------------------|
-| 1 | [build-package.ps1](build-package.ps1)         | Builds the Powershell module package for PoshGraph that can be published to a repository       |
+| 1 | [build-package.ps1](build-package.ps1)         | Builds the Powershell module package for AutoGraphPS that can be published to a repository     |
 | 2 | [publish-moduletodev.ps1](publish-moduletodev.ps1)   | Copies a built module to a local repository along with its module dependencies                 |
 | 3 | [import-devmodule.ps1](import-devmodule.ps1)      | Creates a new shell with your module imported -- does not require a recent build as long as the required module dependencies are avaialble from a previous execution of `publish-moduletodev.ps1`                                        |
 | 4 | [publish-modulepackage.ps1](publish-modulepackage.ps1) | Publishes the module to a PowerShell Gallery package repository                                |
 | 5 | [install-devmodule.ps1](install-devmodule.ps1)     | Installs the module published via `publish-moduletodev.ps1` to the system                 |
 | 6 | [clean-build.ps1](clean-build.ps1)           | Deletes all artifacts generated by any of the build scripts                                    |
 | 7 | [install-fromsource.ps1](install-fromsource.ps1)    | Installs the module by automating 6, 1, 2, and 5.                                              |
-| 8 | [quickstart.ps1](quickstart.ps1)            | Starts a shell with PoshGraph imported with hints / and tips without installing to the system  |
+| 8 | [quickstart.ps1](quickstart.ps1)            | Starts a shell with AutoGraphPS imported with hints / and tips without installing to the system  |
 

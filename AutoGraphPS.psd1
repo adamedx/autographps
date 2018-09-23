@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.13.0'
+ModuleVersion = '0.14.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Modulus Group'
 Copyright = '(c) 2018 Adam Edwards.'
 
 # Description of the functionality provided by this module
-Description = 'CLI for Microsoft Graph interaction'
+Description = 'CLI for automating the Microsoft Graph'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='poshgraph-sdk';ModuleVersion='0.3.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.4.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -105,8 +105,8 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\poshgraph.psd1',
-        '.\poshgraph.psm1',
+        '.\autographps.psd1',
+        '.\autographps.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
@@ -152,7 +152,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'GraphExplorer', 'REST', 'CRUD', 'GraphAPI')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'GraphExplorer', 'REST', 'CRUD', 'GraphAPI', 'autograph', 'poshgraph')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
@@ -169,7 +169,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# PoshGraph 0.13.0 Release Notes
+# AutoGraphPS 0.14.0 Release Notes
+
+This release renames the ``PoshGraph`` module to ``AutoGraphPS``. See the release notes below for changes from the previous release.
+
+# AutoGraphPS 0.13.0 Release Notes
 
 This release includes app-only related features from PoshGraph-SDK 0.3.0 as well as argument completion for Graph URIs and graph names.
 
