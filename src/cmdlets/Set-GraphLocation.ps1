@@ -21,7 +21,8 @@ function Set-GraphLocation {
     param(
         [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
         $UriPath = $null,
-        [switch] $Force
+        [switch] $Force,
+        [switch] $NoAutoMount
     )
 
     $inputUri = if ( $UriPath -is [String] ) {
@@ -36,14 +37,34 @@ function Set-GraphLocation {
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
 
+    $currentContext = $::.GraphContext |=> GetCurrent
+
+    $automounted = $false
     $context = if ( $ParsedPath.ContextName ) {
-        'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.ContextName
+        $pathContext = 'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.ContextName
+
+        if ( ! $pathContext -and ! $NoAutoMount.IsPresent ) {
+            $pathContext = try {
+                write-verbose "Graph name '$($ParsedPath.ContextName)' was specified but no such graph is mounted"
+                write-verbose "Attempting to auto-mount Graph version '$($ParsedPath.ContextName)' using the existing connection"
+                $::.LogicalGraphManager |=> Get |=> NewContext $null $currentContext.connection $ParsedPath.ContextName $ParsedPath.ContextName
+            } catch {
+                write-verbose "Auto-mount attempt failed with error '$($_.exception.message)'"
+            }
+
+            if ( $pathContext ) {
+                $::.GraphManager |=> UpdateGraph $pathContext
+            }
+            $automounted = $true
+        }
+
+        $pathContext
     } else {
-        $::.GraphContext |=> GetCurrent
+        $currentContext
     }
 
     if ( ! $context ) {
-        throw "Cannot set location in the current context because no current context exists"
+        throw "Cannot set current location using graph '$($ParsedPath.ContextName)' because it is not mounted or there is no current context. Try using the New-Graph cmdlet to mount it."
     }
 
     $parser = new-so SegmentParser $context $null $true
@@ -56,7 +77,7 @@ function Set-GraphLocation {
 
     $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
-    $location = if ( $contextReady -or ! $Force.IsPresent ) {
+    $location = if ( $contextReady -or ( ! $automounted -and ! $Force.IsPresent ) ) {
         $lastUriSegment = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
         $locationClass = ($lastUriSegment.graphElement |=> GetEntity).Type
         if ( ! $::.SegmentHelper.IsValidLocationClass($locationClass) ) {
@@ -64,7 +85,7 @@ function Set-GraphLocation {
         }
         $lastUriSegment
     } else {
-        write-warning "-Force option specified and metadata is not ready, will force location change to root"
+        write-warning "-Force option specified or automount not disallowed and metadata is not ready, will force location change to root ('/')"
         new-so GraphSegment $::.EntityVertex.RootVertex
     }
 
