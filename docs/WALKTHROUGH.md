@@ -1,16 +1,16 @@
-PoshGraph Walkthrough
+AutoGraphPS Walkthrough
 =====================
 
-This walkthrough will expose you to the key capabilities of PoshGraph and the Microsoft Graph. It is certainly not exhaustive, but should be enough for you understand how to use PoshGraph in your work, where it falls short, and how you might remedy any omissions with your own contributions to the project.
+This walkthrough will expose you to the key capabilities of AutoGraphPS and the Microsoft Graph. It is certainly not exhaustive, but should be enough for you understand how to use AutoGraphPS in your work, where it falls short, and how you might remedy any omissions with your own contributions to the project.
 
 The walkthrough assumes you are familiar with PowerShell and basic usage of the object pipeline, and that you are familiar with REST concepts.
 
-## How to explore with PoshGraph
-After you've installed the module, invoke PoshGraph cmdlets from any PowerShell session.
+## How to explore with AutoGraphPS
+After you've installed the module, invoke AutoGraphPS cmdlets from any PowerShell session.
 
 ### Get started -- simple commands
 
-**PoshGraph** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph. The easiest approach is to use the `Connect-Graph` cmdlet, after which you can execute other cmdlets such as `Get-GraphItem` which operate on the graph:
+**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph. The easiest approach is to use the `Connect-Graph` cmdlet, after which you can execute other cmdlets such as `Get-GraphItem` which operate on the graph:
 
 ```powershell
 Get-GraphItem me
@@ -55,7 +55,7 @@ Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` sc
 Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
-This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what scopes are required to access different functionality in the Graph; future updates to PoshGraph will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
+This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what scopes are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
 
 In addition to the `get-graphitem` cmdlet which returns data as a series of flat lists, you can use `get-graphchilditem` or its alias `gls` to retrieve your personal contacts:
 
@@ -154,9 +154,9 @@ You may have noticed that after the first time you invoked `Get-GraphChildItem`,
 PS>
 ```
 
-By default, PoshGraph automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphChildItem`, `Get-GraphItem`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
+By default, AutoGraphPS automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphChildItem`, `Get-GraphItem`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
 
-With PoshGraph, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
+With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
 
 ```
 gcd me/drive/root/children
@@ -224,11 +224,11 @@ v1.0:/me/drive/root/children/candidates/children
 
 The Microsoft Graph supports a rich set of query capabilities through its [OData](https://www.odata.org) support. You can learn the the specifics of MS Graph and OData query specification as part of MS Graph REST Uri's via [Graph's query documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters), the [OData query tutorial](http://www.odata.org/getting-started/basic-tutorial/#queryData), or simply by using the [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
-To use PoshGraph's query capabilities are exposed in the `Get-GraphItem` and `Get-GetGraphChildItem` cmdletes (`ggi` and `gls` aliases respectively). To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
+To use AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` and `Get-GetGraphChildItem` cmdletes (`ggi` and `gls` aliases respectively). To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
 ### Filtering data with `-ODataFilter`
 
-The one area of PoshGraph usage in which it is helpful to understand OData is the filtering language. The `-ODataFilter` option on `Get-GraphItem` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and PoshGraph don't have to waste time processing results that don't match the criteria you specified:
+The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-ODataFilter` option on `Get-GraphItem` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
 
 ```powershell
 gls me/people -ODataFilter "department eq 'Ministry of Funk'"
@@ -247,7 +247,7 @@ Complex expressions combining multiple operators using logical operators like `a
 
 ### Limiting enumerations with `-First` and `-Skip`
 
-Another way to avoid excessive traffic between PoshGraph and Graph is to use the `-First` and `-Skip` options, which are [PowerShell standard parameters for paging](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute?view=powershell-6#supportspaging). These options are implemented as analogs to the `$top` and `$skip` options in OData syntax. For example:
+Another way to avoid excessive traffic between AutoGraphPS and Graph is to use the `-First` and `-Skip` options, which are [PowerShell standard parameters for paging](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute?view=powershell-6#supportspaging). These options are implemented as analogs to the `$top` and `$skip` options in OData syntax. For example:
 
 ```powershell
 gls me/contacts -first 3
@@ -329,7 +329,7 @@ The `$false` assignment in the hash table means that the field will use *ascendi
 
 ### Advanced queries with `-Query`
 
-The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by PoshGraph. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in PoshGraph's simpler query options. For example the two commands below are equivalent:
+The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
 
 ```
 gls /users -ODataFilter "startsWith(mail, 'p')" -top 20
@@ -338,7 +338,7 @@ gls /users -Query       "`$filter=startsWith(mail, 'p')&`top=20"
 
 Note that `-Query` requires you to understand how to combine multiple query options via '&' and also how to make correct use of PowerShell escape characters so that OData tokens like `$top` which are preceded by the `$` character which is reserved as a variable prefix in PowerShell are taken literally instead of as the value of a PowerShell variable.
 
-While `-Query` may be more complicated to use, when PoshGraph's other query options do not support a particular Graph query feature, you still have a way to use Graph's full capabilities.
+While `-Query` may be more complicated to use, when AutoGraphPS's other query options do not support a particular Graph query feature, you still have a way to use Graph's full capabilities.
 
 For more details on how to construct this parameter, see the [MS Graph REST API documentation for queries](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters).
 
@@ -354,7 +354,7 @@ This results in an error:
 
 ```
 Invoke-WebRequest : The remote server returned an error: (400) Bad Request.
-At C:\users\adamed\src\poshgraph\src\rest\restrequest.ps1:73 char:17
+At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps-sdk\0.4.0\src\rest\restrequest.ps1:73 char:17
 + ...             Invoke-WebRequest -Uri $this.uri -headers $this.headers - ...
 +                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-WebRequest], WebException
@@ -403,14 +403,14 @@ t +> user PFunk 4Life 30285b8b-70ba-42e0-9bd9-fbcee5d1ce64
 You can inspect the various properties and object returned by `Get-GraphError` to find additional details that help you debug a failure.
 
 ### Diagnostic output via `-verbose`
-All PoshGraph cmdlets support the PowerShell standard option `-verbose` and the associated `$VerbosePreference` preference variable. When using cmdlets such as `Get-GraphItem` and `Get-GraphChildItem`, specifying `-verbose` will output not only the `http` verb and `uri` used to access the Graph, but also the request headers and for responses the response body and headers.
+All AutoGraphPS cmdlets support the PowerShell standard option `-verbose` and the associated `$VerbosePreference` preference variable. When using cmdlets such as `Get-GraphItem` and `Get-GraphChildItem`, specifying `-verbose` will output not only the `http` verb and `uri` used to access the Graph, but also the request headers and for responses the response body and headers.
 
 By default, the response body is truncated after a certain length, though the behavior can be overridden by setting `GraphVerboseOutputPreference` to `High`.
 
 ### Authorization errors
-Microsoft Graph requires callers to obtain specific authorization for applications like PoshGraph to access particular capabilities of the Graph. Because the mapping of required scopes to functionality is currently only available through human-readable [documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference ), it's easy for developers and other human users of applications including PoshGraph to encounter errors due to insufficient scopes.
+Microsoft Graph requires callers to obtain specific authorization for applications like AutoGraphPS to access particular capabilities of the Graph. Because the mapping of required scopes to functionality is currently only available through human-readable [documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference ), it's easy for developers and other human users of applications including AutoGraphPS to encounter errors due to insufficient scopes.
 
-Often, users and developers remedy the error by reading the documentation, and updating the application to request the missing scopes. PoshGraph tries to hasten such fixes by surfacing authorization failures with a warning encouring the user to request additional scopes as in the example below where the caller tries to access `me/people` to get information about the people with whom she has been interacting:
+Often, users and developers remedy the error by reading the documentation, and updating the application to request the missing scopes. AutoGraphPS tries to hasten such fixes by surfacing authorization failures with a warning encouring the user to request additional scopes as in the example below where the caller tries to access `me/people` to get information about the people with whom she has been interacting:
 
 ```
 PS> gls me/people
@@ -430,11 +430,11 @@ WARNING: {
 }
 ```
 
-The warning message in the PoshGraph output includes a link to the permissions documentation and suggestion to use `Connect-Graph` to grant PoshGraph additional permissions. Consultation of the documentation may lead the user to conclude that PoshGraph is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-Graph` to request `People.Read` will succeed:
+The warning message in the AutoGraphPS output includes a link to the permissions documentation and suggestion to use `Connect-Graph` to grant AutoGraphPS additional permissions. Consultation of the documentation may lead the user to conclude that AutoGraphPS is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-Graph` to request `People.Read` will succeed:
 
 ```powershell
 # This will prompt the user to re-authenticate and grant People.Read
-# to PoshGraph
+# to AutoGraphPS
 Connect-Graph People.Read
 
 gls me/people
@@ -518,7 +518,7 @@ In the above example, `Get-GraphUri` parsed the Uri in order to generate the ret
 ```
 Get-GraphUri /me/idontexist
 Uri '/me/idontexist' not found: no matching child segment 'idontexist' under segment 'me'
-At C:\users\adamed\src\poshgraph\src\metadata\segmentparser.ps1:140 char:21
+At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps\0.14.0\src\metadata\segmentparser.ps1:140 char:21
 + ...             throw "Uri '$($Uri.tostring())' not found: no matching ch ...
 +                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : OperationStopped: (Uri '/me/idonte...er segment 'me':String) [], RuntimeExcept
@@ -632,7 +632,7 @@ The `{driveItem}` segment tells you format of a hypothetical segment that could 
 
 ### USing Get-GraphToken with other Graph tools
 
-When using tools like Postman or Fiddler to troubleshoot or test the Graph, you'll need to acquire a token. Token acquisition continues to be one of the biggest barriers to using Graph, so use PoshGraph's `Get-GraphToken` cmdlet to automate it:
+When using tools like Postman or Fiddler to troubleshoot or test the Graph, you'll need to acquire a token. Token acquisition continues to be one of the biggest barriers to using Graph, so use AutoGraphPS's `Get-GraphToken` cmdlet to automate it:
 
 ```powershell
 Get-GraphToken

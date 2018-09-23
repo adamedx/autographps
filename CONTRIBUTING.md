@@ -4,7 +4,7 @@ Thank you for your interest in **AutoGraphPS**. This document describes the proc
 
 ## What may I contribute?
 
-Contributions to AutoGraphPS may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/poshgraph/issues/new/choose).
+Contributions to AutoGraphPS may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/autographps/issues/new/choose).
 
 Note that all source contributions **MUST** conform to the project's [LICENSE](LICENSE.md) -- any submission in violation of the LICENSE will not be accepted.
 

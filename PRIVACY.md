@@ -2,7 +2,7 @@
 
 ## In general
 
-**[AutoGraphPS](https://github.com/adamedx/poshgraph)** is a client-side tool for interacting with the [Microsoft Graph API](https://graph.microsoft.io). **AutoGraphPS** does not maintain any store of data involving your usage of the tool.
+**[AutoGraphPS](https://github.com/adamedx/autographps)** is a client-side tool for interacting with the [Microsoft Graph API](https://graph.microsoft.io). **AutoGraphPS** does not maintain any store of data involving your usage of the tool.
 
 ## Data collection
 
