@@ -1,13 +1,13 @@
 AutoGraphPS
 ===========
 
-<img src="https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png" width="100">
+<img src="https://raw.githubusercontent.com/adamedx/autographps/master/assets/PoshGraphIcon.png" width="100">
 
 ----
 
 * [Overview](#Overview)
 * [Installation](#Installation)
-* [Using AutoGraphPS](#using-poshgraph)
+* [Using AutoGraphPS](#using-autographps)
 * [Common uses](#common-uses)
 * [Command inventory](#command-inventory)
 * [Developer installation from source](#developer-installation-from-source)
@@ -25,7 +25,7 @@ AutoGraphPS
 * SharePoint
 * And many more!
 
-If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/poshgraph-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
+If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
 
 The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
 
@@ -219,8 +219,8 @@ If you'd like a behind the scenes look at the implementation of AutoGraphPS, tak
 For developers contributing to AutoGraphPS or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
-git clone https://github.com/adamedx/poshgraph
-cd poshgraph
+git clone https://github.com/adamedx/autographps
+cd autographps
 .\build\install-fromsource.ps1
 ```
 
@@ -233,9 +233,9 @@ See the [Build README](build/README.md) for instructions on building and testing
 ## Quickstart
 The Quickstart is a way to try out AutoGraphPS without installing the AutoGraphPS module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS**:
 
-* [Download](https://github.com/adamedx/poshgrap/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
+* [Download](https://github.com/adamedx/autographps/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
-  `git clone https://github.com/adamedx/poshgraph`
+  `git clone https://github.com/adamedx/autographps`
 
 * Within a **PowerShell** terminal, `cd` to the extracted or cloned directory
 * Execute the command for **QuickStart**:

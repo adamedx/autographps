@@ -20,10 +20,10 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows 10 RS 4]
- - PoshGraph Version [e.g. 0.9.2]
+ - AutoGraphPS module Version [e.g. 0.14.3]
 
 **Logs -- please attach the following data for failures executing a command
- - Output of the PoshGraph command using the `-verbose` option
+ - Output of the AutoGraphPS command using the `-verbose` option
 
 **Additional context**
 Add any other context about the problem here.

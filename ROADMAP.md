@@ -1,4 +1,4 @@
-# ROADMAP for PoshGraph
+# ROADMAP for AutoGraphPS
 
 ## To-do items -- prioritized
 
