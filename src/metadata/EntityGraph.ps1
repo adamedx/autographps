@@ -23,14 +23,20 @@ ScriptClass EntityGraph {
     $rootVertices = $null
     $typeVertices = $null
     $namespace = $null
+    $schema = $null
 
-    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost' ) {
+    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $schemadata ) {
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
+        $this.schema = $schemadata
+    }
+
+    function GetSchema {
+        $this.schema
     }
 
     function GetRootVertices {

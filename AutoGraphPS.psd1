@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.14.0'
+ModuleVersion = '0.15.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -79,6 +79,7 @@ FunctionsToExport = @()
         'Get-Graph',
         'Get-GraphChildItem',
         'Get-GraphLocation',
+        'Get-GraphType',
         'Get-GraphUri',
         'New-Graph',
         'Remove-Graph',
@@ -114,6 +115,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
@@ -169,33 +171,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.14.0 Release Notes
-
-This release renames the ``PoshGraph`` module to ``AutoGraphPS``. See the release notes below for changes from the previous release.
-
-# AutoGraphPS 0.13.0 Release Notes
-
-This release includes app-only related features from PoshGraph-SDK 0.3.0 as well as argument completion for Graph URIs and graph names.
+# AutoGraphPS 0.15.0 Release Notes
 
 ## New Features
 
-* ``Get-GraphChildItem`` now supports app-only authentication with MS Graph through the ``New-GraphConnection`` and `Connect-Graph`` cmdlets
-* ``Set-GraphPrompt`` displays app + tenant information for app-only connections
-* ``Get-GraphChildItem`` now supports V1 token caching due to update to newer ``poshgraph-sdk`` dependency
-* ``Get-GraphChildItem``, ``Set-GraphLocation``, and ``Get-GraphUri`` now support auto-completion of Graph uri parameters once metadata has been processed
-8 ``Get-Graph``, ``Remove-Graph`` cmdlets support auto-completion of Graph name arguments
-* New ``-Force`` option for ``Set-GraphLocation`` let's you bypass the wait on metadata processing and set the location to the root of the specified graph.
-* New ``-Current`` option for ``Get-Graph`` to get the current Graph
-* Include tenant information in ``Get-Graph`` result
-* Add ``-Search`` option for ``Get-GraphChildItem`` to enable full-text search on Graph REST calls that support the OData ```$search`` query parameter
+* ``Set-GraphLocation`` now automounts a Graph specified as the beginning of a full path if it's not already mounted
+* ``Set-GraphLocation``: added the ``-NoAutoMount`` option to disable the newly added automount feature
+* ``Get-GraphType``: new cmdlet to retrieve basic information about an entity type or complex type
 
 ## New dependencies
 
-* PoshGraph-SDK 0.3.0
+No new dependencies.
 
 ## Fixed defects
 
-* See release notes for ``PoshGraph-SDK 0.3.0`` for fixes in that module that affected ``PoshGraph``
 "@
     } # End of PSData hashtable
 

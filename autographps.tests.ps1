@@ -45,6 +45,7 @@ Describe "Autographps application" {
                 'Remove-Graph',
                 'Set-GraphLocation',
                 'Set-GraphPrompt',
+                'Get-GraphType',
                 'get-graphuri')
 
 
