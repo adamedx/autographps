@@ -114,6 +114,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
@@ -175,10 +176,11 @@ PrivateData = @{
 
 * ``Set-GraphLocation`` now automounts a Graph specified as the beginning of a full path if it's not already mounted
 * ``Set-GraphLocation``: added the ``-NoAutoMount`` option to disable the newly added automount feature
+* ``Get-GraphType``: new cmdlet to retrieve basic information about an entity type or complex type
 
 ## New dependencies
 
-No new dependencies
+No new dependencies.
 
 ## Fixed defects
 

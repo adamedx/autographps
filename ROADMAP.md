@@ -2,12 +2,16 @@
 
 ## To-do items -- prioritized
 
-* Add app creation
-* Add app enumeration
-* Add app updating
+* Add app creation, enumeration, update
+  * New-GraphApplication
+  * Remove-GraphApplication
+  * Set-GraphApplication
+  * Set-GraphApplicationPermissions
+  * Remove-GraphApplicationConsent
 * Release
 
-* Add auto-mount to set-graphlocation
+* EntityAccess
+  * Ability to create Graph JSON
 
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
@@ -19,7 +23,6 @@
 * Release
 
 * Clean up utilities, special-case, duplicate code in get-graphuri, invoke-graphrequest, get-graphitem, get-graphchilditem
-* Make gcd work without hanging for new graphs
 
 * Investigate metadata perf optimization -- perform:
   * Discover roots only
@@ -231,6 +234,9 @@
 * Refactor into posh-graph core sdk and poshgraph ux
 * Add auto-complete for ggu
 * Add auto-complete for gls
+* Add auto-mount to set-graphlocation
+* Make gcd work without hanging for new graphs
+* Get-GraphType
 
 ### Postponed
 

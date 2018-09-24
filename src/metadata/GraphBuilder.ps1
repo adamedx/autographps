@@ -37,7 +37,7 @@ ScriptClass GraphBuilder {
     }
 
     function NewGraph {
-        $graph = new-so EntityGraph $this.namespace $this.version $this.graphEndpoint
+        $graph = new-so EntityGraph $this.namespace $this.version $this.graphEndpoint $this.dataModel.SchemaData
 
         __UpdateProgress 0
 
@@ -71,7 +71,6 @@ ScriptClass GraphBuilder {
         $progressIndex = 0
 
         $schemas | foreach {
-            $::.ProgressWriter |=> WriteProgress -id 2 -activity "Adding $($_.localname) vertices" -Status "In progress" -PercentComplete (100 * ($progressIndex / $progressTotal)) -currentoperation "Adding $($_.name)"
             __AddVertex $graph $_
             $progressIndex += 1
         }
@@ -96,7 +95,6 @@ ScriptClass GraphBuilder {
 
         $types | foreach {
             $source = $_
-            $::.ProgressWriter |=> WriteProgress -id 2 -activity "Adding entity type navigations" -currentoperation "Processing entity $($source.name)" -percentcomplete (100 * ( $progressIndex / $progressTotal ))
             $transitions = if ( $source.entity.navigations ) {
                 $source.entity.navigations
             } else {
