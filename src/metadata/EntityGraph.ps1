@@ -24,6 +24,7 @@ ScriptClass EntityGraph {
     $typeVertices = $null
     $namespace = $null
     $schema = $null
+    $builder = $null
 
     function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $schemadata ) {
         $this.vertices = @{}

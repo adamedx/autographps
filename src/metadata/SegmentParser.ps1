@@ -15,6 +15,7 @@
 . (import-script GraphSegment)
 . (import-script GraphManager)
 . (import-script UriCache)
+. (import-script DynamicBuilder)
 
 ScriptClass SegmentParser {
     $graph = $null
@@ -37,6 +38,7 @@ ScriptClass SegmentParser {
             $this.graph = $::.GraphManager |=> GetGraph $this.context
         }
 
+        $this.graph.builder = new-so DynamicBuilder $this.graph $this.context.Connection.GraphEndpoint.graph $this.context.version $this.graph.schema
         if ( ! $this.UriCache ) {
             $uriCache = $this.context |=> GetState uriCache
             if ( ! $uriCache ) {

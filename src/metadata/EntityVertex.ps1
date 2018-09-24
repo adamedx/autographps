@@ -21,6 +21,7 @@ ScriptClass EntityVertex {
     $type = $null
     $outgoingEdges = $null
     $typeName = $null
+    $buildState = $null
 
     function __initialize($entity) {
         $this.entity = $entity
@@ -34,6 +35,12 @@ ScriptClass EntityVertex {
         } else {
             $this.type = 'Null'
             $this.name = 'Null'
+        }
+
+        $this.buildState = @{
+            SingletonEntityTypeDataAdded = $false
+            NavigationsAdded = $false
+            MethodEdgesAdded = $false
         }
 
         $this.scriptclass.count = $this.scriptclass.count + 1

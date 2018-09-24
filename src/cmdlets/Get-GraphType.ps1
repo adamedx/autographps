@@ -13,6 +13,8 @@
 # limitations under the License.
 
 . (import-script ../metadata/GraphManager)
+. (import-script ../metadata/GraphDataModel)
+. (import-script ../metadata/DynamicBuilder)
 
 function Get-GraphType {
     [cmdletbinding(positionalbinding=$false)]
@@ -34,13 +36,18 @@ function Get-GraphType {
     }
 
     $entityGraph = $::.GraphManager |=> GetGraph $context
+    $builder = new-so DynamicBuilder $entityGraph $context.Connection.GraphEndpoint.graph $context.version $entitygraph.schema
 
     if ( ! $ComplexType.IsPresent ) {
         $types = if ( $Name ) {
             $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
-            $entityGraph |=> TypeVertexFromTypename $qualifiedName
+            $builder |=> GetTypeVertex $qualifiedName $null $false
         } else {
-            $entityGraph.typeVertices.values
+            $dataModel = new-so GraphDataModel $entityGraph.schema
+            ($dataModel |=> GetEntityTypes) | foreach {
+                $currentQualifiedEntityName = $::.Entity |=> QualifyName $entityGraph.namespace $_.name
+                $builder |=> GetTypeVertex $currentQualifiedEntityName
+            }
         }
 
         if ( ! $types ) {

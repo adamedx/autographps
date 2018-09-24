@@ -50,7 +50,8 @@ ScriptClass GraphManager {
         }
 
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
-            $deferBuild = $apiVersion -ne 'v1.0'
+#            $deferBuild = $apiVersion -ne 'v1.0'
+            $deferBuild = $false
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion
             }

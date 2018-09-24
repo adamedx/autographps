@@ -94,7 +94,8 @@ ScriptClass GraphSegment {
             }
         } elseif ( $this.graphElement.type -eq 'EntitySet' ) {
             $typeData = $this.graphElement.entity.typeData
-            $graph |=> TypeVertexFromTypeName $typeData.EntityTypeName
+            $graph.builder |=> GetTypeVertex $typeData.EntityTypeName $this.parent.GraphElement $false
+            #$graph |=> TypeVertexFromTypeName $typeData.EntityTypeName
         } else {
             throw "Unexpected vertex type '$($this.graphElement.type)' for segment '$($segment.name)'"
         }
@@ -110,7 +111,7 @@ ScriptClass GraphSegment {
         new-so GraphSegment $graphElement $this $segmentName
     }
 
-    function NewTransitionSegments($segmentName, $allowedTransitionTypes = $null) {
+    function NewTransitionSegments($graph, $segmentName, $allowedTransitionTypes = $null) {
         if ( $this.leadsToVertex ) {
             throw "Current segment $($this.graphElement.name) is static, so next segment must be dynamic"
         }
@@ -118,6 +119,7 @@ ScriptClass GraphSegment {
         $isVertex = $this.graphElement.pstypename -eq 'EntityVertex'
 
         $edges = if ( $isVertex ) {
+            $graph.builder |=> UpdateVertex $this.graphElement $this.parent.graphElement $true
             if ( $segmentName -and $segmentName -ne '' ) {
                 $this.graphElement.outGoingEdges[$segmentName]
             } else {
@@ -125,6 +127,7 @@ ScriptClass GraphSegment {
             }
         } else {
             # This is already an edge, so the next edges come from the sink
+            $graph.builder |=> UpdateVertex $this.GraphElement.sink $this.GraphElement $true
             if ( ! ( $this.graphElement.sink |=> IsNull ) ) {
                 $this.graphElement.sink.outgoingEdges.values
             }
@@ -138,7 +141,9 @@ ScriptClass GraphSegment {
     }
 
     function NewNextSegments($graph, $segmentName, $allowedTransitionTypes) {
+        write-host 'called newnext'
         if ( $this.leadsToVertex ) {
+            write-host 'leadstovert'
             $newVertex = NewVertexSegment $graph $segmentName $allowedTransitionTypes
             if ( $newVertex ) {
                 $newVertex
@@ -146,7 +151,8 @@ ScriptClass GraphSegment {
                 @()
             }
         } else {
-            NewTransitionSegments $segmentName $allowedTransitionTypes
+            write-host 'need transitions'
+            NewTransitionSegments $graph $segmentName $allowedTransitionTypes
         }
     }
 

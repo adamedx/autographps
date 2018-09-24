@@ -106,6 +106,7 @@ ScriptClass GraphCache {
                 $this.graphVersionsPending.Remove($graphId)
                 remove-job $submittedVersion.job -force
                 __CompleteDeferredBuild $jobResult
+                $jobResult.Graph.schema = $graphAsyncResult.metadata
                 $this.graphVersions[$graphId] = $jobResult.Graph
             } else {
                 write-verbose "Completed job '$($submittedVersion.job.id)' for graph '$graphid', but no pending version found, so this is a no-op"
@@ -186,9 +187,15 @@ ScriptClass GraphCache {
         $dependencyModule = join-path $psscriptroot '..\..\autographps.psd1'
         $thiscode = join-path $psscriptroot '..\graph.ps1'
 
+        $targetMetadata = if ( ! $metadata ) {
+            $this.scriptclass |=> __GetMetadata $endpoint $apiVersion
+        } else {
+            $metadata
+        }
+
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $deferGraphBuild, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata $deferGraphBuild } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $deferBuild, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
-        $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
+        $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId;Metadata=$targetMetadata}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
         $this.graphVersionsPending[$graphId] = $graphAsyncJob
         $graphAsyncJob
@@ -218,7 +225,10 @@ ScriptClass GraphCache {
 
             $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost ([GraphAuthProtocol]::Default)
             $connection = new-so GraphConnection $graphEndpoint $null $null
-            $metadata = invoke-graphrequest -connection $connection '$metadata' -version $apiversion
+            $metadata = try {
+                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction silentlycontinue
+            } catch {
+            }
 
             write-progress -id 1 -activity $metadataactivity -status "Complete" -completed
             $metadata
