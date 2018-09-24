@@ -16,6 +16,7 @@ $cmdlets = @(
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphLocation',
+    'Get-GraphType',
     'Get-GraphUri',
     'New-Graph',
     'Remove-Graph',
