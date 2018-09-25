@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.15.0'
+ModuleVersion = '0.15.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.4.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.4.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 

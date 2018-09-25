@@ -33,7 +33,7 @@ ScriptClass LocationHelper {
 
         function ToLocationUriPath( $context, $relativeUri ) {
             $graphRelativeUri = $this.ToGraphRelativeUriPathQualified($relativeUri, $context)
-            "{0}:{1}" -f $context.name, $graphRelativeUri
+            "/{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
         function ToGraphRelativeUriPathQualified( $relativeUri, $context = $null ) {
