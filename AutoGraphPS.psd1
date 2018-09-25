@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.4.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.5.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -171,19 +171,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.15.0 Release Notes
+# AutoGraphPS 0.15.1 Release Notes
 
 ## New Features
 
-* ``Set-GraphLocation`` now automounts a Graph specified as the beginning of a full path if it's not already mounted
-* ``Set-GraphLocation``: added the ``-NoAutoMount`` option to disable the newly added automount feature
-* ``Get-GraphType``: new cmdlet to retrieve basic information about an entity type or complex type
+None.
 
 ## New dependencies
 
-No new dependencies.
+Update to ``autographps-sdk`` version ``0.5.0``.
 
 ## Fixed defects
+
+* The auto-mount feature of ``set-graphlocation`` now verifies that the API version you're trying to mount is actually provided by the Graph endpoint (i.e. it reaches out to the Graph endpoint and makes a trivial request to that API version to see if it exists). Previously you could auto-mount something that did not exist at all and it would appear to succeed -- this led to confusion later along with useless attempts by ``autographps`` to retry mounting that version in the background.
 
 "@
     } # End of PSData hashtable

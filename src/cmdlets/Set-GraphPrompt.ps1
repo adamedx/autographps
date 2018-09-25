@@ -62,7 +62,7 @@ $__GraphDefaultPrompt = {
 
         $promptOutput += $versionOutput
         $connectionOutput = '[{0}] ' -f ($promptOutput -join ', ')
-        $locationOutput = "{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
+        $locationOutput = "/{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
         $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
     }
 
