@@ -150,7 +150,7 @@ This makes `Get-GraphChildItem` an effective way to recursively discover the Uri
 You may have noticed that after the first time you invoked `Get-GraphChildItem`, your PowerShell prompt displayed some additional information:
 
 ```
-[starchild@mothership.io] v1.0:/
+[starchild@mothership.io] /v1.0:/
 PS>
 ```
 
@@ -160,7 +160,7 @@ With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way 
 
 ```
 gcd me/drive/root/children
-[starchild@mothership.io] v1.0:/me/drive/root/children
+[starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gls
 
 Info Type      Preview       Name
@@ -175,9 +175,9 @@ If you'd like to know what's "inside" of Recipes, you can `gcd` and `gls` again:
 
 ```
 
-[starchild@mothership.io] v1.0:/me/drive/root/children
+[starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gcd me/drive/root/children/Recipes
-[starchild@mothership.io] v1.0:/me/drive/root/children/Recipes
+[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
 PS> gls
 
 Info Type             Preview    Name
@@ -190,7 +190,7 @@ n* > thumbnailSet                thumbnails
 n* > driveItemVersion            versions
 n  > workbook                    workbook
 
-[starchild@mothership.io] v1.0:/me/drive/root/children/Recipes
+[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
 PS> gls
 
 Info Type      Preview           Name
@@ -198,7 +198,7 @@ Info Type      Preview           Name
 t +> driveItem SweetPotatePie.md 13K559
 t +> driveItem Gumbo.md          13K299
 
-[starchild@mothership.io] v1.0:/me/drive/root/children/Recipes
+[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
 PS> gls
 ```
 
@@ -217,7 +217,7 @@ gwd
 
 Path
 ----
-v1.0:/me/drive/root/children/candidates/children
+/v1.0:/me/drive/root/children/candidates/children
 ```
 
 ## Query capabilities
@@ -496,7 +496,7 @@ Name         : root
 Namespace    : microsoft.graph
 Uri          : https://graph.microsoft.com/v1.0/me/drive/root
 GraphUri     : /me/drive/root
-Path         : v1.0:/me/drive/root
+Path         : /v1.0:/me/drive/root
 FullTypeName : microsoft.graph.driveItem
 Version      : v1.0
 Endpoint     : https://graph.microsoft.com/
@@ -602,7 +602,7 @@ Name         : myfile.txt
 Namespace    : microsoft.graph
 Uri          : https://graph.microsoft.com/v1.0/me/drive/root/children/myfile.txt
 GraphUri     : /me/drive/root/children/myfile.txt
-Path         : v1.0:/me/drive/root/children/myfile.txt
+Path         : /v1.0:/me/drive/root/children/myfile.txt
 FullTypeName : microsoft.graph.driveItem
 Version      : v1.0
 Endpoint     : https://graph.microsoft.com/

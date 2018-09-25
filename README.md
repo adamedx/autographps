@@ -99,16 +99,16 @@ Now traverse the Graph via the `gcd` alias to "move" to a new Uri current locati
 
 ```
 gcd me
-[starchild@mothership.io] v1.0:/me
+[starchild@mothership.io] /v1.0:/me
 PS>
 ```
 
-Notice the update to your prompt showing your authenticated identity and your new current location after invoking that last cmdlet: `[starchild@mothership.io] v1.0:/me`. **Tip:** the `gwd` alias acts like `pwd` in the file system and retrieve your current working location in the Graph.
+Notice the update to your prompt showing your authenticated identity and your new current location after invoking that last cmdlet: `[starchild@mothership.io] /v1.0:/me`. **Tip:** the `gwd` alias acts like `pwd` in the file system and retrieve your current working location in the Graph.
 
 Now you can use the `gls` alias as you would `ls` in the file system relative to your current location. Here's how you can read your email:
 
 ```
-[starchild@mothership.io] v1.0:/me
+[starchild@mothership.io] /v1.0:/me
 PS> gls messages
 ```
 
@@ -130,9 +130,9 @@ gls /
 
 Finally, here's one to enumerate your OneDrive files
 ```
-[starchild@mothership.io] v1.0:/me
+[starchild@mothership.io] /v1.0:/me
 PS> gcd drive/root/children
-[starchild@mothership.io] v1.0:/me/drive/root/children
+[starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gls
 
 Info Type      Preview       Name
@@ -151,8 +151,8 @@ Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 **3. You can access the Beta version of the Graph API**: By default, AutoGraphPS is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- just use the following commands to "mount" the `beta` version and set the current location to its root:
 
 ```powershell
-new-graph beta
-gcd beta:/ # This may take some time, you can CTRL-C and try again a few minutes later when its ready
+# You could also issue the command 'new-graph beta' to mount beta explicitly
+gcd /beta:/ # This sets the current location and implicitly mounts the 'beta' API version
 ```
 
 And that brings us to this **Warning**: *AutoGraphPS takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
