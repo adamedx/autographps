@@ -183,6 +183,7 @@ Update to ``autographps-sdk`` version ``0.5.0``.
 
 ## Fixed defects
 
+* Fix parsing of ':' in paths passed to ``Get-GraphChildItem`` to correctly distinguish between graph names vs valid components of a URI
 * The auto-mount feature of ``set-graphlocation`` now verifies that the API version you're trying to mount is actually provided by the Graph endpoint (i.e. it reaches out to the Graph endpoint and makes a trivial request to that API version to see if it exists). Previously you could auto-mount something that did not exist at all and it would appear to succeed -- this led to confusion later along with useless attempts by ``autographps`` to retry mounting that version in the background.
 
 "@
