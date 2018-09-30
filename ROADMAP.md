@@ -28,6 +28,11 @@
   * Discover roots only
   * Just-in-time discovery of types
   * Just-in-time resolution of navigation properties
+  * Make metadata download a background job
+  * Map actions / functions to entitytypes in background?
+  * Process singletons metadata in foreground
+  * Use expressions like  ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action).parameter |where name -eq bindParameter
+  * Better: $bindings = ( ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action)) | foreach { $method = $_.name; $_.parameter | where name -eq bindingParameter | foreach {[PSCustomObject]@{Type=$_.type;Method=$method}}}
 
 * change $graphverbosepreference to $graphverboselevelpreference
 

@@ -106,8 +106,13 @@ ScriptClass GraphCache {
                 $this.graphVersionsPending.Remove($graphId)
                 remove-job $submittedVersion.job -force
                 __CompleteDeferredBuild $jobResult
-                $jobResult.Graph.schema = $graphAsyncResult.metadata
-                $this.graphVersions[$graphId] = $jobResult.Graph
+                
+#                $jobResult.Graph.schema = $graphAsyncResult.metadata
+                $schemaData = [xml] $jobResult.schemaData
+                $builder = new-so GraphBuilder $jobResult.endpoint $jobresult.version $schemadata $false
+                $graph = $builder |=> NewGraph
+#                $this.graphVersions[$graphId] = $jobResult.Graph
+                $this.graphVersions[$graphId] = $Graph
             } else {
                 write-verbose "Completed job '$($submittedVersion.job.id)' for graph '$graphid', but no pending version found, so this is a no-op"
             }
@@ -171,7 +176,8 @@ ScriptClass GraphCache {
     }
 
     function __CompleteDeferredBuild($graphJobResult) {
-        if ($graphJobResult.DeferredBuild) {
+    #    if ($graphJobResult.DeferredBuild) {
+        if ( $false ) {
             write-verbose "Completing deferred build of graph"
             $::.GraphBuilder |=> CompleteDeferredBuild $graphJobResult.graph
             write-verbose "Deferred build complete"
@@ -188,14 +194,15 @@ ScriptClass GraphCache {
         $thiscode = join-path $psscriptroot '..\graph.ps1'
 
         $targetMetadata = if ( ! $metadata ) {
-            $this.scriptclass |=> __GetMetadata $endpoint $apiVersion
+#            $this.scriptclass |=> __GetSchema $endpoint $apiVersion
         } else {
+            throw 'not implemented'
             $metadata
         }
 
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $deferGraphBuild, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata $deferGraphBuild } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $deferBuild, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
-        $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId;Metadata=$targetMetadata}
+        $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
         $this.graphVersionsPending[$graphId] = $graphAsyncJob
         $graphAsyncJob
@@ -206,13 +213,14 @@ ScriptClass GraphCache {
             $graphId = __GetGraphId $endpoint $apiVersion
             $schemadata = if ( $metadata ) {
                 write-verbose "Using locally supplied metadata, skipping retrieval from remote Graph"
+                throw 'not implemented'
                 $metadata
             } else {
-                __GetMetadata $endpoint $apiVersion
+                __GetSchema $endpoint $apiVersion
             }
-            $builder = new-so GraphBuilder $endpoint $apiVersion $schemadata $deferredBuild
-            $graph = $builder |=> NewGraph
-            [PSCustomObject]@{Graph=$graph;Id=$graphId;DataModel=$builder.dataModel;DeferredBuild=$deferredBuild}
+#            $builder = new-so GraphBuilder $endpoint $apiVersion $schemadata $deferredBuild
+#            $graph = $builder |=> NewGraph
+            [PSCustomObject]@{Id=$graphId;SchemaData=$schemadata;Endpoint=$endpoint;Version=$apiVersion}
         }
 
         function __GetGraphId($endpoint, $apiVersion) {
@@ -232,6 +240,21 @@ ScriptClass GraphCache {
 
             write-progress -id 1 -activity $metadataactivity -status "Complete" -completed
             $metadata
+        }
+
+        function __GetSchema($endpoint, $apiVersion) {
+            $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
+            write-progress -id 1 -activity $metadataactivity -status "In progress"
+
+            $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost ([GraphAuthProtocol]::Default)
+            $connection = new-so GraphConnection $graphEndpoint $null $null
+            $schema = try {
+                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction silentlycontinue -rawcontent
+            } catch {
+            }
+
+            write-progress -id 1 -activity $metadataactivity -status "Complete" -completed
+            $schema
         }
     }
 }

@@ -37,7 +37,7 @@ ScriptClass GraphBuilder {
     }
 
     function NewGraph {
-        $graph = new-so EntityGraph $this.namespace $this.version $this.graphEndpoint
+        $graph = new-so EntityGraph $this.namespace $this.version $this.graphEndpoint $this.datamodel.schemadata
 
         __UpdateProgress 0
 
