@@ -94,13 +94,13 @@ function Get-GraphChildItem {
     }
 
     if ( ! $context ) {
-        $components = $resolvedUri.Path -split ':'
-
-        if ( $components.length -gt 2) {
+        $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
+        $context = if ( $parsedPath.ContextName ) {
+            $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName].context
+        }
+        if ( ! $context ) {
             throw "'$($resolvedUri.Path)' is not a valid graph location uri"
         }
-
-        $context = $::.logicalgraphmanager.Get().contexts[$components[0]].context
     }
 
     $results = @()

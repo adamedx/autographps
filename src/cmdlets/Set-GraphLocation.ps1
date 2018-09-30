@@ -47,7 +47,7 @@ function Set-GraphLocation {
             $pathContext = try {
                 write-verbose "Graph name '$($ParsedPath.ContextName)' was specified but no such graph is mounted"
                 write-verbose "Attempting to auto-mount Graph version '$($ParsedPath.ContextName)' using the existing connection"
-                $::.LogicalGraphManager |=> Get |=> NewContext $null $currentContext.connection $ParsedPath.ContextName $ParsedPath.ContextName
+                $::.LogicalGraphManager |=> Get |=> NewContext $null $currentContext.connection $ParsedPath.ContextName $ParsedPath.ContextName $true
             } catch {
                 write-verbose "Auto-mount attempt failed with error '$($_.exception.message)'"
             }
