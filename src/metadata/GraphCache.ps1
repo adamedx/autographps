@@ -196,7 +196,7 @@ ScriptClass GraphCache {
         $targetMetadata = if ( ! $metadata ) {
 #            $this.scriptclass |=> __GetSchema $endpoint $apiVersion
         } else {
-            throw 'not implemented'
+ #           throw 'not implemented'
             $metadata
         }
 
@@ -213,7 +213,7 @@ ScriptClass GraphCache {
             $graphId = __GetGraphId $endpoint $apiVersion
             $schemadata = if ( $metadata ) {
                 write-verbose "Using locally supplied metadata, skipping retrieval from remote Graph"
-                throw 'not implemented'
+#                throw 'not implemented'
                 $metadata
             } else {
                 __GetSchema $endpoint $apiVersion

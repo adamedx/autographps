@@ -17,6 +17,12 @@
 . (import-script EntityVertex)
 . (import-script EntityGraph)
 
+enum BuildFlags {
+    NavigationsProcessed = 1
+    MethodsProcessed = 2
+    CopiedToSingleton = 4
+}
+
 ScriptClass GraphBuilder {
 
     $graphEndpoint = $null
@@ -26,6 +32,12 @@ ScriptClass GraphBuilder {
     $percentComplete = 0
     $dataModel = $null
     $deferredBuild = $false
+
+    static {
+        $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
+        ([BuildFlags]::MethodsProcessed) -bOR
+        ([BuildFlags]::CopiedToSingleton)
+    }
 
     function __initialize($graphEndpoint, $version, $dataModel, $deferredBuild) {
         $this.graphEndpoint = $graphEndpoint
@@ -42,19 +54,21 @@ ScriptClass GraphBuilder {
 
         __AddMethodBindings $graph
 
+        __AddEntityTypeSchemas $graph
+
 #        __AddEntitytypeVertices $graph
 
-#        __AddEdgesToEntityTypeVertices $graph
+#         __AddEdgesToEntityTypeVertices $graph
 
 #        __ConnectEntityTypesWithMethodEdges $graph
-
+#        __AddMethodTransitionsByType $graph
 #        __CopyEntityTypeEdgesToSingletons $graph
 
         __UpdateProgress 100
     }
 
-    function AddEntityTypeVertex($graph, $typeName) {
-        __AddEntityTypeVertex $graph $typeName
+    function __AddEntityTypeVertex($graph, $typeName) {
+        __AddEntityTypeVertices $graph $typeName
     }
 
     function __AddRootVertices($graph) {
@@ -63,8 +77,14 @@ ScriptClass GraphBuilder {
 
         $entitySets = $this.dataModel |=> GetEntitySets
         __AddVerticesFromSchemas $graph $entitySets
+    }
 
-        __UpdateProgress 5
+    function __AddEntityTypeSchemas($graph) {
+        $entityTypes = $this.dataModel |=> GetEntityTypes
+
+        $entityTypes | foreach {
+            $graph |=> AddEntityTypeSchema $_.name $_
+        }
     }
 
     function __AddMethodBindings($graph) {
@@ -79,16 +99,9 @@ ScriptClass GraphBuilder {
         $methodSchemas | foreach { $methodSchema = $_; $_.parameter | where name -eq bindingParameter | foreach { $graph.AddMethodBinding($_.type, $methodSchema) } }
     }
 
-    function __AddVerticesFromSchemas($graph, $schemas, $singleType = $false) {
-        $progressIndex = 0
-
-        if ( $singleType ) {
-            __AddVertex $graph $schemas
-        } else {
-            $schemas | foreach {
-                __AddVertex $graph $_
-                $progressIndex += 1
-            }
+    function __AddVerticesFromSchemas($graph, $schemas) {
+        $schemas | foreach {
+            __AddVertex $graph $_
         }
     }
 
@@ -97,88 +110,141 @@ ScriptClass GraphBuilder {
         $graph |=> AddVertex $entity
     }
 
-    function __AddEntityTypeVertices($graph, $typeName) {
-        $entityTypes = $this.dataModel |=> GetEntityTypes $typeName
-#        $this.dataModel.SchemaData.Edmx.DataServices.Schema.EntityType | select -first 5 | out-host
-#        write-host 'addentitytypevertices', $typeName
-#        write-host "types", $entityTypes.gettype()
-#        if ( $graph.typeVertices[$typeName] ) {
-#            throw 'anger'
-#        }
+    function __AddEntityTypeVertices($graph, $unqualifiedTypeName) {
+#        $entityTypes = $this.dataModel |=> GetEntityTypes $unqualifiedTypeName
 
-        $singleType = $typeName -ne $null
-        if ( $singleType -and $entityTypes -eq $null ) {
-            throw "Type '$typeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
+        $qualifiedTypeName = $graph.namespace, $unqualifiedName -join '.'
+        $entityTypes = $graph |=> GetEntityTypeSchema $qualifiedTypeName
+        if ( $unqualifiedTypeName -and $entityTypes -eq $null ) {
+            throw "Type '$unqualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
         }
 
-        __AddVerticesFromSchemas $graph $entityTypes $singleType
+        __AddVerticesFromSchemas $graph $entityTypes
+    }
 
-        __UpdateProgress 20
+    function __AddEdgesToEntityTypeVertex($graph, $sourceVertex) {
+        if ( $sourceVertex.TestFlags([BuildFlags]::NavigationsProcessed) ) {
+            return
+        }
+
+        $source = $_
+        $transitions = if ( $sourceVertex.entity.navigations ) {
+            $sourceVertex.entity.navigations
+        } else {
+            @()
+        }
+
+        $transitions | foreach {
+            $transition = $_
+            $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
+
+            if ( ! $sink ) {
+                $name = $transition.typedata.entitytypename
+                $unqualifiedName = $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
+                $sinkSchema = $this.datamodel |=> GetEntityTypes $unqualifiedName
+                if ( $sinkSchema ) {
+                    __AddEntityTypeVertex $graph $unqualifiedName
+#                    __AddEntityTypeVertices $graph $unqualifiedName
+                    $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
+                } else {
+                    write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.entitytypename)"
+                }
+            }
+
+            if ( $sink ) {
+                $edge = new-so EntityEdge $sourceVertex $sink $transition
+                $sourceVertex |=> AddEdge $edge
+            } else {
+                write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.entitytypename), skipping"
+            }
+        }
+
+        $sourceVertex.SetFlags([BuildFlags]::NavigationsProcessed)
+    }
+
+    function __AddEdgesToVertex($graph, $vertex, $skipIfExist) {
+        if ( $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) ) {
+            if ( !$skipIfExist ) {
+                throw "Vertex '$($vertex.name)' already has edges"
+            }
+            return
+        }
+
+        $qualifiedTypeName = $vertex.entity.typedata.entitytypename
+        $unqualifiedTypeName = $qualifiedTypeName.substring($graph.namespace.length + 1, $qualifiedTypename.length - $graph.namespace.length - 1)
+
+        __AddEdgesToEntityTypeVertex $graph $vertex
+
+        if ( $vertex.entity.type -ne 'Singleton' ) {
+            __AddMethodTransitionsToVertex $graph $vertex
+        } else {
+            __CopyEntityTypeEdgesToSingletonVertex $graph $vertex
+        }
     }
 
     function __AddEdgesToEntityTypeVertices($graph, $typeName) {
-        $types = if ( $typeName ) {
-            write-host 'addentitytypevertices got called for single type', $typeName
+        # This is the unqualifiedtypename -- seems inefficient
+        # Why not just look up the type by key (i.e. qualified type name)
+        $typeVertices = if ( $typeName ) {
             $graph.typeVertices.values | where name -eq $typeName
         } else {
             $graph.typeVertices.Values
         }
 
-        $progressIndex = 0
-
-        $types | foreach {
-            write-host "entitytype", $_.name
-            $source = $_
-            $transitions = if ( $source.entity.navigations ) {
-                $source.entity.navigations
-            } else {
-                @()
-            }
-            $transitions | foreach {
-                $transition = $_
-                $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
-
-                if ( $typeName -and ($sink -eq $null) ) {
-                    $name = $transition.typedata.entitytypename
-                    write-host 'trying to get', $name
-                    $unqualifiedName = $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                    $sinkSchema = $this.datamodel |=> GetEntityTypes $unqualifiedName
-                    if ( $sinkSchema ) {
-                        __AddEntityTypeVertices $graph $unqualifiedName
-                        $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
-                    } else {
-                        write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.entitytypename)"
-                    }
-                }
-                if ( $sink -ne $null ) {
-                    $edge = new-so EntityEdge $source $sink $transition
-                    $source |=> AddEdge $edge
-                } else {
-                    write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.entitytypename), skipping"
-                }
-            }
-            $source.buildState.NavigationsAdded = $true
-            $progressIndex += 1
+        $typeVertices | foreach {
+            __AddEdgesToEntityTypeVertex $graph $_
         }
-        __UpdateProgress 40
-    }
-
-    function __ConnectEntityTypesWithMethodEdges($graph, $typeName) {
-        $actions = $this.dataModel |=> GetActions
-        __AddMethodTransitions $graph $actions $typeName
-
-        $functions = $this.dataModel |=> GetFunctions
-        __AddMethodTransitions $graph $functions $typeName
-
-        __UpdateProgress 75
     }
 
     function __CopyEntityTypeEdgesToSingletons($graph, $singletonName) {
-        if ( ! $this.deferredBuild ) {
-            $this.scriptclass |=> __CopyEntityTypeEdgesToSingletons $graph $singletonName
+        # Only needed for precomputed case?
+        __CopyEntityTypeEdgesToSingletonsByName $graph $singletonName
+    }
+
+    function __CopyEntityTypeEdgesToSingletonsByName($graph, $singletonName) {
+        # only needed for precomputed case?
+        $rootVertices = ($graph |=> GetRootVertices).values
+        $singletonCandidates = if ( $singletonName ) {
+            $rootVertices | where Name -eq $singletonName
         } else {
-            write-verbose "Deferred build set -- skipping connection of singletons to entity types to avoid deserialization depth issues"
+            $rootVertices
         }
+
+        $singletonCandidates | foreach {
+            if ( $_.type -eq 'Singleton' ) {
+                __CopyEntityTypeEdgesToSingletonVertex $graph $_
+            }
+        }
+    }
+
+    function __CopyEntityTypeEdgesToSingletonVertex($graph, $source) {
+        if ( $source.TestFlags([BuildFlags]::CopiedToSingleton) ) {
+            throw "Data from type already copied to singleton '$($source.name)'"
+        }
+
+        $entityName = ($source.entity.typeData).EntityTypeName
+        $typeVertex = $graph |=> TypeVertexFromTypeName $entityName
+
+        if ( $typeVertex -eq $null ) {
+            throw "Unable to find an entity type for singleton '$($_.name)' and '$entityName'"
+        }
+
+        __AddEdgesToVertex $graph $typeVertex $true
+
+        $edges = $typeVertex.outgoingEdges.values | foreach {
+            if ( ( $_ | gm transition ) -ne $null ) {
+                $_
+            }
+        }
+
+        $edges | foreach {
+            $sink = $_.sink
+            $transition = $_.transition
+            $edge = new-so EntityEdge $source $sink $transition
+            $source |=> AddEdge $edge
+        }
+
+        $source.SetFlags([BuildFlags]::CopiedToSingleton)
     }
 
     function __UpdateProgress($deltaPercent) {
@@ -193,6 +259,63 @@ ScriptClass GraphBuilder {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity $metadataActivity @completionArguments
     }
 
+    function __AddMethodTransitionsToVertex($graph, $sourceVertex) {
+        if ( $sourceVertex.TestFlags([BuildFlags]::MethodsProcessed) ) {
+            write-verbose "Methods already processed for $($sourceVertex.name), skipping method addition"
+            return
+        }
+
+        $sourceTypeName = $sourceVertex.entity.typeData.EntityTypeName
+        $methods = $graph.methodBindings[$sourceTypeName]
+
+        if ( ! $methods ) {
+            write-verbose "Vertex ($sourceVertex.name) has no methods, skipping method addition"
+            return
+        }
+
+        $methods | foreach {
+            $method = $_
+            $sink = if ( $method | gm ReturnType ) {
+                $typeName = if ( $method.localname -eq 'function' ) {
+                    $method.ReturnType | select -expandproperty Type
+                } else {
+                    $method.ReturnType | select -expandproperty Type
+                }
+
+                $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+
+                if ( $typeVertex -eq $null ) {
+                    $name = $typeName
+                    $unqualifiedName = if ( $name.startswith($graph.namespace) ) {
+                        $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
+                    }
+                    if ( $unqualifiedName ) {
+                        try {
+                            __AddEntityTypeVertex $graph $unqaulifiedName
+                         #   __AddEntityTypeVertices $graph $unqualifiedName
+                            $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+                        } catch {
+                            # Possibly an enumeration type, this will just be considered a scalar
+                        }
+                    } else {
+                        write-verbose "Unable to find schema for method '$($method.name)' with type '$typeName'"
+                    }
+                }
+
+                if ( $typeVertex ) {
+                    $typeVertex
+                } else {
+                    write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring Scalar vertex"
+                    $::.EntityVertex.ScalarVertex
+                }
+            } else {
+                $::.Entityvertex.NullVertex
+            }
+            __AddMethod $sourceVertex $method $sink
+            }
+            $sourceVertex.SetFlags([BuildFlags]::MethodsProcessed)
+    }
+
     function __AddMethodTransitionsByType($graph, $targetTypeName) {
         $typeNames = if ( $targetTypeName ) {
             $targetTypeName
@@ -201,131 +324,8 @@ ScriptClass GraphBuilder {
         }
 
         $typeNames | foreach {
-            $sourceTypeName = $_
-            $graph.methodBindings[$sourceTypeName] | foreach {
-                $method = $_
-                $source = $graph |=> TypeVertexFromTypeName $sourceTypeName
-
-                if ( $source ) {
-                    $sink = if ( $method | gm ReturnType ) {
-                        $typeName = if ( $method.localname -eq 'function' ) {
-                            $method.ReturnType | select -expandproperty Type
-                        } else {
-                            $method.ReturnType | select -expandproperty Type
-                        }
-
-                        $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-
-                        if ( $typeVertex -eq $null ) {
-                            $name = $typeName
-                            $unqualifiedName = if ( $name.startswith($graph.namespace) ) {
-                                $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                            }
-                            if ( $unqualifiedName ) {
-                                try {
-                                    __AddEntityTypeVertices $graph $unqualifiedName
-                                    $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-                                } catch {
-                                    # Possibly an enumeration type, this will just be considered a scalar
-                                }
-                            } else {
-                                write-verbose "Unable to find schema for method '$($method.name)' with type '$typeName'"
-                            }
-                        }
-
-                        if ( $typeVertex ) {
-                            $typeVertex
-                        } else {
-                            write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring Scalar vertex"
-                            $::.EntityVertex.ScalarVertex
-                        }
-                    } else {
-                        $::.Entityvertex.NullVertex
-                    }
-
-                    __AddMethod $source $method $sink
-                } else {
-                    write-verbose "Method '$($_.name)' does not have a parameter attribute, skipping"
-                }
-            }
-
-        }
-    }
-
-    function __AddMethodTransitions($graph, $methods, $targetTypeName) {
-        $methods | foreach {
-            $parameters = try {
-                $_.parameter
-            } catch {
-            }
-
-            $method = $_
-            $source = if ( $parameters ) {
-                $bindingParameter = $parameters | where { $_.name -eq 'bindingParameter' -or $_.name -eq 'bindParameter' }
-                if ( $bindingParameter ) {
-                    if ( ( $targetTypeName -eq $null ) -or ($bindingParameter.Type -eq $targetTypeName) ) {
-                        if ( $targetTypeName ) {
-                            write-host -fore cyan "Found '$targetTypeName'!"
-                        }
-                        $bindingTargetVertex = $graph |=> TypeVertexFromTypeName $bindingParameter.Type
-
-                        if ( $bindingTargetVertex ) {
-                            $bindingTargetVertex
-                        } else {
-                            write-verbose "Unable to bind method '$($_.name)' of type '$($bindingParameter.Type)', skipping"
-                        }
-                    } else {
-                        write-host -fore magenta "Skipping '$($bindingParameter.Type)', not eq '$targetTypeName'"
-                        write-verbose "Skipping '$($bindingParameter.Type)', not eq '$targetTypeName'"
-                    }
-                } else {
-                    write-host -fore cyan "Unable to find a bindingParameter in parameters for $($_.name)"
-                }
-            } else {
-                write-verbose "Method '$($_.name)' does not have a parameter attribute, skipping"
-            }
-
-            if ( $source ) {
-                $sink = if ( $method | gm ReturnType ) {
-                    $typeName = if ( $method.localname -eq 'function' ) {
-                        $method.ReturnType | select -expandproperty Type
-                    } else {
-                        $method.ReturnType | select -expandproperty Type
-                    }
-
-                    $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-
-                    if ( $typeVertex -eq $null ) {
-#                        $name = ($::.Entity |=> GetEntityTypeDataFromTypeName $typeName).entitytypename | select -expandproperty type
-                        $name = $typeName
-                        write-host "Method '$($method.name)' has return type '$name', looking for it"
-                        $unqualifiedName = if ( $name.startswith($graph.namespace) ) {
-                            $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                        }
-                        if ( $unqualifiedName ) {
-                            try {
-                                __AddEntityTypeVertices $graph $unqualifiedName
-                                $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-                            } catch {
-                                # Possibly an enumeratio type, this will just be considered a scalar
-                            }
-                        } else {
-                            write-verbose "Unable to find schema for method '$($method.name)' with type '$typeName'"
-                        }
-                    }
-
-                    if ( $typeVertex ) {
-                        $typeVertex
-                    } else {
-                        write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring Scalar vertex"
-                        $::.EntityVertex.ScalarVertex
-                    }
-                } else {
-                    $::.Entityvertex.NullVertex
-                }
-
-                __AddMethod $source $method $sink
-            }
+            $typeVertex = $graph |=> TypeVertexFromTypeName $_
+            __AddMethodTransitionsToVertex $graph $typeVertex
         }
     }
 
@@ -336,47 +336,6 @@ ScriptClass GraphBuilder {
             $targetVertex |=> AddEdge $edge
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
-        }
-    }
-
-    static {
-        function CompleteDeferredBuild($graph) {
-            write-verbose "Completing deferred build by connecting singletons"
-            __CopyEntityTypeEdgesToSingletons $graph
-        }
-
-        function __CopyEntityTypeEdgesToSingletons($graph, $singletonName) {
-            $rootVertices = ($graph |=> GetRootVertices).values
-            $singletonCandidates = if ( $singletonName ) {
-                write-host 'targeted'
-                $rootVertices | where Name -eq $singletonName
-            } else {
-                write-host 'everything'
-                $rootVertices
-            }
-
-            $singletonCandidates | foreach {
-                $source = $_
-                $edges = if ( $source.type -eq 'Singleton' ) {
-                    $entityName = ($source.entity.typeData).EntityTypeName
-                    $typeVertex = $graph |=> TypeVertexFromTypeName $entityName
-                    if ( $typeVertex -eq $null ) {
-                        throw "Unable to find an entity type for singleton '$($_.name)' and '$entityName'"
-                    }
-                    $typeVertex.outgoingEdges.values | foreach {
-                        if ( ( $_ | gm transition ) -ne $null ) {
-                            $_
-                        }
-                    }
-                }
-
-                $edges | foreach {
-                    $sink = $_.sink
-                    $transition = $_.transition
-                    $edge = new-so EntityEdge $source $sink $transition
-                    $source |=> AddEdge $edge
-                }
-            }
         }
     }
 }

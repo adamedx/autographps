@@ -21,7 +21,7 @@ ScriptClass EntityVertex {
     $type = $null
     $outgoingEdges = $null
     $typeName = $null
-    $buildState = $null
+    $flags = 0
 
     function __initialize($entity) {
         $this.entity = $entity
@@ -37,12 +37,6 @@ ScriptClass EntityVertex {
             $this.name = 'Null'
         }
 
-        $this.buildState = @{
-            SingletonEntityTypeDataAdded = $false
-            NavigationsAdded = $false
-            MethodEdgesAdded = $false
-        }
-
         $this.scriptclass.count = $this.scriptclass.count + 1
     }
 
@@ -52,6 +46,14 @@ ScriptClass EntityVertex {
 
     function IsRoot {
         $this.type -eq '__Root'
+    }
+
+    function SetFlags([int] $flags) {
+        $this.flags = $this.flags -bOR $flags
+    }
+
+    function TestFlags([int] $flags) {
+        $this.flags -bAND $flags
     }
 
     function AddEdge($edge) {

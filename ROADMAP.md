@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Change methods for method building, copytosingletons, addedgestotype
+
 * Add app creation, enumeration, update
   * New-GraphApplication
   * Remove-GraphApplication

@@ -141,9 +141,7 @@ ScriptClass GraphSegment {
     }
 
     function NewNextSegments($graph, $segmentName, $allowedTransitionTypes) {
-        write-host 'called newnext'
         if ( $this.leadsToVertex ) {
-            write-host 'leadstovert'
             $newVertex = NewVertexSegment $graph $segmentName $allowedTransitionTypes
             if ( $newVertex ) {
                 $newVertex
@@ -151,7 +149,6 @@ ScriptClass GraphSegment {
                 @()
             }
         } else {
-            write-host 'need transitions'
             NewTransitionSegments $graph $segmentName $allowedTransitionTypes
         }
     }

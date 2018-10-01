@@ -31,10 +31,6 @@ ScriptClass GraphDataModel {
             $this.SchemaData.Edmx.DataServices.Schema.EntityType
         }
 
-#        if ( $typeName -and $result -and ( ( $result | select -expandproperty localname -erroraction silentlycontinue ) -eq $null ) ) {
-#            $result | out-host
-#        throw 'whoa2'
- #       }
         $result
     }
 
