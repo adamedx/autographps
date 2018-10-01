@@ -18,9 +18,13 @@ ScriptClass DynamicBuilder {
     $builder = $null
     $graph = $null
 
-    function __initialize($graph, $graphEndpoint, $version, $metadata) {
+    function __initialize($graph, $graphEndpoint, $version, $dataModel) {
         $this.graph = $graph
-        $this.builder = new-so GraphBuilder $graphEndpoint $version $metadata
+        $this.builder = new-so GraphBuilder $graphEndpoint $version $datamodel
+    }
+
+    function InitializeGraph {
+        $this.builder |=> InitializeGraph $this.graph
     }
 
     function GetTypeVertex($qualifiedTypeName, $parent, $includeSinks) {
@@ -139,7 +143,8 @@ ScriptClass DynamicBuilder {
         write-host "AddEdges '$unqualifiedTypeName'"
         if ( ! $typeVertex.buildstate.navigationsAdded ) {
             $this.builder |=>  __AddEdgesToEntityTypeVertices $this.graph $unqualifiedTypeName
-            $this.builder |=>  __ConnectEntityTypesWithMethodEdges $this.graph $qualifiedTypeName
+            $this.builder |=>  __AddMethodTransitionsByType $this.graph $qualifiedTypeName
+#            $this.builder |=>  __ConnectEntityTypesWithMethodEdges $this.graph $qualifiedTypeName
 #            $typeVertex.buildState.MethodEdgesAdded = $true
             $typeVertex.buildstate.NavigationsAdded = $true
         }

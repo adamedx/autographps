@@ -22,26 +22,33 @@ ScriptClass EntityGraph {
     $vertices = $null
     $rootVertices = $null
     $typeVertices = $null
+    $methodBindings = $null
     $namespace = $null
-    $schema = $null
     $builder = $null
+    $dataModel = $null
 
-    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $schemadata ) {
+    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel ) {
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
+        $this.methodBindings = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
-        $this.schema = $schemadata
-    }
-
-    function GetSchema {
-        $this.schema
+        $this.dataModel = $dataModel
+        $this.builder = new-so DynamicBuilder $this $endpoint $apiVersion $dataModel
     }
 
     function GetRootVertices {
         $this.rootVertices
+    }
+
+    function AddMethodBinding($typeName, $methodSchema) {
+        if ( $this.methodBindings[$typeName] -eq $null ) {
+            $this.methodBindings[$typeName] = @()
+         }
+
+        $this.methodBindings[$typeName] += $methodSchema
     }
 
     function AddVertex($entity) {
@@ -62,5 +69,14 @@ ScriptClass EntityGraph {
 
     static {
         $nullVertex = new-so EntityVertex $null
+
+        function NewGraph($endpoint, $version, $schemadata) {
+            $dataModel = new-so GraphDataModel $schemadata
+            $graph = new-so EntityGraph ($dataModel |=> GetNamespace) $version $Endpoint $dataModel
+
+            $graph.builder |=> InitializeGraph
+
+            $graph
+        }
     }
 }

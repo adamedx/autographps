@@ -13,8 +13,6 @@
 # limitations under the License.
 
 . (import-script ../metadata/GraphManager)
-. (import-script ../metadata/GraphDataModel)
-. (import-script ../metadata/DynamicBuilder)
 
 function Get-GraphType {
     [cmdletbinding(positionalbinding=$false)]
@@ -36,14 +34,14 @@ function Get-GraphType {
     }
 
     $entityGraph = $::.GraphManager |=> GetGraph $context
-    $builder = new-so DynamicBuilder $entityGraph $context.Connection.GraphEndpoint.graph $context.version $entitygraph.schema
+    $builder = $entityGraph.builder
 
     if ( ! $ComplexType.IsPresent ) {
         $types = if ( $Name ) {
             $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
             $builder |=> GetTypeVertex $qualifiedName $null $false
         } else {
-            $dataModel = new-so GraphDataModel $entityGraph.schema
+            $dataModel = $entityGraph.dataModel
             ($dataModel |=> GetEntityTypes) | foreach {
                 $currentQualifiedEntityName = $::.Entity |=> QualifyName $entityGraph.namespace $_.name
                 $builder |=> GetTypeVertex $currentQualifiedEntityName
@@ -53,20 +51,13 @@ function Get-GraphType {
         if ( ! $types ) {
             throw "Graph entity type '$Name' was not found in Graph '$($context.name)'"
         }
-        if ( $Name ) {
-            $entityGraph.schema.Edmx.DataServices.schema.EntityType | where Name -eq $types.entity.name
-        } else {
-            $entityGraph.schema.Edmx.DataServices.schema.EntityType
-        }
+
+        $entityGraph.dataModel |=> GetEntityTypes $Name
     } else {
-        if ( $Name ) {
-            $result = $entityGraph.schema.Edmx.DataServices.schema.ComplexType | where Name -eq $Name
-            if ( ! $result ) {
-                throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
-            }
-            $result
-        } else {
-            $entityGraph.schema.Edmx.DataServices.schema.ComplexType
+        $result = $entityGraph.dataModel |=> GetComplexTypes $name
+        if ( $Name -and ! $result ) {
+            throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
         }
+        $result
     }
 }

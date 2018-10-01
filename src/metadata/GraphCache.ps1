@@ -14,7 +14,7 @@
 
 . (import-script ..\common\PreferenceHelper)
 . (import-script GraphDataModel)
-. (import-script GraphBuilder)
+# . (import-script GraphBuilder)
 
 enum MetadataStatus {
     NotStarted
@@ -106,11 +106,11 @@ ScriptClass GraphCache {
                 $this.graphVersionsPending.Remove($graphId)
                 remove-job $submittedVersion.job -force
                 __CompleteDeferredBuild $jobResult
-                
+
 #                $jobResult.Graph.schema = $graphAsyncResult.metadata
                 $schemaData = [xml] $jobResult.schemaData
-                $builder = new-so GraphBuilder $jobResult.endpoint $jobresult.version $schemadata $false
-                $graph = $builder |=> NewGraph
+#                $builder = new-so GraphBuilder $jobResult.endpoint $jobresult.version $schemadata $false
+                $graph = $::.EntityGraph |=> NewGraph $jobResult.endpoint $jobresult.version $schemadata
 #                $this.graphVersions[$graphId] = $jobResult.Graph
                 $this.graphVersions[$graphId] = $Graph
             } else {
@@ -179,7 +179,7 @@ ScriptClass GraphCache {
     #    if ($graphJobResult.DeferredBuild) {
         if ( $false ) {
             write-verbose "Completing deferred build of graph"
-            $::.GraphBuilder |=> CompleteDeferredBuild $graphJobResult.graph
+#            $::.GraphBuilder |=> CompleteDeferredBuild $graphJobResult.graph
             write-verbose "Deferred build complete"
         } else {
             write-verbose "Build is already complete"

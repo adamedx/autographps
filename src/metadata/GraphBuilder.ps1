@@ -24,24 +24,23 @@ ScriptClass GraphBuilder {
     $dataModel = $null
     $namespace = $null
     $percentComplete = 0
-    $metadata = $null
+    $dataModel = $null
     $deferredBuild = $false
 
-    function __initialize($graphEndpoint, $version, $metadata, $deferredBuild) {
+    function __initialize($graphEndpoint, $version, $dataModel, $deferredBuild) {
         $this.graphEndpoint = $graphEndpoint
         $this.version = $version
-        $this.metadata = $metadata
-        $this.dataModel = new-so GraphDataModel $metadata
+        $this.dataModel = $dataModel
         $this.namespace = $this.dataModel |=> GetNamespace
         $this.deferredBuild = $deferredBuild
     }
 
-    function NewGraph {
-        $graph = new-so EntityGraph $this.namespace $this.version $this.graphEndpoint $this.datamodel.schemadata
-
+    function InitializeGraph($graph) {
         __UpdateProgress 0
 
         __AddRootVertices $graph
+
+        __AddMethodBindings $graph
 
 #        __AddEntitytypeVertices $graph
 
@@ -52,8 +51,6 @@ ScriptClass GraphBuilder {
 #        __CopyEntityTypeEdgesToSingletons $graph
 
         __UpdateProgress 100
-
-        $graph
     }
 
     function AddEntityTypeVertex($graph, $typeName) {
@@ -68,6 +65,18 @@ ScriptClass GraphBuilder {
         __AddVerticesFromSchemas $graph $entitySets
 
         __UpdateProgress 5
+    }
+
+    function __AddMethodBindings($graph) {
+        $actions = $this.dataModel |=> GetActions
+        __AddMethodBindingsFromMethodSchemas $graph $actions
+
+        $functions = $this.dataModel |=> GetFunctions
+        __AddMethodBindingsFromMethodSchemas $graph $functions
+    }
+
+    function __AddMethodBindingsFromMethodSchemas($graph, $methodSchemas) {
+        $methodSchemas | foreach { $methodSchema = $_; $_.parameter | where name -eq bindingParameter | foreach { $graph.AddMethodBinding($_.type, $methodSchema) } }
     }
 
     function __AddVerticesFromSchemas($graph, $schemas, $singleType = $false) {
@@ -182,6 +191,65 @@ ScriptClass GraphBuilder {
             @{Status="In progress";PercentComplete=$this.percentComplete}
         }
         $::.ProgressWriter |=> WriteProgress -id 1 -activity $metadataActivity @completionArguments
+    }
+
+    function __AddMethodTransitionsByType($graph, $targetTypeName) {
+        $typeNames = if ( $targetTypeName ) {
+            $targetTypeName
+        } else {
+            $graph.methodBindings.keys
+        }
+
+        $typeNames | foreach {
+            $sourceTypeName = $_
+            $graph.methodBindings[$sourceTypeName] | foreach {
+                $method = $_
+                $source = $graph |=> TypeVertexFromTypeName $sourceTypeName
+
+                if ( $source ) {
+                    $sink = if ( $method | gm ReturnType ) {
+                        $typeName = if ( $method.localname -eq 'function' ) {
+                            $method.ReturnType | select -expandproperty Type
+                        } else {
+                            $method.ReturnType | select -expandproperty Type
+                        }
+
+                        $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+
+                        if ( $typeVertex -eq $null ) {
+                            $name = $typeName
+                            $unqualifiedName = if ( $name.startswith($graph.namespace) ) {
+                                $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
+                            }
+                            if ( $unqualifiedName ) {
+                                try {
+                                    __AddEntityTypeVertices $graph $unqualifiedName
+                                    $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+                                } catch {
+                                    # Possibly an enumeration type, this will just be considered a scalar
+                                }
+                            } else {
+                                write-verbose "Unable to find schema for method '$($method.name)' with type '$typeName'"
+                            }
+                        }
+
+                        if ( $typeVertex ) {
+                            $typeVertex
+                        } else {
+                            write-verbose "Type $($typeName) returned by $($method.name) cannot be found, configuring Scalar vertex"
+                            $::.EntityVertex.ScalarVertex
+                        }
+                    } else {
+                        $::.Entityvertex.NullVertex
+                    }
+
+                    __AddMethod $source $method $sink
+                } else {
+                    write-verbose "Method '$($_.name)' does not have a parameter attribute, skipping"
+                }
+            }
+
+        }
     }
 
     function __AddMethodTransitions($graph, $methods, $targetTypeName) {

@@ -38,6 +38,14 @@ ScriptClass GraphDataModel {
         $result
     }
 
+    function GetComplexTypes($typeName) {
+        if ( $typeName ) {
+            $this.SchemaData.Edmx.DataServices.Schema.ComplexType | where Name -eq $typeName
+        } else {
+            $this.SchemaData.Edmx.DataServices.Schema.ComplexType
+        }
+    }
+
     function GetEntitySets {
         $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing entity sets"
         $this.SchemaData.Edmx.DataServices.Schema.EntityContainer.EntitySet
