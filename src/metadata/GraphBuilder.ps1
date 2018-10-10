@@ -141,7 +141,7 @@ ScriptClass GraphBuilder {
             if ( ! $sink ) {
                 $name = $transition.typedata.entitytypename
                 $unqualifiedName = $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                $sinkSchema = $this.datamodel |=> GetEntityTypes $unqualifiedName
+                $sinkSchema = $graph |=> GetEntityTypeSchema $name
                 if ( $sinkSchema ) {
                     __AddEntityTypeVertex $graph $unqualifiedName
 #                    __AddEntityTypeVertices $graph $unqualifiedName
