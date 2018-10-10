@@ -14,24 +14,42 @@
 
 ScriptClass GraphDataModel {
     $SchemaData = $null
+    $methodBindings = $null
+    $typeSchemas = $null
+    $namespace = $null
 
     function __initialize($schemaData) {
         $this.SchemaData = $schemaData
+        $this.namespace = $schemaData.Edmx.DataServices.Schema.Namespace
     }
 
     function GetNamespace {
         $this.SchemaData.Edmx.DataServices.Schema.Namespace
     }
 
-    function GetEntityTypes($typeName) {
-        $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing entity types"
-        $result = if ( $typeName ) {
-            $this.SchemaData.Edmx.DataServices.Schema.EntityType | where Name -eq $typeName
-        } else {
-            $this.SchemaData.Edmx.DataServices.Schema.EntityType
+    function GetEntityTypeByName($typeName) {
+        __InitializeTypesOnDemand
+        $this.typeSchemas[$typeName]
+    }
+
+    function GetMethodBindingsForType($typeName) {
+        if ( $this.methodBindings -eq $null ) {
+            $this.methodBindings = @{}
+            $actions = GetActions
+            __AddMethodBindingsFromMethodSchemas $actions
+
+            $functions = GetFunctions
+            __AddMethodBindingsFromMethodSchemas $functions
         }
 
-        $result
+        $this.methodBindings[$typeName]
+    }
+
+    function GetEntityTypes {
+        $entityTypes = __InitializeTypesOnDemand $true
+        if ( ! $entityTypes ) {
+            $this.typeSchemas.values
+        }
     }
 
     function GetComplexTypes($typeName) {
@@ -61,4 +79,32 @@ ScriptClass GraphDataModel {
         $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing functions"
         $this.SchemaData.Edmx.DataServices.Schema.Function
     }
+
+    function __InitializeTypesOnDemand($returnNewTypes = $false) {
+        if ( ! $this.typeSchemas ) {
+            $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing entity types"
+            $typeSchemas = $this.SchemaData.Edmx.DataServices.Schema.EntityType
+            $this.typeSchemas = @{}
+            $typeSchemas | foreach {
+                $qualifiedName = $this.namespace, $_.name -join '.'
+                $this.typeSchemas.Add($qualifiedName, $_)
+            }
+            if ( $returnNewTypes ) {
+                $typeSchemas
+            }
+        }
+    }
+
+    function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
+        $methodSchemas | foreach { $methodSchema = $_; $_.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+    }
+
+    function __AddMethodBinding($typeName, $methodSchema) {
+        if ( $this.methodBindings[$typeName] -eq $null ) {
+            $this.methodBindings[$typeName] = @()
+         }
+
+        $this.methodBindings[$typeName] += $methodSchema
+    }
+
 }

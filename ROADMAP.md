@@ -3,6 +3,11 @@
 ## To-do items -- prioritized
 
 * Change methods for method building, copytosingletons, addedgestotype
+* Nove dynamic builder methods updatevertex, getentitytypevertex to entitygraph
+  * Remove dynamic builder
+  * reference datamodel and other members in exactly one place between entitygraph and graphbuilder
+  * Make updatevertex GetVertexEdges
+  * Make GetEntitytypeVertex GetVertexByType or slightly better name
 
 * Add app creation, enumeration, update
   * New-GraphApplication

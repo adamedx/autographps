@@ -34,25 +34,19 @@ function Get-GraphType {
     }
 
     $entityGraph = $::.GraphManager |=> GetGraph $context
-    $builder = $entityGraph.builder
 
     if ( ! $ComplexType.IsPresent ) {
         $types = if ( $Name ) {
             $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
-            $builder |=> GetTypeVertex $qualifiedName $null $false
+            $entityGraph.dataModel |=> GetEntityTypeByName $qualifiedName
         } else {
-            $dataModel = $entityGraph.dataModel
-            ($dataModel |=> GetEntityTypes) | foreach {
-                $currentQualifiedEntityName = $::.Entity |=> QualifyName $entityGraph.namespace $_.name
-                $builder |=> GetTypeVertex $currentQualifiedEntityName
-            }
+            $entityGraph.dataModel |=> GetEntityTypes
         }
 
-        if ( ! $types ) {
+        if ( $name -and ! $types ) {
             throw "Graph entity type '$Name' was not found in Graph '$($context.name)'"
         }
-
-        $entityGraph.dataModel |=> GetEntityTypes $Name
+        $types
     } else {
         $result = $entityGraph.dataModel |=> GetComplexTypes $name
         if ( $Name -and ! $result ) {

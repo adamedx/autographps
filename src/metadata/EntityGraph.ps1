@@ -15,6 +15,7 @@
 . (import-script Entity)
 . (import-script EntityVertex)
 . (import-script EntityEdge)
+. (import-script GraphBuilder)
 
 ScriptClass EntityGraph {
     $ApiVersion = $null
@@ -22,8 +23,6 @@ ScriptClass EntityGraph {
     $vertices = $null
     $rootVertices = $null
     $typeVertices = $null
-    $methodBindings = $null
-    $typeSchemas = $null
     $namespace = $null
     $builder = $null
     $dataModel = $null
@@ -32,34 +31,15 @@ ScriptClass EntityGraph {
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
-        $this.methodBindings = @{}
-        $this.typeSchemas = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
         $this.dataModel = $dataModel
-        $this.builder = new-so DynamicBuilder $this $endpoint $apiVersion $dataModel
+        $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
     function GetRootVertices {
         $this.rootVertices
-    }
-
-    function AddEntityTypeSchema($unqualifiedTypeName, $typeSchema) {
-        $qualifiedName = $this.namespace, $unqualifiedTypeName -join '.'
-        $this.typeSchemas.Add($qualifiedName, $typeSchema)
-    }
-
-    function GetEntityTypeSchema($qualifiedTypeName) {
-        $this.typeSchemas[$qualifiedTypeName]
-    }
-
-    function AddMethodBinding($typeName, $methodSchema) {
-        if ( $this.methodBindings[$typeName] -eq $null ) {
-            $this.methodBindings[$typeName] = @()
-         }
-
-        $this.methodBindings[$typeName] += $methodSchema
     }
 
     function AddVertex($entity) {
@@ -78,6 +58,74 @@ ScriptClass EntityGraph {
         $this.typeVertices[$typeData.EntityTypeName]
     }
 
+    function GetTypeVertex($qualifiedTypeName) {
+        $vertex = TypeVertexFromTypeName $qualifiedTypeName
+
+        if ( ! $vertex ) {
+            __AddTypeVertex $qualifiedTypeName
+            $vertex = TypeVertexFromTypeName $qualifiedTypeName
+        }
+
+        if ( ! $vertex ) {
+            throw "Vertex '$qualifiedTypeName' not found"
+        }
+
+        __UpdateVertex $vertex
+
+        $vertex
+    }
+
+    function GetVertexEdges($vertex) {
+        __UpdateVertex $vertex
+        $vertex.outgoingEdges
+    }
+
+    function __UpdateVertex($vertex) {
+        if ( ! (__IsVertexReady $vertex) ) {
+            switch ( $vertex.entity.type ) {
+                'Singleton' {
+                    __AddTypeVertex $vertex.entity.typedata.entitytypename
+                    __AddTypeForVertex $vertex
+                }
+                'EntityType' {
+                    __AddTypeForVertex $vertex
+                }
+                'EntitySet' {
+                    __AddTypeVertex $vertex.entity.typedata.entitytypename
+                    __AddTypeForVertex $vertex
+                }
+                'Action' {
+                    __AddTypeForVertex($vertex)
+                }
+                '__Scalar' {
+                    __AddTypeForVertex($vertex)
+                }
+                '__Root' {
+                    __AddTypeForVertex($vertex)
+                }
+                default {
+                    throw "Unknown entity type $($vertex.entity.type) for entity name $($vertex.entity.name)"
+                }
+            }
+        }
+    }
+
+    function __AddTypeForVertex($vertex) {
+        $this.builder |=> __AddEdgesToVertex $this $vertex $true
+    }
+
+    function __AddTypeVertex($qualifiedTypeName) {
+        $vertex = TypeVertexFromTypeName $qualifiedTypeName
+        if ( ! $vertex ) {
+            $unqualifiedName = $qualifiedTypeName.substring($this.namespace.length + 1, $qualifiedTypeName.length - $this.namespace.length - 1)
+            $this.builder |=> __AddEntityTypeVertices $this $unqualifiedName
+        }
+    }
+
+    function __IsVertexReady($vertex) {
+        $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) -eq $::.GraphBuilder.AllBuildFlags
+    }
+
     static {
         $nullVertex = new-so EntityVertex $null
 
@@ -85,7 +133,7 @@ ScriptClass EntityGraph {
             $dataModel = new-so GraphDataModel $schemadata
             $graph = new-so EntityGraph ($dataModel |=> GetNamespace) $version $Endpoint $dataModel
 
-            $graph.builder |=> InitializeGraph
+            $graph.builder |=> InitializeGraph $graph
 
             $graph
         }

@@ -130,7 +130,6 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
-        '.\src\metadata\DynamicBuilder.ps1',
         '.\src\metadata\Entity.ps1',
         '.\src\metadata\EntityEdge.ps1',
         '.\src\metadata\EntityGraph.ps1',
