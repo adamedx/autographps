@@ -50,17 +50,15 @@ ScriptClass GraphManager {
         }
 
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
-#            $deferBuild = $apiVersion -ne 'v1.0'
-            $deferBuild = $false
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion
             }
 
             if ( $wait -and ! $forceupdate ) {
-                $this.cache |=> GetGraph $endpoint $apiVersion $metadata $deferBuild
+                $this.cache |=> GetGraph $endpoint $apiVersion $metadata
             } else {
 
-                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata $deferBuild
+                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata
 
                 if ( $wait ) {
                     $this.cache |=> WaitForGraphAsync $asyncResult

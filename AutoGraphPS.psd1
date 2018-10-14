@@ -166,7 +166,27 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.15.1 Release Notes
+# AutoGraphPS 0.16.0 Release Notes
+
+This release changes the user experience of schema processing, which originally took place in the background and required around 2 minutes or more after the module was loaded to complete. This mean that cmdlets such as ``Get-GraphChildItem`` and ``Set-GraphLocation`` that depended on metadata would hang until processing was done, or would need to skip metadata processing and return incomplete results.
+
+With this release, the following changes are introduced:
+
+* The only background processing done now is metadata download -- previously the entire model was traversed to construct a graph in the background, this is no longer the case.
+* Only when cmdlets that require metadata are invoked, e.g. ``Get-GraphChild``, is metadata accessed, and then only the minimal amount of metadata require for that command is processed. So in a graph with 1000 vertices, if only one vertex is required to satisfy the cmdlet, only that one vertex is processed. This can be referred to as *on-demand* or *just-in-time* metadata processing.
+* Serialization overhead from moving the processed graph from a background job to the current session is eliminated because processing only occurs in the current session -- this can save anywhere from a 2-3s to 10s on first-time metadata cmdlet invocation.
+* Several inefficiencies in metadata processing were addressed, such as enumerating every action and function (around 500 of these!) every time a type vertex was processed
+* Workarounds for limitations in PowerShell serialization of ``PSCustomObject`` types where some metadata was processed in the background and other metadata in the foreground (as was the case for the ``beta`` API version due to its greater serialization depth than ``v1.0``) are no longer needed and were removed as all processing is done in the foreground and there is no serialization done as part of metadata processing.
+* The caching layer above the ``EntityGraph`` still exists, so the just-in-time processing occurs only once for a particular part of the Graph as was previously the case.
+
+The resulting user experience is the following:
+
+* Upon module load, metadata is ready in 10s or less
+* Even if you run a metadata cmdlet immediately on loading (or to trigger loading) the module, this first invocation will complete in under 10s if you specify to wait for metadata, or you can simply try again and in the first 1-2 retries the cmdlet will complete normally
+* There will be a slight delay (~1s) the first time a part of the Graph is accessed to accommodate just-in-time metadata processing, but only on that first access
+* There will no longer be sustained high CPU utilization (around 2 minutes) on module startup
+* In general, the module will feel "snappier" in terms of starting up and getting going with cmdlets.
+* The improvement also comes into play when mounting new API versions.
 
 ## New Features
 
@@ -174,12 +194,12 @@ None.
 
 ## New dependencies
 
-Update to ``autographps-sdk`` version ``0.5.0``.
+None.
 
 ## Fixed defects
 
-* Fix parsing of ':' in paths passed to ``Get-GraphChildItem`` to correctly distinguish between graph names vs valid components of a URI
-* The auto-mount feature of ``set-graphlocation`` now verifies that the API version you're trying to mount is actually provided by the Graph endpoint (i.e. it reaches out to the Graph endpoint and makes a trivial request to that API version to see if it exists). Previously you could auto-mount something that did not exist at all and it would appear to succeed -- this led to confusion later along with useless attempts by ``autographps`` to retry mounting that version in the background.
+* [Beta version schema parsing encounters deserialization error](https://github.com/adamedx/autographps/issues/27)
+* [Schema parsing takes more than 2 minutes, affects get-graphuri, set-graphlocation etc. ](https://github.com/adamedx/autographps/issues/26)
 
 "@
     } # End of PSData hashtable
