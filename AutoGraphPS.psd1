@@ -140,12 +140,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\metadata\GraphManager.ps1',
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
-        '.\src\metadata\UriCache.ps1',
-        '.\src\REST\GraphErrorRecorder.ps1',
-        '.\src\REST\GraphRequest.ps1',
-        '.\src\REST\GraphResponse.ps1',
-        '.\src\REST\RestRequest.ps1',
-        '.\src\REST\RestResponse.ps1'
+        '.\src\metadata\UriCache.ps1'
     )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
