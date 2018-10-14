@@ -28,9 +28,6 @@ ScriptClass GraphBuilder {
     $version = $null
     $dataModel = $null
     $namespace = $null
-    $percentComplete = 0
-    $dataModel = $null
-    $deferredBuild = $false
 
     static {
         $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
@@ -38,24 +35,22 @@ ScriptClass GraphBuilder {
         ([BuildFlags]::CopiedToSingleton)
     }
 
-    function __initialize($graphEndpoint, $version, $dataModel, $deferredBuild) {
+    function __initialize($graphEndpoint, $version, $dataModel) {
         $this.graphEndpoint = $graphEndpoint
         $this.version = $version
         $this.dataModel = $dataModel
         $this.namespace = $this.dataModel |=> GetNamespace
-        $this.deferredBuild = $deferredBuild
     }
 
     function InitializeGraph($graph) {
-        __UpdateProgress 0
+        $metadataActivity = "Building graph version '$($this.version)' for endpoint '$($this.graphEndpoint)'"
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity $metadataActivity
 
         __AddRootVertices $graph
-
-        __UpdateProgress 100
     }
 
     function __AddEntityTypeVertex($graph, $typeName) {
-        __AddEntityTypeVertices $graph $typeName
+        AddEntityTypeVertices $graph $typeName
     }
 
     function __AddRootVertices($graph) {
@@ -77,19 +72,16 @@ ScriptClass GraphBuilder {
         $graph |=> AddVertex $entity
     }
 
-    function __AddEntityTypeVertices($graph, $unqualifiedTypeName) {
-        $entityTypes = if ( $unqualifiedTypeName ) {
-            $qualifiedTypeName = $graph.namespace, $unqualifiedTypeName -join '.'
-            $foundType = $graph.dataModel |=> GetEntityTypeByName $qualifiedTypeName
-            if ( $unqualifiedTypeName -and $foundType -eq $null ) {
-                throw "Type '$unqualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
-            }
-            $foundType
-        } else {
-            $this.dataModel |=> GetEntityTypes
+    function AddEntityTypeVertices($graph, $unqualifiedTypeName) {
+        $qualifiedTypeName = $graph.namespace, $unqualifiedTypeName -join '.'
+        $entityType = $this.dataModel |=> GetEntityTypeByName $qualifiedTypeName
+        if ( $unqualifiedTypeName -and $entityType -eq $null ) {
+            throw "Type '$unqualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
         }
 
-        __AddVerticesFromSchemas $graph $entityTypes
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding type '$unqualifiedTypeName'"
+
+        __AddVerticesFromSchemas $graph $entityType
     }
 
     function __AddEdgesToEntityTypeVertex($graph, $sourceVertex) {
@@ -111,7 +103,7 @@ ScriptClass GraphBuilder {
             if ( ! $sink ) {
                 $name = $transition.typedata.entitytypename
                 $unqualifiedName = $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                $sinkSchema = $graph.dataModel |=> GetEntityTypeByName $name
+                $sinkSchema = $this.dataModel |=> GetEntityTypeByName $name
                 if ( $sinkSchema ) {
                     __AddEntityTypeVertex $graph $unqualifiedName
                     $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
@@ -131,7 +123,7 @@ ScriptClass GraphBuilder {
         $sourceVertex.SetFlags([BuildFlags]::NavigationsProcessed)
     }
 
-    function __AddEdgesToVertex($graph, $vertex, $skipIfExist) {
+    function AddEdgesToVertex($graph, $vertex, $skipIfExist) {
         if ( $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) ) {
             if ( !$skipIfExist ) {
                 throw "Vertex '$($vertex.name)' already has edges"
@@ -141,6 +133,7 @@ ScriptClass GraphBuilder {
 
         $qualifiedTypeName = $vertex.entity.typedata.entitytypename
         $unqualifiedTypeName = $qualifiedTypeName.substring($graph.namespace.length + 1, $qualifiedTypename.length - $graph.namespace.length - 1)
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding edges for '$($vertex.name)'"
 
         __AddEdgesToEntityTypeVertex $graph $vertex
 
@@ -163,7 +156,7 @@ ScriptClass GraphBuilder {
             throw "Unable to find an entity type for singleton '$($_.name)' and '$entityName'"
         }
 
-        __AddEdgesToVertex $graph $typeVertex $true
+        AddEdgesToVertex $graph $typeVertex $true
 
         $edges = $typeVertex.outgoingEdges.values | foreach {
             if ( ( $_ | gm transition ) -ne $null ) {
@@ -181,18 +174,6 @@ ScriptClass GraphBuilder {
         $source.SetFlags([BuildFlags]::CopiedToSingleton)
     }
 
-    function __UpdateProgress($deltaPercent) {
-        $metadataActivity = "Building graph version '$($this.version)' for endpoint '$($this.graphEndpoint)'"
-
-        $this.percentComplete += $deltaPercent
-        $completionArguments = if ( $this.percentComplete -ge 100 ) {
-            @{Status="Complete";PercentComplete=100;Completed=[System.Management.Automation.SwitchParameter]::new($true)}
-        } else {
-            @{Status="In progress";PercentComplete=$this.percentComplete}
-        }
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity $metadataActivity @completionArguments
-    }
-
     function __AddMethodTransitionsToVertex($graph, $sourceVertex) {
         if ( $sourceVertex.TestFlags([BuildFlags]::MethodsProcessed) ) {
             write-verbose "Methods already processed for $($sourceVertex.name), skipping method addition"
@@ -200,7 +181,7 @@ ScriptClass GraphBuilder {
         }
 
         $sourceTypeName = $sourceVertex.entity.typeData.EntityTypeName
-        $methods = $graph.dataModel |=> GetMethodBindingsForType $sourceTypeName
+        $methods = $this.dataModel |=> GetMethodBindingsForType $sourceTypeName
 
         if ( ! $methods ) {
             write-verbose "Vertex ($sourceVertex.name) has no methods, skipping method addition"

@@ -61,28 +61,28 @@ ScriptClass GraphDataModel {
     }
 
     function GetEntitySets {
-        $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing entity sets"
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity sets"
         $this.SchemaData.Edmx.DataServices.Schema.EntityContainer.EntitySet
     }
 
     function GetSingletons {
-        $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing singletons"
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading singletons"
         $this.SchemaData.Edmx.DataServices.Schema.EntityContainer.Singleton
     }
 
     function GetActions {
-        $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing actions"
+        $::.ProgressWriter |=> WriteProgress -id 1 "Reading actions"
         $this.SchemaData.Edmx.DataServices.Schema.Action
     }
 
     function GetFunctions {
-        $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing functions"
+        $::.ProgressWriter |=> WriteProgress -id 1 "Reading functions"
         $this.SchemaData.Edmx.DataServices.Schema.Function
     }
 
     function __InitializeTypesOnDemand($returnNewTypes = $false) {
         if ( ! $this.typeSchemas ) {
-            $::.ProgressWriter |=> WriteProgress -id 2 -activity "Parsing entity types"
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
             $typeSchemas = $this.SchemaData.Edmx.DataServices.Schema.EntityType
             $this.typeSchemas = @{}
             $typeSchemas | foreach {
@@ -92,6 +92,7 @@ ScriptClass GraphDataModel {
             if ( $returnNewTypes ) {
                 $typeSchemas
             }
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types" -completed
         }
     }
 

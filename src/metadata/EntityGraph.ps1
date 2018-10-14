@@ -25,7 +25,6 @@ ScriptClass EntityGraph {
     $typeVertices = $null
     $namespace = $null
     $builder = $null
-    $dataModel = $null
 
     function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel ) {
         $this.vertices = @{}
@@ -34,7 +33,6 @@ ScriptClass EntityGraph {
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
-        $this.dataModel = $dataModel
         $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
@@ -81,48 +79,29 @@ ScriptClass EntityGraph {
     }
 
     function __UpdateVertex($vertex) {
-        if ( ! (__IsVertexReady $vertex) ) {
-            switch ( $vertex.entity.type ) {
-                'Singleton' {
-                    __AddTypeVertex $vertex.entity.typedata.entitytypename
-                    __AddTypeForVertex $vertex
-                }
-                'EntityType' {
-                    __AddTypeForVertex $vertex
-                }
-                'EntitySet' {
-                    __AddTypeVertex $vertex.entity.typedata.entitytypename
-                    __AddTypeForVertex $vertex
-                }
-                'Action' {
-                    __AddTypeForVertex($vertex)
-                }
-                '__Scalar' {
-                    __AddTypeForVertex($vertex)
-                }
-                '__Root' {
-                    __AddTypeForVertex($vertex)
-                }
-                default {
-                    throw "Unknown entity type $($vertex.entity.type) for entity name $($vertex.entity.name)"
-                }
+        if ( ! (__IsVertexComplete $vertex) ) {
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
+            if ( $vertex.entity.type -eq 'Singleton' -or $vertex.entity.type -eq 'EntitySet' ) {
+                __AddTypeVertex $vertex.entity.typedata.entitytypename
             }
+            __AddTypeForVertex $vertex
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed
         }
     }
 
     function __AddTypeForVertex($vertex) {
-        $this.builder |=> __AddEdgesToVertex $this $vertex $true
+        $this.builder |=> AddEdgesToVertex $this $vertex $true
     }
 
     function __AddTypeVertex($qualifiedTypeName) {
         $vertex = TypeVertexFromTypeName $qualifiedTypeName
         if ( ! $vertex ) {
             $unqualifiedName = $qualifiedTypeName.substring($this.namespace.length + 1, $qualifiedTypeName.length - $this.namespace.length - 1)
-            $this.builder |=> __AddEntityTypeVertices $this $unqualifiedName
+            $this.builder |=> AddEntityTypeVertices $this $unqualifiedName
         }
     }
 
-    function __IsVertexReady($vertex) {
+    function __IsVertexComplete($vertex) {
         $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) -eq $::.GraphBuilder.AllBuildFlags
     }
 

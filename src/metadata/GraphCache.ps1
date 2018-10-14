@@ -33,13 +33,13 @@ ScriptClass GraphCache {
         $this.graphVersions = @{}
     }
 
-    function GetGraph($endpoint, $apiVersion = 'v1.0', $metadata = $null, $deferredBuild = $false) {
+    function GetGraph($endpoint, $apiVersion = 'v1.0', $metadata = $null) {
         $graph = FindGraph $endpoint $apiVersion
 
         if ( $graph ) {
             $graph
         } else {
-            $graphJob = GetGraphAsync $endpoint $apiVersion $metadata $deferredBuild
+            $graphJob = GetGraphAsync $endpoint $apiVersion $metadata
             WaitForGraphAsync $graphJob
         }
     }
@@ -49,7 +49,7 @@ ScriptClass GraphCache {
         $this.graphVersions[$graphId]
     }
 
-    function GetGraphAsync($endpoint, $apiVersion = 'v1.0', $metadata = $null, $deferredBuild = $false) {
+    function GetGraphAsync($endpoint, $apiVersion = 'v1.0', $metadata = $null) {
         $graphid = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion
         $existingJob = $this.graphVersionsPending[$graphId]
         if ( $existingJob ) {
@@ -57,7 +57,7 @@ ScriptClass GraphCache {
             $existingJob
         } else {
             write-verbose "No existing job for '$graphId' -- queueing up a new job"
-            __GetGraphAsync $graphId $endpoint $apiVersion $metadata $deferredBuild
+            __GetGraphAsync $graphId $endpoint $apiVersion $metadata
         }
     }
 
@@ -170,14 +170,14 @@ ScriptClass GraphCache {
         $status
     }
 
-    function __GetGraphAsync($graphId, $endpoint, $apiVersion, $metadata, $deferBuild) {
+    function __GetGraphAsync($graphId, $endpoint, $apiVersion, $metadata) {
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
         $dependencyModule = join-path $psscriptroot '..\..\autographps.psd1'
         $thiscode = join-path $psscriptroot '..\graph.ps1'
 
-        $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $deferGraphBuild, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata $deferGraphBuild } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $deferBuild, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
+        $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
         $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
@@ -186,7 +186,7 @@ ScriptClass GraphCache {
     }
 
     static {
-        function __GetGraph($endpoint, $apiVersion, $metadata, $deferredBuild = $false) {
+        function __GetGraph($endpoint, $apiVersion, $metadata) {
             $graphId = __GetGraphId $endpoint $apiVersion
             $schemadata = if ( $metadata ) {
                 write-verbose "Using locally supplied metadata, skipping retrieval from remote Graph"
