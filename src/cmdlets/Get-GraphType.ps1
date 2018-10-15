@@ -38,9 +38,9 @@ function Get-GraphType {
     if ( ! $ComplexType.IsPresent ) {
         $types = if ( $Name ) {
             $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
-            $entityGraph.dataModel |=> GetEntityTypeByName $qualifiedName
+            $entityGraph.builder.dataModel |=> GetEntityTypeByName $qualifiedName
         } else {
-            $entityGraph.dataModel |=> GetEntityTypes
+            $entityGraph.builder.dataModel |=> GetEntityTypes
         }
 
         if ( $name -and ! $types ) {
@@ -48,7 +48,7 @@ function Get-GraphType {
         }
         $types
     } else {
-        $result = $entityGraph.dataModel |=> GetComplexTypes $name
+        $result = $entityGraph.builder.dataModel |=> GetComplexTypes $name
         if ( $Name -and ! $result ) {
             throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
         }
