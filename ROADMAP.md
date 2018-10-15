@@ -2,8 +2,18 @@
 
 ## To-do items -- prioritized
 
+* Fix qualified / vs. unqualified names in metadata classes
+* Add `$value` support.
+
 * Add app creation, enumeration, update
   * New-GraphApplication
+  * Get-GraphApplication
+  * New-GraphApplicationCertificate
+  * Get-GraphApplicationCertificate
+  * Set-GraphApplicationCertificate
+  * Get-GraphApplicationLocalCertificate
+  * Remove-GraphApplicationLocalCertificate
+  * Import-GraphApplicationLocalCertificate
   * Remove-GraphApplication
   * Set-GraphApplication
   * Set-GraphApplicationPermissions
@@ -23,11 +33,6 @@
 * Release
 
 * Clean up utilities, special-case, duplicate code in get-graphuri, invoke-graphrequest, get-graphitem, get-graphchilditem
-
-* Investigate metadata perf optimization -- perform:
-  * Discover roots only
-  * Just-in-time discovery of types
-  * Just-in-time resolution of navigation properties
 
 * change $graphverbosepreference to $graphverboselevelpreference
 
@@ -237,6 +242,21 @@
 * Add auto-mount to set-graphlocation
 * Make gcd work without hanging for new graphs
 * Get-GraphType
+* Change methods for method building, copytosingletons, addedgestotype
+* Move dynamic builder methods updatevertex, getentitytypevertex to entitygraph
+  * Remove dynamic builder
+  * reference datamodel and other members in exactly one place between entitygraph and graphbuilder
+  * Make updatevertex GetVertexEdges
+  * Make GetEntitytypeVertex GetVertexByType or slightly better name
+* Investigate metadata perf optimization -- perform:
+  * Discover roots only
+  * Just-in-time discovery of types
+  * Just-in-time resolution of navigation properties
+  * Make metadata download a background job
+  * Map actions / functions to entitytypes in background?
+  * Process singletons metadata in foreground
+  * Use expressions like  ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action).parameter |where name -eq bindParameter
+  * Better: $bindings = ( ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action)) | foreach { $method = $_.name; $_.parameter | where name -eq bindingParameter | foreach {[PSCustomObject]@{Type=$_.type;Method=$method}}}
 
 ### Postponed
 

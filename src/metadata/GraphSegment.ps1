@@ -94,7 +94,7 @@ ScriptClass GraphSegment {
             }
         } elseif ( $this.graphElement.type -eq 'EntitySet' ) {
             $typeData = $this.graphElement.entity.typeData
-            $graph |=> TypeVertexFromTypeName $typeData.EntityTypeName
+            $graph |=> GetTypeVertex $typeData.EntityTypeName
         } else {
             throw "Unexpected vertex type '$($this.graphElement.type)' for segment '$($segment.name)'"
         }
@@ -110,7 +110,7 @@ ScriptClass GraphSegment {
         new-so GraphSegment $graphElement $this $segmentName
     }
 
-    function NewTransitionSegments($segmentName, $allowedTransitionTypes = $null) {
+    function NewTransitionSegments($graph, $segmentName, $allowedTransitionTypes = $null) {
         if ( $this.leadsToVertex ) {
             throw "Current segment $($this.graphElement.name) is static, so next segment must be dynamic"
         }
@@ -118,15 +118,17 @@ ScriptClass GraphSegment {
         $isVertex = $this.graphElement.pstypename -eq 'EntityVertex'
 
         $edges = if ( $isVertex ) {
+            $localEdges = $graph |=> GetVertexEdges $this.graphElement
             if ( $segmentName -and $segmentName -ne '' ) {
-                $this.graphElement.outGoingEdges[$segmentName]
+                $localEdges[$segmentName]
             } else {
-                $this.graphElement.outGoingEdges.values
+                $localEdges.values
             }
         } else {
             # This is already an edge, so the next edges come from the sink
+            $sinkEdges = $graph |=> GetVertexEdges $this.GraphElement.sink
             if ( ! ( $this.graphElement.sink |=> IsNull ) ) {
-                $this.graphElement.sink.outgoingEdges.values
+                $sinkEdges.values
             }
         }
 
@@ -146,7 +148,7 @@ ScriptClass GraphSegment {
                 @()
             }
         } else {
-            NewTransitionSegments $segmentName $allowedTransitionTypes
+            NewTransitionSegments $graph $segmentName $allowedTransitionTypes
         }
     }
 

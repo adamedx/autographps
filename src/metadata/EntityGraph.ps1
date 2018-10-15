@@ -15,6 +15,7 @@
 . (import-script Entity)
 . (import-script EntityVertex)
 . (import-script EntityEdge)
+. (import-script GraphBuilder)
 
 ScriptClass EntityGraph {
     $ApiVersion = $null
@@ -23,20 +24,16 @@ ScriptClass EntityGraph {
     $rootVertices = $null
     $typeVertices = $null
     $namespace = $null
-    $schema = $null
+    $builder = $null
 
-    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $schemadata ) {
+    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel ) {
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
-        $this.schema = $schemadata
-    }
-
-    function GetSchema {
-        $this.schema
+        $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
     function GetRootVertices {
@@ -59,7 +56,65 @@ ScriptClass EntityGraph {
         $this.typeVertices[$typeData.EntityTypeName]
     }
 
+    function GetTypeVertex($qualifiedTypeName) {
+        $vertex = TypeVertexFromTypeName $qualifiedTypeName
+
+        if ( ! $vertex ) {
+            __AddTypeVertex $qualifiedTypeName
+            $vertex = TypeVertexFromTypeName $qualifiedTypeName
+        }
+
+        if ( ! $vertex ) {
+            throw "Vertex '$qualifiedTypeName' not found"
+        }
+
+        __UpdateVertex $vertex
+
+        $vertex
+    }
+
+    function GetVertexEdges($vertex) {
+        __UpdateVertex $vertex
+        $vertex.outgoingEdges
+    }
+
+    function __UpdateVertex($vertex) {
+        if ( ! (__IsVertexComplete $vertex) ) {
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
+            if ( $vertex.entity.type -eq 'Singleton' -or $vertex.entity.type -eq 'EntitySet' ) {
+                __AddTypeVertex $vertex.entity.typedata.entitytypename
+            }
+            __AddTypeForVertex $vertex
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed
+        }
+    }
+
+    function __AddTypeForVertex($vertex) {
+        $this.builder |=> AddEdgesToVertex $this $vertex $true
+    }
+
+    function __AddTypeVertex($qualifiedTypeName) {
+        $vertex = TypeVertexFromTypeName $qualifiedTypeName
+        if ( ! $vertex ) {
+            $unqualifiedName = $qualifiedTypeName.substring($this.namespace.length + 1, $qualifiedTypeName.length - $this.namespace.length - 1)
+            $this.builder |=> AddEntityTypeVertices $this $unqualifiedName
+        }
+    }
+
+    function __IsVertexComplete($vertex) {
+        $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) -eq $::.GraphBuilder.AllBuildFlags
+    }
+
     static {
         $nullVertex = new-so EntityVertex $null
+
+        function NewGraph($endpoint, $version, $schemadata) {
+            $dataModel = new-so GraphDataModel $schemadata
+            $graph = new-so EntityGraph ($dataModel |=> GetNamespace) $version $Endpoint $dataModel
+
+            $graph.builder |=> InitializeGraph $graph
+
+            $graph
+        }
     }
 }

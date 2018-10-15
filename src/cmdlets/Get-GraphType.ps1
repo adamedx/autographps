@@ -38,28 +38,20 @@ function Get-GraphType {
     if ( ! $ComplexType.IsPresent ) {
         $types = if ( $Name ) {
             $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
-            $entityGraph |=> TypeVertexFromTypename $qualifiedName
+            $entityGraph.builder.dataModel |=> GetEntityTypeByName $qualifiedName
         } else {
-            $entityGraph.typeVertices.values
+            $entityGraph.builder.dataModel |=> GetEntityTypes
         }
 
-        if ( ! $types ) {
+        if ( $name -and ! $types ) {
             throw "Graph entity type '$Name' was not found in Graph '$($context.name)'"
         }
-        if ( $Name ) {
-            $entityGraph.schema.Edmx.DataServices.schema.EntityType | where Name -eq $types.entity.name
-        } else {
-            $entityGraph.schema.Edmx.DataServices.schema.EntityType
-        }
+        $types
     } else {
-        if ( $Name ) {
-            $result = $entityGraph.schema.Edmx.DataServices.schema.ComplexType | where Name -eq $Name
-            if ( ! $result ) {
-                throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
-            }
-            $result
-        } else {
-            $entityGraph.schema.Edmx.DataServices.schema.ComplexType
+        $result = $entityGraph.builder.dataModel |=> GetComplexTypes $name
+        if ( $Name -and ! $result ) {
+            throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
         }
+        $result
     }
 }
