@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.16.0'
+ModuleVersion = '0.16.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.5.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.5.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -166,27 +166,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.16.0 Release Notes
+# AutoGraphPS 0.16.1 Release Notes
 
-This release changes the user experience of schema processing, which originally took place in the background and required around 2 minutes or more after the module was loaded to complete. This mean that cmdlets such as ``Get-GraphChildItem`` and ``Set-GraphLocation`` that depended on metadata would hang until processing was done, or would need to skip metadata processing and return incomplete results.
-
-With this release, the following changes are introduced:
-
-* The only background processing done now is metadata download -- previously the entire model was traversed to construct a graph in the background, this is no longer the case.
-* Only when cmdlets that require metadata are invoked, e.g. ``Get-GraphChild``, is metadata accessed, and then only the minimal amount of metadata require for that command is processed. So in a graph with 1000 vertices, if only one vertex is required to satisfy the cmdlet, only that one vertex is processed. This can be referred to as *on-demand* or *just-in-time* metadata processing.
-* Serialization overhead from moving the processed graph from a background job to the current session is eliminated because processing only occurs in the current session -- this can save anywhere from a 2-3s to 10s on first-time metadata cmdlet invocation.
-* Several inefficiencies in metadata processing were addressed, such as enumerating every action and function (around 500 of these!) every time a type vertex was processed
-* Workarounds for limitations in PowerShell serialization of ``PSCustomObject`` types where some metadata was processed in the background and other metadata in the foreground (as was the case for the ``beta`` API version due to its greater serialization depth than ``v1.0``) are no longer needed and were removed as all processing is done in the foreground and there is no serialization done as part of metadata processing.
-* The caching layer above the ``EntityGraph`` still exists, so the just-in-time processing occurs only once for a particular part of the Graph as was previously the case.
-
-The resulting user experience is the following:
-
-* Upon module load, metadata is ready in 10s or less
-* Even if you run a metadata cmdlet immediately on loading (or to trigger loading) the module, this first invocation will complete in under 10s if you specify to wait for metadata, or you can simply try again and in the first 1-2 retries the cmdlet will complete normally
-* There will be a slight delay (~1s) the first time a part of the Graph is accessed to accommodate just-in-time metadata processing, but only on that first access
-* There will no longer be sustained high CPU utilization (around 2 minutes) on module startup
-* In general, the module will feel "snappier" in terms of starting up and getting going with cmdlets.
-* The improvement also comes into play when mounting new API versions.
+This release includes an updated version of the dependency AutoGraphPS-SDK to address defects in that module affecting AutoGraphPS.
 
 ## New Features
 
@@ -194,12 +176,13 @@ None.
 
 ## New dependencies
 
-None.
+AutoGraphPS-SDK 0.5.1. This update addresses defects in AutoGraphPS-SDK that are directly reflected in this module.
 
 ## Fixed defects
 
-* [Beta version schema parsing encounters deserialization error](https://github.com/adamedx/autographps/issues/27)
-* [Schema parsing takes more than 2 minutes, affects get-graphuri, set-graphlocation etc. ](https://github.com/adamedx/autographps/issues/26)
+See release notes for AutoGraphPS-SDK 0.5.1 -- the fixed defects are actually in that module:
+  * Connect-Graph / Disconnect-Graph fail if the current connection is app-only
+  * Request body corrupted for Invoke-GraphRequest due to insufficient json serialization depth of 2 causing failed requests
 
 "@
     } # End of PSData hashtable
