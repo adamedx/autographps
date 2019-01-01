@@ -68,7 +68,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
     @{ModuleName='autographps-sdk';ModuleVersion='0.6.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='scriptclass';ModuleVersion='0.14.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -175,6 +175,7 @@ None.
 ## New dependencies
 
 AutoGraphPS-SDK 0.6.0.
+ScriptClass 0.14.0
 
 ## Fixed defects
 
