@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script common/GraphParameterCompleter)
+# . (import-script ParameterCompleter)
 
-function Remove-Graph {
-    [cmdletbinding()]
-    param(
-        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
-        $Name
-    )
-    $::.LogicalGraphManager |=> Get |=> RemoveContext $Name
+ScriptClass GraphParameterCompleter {
+    function CompleteCommandParameter {
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+        $contextNames = $::.LogicalGraphManager |=> Get |=> GetContext | sort | select -expandproperty name
+        $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $contextNames
+    }
 }
-
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-Graph Name (new-so GraphParameterCompleter)

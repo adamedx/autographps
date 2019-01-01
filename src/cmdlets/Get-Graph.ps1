@@ -1,5 +1,4 @@
-
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +13,7 @@
 # limitations under the License.
 
 . (import-script common/ContextHelper)
-. (import-script common/GraphCompletionHelper)
+. (import-script common/GraphParameterCompleter)
 
 function Get-Graph {
     [cmdletbinding(DefaultParameterSetName='byname')]
@@ -46,4 +45,4 @@ function Get-Graph {
     }
 }
 
-$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-Graph Graph ([GraphCompletionType]::Name)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-Graph Graph (new-so GraphParameterCompleter)

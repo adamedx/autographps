@@ -217,5 +217,5 @@ function Get-GraphChildItem {
     $results
 }
 
-$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([GraphUriCompletionType]::LocationOrMethodUri )
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
