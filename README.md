@@ -181,9 +181,14 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 |---------------------------|---------------------------------------------------------------------------------------------------------|
 | Connect-Graph             | Establishes authentication and authorization context used across cmdlets for the current graph          |
 | Disconnect-Graph          | Clears authentication and authorization context used across cmdlets for the current graph               |
+| Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
 | Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
-| Get-GraphConnectionStatus | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                               |
+| Get-GraphApplication              | Gets a list of Azure AD applications in the tenant                                              |
+| Get-GraphApplicationCertificate   | Gets the certificates with public keys configured on the application                            |
+| Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
+| Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
+| Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
@@ -194,12 +199,21 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphVersion          | Returns the set of workloads and their associated schemas for a given Graph API version                 |
 | Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
+| New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
+| New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
+| Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
+| Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
+| Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
+| Remove-GraphItem                  | Makes generic ``DELETE`` requests to a specified Graph URI to delete items                      |
+| Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
 | Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                  |
+| Unregister-GraphApplication | Removes consent and service principal entries for the application from the tenant                     |
 | Update-GraphMetadata      | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
 
 ### Limited support for Azure Active Directory (AAD) Graph
