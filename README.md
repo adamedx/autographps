@@ -88,7 +88,7 @@ As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or 
 
 ### More fun commands
 
-Run the command below to grant permission scopes that allow AutoGraphPS to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
+Run the command below to grant permissions that allow AutoGraphPS to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
 
 ```powershell
 # You only have to do this once, not each time you use AutoGraphPS
@@ -144,7 +144,7 @@ t +> driveItem Pyramid.js    13J3KD2
 #### AutoGraphPS tips
 Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
-**1. Permission scopes matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional scopes for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the scopes on your behalf in order to grant them to AutoGraphPS.
+**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
 **2. AutoGraphPS supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read cmdlets.
 
@@ -177,30 +177,44 @@ The full list of cmdlets is given below; they go well beyond simply reading info
 
 Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/adamedx/autographPS-sdk), this list includes cmdlets from AutoGraphPS-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on AutoGraphPS-SDK rather than AutoGraphPS if its subset of cmdlets suits your use case.
 
-| Cmdlet                    | Alias | Description                                                                                     |
-|---------------------------|-------|-------------------------------------------------------------------------------------------------|
-| Connect-Graph             |       | Establishes authentication and authorization context used across cmdlets for the current graph  |
-| Disconnect-Graph          |       | Clears authentication and authorization context used across cmdlets for the current graph       |
-| Get-Graph                 | gg    | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS             |
-| Get-GraphChildItem        | gls   | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri  |
-| Get-GraphConnectionStatus |       | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                    |
-| Get-GraphError            | gge   | Retrieves detailed errors returned from Graph in execution of the last command                  |
-| Get-GraphItem             | ggi   | Given a relative (to the Graph or current location) Uri gets information about the entity       |
-| Get-GraphLocation         | gwd   | Retrieves the current location in the Uri hierarchy for the current graph                       |
-| Get-GraphSchema           |       | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
-| Get-GraphToken            |       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
-| Get-GraphType             |       | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
-| Get-GraphUri              | ggu   | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri           |
-| Get-GraphVersion          |       | Returns the set of workloads and their associated schemas for a given Graph API version         |
-| Invoke-GraphRequest       |       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
-| New-Graph                 |       | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets   |
-| New-GraphConnection       |       | Creates an authenticated connection using advanced identity customizations for accessing a Graph|
-| Remove-Graph              |       | Unmounts a Graph previously mounted by `NewGraph`                                             |
-| Set-GraphConnectionStatus |       | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
-| Set-GraphLocation         | gcd   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
-| Set-GraphPrompt           |       | Adds connection and location context to the PowerShell prompt or disables it                    |
-| Test-Graph                |       | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint          |
-| Update-GraphMetadata      |       | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
+| Cmdlet (alias)            | Description                                                                                             |
+|---------------------------|---------------------------------------------------------------------------------------------------------|
+| Connect-Graph             | Establishes authentication and authorization context used across cmdlets for the current graph          |
+| Disconnect-Graph          | Clears authentication and authorization context used across cmdlets for the current graph               |
+| Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
+| Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
+| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
+| Get-GraphApplication              | Gets a list of Azure AD applications in the tenant                                              |
+| Get-GraphApplicationCertificate   | Gets the certificates with public keys configured on the application                            |
+| Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
+| Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
+| Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
+| Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
+| Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
+| Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
+| Get-GraphSchema           | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
+| Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
+| Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
+| Get-GraphUri (ggu)        | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
+| Get-GraphVersion          | Returns the set of workloads and their associated schemas for a given Graph API version                 |
+| Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
+| New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
+| New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
+| New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
+| New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
+| Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
+| Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
+| Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
+| Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
+| Remove-GraphItem                  | Makes generic ``DELETE`` requests to a specified Graph URI to delete items                      |
+| Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
+| Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
+| Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
+| Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
+| Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                  |
+| Unregister-GraphApplication | Removes consent and service principal entries for the application from the tenant                     |
+| Update-GraphMetadata      | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
 
 ### Limited support for Azure Active Directory (AAD) Graph
 

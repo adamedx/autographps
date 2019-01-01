@@ -38,7 +38,7 @@ function Get-GraphChildItem {
         [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Permissions = $null,
 
         [Object] $ContentColumns = $null,
 
@@ -123,8 +123,8 @@ function Get-GraphChildItem {
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
     }
 
-    if ($ScopeNames -ne $null) {
-        $requestArguments['ScopeNames'] = $ScopeNames
+    if ($Permissions -ne $null) {
+        $requestArguments['Permissions'] = $Permissions
     }
 
     if ( $Connection -ne $null ) {
@@ -217,4 +217,5 @@ function Get-GraphChildItem {
     $results
 }
 
-$::.ArgumentCompletionHelper |=> RegisterArgumentCompleter Get-GraphChildItem ItemRelativeUri ([GraphUriCompletionType]::LocationOrMethodUri )
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
