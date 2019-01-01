@@ -462,7 +462,7 @@ In this example, we create a new contact. This will require specifying data in J
 
 ```powershell
 $contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest me/contacts -Verb POST -Payload ($contactData | convertto-json)
+Invoke-GraphRequest me/contacts -Method POST -Body ($contactData | convertto-json)
 ```
 
 This will return the newly created contact object (you can inspect it further by accessing `$LASTGRAPHITEMS[0]` here).

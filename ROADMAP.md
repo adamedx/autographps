@@ -4,6 +4,8 @@
 
 * Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
+* Add enumeration type support to get-graphtype
+* Move app to new tenant (or create a new one)
 
 * Add app creation, enumeration, update
   * New-GraphApplication
@@ -22,6 +24,7 @@
 
 * EntityAccess
   * Ability to create Graph JSON
+  * Associate json fragments with graph object state
 
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread

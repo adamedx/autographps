@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.16.1'
+ModuleVersion = '0.17.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.5.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.6.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -166,24 +166,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.16.1 Release Notes
-
-This release includes an updated version of the dependency AutoGraphPS-SDK to address defects in that module affecting AutoGraphPS.
+# AutoGraphPS 0.17.0 Release Notes
 
 ## New Features
+
 
 None.
 
 ## New dependencies
 
-AutoGraphPS-SDK 0.5.1. This update addresses defects in AutoGraphPS-SDK that are directly reflected in this module.
+AutoGraphPS-SDK 0.6.0.
 
 ## Fixed defects
 
-See release notes for AutoGraphPS-SDK 0.5.1 -- the fixed defects are actually in that module:
-  * Connect-Graph / Disconnect-Graph fail if the current connection is app-only
-  * Request body corrupted for Invoke-GraphRequest due to insufficient json serialization depth of 2 causing failed requests
-
+* See release notes for AutoGraphPS-SDK 0.6.0 for fixes included in that module
 "@
     } # End of PSData hashtable
 

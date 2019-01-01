@@ -88,7 +88,7 @@ As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or 
 
 ### More fun commands
 
-Run the command below to grant permission scopes that allow AutoGraphPS to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
+Run the command below to grant permissions that allow AutoGraphPS to read your **mail**, **contacts**, **calendar**, and **OneDrive files**:
 
 ```powershell
 # You only have to do this once, not each time you use AutoGraphPS
@@ -144,7 +144,7 @@ t +> driveItem Pyramid.js    13J3KD2
 #### AutoGraphPS tips
 Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
-**1. Permission scopes matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional scopes for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what scopes are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the scopes on your behalf in order to grant them to AutoGraphPS.
+**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
 **2. AutoGraphPS supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read cmdlets.
 
