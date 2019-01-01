@@ -45,17 +45,17 @@ will not prompt for credentials but immediately return details about your organi
     state           : Washington
     street          : 101 23rd Avenue Suite X
 
-### Expanding your scope
+### Expanding your (permission) scope
 
-The commands above are trivial demonstrations of Graph. In particular, they only require the authorization scope known as `User.Read`. More interesting explorations of the Graph require that you request additional [scopes](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) when you connect to the Graph.
+The commands above are trivial demonstrations of Graph. In particular, they only require the Graph permission known as `User.Read`. More interesting explorations of the Graph require that you request additional [permissions](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) when you connect to the Graph.
 
-Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` scopes in addition to `User.Read` -- the additional scopes enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
+Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
 
 ```powershell
 Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
-This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what scopes are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
+This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
 
 In addition to the `get-graphitem` cmdlet which returns data as a series of flat lists, you can use `get-graphchilditem` or its alias `gls` to retrieve your personal contacts:
 
@@ -408,15 +408,15 @@ All AutoGraphPS cmdlets support the PowerShell standard option `-verbose` and th
 By default, the response body is truncated after a certain length, though the behavior can be overridden by setting `GraphVerboseOutputPreference` to `High`.
 
 ### Authorization errors
-Microsoft Graph requires callers to obtain specific authorization for applications like AutoGraphPS to access particular capabilities of the Graph. Because the mapping of required scopes to functionality is currently only available through human-readable [documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference ), it's easy for developers and other human users of applications including AutoGraphPS to encounter errors due to insufficient scopes.
+Microsoft Graph requires callers to obtain specific authorization for applications like AutoGraphPS to access particular capabilities of the Graph. Because the mapping of required permissions to functionality is currently only available through human-readable [documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference), it's easy for developers and other human users of applications including AutoGraphPS to encounter errors due to insufficient permissions.
 
-Often, users and developers remedy the error by reading the documentation, and updating the application to request the missing scopes. AutoGraphPS tries to hasten such fixes by surfacing authorization failures with a warning encouring the user to request additional scopes as in the example below where the caller tries to access `me/people` to get information about the people with whom she has been interacting:
+Often, users and developers remedy the error by reading the documentation, and updating the application to request the missing permissions. AutoGraphPS tries to hasten such fixes by surfacing authorization failures with a warning encouring the user to request additional permissions as in the example below where the caller tries to access `me/people` to get information about the people with whom she has been interacting:
 
 ```
 PS> gls me/people
 WARNING: Graph endpoint returned 'Unauthorized' accessing 'me/people'. Retry after re-authenticating via the
-'Connect-Graph' cmdlet and requesting appropriate application scopes. See this location for documentation on
-scopes that may apply to this part of the Graph:
+'Connect-Graph' cmdlet and requesting appropriate permissions. See this location for documentation on
+permissions that may apply to this part of the Graph:
 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'.
 WARNING: {
   "error": {
@@ -580,7 +580,7 @@ As for what it does, the "Type" column indicates that a `GET` for that Uri shoul
 * **Column 3:** The **locatable** column: this column has a `>` character if it can be followed by an entity and is empty otherwise
 
 **Tip:** Use the command `Get-GraphUri /` to see all of the segments that may legally start a Uri.
-    
+
 #### Don't forget about "virtual" segments
 
 `Get-GraphUri` doesn't just parse static Uris, but any that are syntactically valid, i.e.
