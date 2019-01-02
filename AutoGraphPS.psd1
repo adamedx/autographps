@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.17.0'
+ModuleVersion = '0.18.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -85,6 +85,7 @@ FunctionsToExport = @()
         'Remove-Graph',
         'Set-GraphLocation',
         'Set-GraphPrompt',
+        'Show-GraphHelp',
         'Update-GraphMetadata'
     )
 
@@ -121,6 +122,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
+        '.\src\cmdlets\Show-GraphHelp.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
@@ -165,21 +167,16 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.17.0 Release Notes
+# AutoGraphPS 0.18.0 Release Notes
 
 ## New Features
 
-
-None.
+* New ``Show-GraphHelp`` cmdlet to launch help for Microsoft Graph resources in the browser
 
 ## New dependencies
 
-AutoGraphPS-SDK 0.6.0.
-ScriptClass 0.14.0
-
 ## Fixed defects
 
-* See release notes for AutoGraphPS-SDK 0.6.0 for fixes included in that module
 "@
     } # End of PSData hashtable
 
