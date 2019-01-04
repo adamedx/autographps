@@ -212,6 +212,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
+| Show-GraphHelp            | Given the name of a Graph resource (e.g. 'user', 'group', etc.) launches a web browser focused on documentation for it |
 | Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                  |
 | Unregister-GraphApplication | Removes consent and service principal entries for the application from the tenant                     |
 | Update-GraphMetadata      | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
