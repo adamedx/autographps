@@ -100,7 +100,7 @@ ScriptClass SegmentHelper {
                 Collection = $isCollection
                 Class = $entityClass
                 Type = $shortTypeName
-                Name = $segment.name
+                Id = $segment.name
                 Namespace = $namespace
                 Uri = $Uri
                 GraphUri = $relativeUri
@@ -142,7 +142,7 @@ ScriptClass SegmentHelper {
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
-                Name = $itemId
+                Id = $itemId
                 Namespace = $parentPublicSegment.Namespace
                 Uri = new-object Uri $parentPublicSegment.Uri, $itemId
                 GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $itemId)
@@ -160,15 +160,15 @@ ScriptClass SegmentHelper {
 
         function AddContent($publicSegment, $content) {
             if ($publicSegment.content) {
-                throw "Segment $($publicSegment.name) already has content"
+                throw "Segment $($publicSegment.id) already has content"
             }
 
             if ($publicSegment.Preview) {
-                throw "Segment $($publicSegment.name) already has a Preview"
+                throw "Segment $($publicSegment.id) already has a Preview"
             }
 
             $publicSegment.content = $content
-            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.Name)
+            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.id)
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
         }
 
@@ -217,7 +217,7 @@ ScriptClass SegmentHelper {
         function __RegisterSegmentDisplayType {
             remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
 
-            $coreProperties = @('Info', 'Type', 'Preview', 'Name')
+            $coreProperties = @('Info', 'Type', 'Preview', 'Id')
 
             $segmentDisplayTypeArguments = @{
                 TypeName    = $this.segmentDisplayTypeName

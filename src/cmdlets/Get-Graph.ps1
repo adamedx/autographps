@@ -16,12 +16,12 @@
 . (import-script common/GraphParameterCompleter)
 
 function Get-Graph {
-    [cmdletbinding(DefaultParameterSetName='byname')]
+    [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='byname', position=0)]
         $Graph = $null,
 
-        [parameter(parametersetname='current')]
+        [parameter(parametersetname='current', mandatory=$true)]
         [Switch] $Current
     )
 
