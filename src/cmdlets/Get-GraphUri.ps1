@@ -191,7 +191,7 @@ function Get-GraphUri {
                         $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
                     }
                 } else {
-                    write-verbose "$($_.name) already exists in hierarchy $($_.GraphUri)"
+                    write-verbose "$($_.id) already exists in hierarchy $($_.GraphUri)"
                 }
             }
 
@@ -227,7 +227,7 @@ function Get-GraphUri {
                             $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
                         }
                     } else {
-                        write-verbose "$($_.name) already exists in hierarchy $($_.GraphUri)"
+                        write-verbose "$($_.id) already exists in hierarchy $($_.GraphUri)"
                     }
                 }
             }

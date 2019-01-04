@@ -172,8 +172,11 @@ PrivateData = @{
 ## New Features
 
 * New ``Show-GraphHelp`` cmdlet to launch help for Microsoft Graph resources in the browser
+* ``Get-GraphChildItem`` renames the 'name' property of returned objects to 'Id' for consistency with objects returned by Graph REST / OData
 
 ## New dependencies
+
+None.
 
 ## Fixed defects
 
