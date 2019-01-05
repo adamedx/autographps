@@ -16,18 +16,6 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $manifestLocation   = Join-Path $here '..\..\autographps.psd1'
 
 Describe 'The Get-GraphChildItem cmdlet' {
-    BeforeAll {
-        remove-module -force 'autographps' -erroraction ignore
-        remove-module -force 'autographps-sdk' -erroraction ignore
-        import-module scriptclass -force
-        import-module $manifestlocation -force
-    }
-
-    AfterAll {
-        remove-module -force 'autographps' -erroraction ignore
-        remove-module -force 'autographps-sdk' -erroraction ignore
-    }
-
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
@@ -50,9 +38,12 @@ Describe 'The Get-GraphChildItem cmdlet' {
             }
         }
 
+        # Need to mock this or we end up trying to parse Uris with metadata
+        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {([MetadataStatus]::NotStarted)}
+
         It 'Should return an object with the expected user principal when given the argument me' {
             $meResponse = Get-GraphChildItem me 3> $null
-            $meResponse.content.userPrincipalName | Should Be $expectedUserPrincipalName
+            $meResponse[0].content.userPrincipalName | Should Be $expectedUserPrincipalName
             $meResponse.Preview | Should Be 'Search Man'
         }
     }
