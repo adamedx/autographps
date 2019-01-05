@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$manifestLocation   = Join-Path $here '..\..\autographps.psd1'
+# This test assumes the module has been imported
 
 Describe 'The Get-GraphChildItem cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
