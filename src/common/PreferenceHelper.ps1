@@ -38,13 +38,18 @@ $__GraphAutoPromptPreferenceValues = @(
 $GraphAutoPromptPreference = 'Auto'
 
 function __AutoConfigurePrompt($context) {
+    $originalPrompt = try {
+        $script:__GraphOriginalPrompt
+    } catch {
+    }
+
     if ( $GraphAutoPromptPreference -eq 'Auto' ) {
         if ( $context.connection |=> IsConnected ) {
-            if ( ! $script:__GraphOriginalPrompt ) {
+            if ( ! $originalPrompt ) {
                 Set-GraphPrompt -Enable
             }
         } else {
-            if ( $script:__GraphOriginalPrompt ) {
+            if ( $originalPrompt ) {
                 Set-GraphPrompt -Disable
             }
         }

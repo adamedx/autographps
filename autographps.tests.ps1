@@ -28,12 +28,6 @@ Describe "Autographps application" {
 
     $manifest = Get-ModuleMetadataFromManifest 'autographps' $manifestlocation
 
-    BeforeAll {
-        get-job | remove-job -force
-        remove-module -force scriptclass -erroraction silentlycontinue
-        import-module -force scriptclass
-    }
-
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
@@ -65,20 +59,6 @@ Describe "Autographps application" {
     }
 
     Context "When invoking the Autographps application" {
-        BeforeEach {
-            get-job | remove-job -force
-            remove-module -force 'autographps' 2>$null
-            remove-module -force 'scriptclass' 2>$null
-            import-module -force 'scriptclass' 2>$null
-            import-module -force 'autographps-sdk' 2>$null
-            import-module $manifestlocation -force
-        }
-
-        AfterEach {
-            get-job | remove-job -force
-            remove-module -force 'autographps' 2>$null
-        }
-
         It "Should be able to create a connection object" {
             $connection = New-GraphConnection
         }

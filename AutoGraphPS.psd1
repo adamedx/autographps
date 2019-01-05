@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.18.0'
+ModuleVersion = '0.18.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,8 +67,8 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.6.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='scriptclass';ModuleVersion='0.14.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.6.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='scriptclass';ModuleVersion='0.14.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -167,18 +167,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.18.0 Release Notes
+# AutoGraphPS 0.18.1 Release Notes
+
+Minor update that improves unit testing by updating dependencies
 
 ## New Features
 
-* New ``Show-GraphHelp`` cmdlet to launch help for Microsoft Graph resources in the browser
-* ``Get-GraphChildItem`` renames the 'name' property of returned objects to 'Id' for consistency with objects returned by Graph REST / OData
-
 ## New dependencies
 
-None.
+* ScriptClass 0.14.0
+* AutoGraphPS-SDK 0.6.1
 
 ## Fixed defects
+
+* Update to ScriptClass 0.14.1 to remove slow  'import-module / remove-module' sequence  before tests that use ScriptClass mock functionality
 
 "@
     } # End of PSData hashtable

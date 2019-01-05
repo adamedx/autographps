@@ -14,7 +14,7 @@
 
 . (import-script Get-Graph)
 
-if ( get-variable __graphOriginalPrompt -erroraction silentlycontinue ) {
+if ( get-variable __graphOriginalPrompt -erroraction ignore ) {
     if ( $__GraphOriginalPrompt ) {
         set-item function:prompt -value $__GraphOriginalPrompt
     }
