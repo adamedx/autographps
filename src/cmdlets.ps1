@@ -14,6 +14,7 @@
 
 . (import-script client/LocationContext)
 
+. (import-script cmdlets\Find-GraphPermissions)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphChildItem)
 . (import-script cmdlets\Get-GraphLocation)
