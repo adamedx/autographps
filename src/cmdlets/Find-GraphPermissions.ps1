@@ -52,11 +52,18 @@ function Find-GraphPermissions {
         if ( $foundPermission ) {
             $description = $::.ScopeHelper.permissionsByIds[$foundPermission.id] |
               select -expandproperty $descriptionFieldMap[$foundPermission.Type]
+            $consentType = if ( $foundPermission.Type -eq 'Role' ) {
+                'Admin'
+            } else {
+                $::.ScopeHelper.permissionsByIds[$foundPermission.id].type
+            }
+
             [PSCustomObject] @{
                 Id = $foundPermission.Id
                 Type = $typeMap[$foundPermission.Type]
                 Name = $Permission
                 Description = $description
+                ConsentType = $consentType
             }
         }
     } else {
@@ -67,6 +74,11 @@ function Find-GraphPermissions {
                     $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $commandContext.Connection
                     $description = $::.ScopeHelper.permissionsByIds[$permissionData.id] |
                       select -expandproperty $descriptionFieldMap[$permissionData.Type]
+                    $consentType = if ( $permissionData.Type -eq 'Role' ) {
+                        'Admin'
+                    } else {
+                        $::.ScopeHelper.permissionsByIds[$permissionData.id].type
+                    }
 
                     $destination.permissions.Add(
                         $_,
@@ -75,6 +87,7 @@ function Find-GraphPermissions {
                             Type = $typeMap[$permissionData.Type]
                             Name = $_
                             Description = $description
+                            ConsentType = $consentType
                         }
                     )
                 }
