@@ -29,7 +29,7 @@ ScriptClass PermissionHelper {
                 if ( ! $searchString -or ( $_.tolower().contains($searchString) ) ) {
                     $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $commandContext.Connection
                     $entry = GetPermissionEntry $permissionData
-                    $destination.permissions.Add($_, $entry)
+                    $destination.Add($_, $entry)
                 }
             }
         }

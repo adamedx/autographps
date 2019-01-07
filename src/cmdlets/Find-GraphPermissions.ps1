@@ -48,17 +48,17 @@ function Find-GraphPermissions {
         }
 
         if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
-            $blockResult = @{permissions=[System.Collections.Generic.SortedList[string, object]]::new()}
+            $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
             $delegatedPermissions = $::.ScopeHelper.sortedGraphDelegatedPermissions
-            $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $blockResult $commandContext
-            $blockResult.Permissions.values
+            $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $commandContext
+            $sortedResult.values
         }
 
         if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::AppOnly) ) {
-            $blockResult = @{permissions=[System.Collections.Generic.SortedList[string, object]]::new()}
+            $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
             $appOnlyPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::AppOnly)
-            $::.PermissionHelper |=> FindPermission $appOnlyPermissions $normalizedSearchString Role $blockResult $commandContext
-            $blockResult.Permissions.values
+            $::.PermissionHelper |=> FindPermission $appOnlyPermissions $normalizedSearchString Role $sortedResult $commandContext
+            $sortedResult.values
         }
     }
 }
