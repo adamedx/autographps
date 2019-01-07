@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.18.2'
+ModuleVersion = '0.19.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -76,6 +76,7 @@ FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @(
+        'Find-GraphPermissions',
         'Get-Graph',
         'Get-GraphChildItem',
         'Get-GraphLocation',
@@ -113,6 +114,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
+        '.\src\cmdlets\Find-GraphPermissions.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
@@ -128,6 +130,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
+        '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
@@ -167,20 +170,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.18.2 Release Notes
+# AutoGraphPS 0.19.0 Release Notes
 
 Minor update to fix uri parsing issue with ':'
 
 ## New Features
 
+* ``Find-GraphPermission`` cmdlet: Finds scopes with names matching a specified search string
+
 ## New dependencies
 
-* ScriptClass 0.14.2
-* AutoGraphPS-SDK 0.6.2
+None.
 
 ## Fixed defects
-
-* Update to AutoGraphPS-SDK for fix for parsing Graph URI's with containing the ':' character
 
 "@
     } # End of PSData hashtable

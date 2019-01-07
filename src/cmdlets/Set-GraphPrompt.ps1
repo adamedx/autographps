@@ -24,63 +24,70 @@ $__GraphOriginalPrompt = $null
 
 $GraphPromptColorPreference = $null
 
-$__GraphDefaultPrompt = {
-    $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction silentlycontinue
-    $userToken = if ( $graph ) { $graph.details.connection.identity.token }
+function __GetGraphDefaultPrompt {
+    {
+        $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction silentlycontinue
+        $userToken = if ( $graph ) { $graph.details.connection.identity.token }
 
-    $userOutput = $null
-    $locationOutput = $null
-    $connectionStatus = $null
+        $userOutput = $null
+        $locationOutput = $null
+        $connectionStatus = $null
 
-    if ( $graph ) {
-        $identity = $graph.details.connection.identity
-        $identityOutput = if ( $graph.details.connection.identity.app.authtype -eq ([GraphAppAuthType]::Delegated) ) {
-            if ($userToken) {
-                $graph.userId
-            }
-        } else {
-            $tid = if ( $identity.TenantDisplayName ) {
-                $identity.TenantDisplayName
+        if ( $graph ) {
+            $identity = $graph.details.connection.identity
+            $identityOutput = if ( $graph.details.connection.identity.app.authtype -eq ([GraphAppAuthType]::Delegated) ) {
+                if ($userToken) {
+                    $graph.userId
+                }
             } else {
-                $identity.TenantDisplayId
+                $tid = if ( $identity.TenantDisplayName ) {
+                    $identity.TenantDisplayName
+                } else {
+                    $identity.TenantDisplayId
+                }
+
+                $tenantData = if ( $tid ) {
+                    'tid=' + $tid
+                }
+
+                $tenantData
             }
 
-            $tenantData = if ( $tid ) {
-                'tid=' + $tid
+            $promptOutput = @()
+
+            if ( $identityOutput ) {
+                $promptOutput += $identityOutput
             }
 
-            $tenantData
+            $appOutput = 'app=' + $identity.app.appid
+            $promptOutput += $appOutput
+            $connectionOutput = '[{0}] ' -f ($promptOutput -join ', ')
+
+            $versionOutput = 'ver=' + $graph.version
+            $locationOutput = $versionOutput + (": /{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri)
+            $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
+
         }
 
-        $promptOutput = @()
-
-        if ( $identityOutput ) {
-            $promptOutput += $identityOutput
+        if ( $connectionOutput -or $locationOutput ) {
+            $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
+            write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)`n$($locationOutput)"
         }
-
-        $versionOutput = 'ver=' + $graph.version
-
-        $promptOutput += $versionOutput
-        $connectionOutput = '[{0}] ' -f ($promptOutput -join ', ')
-        $locationOutput = "/{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
-        $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
-    }
-
-    if ( $connectionOutput -or $locationOutput ) {
-        $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
-        write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)$($locationOutput)"
     }
 }
 
 $__GraphCurrentPrompt = $null
 
-$__GraphPrompt = {
-    if ( $__GraphCurrentPrompt ) {
-        . $__GraphCurrentPrompt | out-null
-    }
+function __GetGraphPrompt {
+    {
+        if ( $__GraphCurrentPrompt ) {
+            . $__GraphCurrentPrompt | out-null
+        }
 
-    if ( $__GraphOriginalPrompt ) {
-        . $__GraphOriginalPrompt
+        if ( $__GraphOriginalPrompt ) {
+            . $__GraphOriginalPrompt
+        }
+
     }
 }
 
@@ -96,8 +103,13 @@ function Set-GraphPrompt {
         [parameter(parametersetname='Disable')]
         [switch] $Disabled
     )
+    $originalPromptValue = try {
+        $script:__GraphOriginalPrompt
+    } catch {
+    }
+
     if ( $Disabled.IsPresent ) {
-        if ( $script:__GraphOriginalPrompt ) {
+        if ( $originalPromptValue ) {
             set-item function:prompt -value $script:__GraphOriginalPrompt
             $script:__GraphOriginalPrompt = $null
         }
@@ -105,14 +117,14 @@ function Set-GraphPrompt {
         $script:__GraphCurrentPrompt = if ( $PromptScript ) {
             $PromptScript
         } else {
-            $script:__GraphDefaultPrompt
+            __GetGraphDefaultPrompt
         }
 
-        if ( ! $script:__GraphOriginalPrompt ) {
+        if ( ! $originalPromptValue ) {
             $script:__GraphOriginalPrompt = (get-item function:prompt).ScriptBlock
         }
 
-        set-item function:prompt -value $script:__GraphPrompt
+        set-item function:prompt -value (__GetGraphPrompt)
     } else {
         throw [ArgumentException]::new("Neither 'Enabled' or 'Disabled' options was specified for the command")
     }

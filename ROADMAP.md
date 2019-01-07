@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Get a fix from sdk for scope helper in find-graphpermissions
 * Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
 * Add enumeration type support to get-graphtype
