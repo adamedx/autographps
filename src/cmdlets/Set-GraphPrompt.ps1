@@ -59,17 +59,19 @@ function __GetGraphDefaultPrompt {
                 $promptOutput += $identityOutput
             }
 
-            $versionOutput = 'ver=' + $graph.version
-
-            $promptOutput += $versionOutput
+            $appOutput = 'app=' + $identity.app.appid
+            $promptOutput += $appOutput
             $connectionOutput = '[{0}] ' -f ($promptOutput -join ', ')
-            $locationOutput = "/{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri
+
+            $versionOutput = 'ver=' + $graph.version
+            $locationOutput = $versionOutput + (": /{0}:{1}" -f $graph.name, $graph.currentlocation.graphuri)
             $connectionStatus = if ( $graph.ConnectionStatus.tostring() -ne 'Online' ) { "({0}) " -f $graph.ConnectionStatus }
+
         }
 
         if ( $connectionOutput -or $locationOutput ) {
             $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
-            write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)$($locationOutput)"
+            write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)`n$($locationOutput)"
         }
     }
 }
