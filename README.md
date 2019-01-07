@@ -181,6 +181,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 |---------------------------|---------------------------------------------------------------------------------------------------------|
 | Connect-Graph             | Establishes authentication and authorization context used across cmdlets for the current graph          |
 | Disconnect-Graph          | Clears authentication and authorization context used across cmdlets for the current graph               |
+| Find-GraphPermissions     | Given a search string, `Find-GraphPermissions` lists permissions with names that contain that string    |
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
 | Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
@@ -285,7 +286,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2018 Adam Edwards
+Copyright:: Copyright (c) 2019 Adam Edwards
 
 License:: Apache License, Version 2.0
 
