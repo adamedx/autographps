@@ -40,7 +40,7 @@ function Find-GraphPermissions {
         }
 
         if ( $foundPermission ) {
-            $::.PermissionHelper |=> GetPermissionEntry $foundPermission
+            $::.PermissionHelper |=> GetPermissionEntry $foundPermission $Permission
         }
     } else {
         $normalizedSearchString = if ( $permission ) {

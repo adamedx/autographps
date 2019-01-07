@@ -14,6 +14,8 @@
 
 ScriptClass PermissionHelper {
     static {
+        $PermissionDisplayTypeName = '__ScriptClassPermissionDisplayType'
+
         $typeMap = @{
             Scope=([GraphAppAuthType]::Delegated)
             Role=([GraphAppAuthType]::AppOnly)
@@ -24,17 +26,35 @@ ScriptClass PermissionHelper {
             Role = 'description'
         }
 
+        function __RegisterSegmentDisplayType($typeName) {
+            remove-typedata -typename $typeName -erroraction silentlycontinue
+
+            $coreProperties = @('Type', 'ConsentType', 'Name', 'Description')
+
+            $segmentDisplayTypeArguments = @{
+                TypeName    = $typeName
+                MemberType  = 'NoteProperty'
+                MemberName  = 'PSTypeName'
+                Value       = $typeName
+                DefaultDisplayPropertySet = $coreProperties
+            }
+
+            Update-TypeData -force @segmentDisplayTypeArguments
+        }
+
+        __RegisterSegmentDisplayType $PermissionDisplayTypeName
+
         function FindPermission($source, $searchString, $permissionType, $destination, $commandContext) {
             $source | foreach {
                 if ( ! $searchString -or ( $_.tolower().contains($searchString) ) ) {
                     $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $commandContext.Connection
-                    $entry = GetPermissionEntry $permissionData
+                    $entry = GetPermissionEntry $permissionData $_
                     $destination.Add($_, $entry)
                 }
             }
         }
 
-        function GetPermissionEntry($permissionData) {
+        function GetPermissionEntry($permissionData, $permissionName) {
             $description = $::.ScopeHelper.permissionsByIds[$permissionData.id] |
               select -expandproperty $this.descriptionFieldMap[$permissionData.Type]
             $consentType = if ( $permissionData.Type -eq 'Role' ) {
@@ -44,11 +64,12 @@ ScriptClass PermissionHelper {
             }
 
             [PSCustomObject] @{
+                PSTypeName = $this.PermissionDisplayTypeName
                 Id = $permissionData.Id
                 Type = $this.typeMap[$permissionData.Type]
-                Name = $_
-                Description = $description
                 ConsentType = $consentType
+                Name = $permissionName
+                Description = $description
             }
         }
     }
