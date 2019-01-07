@@ -49,6 +49,7 @@ function Find-GraphPermissions {
 
         if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
             $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
+            $workaroundToInitializeScopeHelper = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::Delegated)
             $delegatedPermissions = $::.ScopeHelper.sortedGraphDelegatedPermissions
             $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $commandContext
             $sortedResult.values

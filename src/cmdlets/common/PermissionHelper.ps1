@@ -21,11 +21,6 @@ ScriptClass PermissionHelper {
             Role=([GraphAppAuthType]::AppOnly)
         }
 
-        $descriptionFieldMap = @{
-            Scope = 'adminConsentDescription'
-            Role = 'description'
-        }
-
         function __RegisterSegmentDisplayType($typeName) {
             remove-typedata -typename $typeName -erroraction silentlycontinue
 
@@ -55,12 +50,19 @@ ScriptClass PermissionHelper {
         }
 
         function GetPermissionEntry($permissionData, $permissionName) {
-            $description = $::.ScopeHelper.permissionsByIds[$permissionData.id] |
-              select -expandproperty $this.descriptionFieldMap[$permissionData.Type]
-            $consentType = if ( $permissionData.Type -eq 'Role' ) {
-                'Admin'
-            } else {
-                $::.ScopeHelper.permissionsByIds[$permissionData.id].type
+            $permissionDetail = $::.ScopeHelper.permissionsByIds[$permissionData.id]
+
+            $description = if ( $permissionDetail | gm adminConsentDescription -erroraction ignore ) {
+                $permissionDetail.adminConsentDescription
+            } elseif ( $permissionDetail | gm description -erroraction ignore ) {
+                $permissionDetail.description
+            }
+
+            $consentType = 'Admin'
+            if ( $permissionData.Type -eq 'Scope' ) {
+                if ( $permissionDetail | gm type -erroraction ignore ) {
+                    $consentType = $permissionDetail.type
+                }
             }
 
             [PSCustomObject] @{
