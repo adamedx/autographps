@@ -40,7 +40,7 @@ function Find-GraphPermissions {
         }
 
         if ( $foundPermission ) {
-            $::.PermissionHelper |=> GetPermissionEntry $foundPermission $Permission
+            $::.PermissionHelper |=> GetPermissionEntry $foundPermission
         }
     } else {
         $normalizedSearchString = if ( $permission ) {
@@ -49,8 +49,7 @@ function Find-GraphPermissions {
 
         if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
             $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
-            $workaroundToInitializeScopeHelper = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::Delegated)
-            $delegatedPermissions = $::.ScopeHelper.sortedGraphDelegatedPermissions
+            $delegatedPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::Delegated)
             $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $commandContext
             $sortedResult.values
         }

@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.19.0'
+ModuleVersion = '0.20.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.6.2';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.7.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.14.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -170,19 +170,21 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.19.0 Release Notes
+# AutoGraphPS 0.20.0 Release Notes
 
-Minor update to fix uri parsing issue with ':'
+Update ``AutoGraphPS-SDK`` dependency to remove need for defect workarounds, get new ``Get-GraphToken`` improvements.
 
 ## New Features
 
-* ``Find-GraphPermission`` cmdlet: Finds scopes with names matching a specified search string
+* ``Get-GraphToken`` cmdlet takes more parameters for obtaining tokens, including app-only tokens and v1 protocol support.
 
 ## New dependencies
 
-None.
+* AutoGraphPS-SDK 0.7.1
 
 ## Fixed defects
+
+* Removed workaround for defect in AutoGraphPS-SDK ``ScopeHelper`` class that would return all permissions when only delegated permissions were requested from GetKnownPermissionsSorted
 
 "@
     } # End of PSData hashtable

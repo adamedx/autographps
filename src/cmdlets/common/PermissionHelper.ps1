@@ -43,35 +43,20 @@ ScriptClass PermissionHelper {
             $source | foreach {
                 if ( ! $searchString -or ( $_.tolower().contains($searchString) ) ) {
                     $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $commandContext.Connection
-                    $entry = GetPermissionEntry $permissionData $_
+                    $entry = GetPermissionEntry $permissionData
                     $destination.Add($_, $entry)
                 }
             }
         }
 
-        function GetPermissionEntry($permissionData, $permissionName) {
-            $permissionDetail = $::.ScopeHelper.permissionsByIds[$permissionData.id]
-
-            $description = if ( $permissionDetail | gm adminConsentDescription -erroraction ignore ) {
-                $permissionDetail.adminConsentDescription
-            } elseif ( $permissionDetail | gm description -erroraction ignore ) {
-                $permissionDetail.description
-            }
-
-            $consentType = 'Admin'
-            if ( $permissionData.Type -eq 'Scope' ) {
-                if ( $permissionDetail | gm type -erroraction ignore ) {
-                    $consentType = $permissionDetail.type
-                }
-            }
-
+        function GetPermissionEntry($permissionData) {
             [PSCustomObject] @{
                 PSTypeName = $this.PermissionDisplayTypeName
                 Id = $permissionData.Id
                 Type = $this.typeMap[$permissionData.Type]
-                ConsentType = $consentType
-                Name = $permissionName
-                Description = $description
+                ConsentType = $permissionData.consentType
+                Name = $permissionData.Name
+                Description = $permissionData.description
             }
         }
     }
