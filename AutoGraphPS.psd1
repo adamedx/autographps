@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.20.0'
+ModuleVersion = '0.20.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -170,21 +170,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.20.0 Release Notes
-
-Update ``AutoGraphPS-SDK`` dependency to remove need for defect workarounds, get new ``Get-GraphToken`` improvements.
+# AutoGraphPS 0.20.1 Release Notes
 
 ## New Features
 
-* ``Get-GraphToken`` cmdlet takes more parameters for obtaining tokens, including app-only tokens and v1 protocol support.
+None.
 
 ## New dependencies
 
-* AutoGraphPS-SDK 0.7.1
+None.
 
 ## Fixed defects
 
-* Removed workaround for defect in AutoGraphPS-SDK ``ScopeHelper`` class that would return all permissions when only delegated permissions were requested from GetKnownPermissionsSorted
+* Fixed ``Find-GraphPermissions -ExactMatch`` where only delegated permissions were returned for cases where there was also an app-only permission with the same name such as ``Group.Read.All``.
 
 "@
     } # End of PSData hashtable

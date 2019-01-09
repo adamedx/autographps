@@ -2,26 +2,12 @@
 
 ## To-do items -- prioritized
 
-* Get a fix from sdk for scope helper in find-graphpermissions
+
+* Preserve identity when mounting graphs
 * Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
 * Add enumeration type support to get-graphtype
 * Move app to new tenant (or create a new one)
-
-* Add app creation, enumeration, update
-  * New-GraphApplication
-  * Get-GraphApplication
-  * New-GraphApplicationCertificate
-  * Get-GraphApplicationCertificate
-  * Set-GraphApplicationCertificate
-  * Get-GraphApplicationLocalCertificate
-  * Remove-GraphApplicationLocalCertificate
-  * Import-GraphApplicationLocalCertificate
-  * Remove-GraphApplication
-  * Set-GraphApplication
-  * Set-GraphApplicationPermissions
-  * Remove-GraphApplicationConsent
-* Release
 
 * EntityAccess
   * Ability to create Graph JSON
@@ -261,6 +247,7 @@
   * Process singletons metadata in foreground
   * Use expressions like  ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action).parameter |where name -eq bindParameter
   * Better: $bindings = ( ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action)) | foreach { $method = $_.name; $_.parameter | where name -eq bindingParameter | foreach {[PSCustomObject]@{Type=$_.type;Method=$method}}}
+* Add app creation, enumeration, update
 
 ### Postponed
 
@@ -272,6 +259,7 @@
 * Add hint of additional records
 * Add continue feature?
 * Test Release
+* Get a fix from sdk for scope helper in find-graphpermissions
 
 ### Abandoned
 
