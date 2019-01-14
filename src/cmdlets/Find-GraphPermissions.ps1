@@ -31,16 +31,23 @@ function Find-GraphPermissions {
     $commandContext = new-so CommandContext $Connection $null $null $null
 
     if ( $ExactMatch.IsPresent ) {
-        $foundPermission = if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
-            $::.ScopeHelper |=> GetPermissionsByName $Permission Scope $commandContext.Connection
+        $foundPermissions = @()
+        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
+            $foundDelegated = $::.ScopeHelper |=> GetPermissionsByName $Permission Scope $commandContext.Connection
+            if ( $foundDelegated ) {
+                $foundPermissions += $foundDelegated
+            }
         }
 
-        if ( ! $foundPermission -and ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::AppOnly) ) ) {
-            $foundPermission = $::.ScopeHelper |=> GetPermissionsByName $Permission Role $commandContext.Connection
+        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::AppOnly) ) {
+            $foundAppOnly = $::.ScopeHelper |=> GetPermissionsByName $Permission Role $commandContext.Connection
+            if ( $foundAppOnly ) {
+                $foundPermissions += $foundAppOnly
+            }
         }
 
-        if ( $foundPermission ) {
-            $::.PermissionHelper |=> GetPermissionEntry $foundPermission
+        $foundPermissions | foreach {
+            $::.PermissionHelper |=> GetPermissionEntry $_
         }
     } else {
         $normalizedSearchString = if ( $permission ) {
