@@ -53,21 +53,26 @@ ScriptClass GraphUriParameterCompleter {
         $uriString = $targetUri.tostring()
         $lastWord = $uriString -split '/' | select -last 1
 
-        $parentUri = '/' + $uriString.substring(0, $uriString.length - $lastword.length).trimend('/').trimstart('/')
-        $candidates = Get-GraphUri $parentUri -children -includevirtualchildren:$includeVirtual -LocatableChildren:(!$nonLocatable) -ignoremissingmetadata |
-          select -expandproperty graphuri |
-          select -expandproperty originalstring |
-          foreach {
-              $_ -split '/' | select -last 1
-          }
+        $parentUri = $uriString.substring(0, $uriString.length - $lastword.length).trimend('/')
 
-        $completions = if ( $candidates ) {
+        $candidateUris = Get-GraphUri $parentUri -children -includevirtualchildren:$includeVirtual -LocatableChildren:(!$nonLocatable) -ignoremissingmetadata
+
+        $fullParent = $null
+        $completions = if ( $candidateUris ) {
+            $sample = $candidateUris[0].graphuri.originalstring
+            $fullParent = $sample.substring(0, $sample.lastindexof('/'))
+            $candidates = $candidateUris |
+              select -expandproperty graphuri |
+              select -expandproperty originalstring |
+              foreach {
+                  $_ -split '/' | select -last 1
+              }
+
             $::.ParameterCompleter |=> FindMatchesStartingWith $lastword $candidates
         }
 
-        $prefixableParentUri = $parentUri.trimend('/')
         $completions | foreach {
-            $prefixableParentUri, $_ -join '/'
+            $fullParent, $_ -join '/'
         }
     }
 }
