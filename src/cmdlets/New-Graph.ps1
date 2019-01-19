@@ -23,20 +23,6 @@ function New-Graph {
         [parameter(position=1)]
         $Name = $null,
 
-        [parameter(position=2, parametersetname='Cloud')]
-        [parameter(position=2, parametersetname='Authenticated')]
-        [parameter(position=2, parametersetname='Connection')]
-        [parameter(position=2, parametersetname='Simple')]
-        [String[]] $Permissions = @('User.Read'),
-
-        [parameter(parametersetname='Cloud', mandatory=$true)]
-        [parameter(parametersetname='Authenticated')]
-        [parameter(parametersetname='Simple')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
-        [parameter(parametersetname='Cloud')]
-        [Switch] $Anonymous,
-
         [parameter(parametersetname='Connection', mandatory=$true)]
         $Connection = $null
     )
@@ -44,7 +30,7 @@ function New-Graph {
     $graphConnection = if ( $Connection ) {
         $Connection
     } else {
-        $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) $Cloud $Permissions $Anonymous.IsPresent
+        ($::.GraphContext |=> GetCurrent).connection
     }
 
     $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name

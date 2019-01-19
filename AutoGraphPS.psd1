@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.21.0'
+ModuleVersion = '0.21.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.8.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.8.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.15.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -170,23 +170,21 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.21.0 Release Notes
+# AutoGraphPS 0.21.1 Release Notes
 
 ## New Features
 
-* From AutoGraphPS-SDK: New 'CertOutputDirectory` option for ``New-GraphApplication`` -- see release notes for AutoGraphPS-SDK 0.8.0.
+None.
 
 ## New dependencies
 
-ScriptClass 0.15.0
-AutographPS-SDK 0.8.0
+AutographPS-SDK 0.8.1
 
 ## Fixed defects
 
-* Fixed regression in ``New-GraphApplication`` for creating app-only apps with the ``NoninteractiveAppOnlyAuth`` parameter -- see release notes for AutoGraphPS-SDK 0.8.0
-* Fixed ``Find-GraphPermissions -ExactMatch`` where only delegated permissions were returned for cases where there was also an app-only permission with the same name such as ``Group.Read.All``.
-
-
+* Fixed regresion in relative Uri completion where only fully qualified paths were completed
+* Uri completion for ``Get-GraphItem``, ``Get-GraphChildItem``, etc., was unreliable due to a defect in AutoGraphPS-SDK -- fixed with an update to that dependency
+* Remove non-essential parameters for New-Graph and enable connection inheritance for the new graph
 
 "@
     } # End of PSData hashtable
