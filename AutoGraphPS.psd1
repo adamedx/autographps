@@ -184,7 +184,7 @@ AutographPS-SDK 0.8.1
 
 * Fixed regresion in relative Uri completion where only fully qualified paths were completed
 * Uri completion for ``Get-GraphItem``, ``Get-GraphChildItem``, etc., was unreliable due to a defect in AutoGraphPS-SDK -- fixed with an update to that dependency
-
+* Remove non-essential parameters for New-Graph and enable connection inheritance for the new graph
 
 "@
     } # End of PSData hashtable
