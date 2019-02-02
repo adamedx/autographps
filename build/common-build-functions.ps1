@@ -57,7 +57,17 @@ function Get-DevRepoDirectory {
 }
 
 function Get-ModuleName {
-    (get-item (split-path -parent $psscriptroot)).name
+    # For compatibility on case sensitive file systems such as Linux,
+    # assume the module manifest has the correct casing rather than relying
+    # on the name of the directory in which the source is cloned to have
+    # the correct case.
+
+    $moduleManifestFiles = get-childitem (split-path -parent $psscriptroot) -filter '*.psd1'
+    if ( $moduleManifestFiles -is [object[]] ) {
+        throw "More than one module manifest found in module directory: $moduleManifestFiles"
+    }
+
+    $moduleManifestFiles | select -expandproperty basename
 }
 
 function Get-ModuleNameFromManifestPath($manifestPath) {

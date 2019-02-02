@@ -178,10 +178,14 @@ None.
 
 ## New dependencies
 
-AutographPS-SDK 0.8.1
+AutographPS-SDK 0.9.0
+ScriptClass 0.16.0
 
 ## Fixed defects
 
+* Fix case of env:PSModulePath in import-devmodule script for compatibility with Linux
+* Fix import-devmodule to use ':' as the separator in PSModulePath on Linux instead of Windows ';'
+* Workarounds for case-sensitivity regression in hash tables on PowerShell 6.1.2 on Linux
 * Fixed regresion in relative Uri completion where only fully qualified paths were completed
 * Uri completion for ``Get-GraphItem``, ``Get-GraphChildItem``, etc., was unreliable due to a defect in AutoGraphPS-SDK -- fixed with an update to that dependency
 * Remove non-essential parameters for New-Graph and enable connection inheritance for the new graph
