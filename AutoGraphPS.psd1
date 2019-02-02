@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.21.1'
+ModuleVersion = '0.22.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -67,8 +67,8 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.8.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='scriptclass';ModuleVersion='0.15.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.9.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='ScriptClass';ModuleVersion='0.16.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -108,7 +108,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\autographps.psd1',
+        '.\AutoGraphPS.psd1',
         '.\autographps.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
@@ -170,7 +170,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.21.1 Release Notes
+# AutoGraphPS 0.22.0 Release Notes
 
 ## New Features
 

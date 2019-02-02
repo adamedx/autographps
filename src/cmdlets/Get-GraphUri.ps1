@@ -90,7 +90,7 @@ function Get-GraphUri {
     $disallowVirtualChildren = $Children.ispresent -and ! $IncludeVirtualChildren.ispresent
 
     $context = if ( $GraphScope ) {
-        $::.Logicalgraphmanager.Get().contexts[$GraphScope].context
+        $::.Logicalgraphmanager.Get().contexts[$GraphScope].Context
     }
 
     while ( $nextUris.Count -gt 0 ) {
@@ -118,7 +118,7 @@ function Get-GraphUri {
             $parsedUri.GraphRelativeUri
         } else {
             $parsedLocation = $::.GraphUtilities |=> ParseGraphRelativeLocation $currentUri
-            $context = $parsedLocation.context
+            $context = $parsedLocation.Context
             $parsedLocation.GraphRelativeUri
         }
 
@@ -175,7 +175,7 @@ function Get-GraphUri {
             $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId $validLocationClasses
 
             $additionalSegments = if ( $Children.IsPresent ) {
-                $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort Name
+                $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort-object Name
             } else {
                 # Create a new public segment since we are going to modify it
                 $instanceSegment = ($::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment).psobject.copy()
@@ -197,7 +197,7 @@ function Get-GraphUri {
 
             $results += $additionalSegments
         } elseif ( $Children.ispresent ) {
-            $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort Name
+            $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort-object Name
         } else {
             if ( $GraphItem ) {
                 # Create a new public segment since we are going to modify it

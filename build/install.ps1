@@ -24,13 +24,13 @@ function InstallDependencies($clean) {
 
     if ( $clean -and (test-path $packagesDestination) ) {
         write-host -foregroundcolor cyan "Clean install specified -- deleting '$packagesDestination'"
-        rm -r -force $packagesDestination
+        remove-item -r -force $packagesDestination
     }
 
     write-host "Installing dependencies to '$appRoot'"
 
     if ( ! (test-path $packagesDestination) ) {
-        mkdir $packagesDestination | out-null
+        psmkdir $packagesDestination | out-null
     }
 
     $configFilePath = join-path $appRoot 'NuGet.Config'
@@ -42,12 +42,37 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
-    iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec" | out-host
+    $restoreCommand = "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
+    write-host "Executing command: $restoreCommand"
+    iex $restoreCommand | out-host
 
+    $nuspecFile = get-childitem -path $approot -filter '*.nuspec' | select -expandproperty fullname
 
-    # Remove everything that is not .net45 -- otherwise there will be binaries
-    # for 5 or more additional packages!
-    ls lib\*\lib\* | where { $_.name -ne 'net45' } | rm -r -force
+    if ( $nuspecFile -is [object[]] ) {
+        throw "More than one nuspec file found in directory '$appRoot'"
+    }
+
+    $allowedLibraryDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile
+
+    # Remove everything that is not listed as an allowed library directory in the nuspec
+    $allowedFiles = $allowedLibraryDirectories | foreach {
+        $allowedPath = join-path '.' $_
+        get-childitem -path $allowedPath -filter *.dll
+    }
+
+    $allObjects = get-childitem ./lib -r
+    $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
+        $allowedFiles.fullname -notcontains $_.fullname
+    }
+
+    $filesToRemove | remove-item
+
+    $directoriesToRemove = $allObjects | where PSIsContainer -eq $true | where {
+        $children = get-childitem -r $_.fullname | where PSISContainer -eq $false
+        $null -eq $children
+    }
+
+    $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | remove-item -r -force } }
 }
 
 InstallDependencies $clean

@@ -17,11 +17,11 @@ param($InitialCommand = $null, [switch] $NoNewShell)
 . "$psscriptroot/common-build-functions.ps1"
 
 $moduleName = Get-ModuleName
-$currentpsmodulepath = gi env:psmodulepath
+$currentpsmodulepath = gi env:PSModulePath
 $devDirectory = Get-DevModuleDirectory
 if (! $NoNewShell.ispresent) {
     $newpsmodulepath = $devDirectory + ';' + $currentpsmodulepath.value
-    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
+    start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
     write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
 }
