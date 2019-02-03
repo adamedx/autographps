@@ -210,6 +210,9 @@ ScriptClass GraphCache {
             $schema = try {
                 invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction silentlycontinue -rawcontent
             } catch {
+                write-verbose "Invoke-GraphRequest failed to download schema"
+                write-verbose $_
+                write-verbose $_.exception
             }
 
             write-progress -id 1 -activity $metadataactivity -status "Complete" -completed

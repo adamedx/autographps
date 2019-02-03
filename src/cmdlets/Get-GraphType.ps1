@@ -24,7 +24,7 @@ function Get-GraphType {
     )
 
     $context = if ( $Graph ) {
-        $::.Logicalgraphmanager.Get().contexts[$Graph].context
+        $::.Logicalgraphmanager.Get().contexts[$Graph].Context
     } else {
         $::.GraphContext |=> GetCurrent
     }

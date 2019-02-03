@@ -3,6 +3,7 @@
 ## To-do items -- prioritized
 
 
+* Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
 * Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.

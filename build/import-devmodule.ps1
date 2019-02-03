@@ -17,11 +17,23 @@ param($InitialCommand = $null, [switch] $NoNewShell)
 . "$psscriptroot/common-build-functions.ps1"
 
 $moduleName = Get-ModuleName
-$currentpsmodulepath = gi env:psmodulepath
+$currentpsmodulepath = gi env:PSModulePath
 $devDirectory = Get-DevModuleDirectory
+$OSPathSeparator = ';'
+
+try {
+    if ( $PSVersionTable.PSEdition -eq 'Core' ) {
+        if ( $PSVersionTable.Platform -ne 'Windows' -and $PSVersionTable.Platform -ne 'Win32NT' ) {
+            $OSPathSeparator = ':'
+        }
+    }
+} catch {
+}
+
 if (! $NoNewShell.ispresent) {
-    $newpsmodulepath = $devDirectory + ';' + $currentpsmodulepath.value
-    start-process powershell '-noexit', '-command', "si env:psmodulepath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
+    $newpsmodulepath = $devDirectory + $OSPathSeparator + $currentpsmodulepath.value
+    write-verbose "Using updated module path in new process to import module '$moduleName': 'newpsmodulepath'"
+    start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
     write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
 }
@@ -36,11 +48,12 @@ $scriptBlock = @"
     remove-module -force '$moduleName' -erroraction silentlycontinue
 
     # Set the PSModulePath environment variable so that import-module can find the dev module
-    si env:psmodulepath ('$devDirectory' + ';' + '$($currentpsmodulepath.value)')
+    si env:PSModulePath ('$devDirectory' + '$OSPathSeparator' + '$($currentpsmodulepath.value)')
 
     try {
 
         # Import the dev module
+        write-verbose "Using updated module path to import module '$moduleName': '`$(`$env:PSModulePath)'"
         import-module '$moduleName' -force -verbose
 
     } finally {

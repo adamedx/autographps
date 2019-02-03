@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>autographps</id>
+    <id>AutoGraphPS</id>
     <version>0.0.0</version>
     <authors>adamedx</authors>
     <owners>adamedx</owners>
@@ -10,18 +10,17 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line explorer for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
-    <copyright>Copyright 2018</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
-      <dependency id="autographps-sdk" version="0.7.1" />
+      <dependency id="autographps-sdk" version="0.9.0" />
     </dependencies>
   </metadata>
   <files>
     <file src="LICENSE.md" target="." />
     <file src="README.md" target="." />
-    <file src="autographps.psd1" target="." />
+    <file src="AutoGraphPS.psd1" target="." />
     <file src="autographps.psm1" target="." />
-    <file src="autographps.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
   </files>

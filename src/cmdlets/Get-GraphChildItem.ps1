@@ -96,7 +96,7 @@ function Get-GraphChildItem {
     if ( ! $context ) {
         $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
         $context = if ( $parsedPath.ContextName ) {
-            $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName].context
+            $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName].Context
         }
         if ( ! $context ) {
             throw "'$($resolvedUri.Path)' is not a valid graph location uri"

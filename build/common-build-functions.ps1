@@ -17,6 +17,33 @@ $erroractionpreference = 'stop'
 
 $moduleOutputSubdirectory = 'modules'
 
+$PowerShellExecutable = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
+    'powershell.exe'
+} else {
+    'pwsh'
+}
+
+function new-directory {
+    param(
+        [Parameter(mandatory=$true)]
+        $Name,
+        $Path,
+        [switch] $Force
+    )
+    $fullPath = if ( $Path ) {
+        join-path $Path $Name
+    } else {
+        $Name
+    }
+    $forceArgument = @{
+        Force=$Force
+    }
+
+    new-item -ItemType Directory $fullPath @forceArgument
+}
+
+set-alias psmkdir new-directory -erroraction ignore
+
 function Get-SourceRootDirectory {
     (get-item (split-path -parent $psscriptroot)).fullname
 }
@@ -30,7 +57,17 @@ function Get-DevRepoDirectory {
 }
 
 function Get-ModuleName {
-    (get-item (split-path -parent $psscriptroot)).name
+    # For compatibility on case sensitive file systems such as Linux,
+    # assume the module manifest has the correct casing rather than relying
+    # on the name of the directory in which the source is cloned to have
+    # the correct case.
+
+    $moduleManifestFiles = get-childitem (split-path -parent $psscriptroot) -filter '*.psd1'
+    if ( $moduleManifestFiles -is [object[]] ) {
+        throw "More than one module manifest found in module directory: $moduleManifestFiles"
+    }
+
+    $moduleManifestFiles | select -expandproperty basename
 }
 
 function Get-ModuleNameFromManifestPath($manifestPath) {
@@ -80,7 +117,7 @@ function Validate-Prerequisites {
         $libFilesExist = if ( ! ( test-path $libPath ) ) {
             $false
         } else {
-            (ls -r $libPath -filter *.dll) -ne $null
+            (get-childitem -r $libPath -filter *.dll) -ne $null
         }
 
         if (! $libFilesExist ) {
@@ -93,25 +130,25 @@ function Validate-Prerequisites {
 function Clean-BuildDirectories {
     $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
-        join-path $psscriptroot '../lib' | rm -r -force
+        join-path $psscriptroot '../lib' | remove-item -r -force
     }
 
     $outputDirectory = Get-OutputDirectory
 
     if (test-path $outputDirectory) {
-        $outputDirectory | rm -r -force
+        $outputDirectory | remove-item -r -force
     }
 
     $devModuleLocation = Get-DevModuleDirectory
 
     if (test-path $devModuleLocation) {
-        $devModuleLocation | rm -r -force
+        $devModuleLocation | remove-item -r -force
     }
 
     $devRepoLocation = Get-DevRepoDirectory
 
     if (test-path $devRepoLocation) {
-        $devRepoLocation | rm -r -force
+        $devRepoLocation | remove-item -r -force
     }
 }
 
@@ -126,9 +163,9 @@ function New-ModuleOutputDirectory {
     }
 
     if ( ! (test-path $outputDirectory) ) {
-        mkdir $outputDirectory | out-null
+        psmkdir $outputDirectory | out-null
     } elseif ($clean) {
-        ls $outputDirectory | rm -r -force
+        get-childitem $outputDirectory | remove-item -r -force
     }
 
     (gi $outputDirectory).fullname
@@ -145,7 +182,7 @@ function build-module {
     $modulesDirectory = join-path $outputDirectory $moduleOutputSubdirectory
 
     if ( (test-path $modulesDirectory) -and ! $noclean.ispresent ) {
-        rm -r -force $modulesDirectory
+        remove-item -r -force $modulesDirectory
     }
 
     $thisModuleDirectory = join-path $modulesDirectory $module.name
@@ -154,7 +191,7 @@ function build-module {
     $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
     validate-prerequisites @verifyInstalledLibrariesArgument
 
-    mkdir $targetDirectory | out-null
+    psmkdir $targetDirectory | out-null
 
     $ignorableSegmentCount = ($module.modulebase -split '\\').count
     $sourceFileList = @()
@@ -173,20 +210,28 @@ function build-module {
     }
 
      0..($sourceFileList.length - 1) | foreach {
-        $parent = split-path -parent $destinationFileList[ $_ ]
-        if ( ! (test-path $parent) ) {
-            mkdir $parent | out-null
-        }
+         $parent = split-path -parent $destinationFileList[ $_ ]
+         if ( ! (test-path $parent) ) {
+            psmkdir $parent | out-null
+         }
 
-        cp $sourceFileList[ $_ ] $destinationFileList[ $_ ]
+         $destinationName = split-path -leaf $destinationFileList[ $_ ]
+         $syntaxOnlySourceName = split-path -leaf $sourceFileList[ $_ ]
+         $sourceActualName = (get-childitem (split-path -parent $sourceFileList[ $_ ]) -filter $syntaxOnlySourceName).name
+
+         if ( $destinationName -cne $sourceActualName ) {
+             throw "The case-sensitive name of the file at source path '$($sourceFileList[$_])' is actually '$sourceActualName' and it does not match the case of the last element of destination path '$($destinationFileList[$_])' -- the case of the file names must match exactly in order to support environments with case-sensitive file systems. This can be corrected in the module manifest by specifying the case of the file exactly as it exists in the module source code directory"
+         }
+
+         copy-item $sourceFileList[ $_ ] $destinationFileList[ $_ ]
      }
 
     if ($includeInstalledLibraries.ispresent) {
         $libSource = join-path $module.moduleBase lib
         $libTarget = join-path $targetDirectory lib
-        cp -r $libSource $libTarget
+        copy-item -r $libSource $libTarget
 
-        $copiedLibs = ls -r $libTarget -filter *.dll
+        $copiedLibs = get-childitem -r $libTarget -filter *.dll
 
         if ($copiedLibs.length -lt 1) {
             throw "No libraries copied from '$libSource' to '$libTarget'"
@@ -215,9 +260,9 @@ function build-nugetpackage {
     $packageOutputDirectory = join-path $outputDirectory 'nuget'
 
     if ( ! (test-path $packageOutputDirectory) ) {
-        mkdir $packageOutputDirectory | out-null
+        psmkdir $packageOutputDirectory | out-null
     } else {
-        ls -r $packageOutputDirectory *.nupkg | rm
+        get-childitem -r $packageOutputDirectory *.nupkg | remove-item
     }
 
     $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
@@ -237,7 +282,7 @@ function build-nugetpackage {
         throw "Command `"$nugetbuildcmd`" failed with exit status $buildResult"
     }
 
-    $packagePath = ((ls $packageOutputdirectory -filter *.nupkg) | select -first 1).fullname
+    $packagePath = ((get-childitem $packageOutputdirectory -filter *.nupkg) | select -first 1).fullname
     $packageName = split-path -leaf $packagePath
 
     $packageVersion = $packageName.substring($module.name.length + 1, $packageName.length - ($module.name.length + ".nupkg".length + 1))
@@ -269,7 +314,7 @@ function publish-modulebuild {
         $repositoryKey = $null,
         [switch] $force)
 
-    $manifestPaths = ls $moduleSourceDirectory -filter *.psd1
+    $manifestPaths = get-childitem $moduleSourceDirectory -filter *.psd1
     if ( $manifestPaths.length -lt 1 ) {
         throw "No '.psd1' PowerShell module manifest files found at path '$moduleSourceDirectory'"
     }
@@ -305,10 +350,10 @@ function Invoke-CommandWithModulePath($command, $modulePath) {
 
     # Note that the path must be augmented rather than replaced
     # in order for modules related to package management to be loade
-    $commandScript = [Scriptblock]::Create("si env:psmodulepath `"`$env:psmodulepath;$modulePath`";$command")
+    $commandScript = [Scriptblock]::Create("si env:PSModulePath `"`$env:PSModulePath;$modulePath`";$command")
 
     write-verbose "Executing command '$commandScript'"
-    $result = powershell -noprofile -command ($commandScript)
+    $result = & $PowerShellExecutable -noprofile -command ($commandScript)
 
     # Use of the powershell command with a script block may not result in an exception
     # when the script block throws an exception. However, $? is reliably set to a failure code in this case, so we check for that
@@ -342,13 +387,13 @@ function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
     $moduleData.NestedModules | foreach {
         if ( $_ -is [HashTable] ) {
             $nestedModuleDirectory = join-path $referenceModuleRoot (join-path $_.ModuleName $_.ModuleVersion)
-            mkdir -force $nestedModuleDirectory | out-null
+            psmkdir -force $nestedModuleDirectory | out-null
             $syntheticModuleManifest = join-path $nestedModuleDirectory "$($_.ModuleName).psd1"
             set-content $syntheticModuleManifest @"
 # Synthetic module -- for publishing dependent module only
 @{
 ModuleVersion = '$($_.ModuleVersion)'
-GUID = '$($_.GUID)'
+GUID = '$($_.Guid)'
 }
 "@
         }
@@ -431,12 +476,12 @@ function publish-modulelocal {
     }
 
     # Working around some strange behavior when there is only one
-    # item in the directory and ls gives back a non-array...
+    # item in the directory and get-childitem gives back a non-array...
     $locations = @(@((Get-DevModuleDirectory), $customModuleLocation), @((Get-DevRepoDirectory), $customRepoLocation)) | foreach {
         $targetDirectory = if ( $_[1] -eq $null ) {
             $defaultLocation = $_[0]
             if ( ! (test-path $defaultLocation) ) {
-                mkdir $defaultLocation | out-null
+                psmkdir $defaultLocation | out-null
             }
             $defaultLocation
         } else {
@@ -444,10 +489,10 @@ function publish-modulelocal {
         }
 
         $existingFiles = @()
-        $existingFiles += (ls $targetDirectory -filter *)
+        $existingFiles += (get-childitem $targetDirectory -filter *)
 
         $existingFiles | foreach {
-            rm $_.fullname -r -force
+            remove-item $_.fullname -r -force
         }
         $targetDirectory
     }
@@ -500,7 +545,7 @@ function publish-modulelocal {
             write-verbose "First package save attempted failed, retrying..."
             # Sometimes save-package fails the first time, so try it again, and then it succeeds.
             # Don't ask.
-            save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation -verbose 2>&1 | out-null
+            save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation | out-null
         }
     }
 
@@ -508,11 +553,11 @@ function publish-modulelocal {
 
     $targetModuleDestination = join-path $devModuleLocation $moduleName
     if ( test-path $targetModuleDestination ) {
-        rm -r -force $targetModuleDestination
+        remove-item -r -force $targetModuleDestination
     }
 
     # Copy the built module to the location where its dependencies already exist
-    cp -r $modulePath $devModulelocation
+    copy-item -r $modulePath $devModulelocation
 
     # Use the module that was built -- this is *much* slower than using an
     # existing nuget package built via nuget.exe, but that package is
@@ -572,4 +617,11 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
     register-packagesource $localPackageRepositoryName $localPackageRepositoryLocation -providername nuget | out-null
 
     $localPackageRepositoryName
+}
+
+function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
+    $packageData = [xml] (get-content $nuspecFile | out-string)
+    $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
+        $_.replace("`\", '/')
+    }
 }
