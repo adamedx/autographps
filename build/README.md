@@ -26,6 +26,7 @@ The most common case is to build the module and then execute it in a new shell.
 To create a new version of the module in the `pkg` output directory, run this command:
 
 ```powershell
+.\build\configure-tools.ps1 # only needed before your first build
 .\build\build-package.ps1 -downloaddependencies
 ```
 

@@ -1,5 +1,6 @@
 pkg/*
 lib/*
+bin/*
 .psrepo/*
 .devmodule/*
 NuGet.Config
