@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[cmdletbinding()]
+param([switch] $IncludeTools, [switch] $All)
+
 . "$psscriptroot/common-build-functions.ps1"
+
+if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
+    clean-tools
+}
 
 clear-TemporaryPSModuleSources
 

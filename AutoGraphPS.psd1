@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.22.0'
+ModuleVersion = '0.23.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -170,25 +170,18 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.22.0 Release Notes
+# AutoGraphPS 0.23.0 Release Notes
 
 ## New Features
 
-None.
+* Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
+* Azure Pipelines integration -- basic continuous integration support added.
 
 ## New dependencies
 
-AutographPS-SDK 0.9.0
-ScriptClass 0.16.0
+None.
 
 ## Fixed defects
-
-* Fix case of env:PSModulePath in import-devmodule script for compatibility with Linux
-* Fix import-devmodule to use ':' as the separator in PSModulePath on Linux instead of Windows ';'
-* Workarounds for case-sensitivity regression in hash tables on PowerShell 6.1.2 on Linux
-* Fixed regresion in relative Uri completion where only fully qualified paths were completed
-* Uri completion for ``Get-GraphItem``, ``Get-GraphChildItem``, etc., was unreliable due to a defect in AutoGraphPS-SDK -- fixed with an update to that dependency
-* Remove non-essential parameters for New-Graph and enable connection inheritance for the new graph
 
 "@
     } # End of PSData hashtable

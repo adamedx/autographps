@@ -1,0 +1,30 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - master
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+steps:
+- checkout: self
+- powershell: echo $PSVersionTable
+- powershell: Get-Module Pester -ListAvailable
+- powershell: Install-Module Pester -RequiredVersion 4.6.0 -scope currentuser -force
+  displayName: 'Install Pester test framework required version'
+- powershell: Get-Module Pester -ListAvailable
+- powershell: .\build\clean-build.ps1
+- powershell: .\build\configure-tools.ps1 -Force -Verbose
+  displayName: 'Install and configure build tools'
+- powershell: .\build\configure-tools.ps1; .\build\install.ps1
+  displayName: 'Install .net dependencies'
+- powershell: .\build\configure-tools.ps1; .\build\build-package
+  displayName: 'Build module package'
+- powershell: .\build\configure-tools.ps1; .\build\publish-moduletodev.ps1
+  displayName: 'Publish module for local testing'
+- powershell: .\build\import-devmodule.ps1 -initialcommand 'Invoke-Pester' -Wait -ReuseConsole
+  displayName: 'Run tests'
+

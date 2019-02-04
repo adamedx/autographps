@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($InitialCommand = $null, [switch] $NoNewShell)
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $ExitOnCommandComplete)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -33,13 +33,25 @@ try {
 if (! $NoNewShell.ispresent) {
     $newpsmodulepath = $devDirectory + $OSPathSeparator + $currentpsmodulepath.value
     write-verbose "Using updated module path in new process to import module '$moduleName': 'newpsmodulepath'"
-    start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" | out-null
+    $shouldWait = $Wait.IsPresent
+    $noNewWindow = $ReuseConsole.IsPresent
+    $commandArguments = if ( $ExitOnCommandComplete.IsPresent ) {
+        @()
+    } else {
+        , @('-NoExit')
+    }
+
+    $commandArguments += @('-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand")
+
+    start-process $PowerShellExecutable -ArgumentList $commandArguments -Wait:$shouldWait -NoNewWindow:$noNewWindow | out-null
+
     write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
 }
 
 write-host -foregroundcolor yellow "Run the following command to import the module into your current session:"
 write-host -foregroundcolor cyan "`n`t. ($($myinvocation.mycommand.path) -nonewshell)`n"
+$moduleManifestPath = get-childitem -r -path $devDirectory -filter *.psd1 | where basename -eq $moduleName | select -expandproperty fullname
 
 $scriptBlock = @"
     # You can also run these commands directly in your PowerShell session
@@ -54,7 +66,8 @@ $scriptBlock = @"
 
         # Import the dev module
         write-verbose "Using updated module path to import module '$moduleName': '`$(`$env:PSModulePath)'"
-        import-module '$moduleName' -force -verbose
+        write-verbose "Will import module directly with module manifest path '$moduleManifestPath'"
+        import-module '$moduleManifestPath' -force -verbose
 
     } finally {
 

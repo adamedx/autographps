@@ -61,7 +61,6 @@ function Get-ModuleName {
     # assume the module manifest has the correct casing rather than relying
     # on the name of the directory in which the source is cloned to have
     # the correct case.
-
     $moduleManifestFiles = get-childitem (split-path -parent $psscriptroot) -filter '*.psd1'
     if ( $moduleManifestFiles -is [object[]] ) {
         throw "More than one module manifest found in module directory: $moduleManifestFiles"
@@ -121,9 +120,17 @@ function Validate-Prerequisites {
         }
 
         if (! $libFilesExist ) {
-            $installScriptPath = join-path (get-sourcerootdirectory) 'build\install.ps1'
+            $installScriptPath = join-path (get-sourcerootdirectory) 'build/install.ps1'
             throw "No .dll files found under directory '$libPath' or the directory does not exist -- please run '$installScriptPath' to install these dependencies and try again"
         }
+    }
+}
+
+function Clean-Tools {
+    $binPath = join-path $psscriptroot '../bin'
+
+    if ( test-path $binPath ) {
+        remove-item -r -force $binPath
     }
 }
 
