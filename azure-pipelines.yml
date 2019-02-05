@@ -1,6 +1,6 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
+# Unit test pipeline for PowerShell Desktop platform
+# This pipeline uses the Pester test framework to
+# execute unit tests for the module.
 # https://aka.ms/yaml
 
 trigger:
@@ -12,11 +12,15 @@ pool:
 steps:
 - checkout: self
 - powershell: echo $PSVersionTable
+  displayName: 'Show current PowerShell version information'
 - powershell: Get-Module Pester -ListAvailable
+  displayName: 'Get original Pester test framework module version'
 - powershell: Install-Module Pester -RequiredVersion 4.6.0 -scope currentuser -force
   displayName: 'Install Pester test framework required version'
 - powershell: Get-Module Pester -ListAvailable
+  displayName: 'Get updated Pester test framework module version'
 - powershell: .\build\clean-build.ps1
+  displayName: 'Clean build'
 - powershell: .\build\configure-tools.ps1 -Force -Verbose
   displayName: 'Install and configure build tools'
 - powershell: .\build\configure-tools.ps1; .\build\install.ps1
