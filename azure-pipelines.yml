@@ -6,29 +6,39 @@
 trigger:
   - master
 
-pool:
-  vmImage: 'vs2017-win2016'
-
-steps:
-- checkout: self
-- powershell: echo $PSVersionTable
-  displayName: 'Show current PowerShell version information'
-- powershell: Get-Module Pester -ListAvailable
-  displayName: 'Get original Pester test framework module version'
-- powershell: Install-Module Pester -RequiredVersion 4.6.0 -scope currentuser -force
-  displayName: 'Install Pester test framework required version'
-- powershell: Get-Module Pester -ListAvailable
-  displayName: 'Get updated Pester test framework module version'
-- powershell: .\build\clean-build.ps1
-  displayName: 'Clean build'
-- powershell: .\build\configure-tools.ps1 -Force -Verbose
-  displayName: 'Install and configure build tools'
-- powershell: .\build\configure-tools.ps1; .\build\install.ps1
-  displayName: 'Install .net dependencies'
-- powershell: .\build\configure-tools.ps1; .\build\build-package
-  displayName: 'Build module package'
-- powershell: .\build\configure-tools.ps1; .\build\publish-moduletodev.ps1
-  displayName: 'Publish module for local testing'
-- powershell: .\build\import-devmodule.ps1 -initialcommand 'Invoke-Pester' -Wait -ReuseConsole
-  displayName: 'Run tests'
+jobs:
+- job: BuildWithTests
+  displayName: 'Build and test PowerShell module'
+  strategy:
+    matrix:
+     PowerShellDesktop:
+        VM_IMAGE: 'vs2017-win2016'
+        POWERSHELL_STEP: 'powershell'
+     PowerShellCoreWindows:
+       VM_IMAGE: 'vs2017-win2016'
+       POWERSHELL_STEP: 'pwsh'
+    pool:
+      vmImage: $(VM_IMAGE)
+    steps:
+    - checkout: self
+    - $(POWERSHELL_STEP): echo $PSVersionTable
+      displayName: 'Show current PowerShell version information'
+    - $(POWERSHELL_STEP): Get-Module Pester -ListAvailable
+      displayName: 'Get original Pester test framework module version'
+    - $(POWERSHELL_STEP): Install-Module Pester -RequiredVersion 4.6.0 -scope currentuser -force
+      displayName: 'Install Pester test framework required version'
+    - $(POWERSHELL_STEP): Get-Module Pester -ListAvailable
+      displayName: 'Get updated Pester test framework module version'
+    - $(POWERSHELL_STEP): .\build\clean-build.ps1
+      displayName: 'Clean build'
+    - $(POWERSHELL_STEP): .\build\configure-tools.ps1 -Force -Verbose
+      displayName: 'Install and configure build tools'
+    - $(POWERSHELL_STEP): .\build\configure-tools.ps1; .\build\install.ps1
+      displayName: 'Install .net dependencies'
+    - $(POWERSHELL_STEP): .\build\configure-tools.ps1; .\build\build-package
+      displayName: 'Build module package'
+    - $(POWERSHELL_STEP): .\build\configure-tools.ps1; .\build\publish-moduletodev.ps1
+      displayName: 'Publish module for local testing'
+    - $(POWERSHELL_STEP): .\build\import-devmodule.ps1 -initialcommand 'Invoke-Pester' -Wait -ReuseConsole
+      displayName: 'Run tests'
 
