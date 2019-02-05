@@ -5,6 +5,8 @@ AutoGraphPS
 
 ----
 
+[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=master)
+
 * [Overview](#Overview)
 * [Installation](#Installation)
 * [Using AutoGraphPS](#using-autographps)
@@ -33,7 +35,7 @@ The project is in the earliest stages of development and almost but not quite ye
 
 ### System requirements
 
-AutoGraphPS requires Windows 10 and PowerShell 5.0.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but may work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
