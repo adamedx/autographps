@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $ExitOnCommandComplete)
+[cmdletbinding()]
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -30,21 +31,22 @@ try {
 } catch {
 }
 
-if (! $NoNewShell.ispresent) {
+if (! $NoNewShell.ispresent ) {
     $newpsmodulepath = $devDirectory + $OSPathSeparator + $currentpsmodulepath.value
-    write-verbose "Using updated module path in new process to import module '$moduleName': 'newpsmodulepath'"
+    write-verbose "Using updated module path in new process to import module '$moduleName' with psmodulepath '$newpsmodulepath'"
     $shouldWait = $Wait.IsPresent
+
     $noNewWindow = $ReuseConsole.IsPresent
-    $commandArguments = if ( $ExitOnCommandComplete.IsPresent ) {
-        @()
+
+    write-verbose ("WaitForProcess = {0}, ReuseWindow = {1}" -f $shouldWait, $noNewWindow)
+
+    # Strange things occur when I use -NoNewWindow:$false -- going to just
+    # duplicate the command with the additional -NoNewWindow param :(
+    if ( ! $NoNewWindow ) {
+        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" -Wait:$shouldWait | out-null
     } else {
-        , @('-NoExit')
+        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" -Wait:$shouldWait -nonewwindow | out-null
     }
-
-    $commandArguments += @('-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand")
-
-    start-process $PowerShellExecutable -ArgumentList $commandArguments -Wait:$shouldWait -NoNewWindow:$noNewWindow | out-null
-
     write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
 }
