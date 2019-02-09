@@ -199,23 +199,24 @@ function build-module {
 
     psmkdir $targetDirectory | out-null
 
-    $ignorableSegmentCount = ($module.modulebase -split '\\').count
+    $ignorableSegmentCount = ($module.modulebase.replace("`\", '/') -split '/').count
     $sourceFileList = @()
     $destinationFileList = @()
     $module.filelist | foreach {
-        $segments = $_ -split '\\'
+        $normalizedFile = $_.replace("`\", '/')
+        $segments = $normalizedFile -split '/'
         $relativeSegments = @()
         $ignorableSegmentCount..($segments.length - 1) | foreach {
             $relativeSegments += $segments[$_]
         }
 
-        $relativePath = $relativeSegments -join '\'
+        $relativePath = $relativeSegments -join '/'
 
         $sourceFileList += join-path $module.moduleBase $relativePath
         $destinationFileList += join-path $targetDirectory $relativePath
     }
 
-     0..($sourceFileList.length - 1) | foreach {
+    0..($sourceFileList.length - 1) | foreach {
          $parent = split-path -parent $destinationFileList[ $_ ]
          if ( ! (test-path $parent) ) {
             psmkdir $parent | out-null
