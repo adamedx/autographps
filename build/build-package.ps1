@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[cmdletbinding()]
 param($targetDirectory = $null, [switch] $noclean, [switch] $DownloadDependencies)
 
 . "$psscriptroot/common-build-functions.ps1"
