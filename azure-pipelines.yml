@@ -69,7 +69,7 @@ jobs:
     displayName: 'Build module package'
     inputs:
       targetType: inline
-      script: './build/configure-tools.ps1; ./build/build-package'
+      script: './build/configure-tools.ps1; ./build/build-package -verbose;'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Publish module for local testing'

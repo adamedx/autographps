@@ -43,6 +43,11 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
+    ls ./lib | out-host
+    if ( ! ( test-path $packagesConfigFile ) ) {
+        return
+    }
+
     $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
         "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
     } else {
@@ -63,7 +68,7 @@ function InstallDependencies($clean) {
     $allowedLibraryDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile
 
     # Remove nupkg files
-    remove-item -r -force $packagesDestination -filter '*.nupkg' -erroraction ignore
+    get-childitem -r $packagesDestination -filter '*.nupkg' | remove-item -erroraction ignore
 
     # Remove everything that is not listed as an allowed library directory in the nuspec
     $allowedFiles = $allowedLibraryDirectories | foreach {
@@ -82,7 +87,6 @@ function InstallDependencies($clean) {
         $children = get-childitem -r $_.fullname | where PSISContainer -eq $false
         $null -eq $children
     }
-
     $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | remove-item -r -force } }
 }
 

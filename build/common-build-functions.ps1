@@ -112,16 +112,13 @@ function Validate-Prerequisites {
 
     validate-nugetpresent
 
-     if ($verifyInstalledLibraries.ispresent) {
+    if ($verifyInstalledLibraries.ispresent) {
         $libPath = join-path (Get-SourceRootDirectory) lib
 
-        $libFilesExist = if ( ! ( test-path $libPath ) ) {
-            $false
-        } else {
-            (get-childitem -r $libPath -filter *.dll) -ne $null
-        }
-
-        if (! $libFilesExist ) {
+        # Assume if the lib path is there that it is correctly populted,
+        # which may mean it has nothing at all (if there are actually
+        # no dependencies)
+        if ( ! ( test-path $libPath ) ) {
             $installScriptPath = join-path (get-sourcerootdirectory) 'build/install.ps1'
             throw "No .dll files found under directory '$libPath' or the directory does not exist -- please run '$installScriptPath' to install these dependencies and try again"
         }
@@ -239,12 +236,6 @@ function build-module {
         $libSource = join-path $module.moduleBase lib
         $libTarget = join-path $targetDirectory lib
         copy-item -r $libSource $libTarget
-
-        $copiedLibs = get-childitem -r $libTarget -filter *.dll
-
-        if ($copiedLibs.length -lt 1) {
-            throw "No libraries copied from '$libSource' to '$libTarget'"
-        }
     }
 
     $targetDirectory
@@ -342,6 +333,7 @@ function publish-modulebuild {
     }
 
     $moduleRootDirectory = split-path -parent (split-path -parent $moduleSourceDirectory)
+
     $targetModuleManifestPath = $manifestPaths[0].fullname
 
     Generate-ReferenceModules $targetModuleManifestPath $moduleRootDirectory
@@ -360,7 +352,6 @@ function publish-modulebuild {
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
-
     # Note that the path must be augmented rather than replaced
     # in order for modules related to package management to be loade
     $commandScript = [Scriptblock]::Create("si env:PSModulePath `"`$env:PSModulePath;$modulePath`";$command")
@@ -392,6 +383,10 @@ function Get-ModuleMetadataFromManifest ( $manifestPath ) {
 # to enable the module to be publishable later.
 function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
     $moduleData = Get-ModuleMetadataFromManifest $manifestPath
+
+    if ( ! $moduleData['NestedModules'] ) {
+        return @()
+    }
 
     # Only create the versioned modules -- publish-module
     # and test-modulemanifest can handled unversioned nested modules
