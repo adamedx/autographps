@@ -98,10 +98,12 @@ function Get-ModuleOutputRootDirectory {
 }
 
 function Validate-Nugetpresent {
-    get-command nuget | out-null
+    if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
+        get-command nuget | out-null
 
-    if (! $?) {
-        throw "Nuget is not installed. Please visit https://nuget.org to install, then restart PowerShell and try again."
+        if (! $?) {
+            throw "Nuget is not installed. Please visit https://nuget.org to install, then restart PowerShell and try again."
+        }
     }
 }
 
@@ -110,16 +112,13 @@ function Validate-Prerequisites {
 
     validate-nugetpresent
 
-     if ($verifyInstalledLibraries.ispresent) {
+    if ($verifyInstalledLibraries.ispresent) {
         $libPath = join-path (Get-SourceRootDirectory) lib
 
-        $libFilesExist = if ( ! ( test-path $libPath ) ) {
-            $false
-        } else {
-            (get-childitem -r $libPath -filter *.dll) -ne $null
-        }
-
-        if (! $libFilesExist ) {
+        # Assume if the lib path is there that it is correctly populted,
+        # which may mean it has nothing at all (if there are actually
+        # no dependencies)
+        if ( ! ( test-path $libPath ) ) {
             $installScriptPath = join-path (get-sourcerootdirectory) 'build/install.ps1'
             throw "No .dll files found under directory '$libPath' or the directory does not exist -- please run '$installScriptPath' to install these dependencies and try again"
         }
@@ -237,12 +236,6 @@ function build-module {
         $libSource = join-path $module.moduleBase lib
         $libTarget = join-path $targetDirectory lib
         copy-item -r $libSource $libTarget
-
-        $copiedLibs = get-childitem -r $libTarget -filter *.dll
-
-        if ($copiedLibs.length -lt 1) {
-            throw "No libraries copied from '$libSource' to '$libTarget'"
-        }
     }
 
     $targetDirectory
@@ -278,7 +271,11 @@ function build-nugetpackage {
     write-host "Building nuget package from manifest '$nugetManifest'..."
     write-host "Output directory = '$packageOutputDirectory'..."
 
-    $nugetbuildcmd = "& nuget pack '$nugetManifest' -outputdirectory '$packageOutputdirectory' -nopackageanalysis -version '$($module.version)'"
+    $nugetbuildcmd = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
+        "& nuget pack '$nugetManifest' -outputdirectory '$packageOutputdirectory' -nopackageanalysis -version '$($module.version)'"
+    } else {
+        return ''
+    }
     write-host "Executing command: ", $nugetbuildcmd
 
     iex $nugetbuildcmd
@@ -336,6 +333,7 @@ function publish-modulebuild {
     }
 
     $moduleRootDirectory = split-path -parent (split-path -parent $moduleSourceDirectory)
+
     $targetModuleManifestPath = $manifestPaths[0].fullname
 
     Generate-ReferenceModules $targetModuleManifestPath $moduleRootDirectory
@@ -354,7 +352,6 @@ function publish-modulebuild {
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
-
     # Note that the path must be augmented rather than replaced
     # in order for modules related to package management to be loade
     $commandScript = [Scriptblock]::Create("si env:PSModulePath `"`$env:PSModulePath;$modulePath`";$command")
@@ -386,6 +383,10 @@ function Get-ModuleMetadataFromManifest ( $manifestPath ) {
 # to enable the module to be publishable later.
 function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
     $moduleData = Get-ModuleMetadataFromManifest $manifestPath
+
+    if ( ! $moduleData['NestedModules'] ) {
+        return @()
+    }
 
     # Only create the versioned modules -- publish-module
     # and test-modulemanifest can handled unversioned nested modules
@@ -627,8 +628,93 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
 }
 
 function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
+    write-verbose "Identifying ./lib files for module from '$nuspecFile'"
     $packageData = [xml] (get-content $nuspecFile | out-string)
-    $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
-        $_.replace("`\", '/')
+    if ( $packageData.package ) {
+        $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
+            $_.replace("`\", '/')
+        }
+    } else {
+        @()
     }
 }
+
+function get-AssemblyPackagesListFilePath {
+    join-path (get-sourcerootdirectory) packages.config
+}
+
+function get-AssemblyPackagesFromFile($assemblyListFilePath) {
+    write-verbose "Getting assemblies from '$assemblyListFilePath'"
+
+    if ( ! ( test-path $assemblyListFilePath ) ) {
+        throw "Assembly list file '$assemblyListFilePath' not found"
+    }
+
+    $packageData = [Xml] (get-content $assemblyListFilePath)
+
+    # Should throw exception if a node does not exist, i.e.
+    # if the schema is invalid
+    if ( $packageData.packages ) {
+        $packageData.packages.package
+    } else {
+        @()
+    }
+}
+
+function get-AssemblyDependencies {
+    $packageListPath = get-AssemblyPackagesListFilePath
+    get-AssemblyPackagesFromFile $packageListPath
+}
+
+function New-DotNetCoreProjFromPackagesConfig($packageConfigPath, $destinationFolder) {
+    $csProjName = 'DotNetCore-PackagesConfig.csproj'
+    $packagesConfigCsProj = join-path $destinationFolder $csProjName
+
+    if ( ! (test-path $packagesConfigCsProj) ) {
+        write-verbose "File '$packagesConfigCsProj' does not exist"
+        $packageReferenceTemplate = "`n" + '    <PackageReference Include="{0}" Version="{1}" />'
+        $csprojtemplate = @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>{0}
+  </ItemGroup>
+</Project>
+'@
+
+        $assemblies = get-assemblydependencies $packageConfigPath
+
+
+        $packageReferences = ''
+        $assemblies | foreach {
+            $packageReferences  += ($packageReferenceTemplate -f $_.id, $_.version)
+        }
+
+        $csProjectContent = $csProjTemplate -f $packageReferences
+
+        set-content -path $packagesConfigCsProj -value $csProjectContent
+    } else {
+        write-verbose "Config file '$packagesConfigCsPRoj' does not exist"
+    }
+
+    $packagesConfigCsProj
+}
+
+function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
+    if ( $PSVersionTable.PSEdition -ne 'Desktop' ) {
+        $assemblies = get-assemblydependencies $packageConfigPath
+
+        $assemblies | foreach {
+            $normalizedName = join-path $libraryRoot ($_.id, $_.version -join '.')
+            if ( ! ( test-path $normalizedName ) ) {
+                $alternateName = join-path $libraryRoot (join-path $_.id $_.version)
+                if ( ! ( test-path $alternateName ) ) {
+                    throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedName' or '$alternatName'"
+                }
+                move-item  $alternateName $normalizedName
+            }
+        }
+    }
+}
+

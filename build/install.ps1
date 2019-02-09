@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[cmdletbinding()]
 param([switch] $clean)
 
 . "$psscriptroot/common-build-functions.ps1"
@@ -42,7 +43,17 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
-    $restoreCommand = "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
+    ls ./lib | out-host
+    if ( ! ( test-path $packagesConfigFile ) ) {
+        return
+    }
+
+    $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
+        "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
+    } else {
+        $psCorePackagesCSProj = New-DotNetCoreProjFromPackagesConfig $packagesConfigFile $packagesDestination
+        "dotnet restore '$psCorePackagesCSProj' --packages '$packagesDestination' /verbosity:normal --no-cache"
+    }
     write-host "Executing command: $restoreCommand"
     iex $restoreCommand | out-host
 
@@ -52,7 +63,12 @@ function InstallDependencies($clean) {
         throw "More than one nuspec file found in directory '$appRoot'"
     }
 
+    Normalize-LibraryDirectory $packagesConfigFile $packagesDestination
+
     $allowedLibraryDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile
+
+    # Remove nupkg files
+    get-childitem -r $packagesDestination -filter '*.nupkg' | remove-item -erroraction ignore
 
     # Remove everything that is not listed as an allowed library directory in the nuspec
     $allowedFiles = $allowedLibraryDirectories | foreach {
@@ -62,7 +78,7 @@ function InstallDependencies($clean) {
 
     $allObjects = get-childitem ./lib -r
     $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
-        $allowedFiles.fullname -notcontains $_.fullname
+        ! $allowedFiles -or $allowedFiles.FullName -notcontains $_.FullName
     }
 
     $filesToRemove | remove-item
@@ -71,7 +87,6 @@ function InstallDependencies($clean) {
         $children = get-childitem -r $_.fullname | where PSISContainer -eq $false
         $null -eq $children
     }
-
     $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | remove-item -r -force } }
 }
 
