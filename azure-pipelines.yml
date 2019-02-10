@@ -6,6 +6,10 @@
 trigger:
   - master
 
+variables:
+  TEST_OUTPUT_DIRECTORY: './test/results'
+  TEST_OUTPUT_FILE: pester-testresults.xml
+
 jobs:
 - job: BuildWithTests
   displayName: 'Build and test PowerShell module'
@@ -75,11 +79,22 @@ jobs:
     displayName: 'Publish module for local testing'
     inputs:
       targetType: inline
-      script: './build/configure-tools.ps1; ./build/publish-moduletodev.ps1'
+      script: './build/configure-tools.ps1; ./build/publish-moduletodev.ps1 -verbose'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Create test output directory'
+    inputs:
+      targetType: inline
+      script: '. ./build/common-build-functions.ps1;psmkdir -name $env:TEST_OUTPUT_DIRECTORY'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Run tests'
     inputs:
       targetType: inline
-      script: "./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester' -Wait -ReuseConsole"
+      script: si env:TEST_OUTPUT_PATH "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)"; ./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester -OutputFile $env:TEST_OUTPUT_PATH -OutputFormat NUnitXml' -Wait -ReuseConsole
       pwsh: $(USE_POWERSHELL_CORE)
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: NUnit
+      testResultsFiles: $(TEST_OUTPUT_DIRECTORY)/$(TEST_OUTPUT_FILE)
+      failTaskOnFailedTests: true

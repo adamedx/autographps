@@ -13,7 +13,6 @@
 # limitations under the License.
 
 set-strictmode -version 2
-$erroractionpreference = 'stop'
 
 $moduleOutputSubdirectory = 'modules'
 
@@ -137,6 +136,11 @@ function Clean-BuildDirectories {
     $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
         join-path $psscriptroot '../lib' | remove-item -r -force
+    }
+
+    $testResultsPath = join-path $psscriptroot '../test/results'
+    if (test-path $testResultsPath) {
+        remove-item -r -force $testResultsPath
     }
 
     $outputDirectory = Get-OutputDirectory
@@ -410,7 +414,17 @@ GUID = '$($_.Guid)'
 }
 
 function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
-    Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
+    $oldModulePath = gi env:PSModulePath
+
+    try {
+        si env:PSModulePath "$modulePath;$env:PSModulePath"
+        write-verbose "Current Module path is '$($env:PSModulePath)'"
+        Test-ModuleManifest $manifestPath -verbose
+    } catch {
+        throw
+    } finally {
+        si env:PSModulePath $oldModulePath
+    }
 }
 
 function Get-DefaultPSModuleSourceName {
