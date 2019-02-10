@@ -139,6 +139,11 @@ function Clean-BuildDirectories {
         join-path $psscriptroot '../lib' | remove-item -r -force
     }
 
+    $testResultsPath = join-path $psscriptroot '../test/results'
+    if (test-path $testResultsPath) {
+        remove-item -r -force $testResultsPath
+    }
+
     $outputDirectory = Get-OutputDirectory
 
     if (test-path $outputDirectory) {
@@ -410,7 +415,42 @@ GUID = '$($_.Guid)'
 }
 
 function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
-    Invoke-CommandWithModulePath "test-modulemanifest '$manifestPath' -verbose" $modulePath
+    # This method returns the module manifest in a format that is
+    # semi-compatible with the output of Test-ModuleManifest.
+    # It is preferable to use Test-ModuleManifest here, but it
+    # gets tripped up by module paths for dependencies -- to avoid
+    # this, we directly read the manifest and do minimal validation --
+    # mostly we just want the fields of the file. This function *does*
+    # validate the presence of the files -- if they are not present,
+    # the method will throw an exception.
+
+    # Read the module file -- it's just a hash table :)
+    $moduleHash = get-content  $manifestPath | out-string | iex
+
+    # Add renamed versions of some fields of the table for compatibility
+    # with the names of fields returned by Test-ModuleManifest
+    $moduleHash['ModuleBase'] = split-path -parent $manifestPath
+    $moduleHash['Name'] = (gi $manifestPath).basename
+    $moduleHash['Version'] = $moduleHash.ModuleVersion
+
+    # File names expressd directly in the manifest are relative path names --
+    # retrieve them as fill names the way they are returned by Test-ModuleManifest and reassign
+    $moduleFilesValidatedFullPaths = $moduleHash['FileList'] | foreach { (gi $_).fullname }
+    $moduleHash['FileList'] = $moduleFilesValidatedFullPaths
+
+    # Nested modules need to have the fields 'Version' and 'Name' instead of
+    # 'ModuleVersion' and 'ModuleName'
+    $nestedModules = $moduleHash['NestedModules']
+
+    if ( $nestedModules ) {
+        $normalizedNestedModules = $moduleHash['NestedModules'] | foreach { $_['Version'] = $_.ModuleVersion; $_['Name'] = $_.ModuleName; $_ }
+        $moduleHash['NestedModules'] = $normalizedNestedModules
+    } else {
+        $moduleHash['NestedModules'] = @()
+    }
+
+    # Return it as a PSCustomObject like Test-ModuleManifest
+    [PSCustomObject] $moduleHash
 }
 
 function Get-DefaultPSModuleSourceName {
@@ -470,8 +510,6 @@ function publish-modulelocal {
     $moduleName = Get-ModuleName
     $moduleManifestPath = Get-ModuleManifestPath
     $moduleOutputRootDirectory = Get-ModuleOutputRootDirectory
-
-    Generate-ReferenceModules $moduleManifestPath $moduleOutputRootDirectory
 
     $module = Get-ModuleFromManifest $moduleManifestPath $moduleOutputRootDirectory
     $modulePath = join-path $moduleOutputRootDirectory $moduleName
