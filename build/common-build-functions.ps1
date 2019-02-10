@@ -440,8 +440,14 @@ function Test-ModuleManifestWithModulePath( $manifestPath, $modulePath ) {
 
     # Nested modules need to have the fields 'Version' and 'Name' instead of
     # 'ModuleVersion' and 'ModuleName'
-    $nestedModules = $moduleHash['NestedModules'] | foreach { $_['Version'] = $_.ModuleVersion; $_['Name'] = $_.ModuleName; $_ }
-    $moduleHash['NestedModules'] = $nestedModules
+    $nestedModules = $moduleHash['NestedModules']
+
+    if ( $nestedModules ) {
+        $normalizedNestedModules = $moduleHash['NestedModules'] | foreach { $_['Version'] = $_.ModuleVersion; $_['Name'] = $_.ModuleName; $_ }
+        $moduleHash['NestedModules'] = $normalizedNestedModules
+    } else {
+        $moduleHash['NestedModules'] = @()
+    }
 
     # Return it as a PSCustomObject like Test-ModuleManifest
     [PSCustomObject] $moduleHash
@@ -560,8 +566,6 @@ function publish-modulelocal {
     }
 
     write-verbose "Found $nestedModuleCount module dependencies from module manifest"
-
-    $nestedModules | out-host
 
     $temporaryPackageSource = get-temporarypackagerepository $module.Name $dependencySource
 
