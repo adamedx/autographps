@@ -67,7 +67,7 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.9.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.10.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='ScriptClass';ModuleVersion='0.16.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -174,14 +174,17 @@ PrivateData = @{
 
 ## New Features
 
+* Improvements to AutoGraphPS-SDK commands including support for returning `$value queries
 * Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
 * Azure Pipelines integration -- basic continuous integration support added.
 
 ## New dependencies
 
-None.
+AutoGraphPS-SDK 0.10.0
 
 ## Fixed defects
+
+* Fixes in AutoGraphPS-SDK for v2 auth on national clouds
 
 "@
     } # End of PSData hashtable
