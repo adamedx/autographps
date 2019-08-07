@@ -89,7 +89,6 @@ ScriptClass GraphBuilder {
             return
         }
 
-        $source = $_
         $transitions = if ( $sourceVertex.entity.navigations ) {
             $sourceVertex.entity.navigations
         } else {

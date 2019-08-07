@@ -3,6 +3,10 @@
 ## To-do items -- prioritized
 
 
+* Remove get-graphchilditem invalid params
+* fix get-childitem logic with containers vs non-containers
+* change mode output to reflect containers
+* clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
 * Fix qualified / vs. unqualified names in metadata classes

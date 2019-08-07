@@ -44,12 +44,12 @@ Describe "Autographps application" {
                 'Get-GraphType',
                 'get-graphuri')
 
-            $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
             $expectedFunctions | foreach {
-                if ( $manifest.CmdletsToExport -contains $_ ) {
+                if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }

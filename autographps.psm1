@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @(
+. (join-path $psscriptroot src/graph.ps1)
+
+$functions = @(
+    'Find-GraphPermissions',
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphLocation',
@@ -26,4 +29,6 @@ $cmdlets = @(
     'Update-GraphMetadata'
 )
 
-export-modulemember -cmdlet $cmdlets
+$aliases = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
+
+export-modulemember -function $functions -alias $aliases

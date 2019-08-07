@@ -24,7 +24,7 @@ ScriptClass GraphManager {
             # Start an asynchronous load of the metadata unless this is disabled
             # This is only meant for user interactive sessions and should be
             # disabled if this module is used in background jobs
-            if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction silentlycontinue) ) {
+            if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction ignore) ) {
                 write-verbose "Asynchronously updating Graph metadata"
                 UpdateGraph ($::.GraphContext |=> GetCurrent)
             } else {

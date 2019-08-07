@@ -15,7 +15,7 @@
 function __GetGraphAccessDeniedExceptionMessage( [System.Net.WebException] $webException ) {
     $response = $webException.Response
     $graphUri = $response.ResponseUri.ToString()
-    $statusCode = if ( $response | gm statuscode -erroraction silentlycontinue ) {
+    $statusCode = if ( $response | gm statuscode -erroraction ignore ) {
         $response.statuscode
     }
 

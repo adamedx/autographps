@@ -28,8 +28,10 @@ ScriptClass ContextHelper {
             $userId = $userInfo.userId
             $scopes = $userInfo.scopes
 
+            # Seems like ScriptClass constants have a strange behavior when used as a typename here.
+            # To work around this, use ToString()
             [PSCustomObject]@{
-                PSTypeName = $this.ContextDisplayTypeName
+                PSTypeName = ($this.ContextDisplayTypeName.tostring())
                 Name = $context.name
                 Version = $context.version
                 Endpoint = ($context |=> GetEndpoint)
@@ -49,7 +51,7 @@ ScriptClass ContextHelper {
         }
 
         function __RegisterContextDisplayType {
-            remove-typedata -typename $this.ContextDisplayTypeName -erroraction silentlycontinue
+            remove-typedata -typename $this.ContextDisplayTypeName -erroraction ignore
 
             $coreProperties = @('Metadata', 'Endpoint', 'Version', 'Name')
 

@@ -19,8 +19,9 @@ Describe "The Test-Graph cmdlet" {
 
     $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
 
-    Mock Invoke-WebRequest {
-        $result = $graphPing200Response | convertfrom-json
+
+    Add-MockInScriptClassScope RESTRequest Invoke-WebRequest -MockContext $graphPing200Response {
+        $result = $MockContext | convertfrom-json
         $result.headers = @{}
         $result
     }
@@ -31,10 +32,10 @@ Describe "The Test-Graph cmdlet" {
         }
 
         It "should succeed when given a cloud parameter" {
-            { Test-Graph -cloud ([GraphCloud]::Public) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::ChinaCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::GermanyCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::USGovernmentCloud) | out-null } | Should Not Throw
+            { Test-Graph -cloud Public | out-null } | Should Not Throw
+            { Test-Graph -cloud ChinaCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud GermanyCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud USGovernmentCloud | out-null } | Should Not Throw
         }
 
         It "should succeed when given a custom graph URI parameter" {

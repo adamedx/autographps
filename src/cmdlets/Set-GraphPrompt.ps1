@@ -26,7 +26,7 @@ $GraphPromptColorPreference = $null
 
 function __GetGraphDefaultPrompt {
     {
-        $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction silentlycontinue
+        $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction ignore
         $userToken = if ( $graph ) { $graph.details.connection.identity.token }
 
         $userOutput = $null
@@ -35,7 +35,7 @@ function __GetGraphDefaultPrompt {
 
         if ( $graph ) {
             $identity = $graph.details.connection.identity
-            $identityOutput = if ( $graph.details.connection.identity.app.authtype -eq ([GraphAppAuthType]::Delegated) ) {
+            $identityOutput = if ( $graph.details.connection.identity.app.authtype -eq 'Delegated' ) {
                 if ($userToken) {
                     $graph.userId
                 }

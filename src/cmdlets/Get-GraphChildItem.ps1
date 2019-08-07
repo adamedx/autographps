@@ -14,6 +14,7 @@
 
 . (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
+. (import-script ../common/GraphAccessDeniedException)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -59,7 +60,8 @@ function Get-GraphChildItem {
         [HashTable] $Headers = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null,
@@ -67,7 +69,7 @@ function Get-GraphChildItem {
         [string] $ResultVariable = $null
     )
 
-    if ( $Version -or $Connection -or ($Cloud -ne ([GraphCloud]::Public)) ) {
+    if ( $Version -or $Connection -or ! (! $Cloud ) ) {
         throw [NotImplementedException]::new("Non-default context not yet implemented")
     }
 
@@ -166,14 +168,14 @@ function Get-GraphChildItem {
                         $propertyName = if ( $specificOutputColumn ) {
                             $outputColumnName
                         } else {
-                            if ( $result | gm $outputColumnName -erroraction silentlycontinue ) {
+                            if ( $result | g $outputColumnName -erroraction ignore ) {
                                 "_$outputColumnName"
                             } else {
                                 $outputColumnName
                             }
                         }
 
-                        $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction silentlycontinue -expandproperty $contentColumnName)
+                        $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction ignore -expandproperty $contentColumnName)
                     }
                 }
 
@@ -193,7 +195,7 @@ function Get-GraphChildItem {
             $_.exception | write-verbose
             write-warning $_.exception.message
             $lastError = get-grapherror
-            if ($lastError -and ($lastError | gm ResponseStream -erroraction silentlycontinue)) {
+            if ($lastError -and ($lastError | get-member ResponseStream -erroraction ignore)) {
                 $lastError.ResponseStream | write-warning
             }
         }
@@ -212,10 +214,10 @@ function Get-GraphChildItem {
         __AutoConfigurePrompt $context
     }
 
-    $targetResultVariable = __GetResultVariable $ResultVariable
+    $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
     $targetResultVariable.value = $results
     $results
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Permissions (new-so PermissionParameterCompleter DelegatedPermission)

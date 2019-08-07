@@ -24,8 +24,11 @@ ScriptClass LocationHelper {
 
         function ToPublicLocation( $parser, $segment ) {
             $publicSegment = $::.SegmentHelper |=> ToPublicSegment $parser $segment
+
+            # The ToString() below is actually required for the PSTypeName member to fulfill its
+            # function of type conversion
             [PSCustomObject]@{
-                PSTypeName = $this.LocationDisplayTypeName
+                PSTypeName = $this.LocationDisplayTypeName.tostring()
                 Path = $publicSegment.Path
                 Details = $publicSegment
             }
@@ -48,7 +51,7 @@ ScriptClass LocationHelper {
         }
 
         function __RegisterLocationDisplayType {
-            remove-typedata -typename $this.LocationDisplayTypeName -erroraction silentlycontinue
+            remove-typedata -typename $this.LocationDisplayTypeName -erroraction ignore
 
             $coreProperties = @('Path')
 
@@ -56,7 +59,7 @@ ScriptClass LocationHelper {
                 TypeName    = $this.LocationDisplayTypeName
                 MemberType  = 'NoteProperty'
                 MemberName  = 'PSTypeName'
-                Value       = $this.LocationDisplayTypeName
+                Value       = $this.LocationDisplayTypeName.tostring()
                 DefaultDisplayPropertySet = $coreProperties
             }
 

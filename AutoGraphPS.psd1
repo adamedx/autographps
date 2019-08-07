@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-# RootModule = ''
+RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.23.0'
+ModuleVersion = '0.24.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -57,7 +57,7 @@ PowerShellVersion = '5.1'
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('./src/graph.ps1')
+# ScriptsToProcess = @('')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -67,28 +67,28 @@ ScriptsToProcess = @('./src/graph.ps1')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.10.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='ScriptClass';ModuleVersion='0.16.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.11.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='ScriptClass';ModuleVersion='0.20.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @()
+FunctionsToExport = @(
+    'Find-GraphPermissions',
+    'Get-Graph',
+    'Get-GraphChildItem',
+    'Get-GraphLocation',
+    'Get-GraphType',
+    'Get-GraphUri',
+    'New-Graph',
+    'Remove-Graph',
+    'Set-GraphLocation',
+    'Set-GraphPrompt',
+    'Show-GraphHelp',
+    'Update-GraphMetadata'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport = @(
-        'Find-GraphPermissions',
-        'Get-Graph',
-        'Get-GraphChildItem',
-        'Get-GraphLocation',
-        'Get-GraphType',
-        'Get-GraphUri',
-        'New-Graph',
-        'Remove-Graph',
-        'Set-GraphLocation',
-        'Set-GraphPrompt',
-        'Show-GraphHelp',
-        'Update-GraphMetadata'
-    )
+CmdletsToExport = @()
 
 # Variables to export from this module
     VariablesToExport = @(
@@ -133,6 +133,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\common\PreferenceHelper.ps1',
+        '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\metadata\metadata.ps1',
         '.\src\metadata\Entity.ps1',
         '.\src\metadata\EntityEdge.ps1',
@@ -170,21 +171,17 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS 0.23.0 Release Notes
+# AutoGraphPS 0.24.0 Release Notes
 
 ## New Features
 
-* Improvements to AutoGraphPS-SDK commands including support for returning `$value queries
-* Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
-* Azure Pipelines integration -- basic continuous integration support added.
-
 ## New dependencies
 
-AutoGraphPS-SDK 0.10.0
+AutoGraphPS-SDK 0.11.0
+ScriptClass 0.17.0
 
 ## Fixed defects
 
-* Fixes in AutoGraphPS-SDK for v2 auth on national clouds
 
 "@
     } # End of PSData hashtable

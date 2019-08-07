@@ -24,7 +24,8 @@ enum MetadataStatus {
     Unknown
 }
 
-ScriptClass GraphCache {
+ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning } {
+    param($metadataWarningBlock)
     $graphVersionsPending = @{}
     $graphVersions = @{}
 
@@ -89,7 +90,7 @@ ScriptClass GraphCache {
         $jobException = $null
         $jobResult = try {
             if ( (get-job $submittedVersion.job.id).State -eq 'Running' ) {
-                __Preference__ShowNotReadyMetadataWarning
+                . $metadataWarningBlock
             }
             receive-job -wait $submittedVersion.Job -erroraction stop
         } catch {
@@ -205,10 +206,10 @@ ScriptClass GraphCache {
             $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
             write-progress -id 1 -activity $metadataactivity -status "In progress"
 
-            $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost ([GraphAuthProtocol]::Default)
+            $graphEndpoint = new-so GraphEndpoint Public MSGraph $endpoint http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
             $schema = try {
-                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction silentlycontinue -rawcontent
+                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction ignore -rawcontent
             } catch {
                 write-verbose "Invoke-GraphRequest failed to download schema"
                 write-verbose $_

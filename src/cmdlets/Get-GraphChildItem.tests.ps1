@@ -16,7 +16,7 @@
 
 Describe 'The Get-GraphChildItem cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
-    $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
+    $global:meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
 
     Context 'When making REST method calls to Graph' {
@@ -24,21 +24,28 @@ Describe 'The Get-GraphChildItem cmdlet' {
             function CreateAuthorizationHeader {}
         }
 
-        Mock-ScriptClassMethod GraphConnection GetToken {new-so MockToken}
+#        Mock-ScriptClassMethod GraphConnection GetToken {new-so MockToken;write-host -fore cyan working}
+        Mock Invoke-GraphRequest { "{$($global:meResponseDataExpected)}" | convertfrom-json } -modulename autographps
 
-        Mock Invoke-WebRequest {
+        Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
             [PSCustomObject] @{
-                RawContent = $meResponseExpected
-                RawContentLength = $meResponseExpected.length
-                Content = $meResponseExpected
+                RawContent = $MockContext
+                RawContentLength = $MockContext.length
+                Content = $MockContext
                 StatusCode = 200
                 StatusDescription = 'OK'
                 Headers = @{'Content-Type'='application/json'}
             }
+        } -MockContext @{
+            expectedUserPrincipalName = $expectedUserPrincipalName
+            meResponseDataExpected = $meResponseDataExpected
+            meResponseExpected = $meResponseExpected
         }
 
         # Need to mock this or we end up trying to parse Uris with metadata
-        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {([MetadataStatus]::NotStarted)}
+        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {
+            0 # ([MetadataStatus]::NotStarted)
+        }
 
         It 'Should return an object with the expected user principal when given the argument me' {
             $meResponse = Get-GraphChildItem me 3> $null

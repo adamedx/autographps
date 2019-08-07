@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ..\..\common\PreferenceHelper)
+
 ScriptClass SegmentHelper {
     static {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
@@ -92,8 +94,10 @@ ScriptClass SegmentHelper {
 
             $info = $this.__GetInfoField($isCollection, $segment.isDynamic, $entityClass, $false)
 
+            # Seems like ScriptClass constants have a strange behavior when used as a typename here.
+            # To work around this, use ToString()
             $result = [PSCustomObject] @{
-                PSTypeName = $this.SegmentDisplayTypeName
+                PSTypeName = ($this.SegmentDisplayTypeName.tostring())
                 ParentPath = $parentPath
                 Info = $info
                 Relation = $relationship
@@ -126,7 +130,7 @@ ScriptClass SegmentHelper {
             # Objects may actually be raw json, or even binary, depending
             # on callers specifying that they don't want objects, but the
             # raw content value from the Graph web response
-            $Id = $graphItem | select -expandproperty id -erroraction silentlycontinue
+            $Id = $graphItem | select -expandproperty id -erroraction ignore
 
             $itemId = if ( $Id ) {
                 $Id
@@ -134,8 +138,10 @@ ScriptClass SegmentHelper {
                 '[{0}]' -f $graphItem.Gettype().name
             }
 
+            # Using ToString() here to work around a strange behavior where
+            # PSTypeName does not cause type conversion
             [PSCustomObject] @{
-                PSTypeName = $parentPublicSegment.pstypename
+                PSTypeName = $parentPublicSegment.pstypename.tostring()
                 ParentPath = $parentPublicSegment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
                 Relation = 'Direct'
@@ -215,7 +221,7 @@ ScriptClass SegmentHelper {
         }
 
         function __RegisterSegmentDisplayType {
-            remove-typedata -typename $this.SegmentDisplayTypeName -erroraction silentlycontinue
+            remove-typedata -typename $this.SegmentDisplayTypeName -erroraction ignore
 
             $coreProperties = @('Info', 'Type', 'Preview', 'Id')
 
