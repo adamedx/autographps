@@ -29,6 +29,8 @@ function Find-GraphPermissions {
         $Connection
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $commandContext = new-so CommandContext $Connection $null $null $null
 
     if ( $ExactMatch.IsPresent ) {

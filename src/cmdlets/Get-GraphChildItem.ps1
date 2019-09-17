@@ -69,6 +69,8 @@ function Get-GraphChildItem {
         [string] $ResultVariable = $null
     )
 
+    Enable-ScriptClassVerbosePreference
+
     if ( $Version -or $Connection -or ! (! $Cloud ) ) {
         throw [NotImplementedException]::new("Non-default context not yet implemented")
     }

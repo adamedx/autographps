@@ -29,6 +29,8 @@ function Update-GraphMetadata {
         [switch] $Wait
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $metadata = if ( $Path ) {
         [xml] (get-content $Path | out-string)
     }

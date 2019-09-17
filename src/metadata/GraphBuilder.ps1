@@ -205,7 +205,7 @@ ScriptClass GraphBuilder {
                     }
                     if ( $unqualifiedName ) {
                         try {
-                            __AddEntityTypeVertex $graph $unqaulifiedName
+                            __AddEntityTypeVertex $graph $unqualifiedName
                             $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
                         } catch {
                             # Possibly an enumeration type, this will just be considered a scalar

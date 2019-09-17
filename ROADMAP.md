@@ -3,6 +3,7 @@
 ## To-do items -- prioritized
 
 
+* Fix verbose output for scriptclass
 * Remove get-graphchilditem invalid params
 * fix get-childitem logic with containers vs non-containers
 * change mode output to reflect containers

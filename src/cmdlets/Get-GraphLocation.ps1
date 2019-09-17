@@ -18,6 +18,9 @@
 function Get-GraphLocation {
     [cmdletbinding()]
     param()
+
+    Enable-ScriptClassVerbosePreference
+
     $context = $::.GraphContext |=> GetCurrent
 
     if ( ! $context ) {

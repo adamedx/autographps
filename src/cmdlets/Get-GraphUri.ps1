@@ -59,6 +59,8 @@ function Get-GraphUri {
         [PSCustomObject[]]$GraphItems
     )
 
+    Enable-ScriptClassVerbosePreference
+
     # This is not very honest -- we're using valuefrompipeline, but
     # only to signal the presence of input -- we use $input because
     # unless you use BEGIN, END, PROCESS blocks, you can't actually

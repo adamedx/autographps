@@ -103,6 +103,9 @@ function Set-GraphPrompt {
         [parameter(parametersetname='Disable')]
         [switch] $Disabled
     )
+
+    Enable-ScriptClassVerbosePreference
+
     $originalPromptValue = try {
         $script:__GraphOriginalPrompt
     } catch {

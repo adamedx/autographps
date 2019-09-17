@@ -23,6 +23,8 @@ function Get-GraphType {
         [Switch] $ComplexType
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $context = if ( $Graph ) {
         $::.Logicalgraphmanager.Get().contexts[$Graph].Context
     } else {
