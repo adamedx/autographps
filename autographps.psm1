@@ -18,6 +18,7 @@ $functions = @(
     'Find-GraphPermissions',
     'Get-Graph',
     'Get-GraphChildItem',
+    'Get-GraphItemWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
     'Get-GraphUri',
@@ -29,6 +30,6 @@ $functions = @(
     'Update-GraphMetadata'
 )
 
-$aliases = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
+$aliases = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 
 export-modulemember -function $functions -alias $aliases

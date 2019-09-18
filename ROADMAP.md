@@ -3,8 +3,6 @@
 ## To-do items -- prioritized
 
 
-* Fix verbose output for scriptclass
-* Remove get-graphchilditem invalid params
 * fix get-childitem logic with containers vs non-containers
 * change mode output to reflect containers
 * clean up error stream
@@ -254,6 +252,8 @@
   * Use expressions like  ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action).parameter |where name -eq bindParameter
   * Better: $bindings = ( ($::.GraphManager.cache.graphversions.values[0].schema[0].edmx.dataservices.schema.action)) | foreach { $method = $_.name; $_.parameter | where name -eq bindingParameter | foreach {[PSCustomObject]@{Type=$_.type;Method=$method}}}
 * Add app creation, enumeration, update
+* Fix verbose output for scriptclass
+* Remove get-graphchilditem invalid params
 
 ### Postponed
 
@@ -728,3 +728,35 @@ ggi /me/messages -first 10 -orderby Received -descending
 ggi /me/messages -first 10 -orderby Received -descending
 ggi /me/messages -first 10 -orderby @{Received=$true;Sender=$false}
 ```
+
+### Get-GraphChildItem logic
+The goal is for it to "feel" like ls / dir commands for the file system.
+
+If we look at ls, it has the following behavior:
+
+1. With no arguments, it has the same behavior as an argument of '.', the current directory
+2. With an argument, the following happens:
+   a. If the argument is has content rather than being a container, it simply returns information about that container
+   b. If the argument is a container, it enumerates the current directory
+
+We'd like to imitate that with `Get-GraphChildItem`, but there is a challenge:
+
+> For Graph items, unlike file system items, the properties of possessing content and being containers are not mutually exclusive
+
+That means we cannot differentiate between 2a and 2b above.
+
+Perhaps, though, we don't have to -- we can apply some rule, e.g. a precedence, over what behavior to take for cases where Graph items fall into both categories. We could evaluate such approaches by how useful, deterministic, and intuitive they feel to users.
+
+Here is a proposal -- here `gls` refers to `Get-GraphChildItem`:
+
+1. We define "container" as EntitySet, or NavigationProperty.
+2. When `gls` receives no argument, it enumerates all children of the current object and does not include the current object
+   * This allows `cd`/ `ls` style browsing
+3. When `gls` receives an argument and the argument is a container, the argument's children are returned and not the current object
+   *
+4. When `gls` receives an argument and the argument is not an entity, only the entity is returned.
+   * This allows "selecting" a specific item
+5. The switch `ItemAndChild` causes the argument and the children to be returned.
+6. Another alias / function can proxy and always give the `ItemAndChild` behavior
+7. We could make another command that `gls` aliases -- that way `Get-GraphChildItem` can retain the consistent container semantics expected in the `Get*-ChildItem` cmdlets.
+

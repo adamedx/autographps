@@ -208,12 +208,14 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
 
             $graphEndpoint = new-so GraphEndpoint Public MSGraph $endpoint http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
+
             $schema = try {
-                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction ignore -rawcontent
+                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
             } catch {
                 write-verbose "Invoke-GraphRequest failed to download schema"
                 write-verbose $_
                 write-verbose $_.exception
+                throw
             }
 
             write-progress -id 1 -activity $metadataactivity -status "Complete" -completed

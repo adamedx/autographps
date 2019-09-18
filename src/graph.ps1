@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This breaks without the import line below, but I don't think it should.
-# It appears to be related to the scriptclass module and whether it has
-# already been loaded as a nested module of a module being imported here
-# import-module AutoGraphPS-SDK
+set-strictmode -version 5
 
 . (import-script cmdlets)
 . (import-script aliases)

@@ -35,6 +35,7 @@ Describe "Autographps application" {
                 'update-graphmetadata',
                 'Get-Graph',
                 'Get-GraphChildItem',
+                'Get-GraphItemWithMetadata',
                 'Get-GraphLocation',
                 'New-Graph',
                 'Remove-Graph',

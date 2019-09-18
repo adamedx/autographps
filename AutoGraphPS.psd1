@@ -76,6 +76,7 @@ FunctionsToExport = @(
     'Find-GraphPermissions',
     'Get-Graph',
     'Get-GraphChildItem',
+    'Get-GraphItemWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
     'Get-GraphUri',
@@ -98,7 +99,7 @@ CmdletsToExport = @()
     )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
+AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -117,6 +118,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'gls', 'gwd')
         '.\src\cmdlets\Find-GraphPermissions.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
+        '.\src\cmdlets\Get-GraphItemWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
