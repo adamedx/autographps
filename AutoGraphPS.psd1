@@ -67,8 +67,8 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.11.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='ScriptClass';ModuleVersion='0.20.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.11.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -179,8 +179,8 @@ PrivateData = @{
 
 ## New dependencies
 
-AutoGraphPS-SDK 0.11.0
-ScriptClass 0.17.0
+AutoGraphPS-SDK 0.11.1
+ScriptClass 0.20.1
 
 ## Fixed defects
 
