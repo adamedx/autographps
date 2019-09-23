@@ -17,7 +17,7 @@ $manifestLocation   = Join-Path $here '..\..\autographps.psd1'
 
 Describe "The Test-Graph cmdlet" {
 
-    $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
+    $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\TestAssets\GraphPing200.json"
 
 
     Add-MockInScriptClassScope RESTRequest Invoke-WebRequest -MockContext $graphPing200Response {

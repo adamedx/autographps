@@ -833,18 +833,40 @@ function InitDirectTestRun {
 
 function Get-ModulePSMPath($moduleName) {
     $moduleParent = Get-DevModuleDirectory
-    $moduleDir = join-path $moduleParent $moduleName
-    if ( ! ( test-path $moduleDir ) ) {
-        throw "Cannot load psm file for module '$moduleName' because path '$moduleDir' does not exist"
+    # Rather than use test-path which is subject to case-sensitive comparisons on Linux,
+    # read the file names and do a normal PowerShell case-insensitive compare (i.e.
+    # use '-eq' rather than 'ceq' on strings) so we can find the module name regardless
+    # of how it is cased. This is ok because it is not possible to have two modules with
+    # the same case-insensitive name but different case-insensitive name in module repo --
+    # module names must be unique from a case-insensitive standpoint.
+    $moduleDir = get-childItem $moduleParent | where name -eq $moduleName
+    if ( ! $moduleDir ) {
+        write-verbose "Cannot find a directory for '$moduleName' under '$moduleParent'"
+        write-verbose "***Begin listing contents of directory '$moduleParent'"
+        (get-childitem $moduleParent) | write-verbose
+        write-verbose '***End listing contents'
+        throw "Cannot load psm file for module '$moduleName' because path '$moduleName' does not exist under directory '$moduleParent'"
     }
+
+    $moduleDirPath = $moduleDir.fullname
+
+    write-verbose "Found '$moduleName' directory at '$moduleDirPath'"
 
     $psmFileName = $moduleName + '.psm1'
 
-    $psmFiles = get-childitem -r $moduleDir -filter $psmFileName
+    $psmFiles = get-childitem -r $moduleDirPath -filter $psmFileName
 
     if ( ! $psmFiles ) {
-        throw "Cannot find file '$psmFileName' under module directory '$moduleDir'"
+        throw "Cannot find file '$psmFileName' under module directory '$moduleDirPath'"
     }
 
-    $psmFiles[0].fullname
+    # Now that we have found the module via a query of the file system,
+    # we can get the name according to what the query returned from the
+    # the file system -- now callers can safely access the file on either
+    # Linux or Windows because the case will match the file system.
+    $targetPsmFile = $psmFiles[0].fullname
+
+    write-verbose "Found psm1 file for module '$moduleName' at '$targetPsmFile'"
+
+    $targetPsmFile
 }

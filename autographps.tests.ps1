@@ -15,7 +15,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Autographps application" {
-    $manifestLocation = Join-Path $here 'autographps.psd1'
+    $manifestLocation = Join-Path $here 'AutoGraphPS.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
