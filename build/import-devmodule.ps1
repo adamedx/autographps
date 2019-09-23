@@ -69,7 +69,11 @@ $scriptBlock = @"
         # Import the dev module
         write-verbose "Using updated module path to import module '$moduleName': '`$(`$env:PSModulePath)'"
         write-verbose "Will import module directly with module manifest path '$moduleManifestPath'"
-        import-module '$moduleManifestPath' -force -verbose
+        `$moduleInfo = import-module '$moduleName' -force -verbose
+        `$moduleExpectedParent = split-path -parent `$moduleManifestPath
+        if ( `$moduleInfo.moduleBase -ne `$moduleExpctedParent ) {
+            throw "Module loaded from '`$(`$moduleInfo.modulebase))', expected location to be '`$moduleExpectedParent'"
+        }
 
     } finally {
 
