@@ -604,13 +604,15 @@ function publish-modulelocal {
 
         # Also download its package file to the ps repo location so that the directory can be used when
         # installing the package from the ps repo a repository.
-        $savedPackage = save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation -erroraction silentlycontinue
+        $savedPackages = save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation -erroraction silentlycontinue
         if ( ! $? ) {
             write-verbose "First package save attempted failed, retrying..."
             # Sometimes save-package fails the first time, so try it again, and then it succeeds.
             # Don't ask.
-            $savedPackage = save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation | out-null
+            $savedPackages = save-package -name $nestedModuleName -requiredversion $nestedModuleVersion -source $temporaryPackageSource -path $PsRepoLocation
         }
+
+        $savedPackage = $savedPackages | where name -eq $nestedModuleName
 
         $savedPackageFullName = "$($savedPackage.name).$($savedPackage.version).nupkg"
         $targetPackageFullName = "$nestedModuleName.$($savedPackage.version).nupkg"
@@ -790,9 +792,7 @@ function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
             $libraryDirectories = get-childitem $libraryRoot
             $normalizedName = ($_.id, $_.version -join '.')
             $normalizedPathActualCase = $libraryDirectories | where name -eq $normalizedName | select -expandproperty fullname
-            write-host -fore cyan libsat, $libraryRoot
-            write-host -fore cyan "**** try1: $normalizedName = '$normalizedPathActualCase'"
-            ls $libraryRoot | out-host
+
             if ( ! $normalizedPathActualCase ) {
                 $librarySubdir = $libraryDirectories | where name -eq $_.id
                 $alternatePathActualCase = if ( $librarySubDir ) {
@@ -804,7 +804,6 @@ function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
                     test-path $alternatePathActualCase
                 }
 
-                write-host -fore cyan "**** try2: '$alternatePathActualCase'"
                 if ( ! $alternatePathExists ) {
                     throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedPathActualCase' or '$alternatePathActualCase'"
                 }
