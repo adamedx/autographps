@@ -43,7 +43,7 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
-    ls ./lib | out-host
+
     if ( ! ( test-path $packagesConfigFile ) ) {
         return
     }
@@ -72,7 +72,16 @@ function InstallDependencies($clean) {
 
     # Remove everything that is not listed as an allowed library directory in the nuspec
     $allowedFiles = $allowedLibraryDirectories | foreach {
-        $allowedPath = join-path '.' $_
+        # For linux, the path case may not match the case of the directory which comes
+        # from metadata -- seems that nuget converts to lower case on linux, so we try
+        # normal case and lower case get the actual file name from the file system via get-item
+        $allowedPathMixedCase = join-path . $_
+        $allowedPath = if ( test-path $allowedPathMixedCase ) {
+            $allowedPathMixedCase
+        } else {
+            $allowedPathMixedCase.tolower()
+        }
+
         get-childitem -path $allowedPath -filter *.dll
     }
 

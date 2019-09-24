@@ -60,7 +60,7 @@ ScriptClass SegmentParser {
 
         $results = if ($existingChildren) {
             $existingChildren
-        } elseif ( $segment.graphElement.PSTypename -eq 'EntityVertex' -and ($segment.graphElement |=> IsRoot) ) {
+        } elseif ( ( Test-ScriptObject $segment.graphElement EntityVertex ) -and ($segment.graphElement |=> IsRoot) ) {
             $childVertices = $this.graph |=> GetRootVertices
             $childVertices.values | foreach {
                 new-so GraphSegment $_
@@ -78,12 +78,13 @@ ScriptClass SegmentParser {
             $results
         } else {
             $results | where {
-                if ( $_.graphElement.PSTypeName -eq 'EntityVertex' ) {
+                if ( Test-ScriptObject $_.graphElement EntityVertex ) {
                     $_.graphElement.Type -in $allowedTransitions
-                } elseif ( $_.graphElement.PSTypeName -eq 'EntityEdge' ) {
+                } elseif ( Test-ScriptObject $_.graphElement EntityEdge ) {
                     $_.graphElement.transition.Type -in $allowedTransitions
                 } else {
-                    throw "Unexpected type '$($_.graphElement.PSTypeName)'"
+                    $types = $_.graphElement.psobject.typenames -join ';'
+                    throw "Expecting types EntityVertex or EntityEdge, received unexpected types '$types'"
                 }
             }
         }

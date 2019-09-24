@@ -20,6 +20,9 @@ function Remove-Graph {
         [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
         $Name
     )
+
+    Enable-ScriptClassVerbosePreference
+
     $::.LogicalGraphManager |=> Get |=> RemoveContext $Name
 }
 

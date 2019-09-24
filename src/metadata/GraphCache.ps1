@@ -24,7 +24,8 @@ enum MetadataStatus {
     Unknown
 }
 
-ScriptClass GraphCache {
+ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning } {
+    param($metadataWarningBlock)
     $graphVersionsPending = @{}
     $graphVersions = @{}
 
@@ -89,7 +90,7 @@ ScriptClass GraphCache {
         $jobException = $null
         $jobResult = try {
             if ( (get-job $submittedVersion.job.id).State -eq 'Running' ) {
-                __Preference__ShowNotReadyMetadataWarning
+                . $metadataWarningBlock
             }
             receive-job -wait $submittedVersion.Job -erroraction stop
         } catch {
@@ -174,7 +175,7 @@ ScriptClass GraphCache {
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
-        $dependencyModule = join-path $psscriptroot '..\..\autographps.psd1'
+        $dependencyModule = join-path $psscriptroot '..\..\AutoGraphPS.psd1'
         $thiscode = join-path $psscriptroot '..\graph.ps1'
 
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
@@ -205,14 +206,16 @@ ScriptClass GraphCache {
             $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
             write-progress -id 1 -activity $metadataactivity -status "In progress"
 
-            $graphEndpoint = new-so GraphEndpoint ([GraphCloud]::Public) ([GraphType]::MSGraph) $endpoint http://localhost ([GraphAuthProtocol]::Default)
+            $graphEndpoint = new-so GraphEndpoint Public MSGraph $endpoint http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
+
             $schema = try {
-                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction silentlycontinue -rawcontent
+                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
             } catch {
                 write-verbose "Invoke-GraphRequest failed to download schema"
                 write-verbose $_
                 write-verbose $_.exception
+                throw
             }
 
             write-progress -id 1 -activity $metadataactivity -status "Complete" -completed

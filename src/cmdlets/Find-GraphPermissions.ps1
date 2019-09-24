@@ -23,23 +23,26 @@ function Find-GraphPermissions {
         [parameter(parametersetname='searchspec')]
         [switch] $ExactMatch,
 
-        [GraphAppAuthType] $Type,
+        [ValidateSet('Delegated', 'AppOnly')]
+        [string] $Type,
 
         $Connection
     )
+
+    Enable-ScriptClassVerbosePreference
 
     $commandContext = new-so CommandContext $Connection $null $null $null
 
     if ( $ExactMatch.IsPresent ) {
         $foundPermissions = @()
-        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
+        if ( ! $Type -or $Type -eq 'Delegated' ) {
             $foundDelegated = $::.ScopeHelper |=> GetPermissionsByName $Permission Scope $commandContext.Connection
             if ( $foundDelegated ) {
                 $foundPermissions += $foundDelegated
             }
         }
 
-        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::AppOnly) ) {
+        if ( ! $Type -or $Type -eq 'AppOnly' ) {
             $foundAppOnly = $::.ScopeHelper |=> GetPermissionsByName $Permission Role $commandContext.Connection
             if ( $foundAppOnly ) {
                 $foundPermissions += $foundAppOnly
@@ -54,20 +57,20 @@ function Find-GraphPermissions {
             $permission.tolower()
         }
 
-        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::Delegated) ) {
+        if ( ! $Type -or $Type -eq 'Delegated' ) {
             $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
-            $delegatedPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::Delegated)
+            $delegatedPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection 'Delegated'
             $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $commandContext
             $sortedResult.values
         }
 
-        if ( $Type -eq $null -or $Type -eq ([GraphAppAuthType]::AppOnly) ) {
+        if ( ! $Type -or $Type -eq 'AppOnly' ) {
             $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
-            $appOnlyPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection ([GraphAppAuthType]::AppOnly)
+            $appOnlyPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection 'AppOnly'
             $::.PermissionHelper |=> FindPermission $appOnlyPermissions $normalizedSearchString Role $sortedResult $commandContext
             $sortedResult.values
         }
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Find-GraphPermissions Permission (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Find-GraphPermissions Permission (new-so PermissionParameterCompleter DelegatedPermission)

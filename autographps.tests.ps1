@@ -15,7 +15,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Autographps application" {
-    $manifestLocation = Join-Path $here 'autographps.psd1'
+    $manifestLocation = Join-Path $here 'AutoGraphPS.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
@@ -35,6 +35,7 @@ Describe "Autographps application" {
                 'update-graphmetadata',
                 'Get-Graph',
                 'Get-GraphChildItem',
+                'Get-GraphItemWithMetadata',
                 'Get-GraphLocation',
                 'New-Graph',
                 'Remove-Graph',
@@ -44,12 +45,12 @@ Describe "Autographps application" {
                 'Get-GraphType',
                 'get-graphuri')
 
-            $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
             $expectedFunctions | foreach {
-                if ( $manifest.CmdletsToExport -contains $_ ) {
+                if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }

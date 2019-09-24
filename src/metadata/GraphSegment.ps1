@@ -35,7 +35,7 @@ ScriptClass GraphSegment {
         }
 
         $isVertex = $true
-        $this.leadsToVertex = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
+        $this.leadsToVertex = if ( Test-ScriptObject $this.graphElement EntityEdge ) {
             $isVertex = $false
             if ( $instanceName ) {
                 throw "An instance name '$instanceName' was specified for an edge, which already has a name"
@@ -86,7 +86,7 @@ ScriptClass GraphSegment {
             throw "Vertex segment instance name may not be supplied for '$($this.graphElement.id)', segments are pre-defined"
         }
 
-        $graphElement = if ( $this.graphElement.pstypename -eq 'EntityEdge' ) {
+        $graphElement = if ( Test-ScriptObject $this.graphElement EntityEdge ) {
             if ( $this.GraphElement.sink |=> IsNull ) {
                 return $null
             } else {
@@ -115,7 +115,7 @@ ScriptClass GraphSegment {
             throw "Current segment $($this.graphElement.name) is static, so next segment must be dynamic"
         }
 
-        $isVertex = $this.graphElement.pstypename -eq 'EntityVertex'
+        $isVertex = Test-ScriptObject $this.graphElement EntityVertex
 
         $edges = if ( $isVertex ) {
             $localEdges = $graph |=> GetVertexEdges $this.graphElement
@@ -153,7 +153,7 @@ ScriptClass GraphSegment {
     }
 
     function IsRoot {
-        $this.GraphElement.PSTypeName -eq 'EntityVertex' -and ($this.GraphElement |=> IsRoot)
+        Test-ScriptObject $this.GraphElement EntityVertex -and ($this.GraphElement |=> IsRoot)
     }
 
     function ToGraphUri($graph = $null) {

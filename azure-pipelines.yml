@@ -16,12 +16,16 @@ jobs:
   strategy:
     matrix:
       PowerShellDesktop:
-        VM_IMAGE: 'vs2017-win2016'
+        VM_IMAGE: 'windows-2019'
         OS_PLATFORM: 'windows'
         USE_POWERSHELL_CORE: false
       PowerShellCoreWindows:
-        VM_IMAGE: 'vs2017-win2016'
+        VM_IMAGE: 'windows-2019'
         OS_PLATFORM: 'windows'
+        USE_POWERSHELL_CORE: true
+      PowerShellCoreUbuntu:
+        VM_IMAGE: 'ubuntu-16.04'
+        OS_PLATFORM: 'ubuntu'
         USE_POWERSHELL_CORE: true
   pool:
     vmImage: $(VM_IMAGE)
@@ -43,7 +47,7 @@ jobs:
     displayName: 'Install Pester test framework required version'
     inputs:
       targetType: inline
-      script: 'Install-Module Pester -RequiredVersion 4.6.0 -scope currentuser -force'
+      script: 'Install-Module Pester -RequiredVersion 4.8.1 -scope currentuser -force'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Get updated Pester test framework module version'
@@ -77,10 +81,11 @@ jobs:
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Publish module for local testing'
+    condition: true
     inputs:
       targetType: inline
-      script: './build/configure-tools.ps1; ./build/publish-moduletodev.ps1 -verbose'
-      pwsh: $(USE_POWERSHELL_CORE)
+      script: './build/configure-tools.ps1; ./build/publish-moduletodev.ps1' # Creates .devmodule directory
+      pwsh: false
   - task: powershell@2
     displayName: 'Create test output directory'
     inputs:
@@ -89,9 +94,17 @@ jobs:
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Run tests'
+    condition: eq(variables.OS_PLATFORM, 'windows') # Only on Windows because this hangs on Linux
     inputs:
       targetType: inline
       script: si env:TEST_OUTPUT_PATH "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)"; ./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester -OutputFile $env:TEST_OUTPUT_PATH -OutputFormat NUnitXml' -Wait -ReuseConsole
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Run tests directly'
+    condition: eq(variables.OS_PLATFORM, 'ubuntu') # Only needed on Linux to avoid hangs
+    inputs:
+      targetType: inline
+      script: './build/Init-DirectTestRun.ps1 -verbose; Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)" -OutputFormat NUnitXml'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:

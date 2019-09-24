@@ -25,6 +25,8 @@ function Get-Graph {
         [Switch] $Current
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $targetGraph = if ( $Current.IsPresent ) {
         ($::.GraphContext |=> GetCurrent).name
     } else {

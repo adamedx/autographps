@@ -27,6 +27,8 @@ function New-Graph {
         $Connection = $null
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $graphConnection = if ( $Connection ) {
         $Connection
     } else {

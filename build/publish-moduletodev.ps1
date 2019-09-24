@@ -21,8 +21,8 @@ $moduleName = Get-ModuleName
 
 $locations = publish-modulelocal $sourceDependencyRepository $targetDirectory -verbose
 
-$moduleLocation = $locations.importablemoduledirectory
-$repoLocation = $locations.modulepackagerepositorydirectory
+$moduleLocation = $locations.ImportableModuleDirectory
+$repoLocation = $locations.ModulePackageRepositoryDirectory
 
 write-host "Module '$moduleName' and its dependencies published to importable module location '$moduleLocation'."
 write-host "A nuget package for the module and packages for dependencies was published to nuget compatible directory '$repoLocation'"

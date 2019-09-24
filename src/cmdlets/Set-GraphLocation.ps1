@@ -25,6 +25,8 @@ function Set-GraphLocation {
         [switch] $NoAutoMount
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $inputUri = if ( $UriPath -is [String] ) {
         $UriPath
     } elseif ( $UriPath | gm -membertype scriptmethod '__ItemContext' ) {

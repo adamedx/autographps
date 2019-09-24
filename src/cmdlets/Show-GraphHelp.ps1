@@ -21,6 +21,8 @@ function Show-GraphHelp {
         [String] $Version = 'Default'
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $targetVersion = if ( $Version -eq 'Default' ) {
         $currentVersion = ($::.GraphContext |=> GetCurrent).version
         if ( $currentVersion -in 'v1.0', 'beta' ) {

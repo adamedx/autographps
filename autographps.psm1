@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$cmdlets = @(
+. (join-path $psscriptroot src/graph.ps1)
+
+$functions = @(
+    'Find-GraphPermissions',
     'Get-Graph',
     'Get-GraphChildItem',
+    'Get-GraphItemWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
     'Get-GraphUri',
@@ -26,4 +30,18 @@ $cmdlets = @(
     'Update-GraphMetadata'
 )
 
-export-modulemember -cmdlet $cmdlets
+$aliases = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
+
+# Note that in order to make variables from nested modules
+# accessible without the user directly invoking them,
+# we need to "forward" them by exporting them even
+# though they come from a module other than this one.
+$variables = @(
+    'GraphAutoPromptPreference'
+    'GraphMetadataPreference'
+    'GraphPromptColorPreference'
+    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
+    'LastGraphItems'               # From AutoGraphPS-=SDK
+)
+
+export-modulemember -function $functions -alias $aliases -variable $variables

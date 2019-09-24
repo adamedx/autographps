@@ -17,12 +17,12 @@ ScriptClass PermissionHelper {
         $PermissionDisplayTypeName = '__ScriptClassPermissionDisplayType'
 
         $typeMap = @{
-            Scope=([GraphAppAuthType]::Delegated)
-            Role=([GraphAppAuthType]::AppOnly)
+            Scope='Delegated'
+            Role='AppOnly'
         }
 
         function __RegisterSegmentDisplayType($typeName) {
-            remove-typedata -typename $typeName -erroraction silentlycontinue
+            remove-typedata -typename $typeName -erroraction ignore
 
             $coreProperties = @('Type', 'ConsentType', 'Name', 'Description')
 
