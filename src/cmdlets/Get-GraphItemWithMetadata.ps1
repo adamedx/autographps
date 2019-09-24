@@ -128,7 +128,7 @@ function Get-GraphItemWithMetadata {
         $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
         $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
     } else {
-        $emitTarget = ( ! $noUri -or $ignoreMetadata ) -or ( ! $noUri -and ! $resolvedUri.Collection )
+        $emitTarget = ( ! $noUri -or $ignoreMetadata ) -or $resolvedUri.Collection
         $emitRoot = ! $noUri -or $ignoreMetadata
         $emitChildren = $noUri -or ! $emitTarget -or $Recurse.IsPresent
     }

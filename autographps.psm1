@@ -32,4 +32,16 @@ $functions = @(
 
 $aliases = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 
-export-modulemember -function $functions -alias $aliases
+# Note that in order to make variables from nested modules
+# accessible without the user directly invoking them,
+# we need to "forward" them by exporting them even
+# though they come from a module other than this one.
+$variables = @(
+    'GraphAutoPromptPreference'
+    'GraphMetadataPreference'
+    'GraphPromptColorPreference'
+    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
+    'LastGraphItems'               # From AutoGraphPS-=SDK
+)
+
+export-modulemember -function $functions -alias $aliases -variable $variables

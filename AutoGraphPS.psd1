@@ -92,11 +92,13 @@ FunctionsToExport = @(
 CmdletsToExport = @()
 
 # Variables to export from this module
-    VariablesToExport = @(
-        'GraphAutoPromptPreference',
-        'GraphMetadataPreference',
-        'GraphPromptColorPreference'
-    )
+VariablesToExport = @(
+    'GraphAutoPromptPreference'
+    'GraphMetadataPreference'
+    'GraphPromptColorPreference'
+    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
+    'LastGraphItems'               # From AutoGraphPS-=SDK
+)
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
@@ -172,10 +174,27 @@ PrivateData = @{
         # Prerelease = '-preview'
 
         # ReleaseNotes of this module
-        ReleaseNotes = @"
+        ReleaseNotes = @'
 # AutoGraphPS 0.24.0 Release Notes
 
+This release addresses the breaking changes in the ScriptClass dependency.
+
+## Breaking changes
+
+* Objects returned by commands in this module will have a slightly different structure
+  due to the changes to ScriptClass
+* The `gls` alias now points to a new command, `Get-GraphItemWithMetadata` with a slightly
+  different set of parameters and a different default behavior for returning results
+
 ## New Features
+
+* New `Get-GraphItemWithMetadata` command which has behavior similar to `Get-GraphChildItem`
+  but with differetn defaults.
+* The `gls` alias now tries to emulate the behavior of the `ls` alias in PowerShell that also
+  exist as a command in `bash` and other shells: when the target of `ls` is not a set, only
+  the target is output, not its children (though this cannot happen in traditional file system
+  context where `ls` is used) or content. Previously `gls` aliased `Get-GraphChildItem`, which
+  always returns the target AND children.
 
 ## New dependencies
 
@@ -184,8 +203,9 @@ ScriptClass 0.20.1
 
 ## Fixed defects
 
+* Fixed numerous error stream pollution defects
 
-"@
+'@
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
