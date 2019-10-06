@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.24.0'
+ModuleVersion = '0.24.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.11.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.11.2';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -175,38 +175,63 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-# AutoGraphPS 0.24.0 Release Notes
+# AutoGraphPS 0.24.1 Release Notes
 
-This release addresses the breaking changes in the ScriptClass dependency. It also updates
-the Graph browsing experience through `gls` to be more like browsing a file system
-with the familiar `ls` command.
+This release is incorporates fixes for regressions introduced in the previous
+release by the inclusion `AutoGraphPS-SDK` `0.11.1` by updating that dependency
+to a new version.
 
-## Breaking changes
-
-* Objects returned by commands in this module will have a slightly different structure
-  due to the changes to ScriptClass
-* The `gls` alias now points to a new command, `Get-GraphItemWithMetadata` with a slightly
-  different set of parameters and a different default behavior for returning results
-
-## New Features
-
-* New `Get-GraphItemWithMetadata` command which has behavior similar to `Get-GraphChildItem`
-  but with differetn defaults.
-* The `gls` alias now tries to emulate the behavior of the `ls` alias in PowerShell that also
-  exist as a command in `bash` and other shells: when the target of `ls` is not a set, only
-  the target is output, not its children (though this cannot happen in traditional file system
-  context where `ls` is used) or content. Previously `gls` aliased `Get-GraphChildItem`, which
-  always returns the target AND children.
+This release also includes release note o missions from the previous `0.24.0`
+release.
 
 ## New dependencies
 
-AutoGraphPS-SDK 0.11.1
-ScriptClass 0.20.1
+AutoGraphPS-SDK 0.24.1
 
-## Fixed defects
+## Addendum: omissions from 0.24.0 release notes
 
-* Fixed numerous error stream pollution defects
+These release notes were omitted from the previous release because they actually
+describe functionality originating in a dependency rather than this module. Nevertheless,
+that functionality is experienced by the user simply as part of this module, so
+they should have been included so that users could understand and assess the new behavior
+including breaking changes.
 
+### Breaking changes
+
+* The `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` commands now have the same parameter names where
+  the parameters represent the same thing.
+* Some command parameter names have been changed for clarity
+* The `GrantedPermissions` parameter has been replaced with two new parameters in several commands that
+  could take both app-only permissions and delegated permissions: `ApplicationPermisisons`
+  and `DelegatedUserPermissions`
+* The `Permissions` parameter in several commands auto-completed to both app-only and delegated
+  permissions, but since only delegated permissions can be specified at runtime for these
+  commands, auto-complete now only completes delegated permissions
+* The `NoninteractiveAppOnlyAuth` parameter of several commands is no longer necessary -- the presence of
+  `Confidential` and `ApplicationPermissions` parameters indicates the state this parameter represented
+* The `ConsentForTenant` flag had an ambiguous meaning and was replaced by `ConsentAllUsers` for
+  application management and consent-related commands
+
+#### New features
+
+* App-only consent: The code defect in the MS Graph REST API blocking app-only consent was addressed,
+  so now `New-GraphApplication`, `Set-GraphApplicationConsent`, `Get-GraphApplicationConsent`,
+  and `Remove-GraphApplicationConsent` have been updated to support it
+* In particular `New-GraphApplication` automatically consents confidential app-only apps because the
+  Graph API for doing so is now fixed. Therefore the command o longer displays a warning when creating
+  instructing the user to manually consent the app.
+* `Connect-Graph` now returns `GraphConnectionInfo` object
+* `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` now support the new `GraphResourceUri`
+  parameter which allows the caller to use a resource URI that is not the same as the actual
+  graph endpoint used for REST. This is useful for test scenarios, such as those where a proxy
+  is used to get to Graph -- the resource URI for token acquisition can be set to `https://graph.microsoft.com`
+  using the `GraphResourceUri` parameter, and the endpoint can be the proxy in front of Graph.
+
+#### Fixed defects
+
+* Used `ErrorAction Ignore` instead of `SilentlyContinue` in numerous places throughout the code
+  to avoid error stream pollution
+* General error stream pollution cleanup
 '@
     } # End of PSData hashtable
 

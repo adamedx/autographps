@@ -31,7 +31,7 @@ AutoGraphPS
 
 If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
 
-The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
+If you have ideas on how to improve **AutoGraphPS**, please consider [opening an issue](https://github.com/adamedx/autographps/issues) or a [pull request](https://github.com/adamedx/autographps/pulls).
 
 ### System requirements
 
@@ -246,7 +246,7 @@ cd autographps
 
 ## Contributing and development
 
-Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
+Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). In addition to submitting pull requests, we also invite bug reports, eature requests, and architectural improvements through this repository's [issues page](https://github.com/adamedx/autographps/issues).
 
 See the [Build README](build/README.md) for instructions on building and testing changes to AutoGraphPS.
 
