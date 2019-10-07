@@ -17,8 +17,6 @@ AutoGraphPS
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
-*This repository / project  was recently renamed from **PoshGraph** -- if you're looking for **PoshGraph**, you're in the right place!*
-
 ## Overview
 
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
@@ -31,7 +29,7 @@ AutoGraphPS
 
 If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omitting the UX affordances found in this module.
 
-The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
+If you have ideas on how to improve **AutoGraphPS**, please consider [opening an issue](https://github.com/adamedx/autographps/issues) or a [pull request](https://github.com/adamedx/autographps/pulls).
 
 ### System requirements
 
@@ -246,7 +244,7 @@ cd autographps
 
 ## Contributing and development
 
-Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
+Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). In addition to submitting pull requests, we also invite bug reports, eature requests, and architectural improvements through this repository's [issues page](https://github.com/adamedx/autographps/issues).
 
 See the [Build README](build/README.md) for instructions on building and testing changes to AutoGraphPS.
 
@@ -279,7 +277,7 @@ This should return something like the following:
     TimeLocal  : 2/6/2018 6:05:09 AM
     TimeUtc    : 2/6/2018 6:05:09 AM
 
-If you need to launch another console with Posh Graph, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
+If you need to launch another console with AutoGraphPS, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
 
     .\build\import-devmodule.ps1
 
