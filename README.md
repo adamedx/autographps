@@ -17,8 +17,6 @@ AutoGraphPS
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
-*This repository / project  was recently renamed from **PoshGraph** -- if you're looking for **PoshGraph**, you're in the right place!*
-
 ## Overview
 
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
@@ -279,7 +277,7 @@ This should return something like the following:
     TimeLocal  : 2/6/2018 6:05:09 AM
     TimeUtc    : 2/6/2018 6:05:09 AM
 
-If you need to launch another console with Posh Graph, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
+If you need to launch another console with AutoGraphPS, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
 
     .\build\import-devmodule.ps1
 
