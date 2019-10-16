@@ -52,6 +52,8 @@ function Get-GraphChildItem {
 
         [HashTable] $Headers = $null,
 
+        [Guid] $ClientRequestId,
+
         [string] $ResultVariable = $null
     )
 
