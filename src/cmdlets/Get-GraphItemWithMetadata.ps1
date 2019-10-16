@@ -58,6 +58,8 @@ function Get-GraphItemWithMetadata {
 
         [HashTable] $Headers = $null,
 
+        [Guid] $ClientRequestId,
+
         [string] $ResultVariable = $null
     )
 
@@ -112,6 +114,14 @@ function Get-GraphItemWithMetadata {
         First=$pscmdlet.pagingparameters.first
         Skip=$pscmdlet.pagingparameters.skip
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+        # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
+        # for the current module and not the module we are calling into, we explicitly set
+        # verbose for a command from outside this module
+        Verbose=([System.Management.Automation.SwitchParameter]::new($VerbosePreference -eq 'Continue'))
+    }
+
+    if ( $ClientRequestId ) {
+        $requestArguments['ClientRequestId'] = $ClientRequestId
     }
 
     $graphException = $false

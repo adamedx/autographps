@@ -2,9 +2,6 @@
 
 ## To-do items -- prioritized
 
-
-* fix get-childitem logic with containers vs non-containers
-* change mode output to reflect containers
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
@@ -254,6 +251,9 @@
 * Add app creation, enumeration, update
 * Fix verbose output for scriptclass
 * Remove get-graphchilditem invalid params
+* fix get-childitem logic with containers vs non-containers
+* change mode output to reflect containers
+* add client request id to get-graphchilditem, getgraphitemwithmetadata
 
 ### Postponed
 

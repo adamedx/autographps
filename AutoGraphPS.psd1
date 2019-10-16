@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.25.0'
+ModuleVersion = '0.26.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.12.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.13.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -175,82 +175,30 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-# AutoGraphPS 0.25.0 Release Notes
+## AutoGraphPS 0.26.0 Release Notes
 
-This release is incorporates fixes for regressions introduced in the previous
-release by the inclusion `AutoGraphPS-SDK` `0.11.1` by updating that dependency
-to a new version. It also includes minor features from that version.
+This release updates the autographps-sdk dependency to 0.13.0 to obtain new features
+for specifying a client request id and to allow customization of the user agent. Defect fixes,
+particularly in the area of application and consent management, are also included.
 
-This release also includes release note omissions from the previous `0.24.0`
-release.
+### New dependencies
 
-## New dependencies
-
-* AutoGraphPS-SDK 0.12.0
-
-## Breaking changes
-None.
-
-## New features
-New features in this release originate from the updated `AutoGraphPS-SDK` dependency:
-
-* Added the `ReplyUrl` alias to the `AppRedirectUri` parameter of `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection`
-* `Get-GraphConnectionInfo` now includes a connection id guid property in its output to identify each unique connection
-
-## Fixed defects
-The bug fixes in this release originate from the updated `AutoGraphPS-SDK` dependency:
-
-* `Test-Graph` command regression prevented targeting clouds other than `Public`
-* `Connect-Graph` and `New-GraphConnection` regressions caused certain parameter sets to require all parameters
-* Fix race condition with `Connect-Graph` due to MSAL changes with integrated token cache: `Connect-Graph` created
-  a new token, which was immediately invalidated, requiring a reconnect when used with a command.
-* Fix error output from `Get-GraphToken` due to invalid `$GraphEndpointUri` variable, which also prevented the `GraphResourceUri` parameter from functioning correctly.
-
-## Addendum: omissions from 0.24.0 release notes
-These release notes were omitted from the previous release because they actually
-describe functionality originating in a dependency rather than this module. Nevertheless,
-that functionality is experienced by the user simply as part of this module, so
-the notes should have been included so that users could understand and assess the new behavior
-including breaking changes.
-
-These notes are included below as a correction.
+* AutoGraphPS-SDK 0.13.0
 
 ### Breaking changes
-
-* The `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` commands now have the same parameter names where
-  the parameters represent the same thing.
-* Some command parameter names have been changed for clarity
-* The `GrantedPermissions` parameter has been replaced with two new parameters in several commands that
-  could take both app-only permissions and delegated permissions: `ApplicationPermisisons`
-  and `DelegatedUserPermissions`
-* The `Permissions` parameter in several commands auto-completed to both app-only and delegated
-  permissions, but since only delegated permissions can be specified at runtime for these
-  commands, auto-complete now only completes delegated permissions
-* The `NoninteractiveAppOnlyAuth` parameter of several commands is no longer necessary -- the presence of
-  `Confidential` and `ApplicationPermissions` parameters indicates the state this parameter represented
-* The `ConsentForTenant` flag had an ambiguous meaning and was replaced by `ConsentAllUsers` for
-  application management and consent-related commands
+* For some commands originating in *AutoGraphPS-SDK*, certain parameters have been renamed.
+  See [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
 
 ### New features
 
-* App-only consent: The code defect in the MS Graph REST API blocking app-only consent was addressed,
-  so now `New-GraphApplication`, `Set-GraphApplicationConsent`, `Get-GraphApplicationConsent`,
-  and `Remove-GraphApplicationConsent` have been updated to support it
-* In particular `New-GraphApplication` automatically consents confidential app-only apps because the
-  Graph API for doing so is now fixed. Therefore the command o longer displays a warning when creating
-  instructing the user to manually consent the app.
-* `Connect-Graph` now returns `GraphConnectionInfo` object
-* `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` now support the new `GraphResourceUri`
-  parameter which allows the caller to use a resource URI that is not the same as the actual
-  graph endpoint used for REST. This is useful for test scenarios, such as those where a proxy
-  is used to get to Graph -- the resource URI for token acquisition can be set to `https://graph.microsoft.com`
-  using the `GraphResourceUri` parameter, and the endpoint can be the proxy in front of Graph.
+* `ClientRequestId` parameter for `Get-GraphChildItem` and `Get-GraphItemWithMetadata` to specify `client-request-id` header
+* See additional features from [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
 
 ### Fixed defects
 
-* Used `ErrorAction Ignore` instead of `SilentlyContinue` in numerous places throughout the code
-  to avoid error stream pollution
-* General error stream pollution cleanup
+* Work around *ScriptClass* defect where verbose output is not enabled for code in *AutoGraphPS-SDK*.
+* See additional fixes [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
+
 '@
     } # End of PSData hashtable
 
