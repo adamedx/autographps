@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.26.0'
+ModuleVersion = '0.27.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -30,7 +30,7 @@ CompanyName = 'Modulus Group'
 Copyright = '(c) 2019 Adam Edwards.'
 
 # Description of the functionality provided by this module
-Description = 'CLI for automating the Microsoft Graph'
+Description = 'CLI for automating and exploring the Microsoft Graph'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.1'
@@ -67,13 +67,13 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.13.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.14.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Find-GraphPermissions',
+    'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItemWithMetadata',
@@ -117,7 +117,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
-        '.\src\cmdlets\Find-GraphPermissions.ps1',
+        '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphItemWithMetadata.ps1',
@@ -175,29 +175,36 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.26.0 Release Notes
+## AutoGraphPS 0.27.0 Release Notes
 
-This release updates the autographps-sdk dependency to 0.13.0 to obtain new features
-for specifying a client request id and to allow customization of the user agent. Defect fixes,
-particularly in the area of application and consent management, are also included.
+This release updates the autographps-sdk dependency to 0.14.0 to obtain new features
+for logging requests to Graph and their responses and viewing / formatting the logged
+data.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.13.0
+* AutoGraphPS-SDK 0.14.0
 
 ### Breaking changes
-* For some commands originating in *AutoGraphPS-SDK*, certain parameters have been renamed.
-  See [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
+* The Find-GraphPermissions command has been renamed to Find-GraphPermission to align with PowerShell
+  naming conventions around the use of singular nouns
 
 ### New features
 
-* `ClientRequestId` parameter for `Get-GraphChildItem` and `Get-GraphItemWithMetadata` to specify `client-request-id` header
-* See additional features from [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
+* The `Preview` column of `Get-GraphItemWithMetadata` (`gls`) includes support for APIs like Teams chats
+  that show up under `me/messages` -- previously the preview was using the `id` column for such APIs
+  which was useless from a readability / user experience standpoint.
+
+The additional new features all originate from the AutoGraphPS-SDK 0.14.0 dependency:
+
+* The `Get-GraphLog` command enables retrieval of records of each request and response to the Graph
+* The `Format-GraphLog` command allows optimized formatting of Graph request logs from `Get-GraphLog`
+* The `Clear-GraphLog` command removes all previous log entries from the log
+* The `Set-GraphLogOption` command allows customization of the logging level and other logging behaviors
+* The `Get-GraphLogOption` command returns information about the current request logging configuration
 
 ### Fixed defects
-
-* Work around *ScriptClass* defect where verbose output is not enabled for code in *AutoGraphPS-SDK*.
-* See additional fixes [AutoGraphPS-SDK 0.13.0 Release notes](https://www.powershellgallery.com/packages/autographps-sdk/0.13.0).
+None.
 
 '@
     } # End of PSData hashtable
