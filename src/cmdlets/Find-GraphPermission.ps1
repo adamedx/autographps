@@ -14,7 +14,7 @@
 
 . (import-script common/PermissionHelper)
 
-function Find-GraphPermissions {
+function Find-GraphPermission {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='allpermissions')]
     param(
         [parameter(position=0, parametersetname='searchspec')]
@@ -73,4 +73,4 @@ function Find-GraphPermissions {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Find-GraphPermissions Permission (new-so PermissionParameterCompleter DelegatedPermission)
+$::.ParameterCompleter |=> RegisterParameterCompleter Find-GraphPermission Permission (new-so PermissionParameterCompleter DelegatedPermission)

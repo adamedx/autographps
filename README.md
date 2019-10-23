@@ -179,10 +179,12 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 
 | Cmdlet (alias)            | Description                                                                                             |
 |---------------------------|---------------------------------------------------------------------------------------------------------|
+| Clear-GraphLog            | Clear the log of REST requests to Graph made by the module's commands                                   |
 | Connect-Graph             | Establishes authentication and authorization context used across cmdlets for the current graph          |
 | Disconnect-Graph          | Clears authentication and authorization context used across cmdlets for the current graph               |
 | Find-GraphPermissions     | Given a search string, `Find-GraphPermissions` lists permissions with names that contain that string    |
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
+| Format-GraphLog           | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
 | Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
 | Get-GraphApplication              | Gets a list of Azure AD applications in the tenant                                              |
@@ -194,6 +196,8 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphItemWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
+| Get-GraphLog              | Gets the local log of all requests to Graph made by this module                                         |
+| Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUri (ggu)        | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
@@ -211,6 +215,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
+| Set-GraphLogOption        | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
 | Show-GraphHelp            | Given the name of a Graph resource (e.g. 'user', 'group', etc.) launches a web browser focused on documentation for it |
 | Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                  |

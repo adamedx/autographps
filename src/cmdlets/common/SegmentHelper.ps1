@@ -179,7 +179,7 @@ ScriptClass SegmentHelper {
         }
 
         function __GetPreview($content, $defaultValue) {
-            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Id
+            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Id, bodyPreview
             if ( $previewProperties.Name ) {
                 $previewProperties.Name
             } elseif ( $previewProperties.DisplayName ) {
@@ -190,6 +190,8 @@ ScriptClass SegmentHelper {
                 $previewProperties.FileName
             } elseif ( $previewProperties.Subject ) {
                 $previewProperties.Subject
+            } elseif ( $previewProperties.bodyPreview ) {
+                $previewproperties.bodyPreview
             } elseif ( $previewProperties.Id ) {
                 $previewProperties.Id
             } else {
