@@ -196,7 +196,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphItemWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
-| Get-GraphLog      (ggl)   | Gets the local log of all requests to Graph made by this module                                         |
+| Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
