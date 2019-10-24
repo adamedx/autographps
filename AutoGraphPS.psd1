@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.27.0'
+ModuleVersion = '0.28.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.14.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.15.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -175,36 +175,33 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.27.0 Release Notes
+## AutoGraphPS 0.28.0 Release Notes
 
-This release updates the autographps-sdk dependency to 0.14.0 to obtain new features
-for logging requests to Graph and their responses and viewing / formatting the logged
-data.
+This release updates the autographps-sdk dependency to 0.15.0 to obtain fixes and
+minor improvements.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.14.0
+* AutoGraphPS-SDK 0.15.0
 
 ### Breaking changes
-* The Find-GraphPermissions command has been renamed to Find-GraphPermission to align with PowerShell
-  naming conventions around the use of singular nouns
+None.
 
 ### New features
 
-* The `Preview` column of `Get-GraphItemWithMetadata` (`gls`) includes support for APIs like Teams chats
-  that show up under `me/messages` -- previously the preview was using the `id` column for such APIs
-  which was useless from a readability / user experience standpoint.
+The new features all originate from the AutoGraphPS-SDK 0.14.0 dependency:
 
-The additional new features all originate from the AutoGraphPS-SDK 0.14.0 dependency:
-
-* The `Get-GraphLog` command enables retrieval of records of each request and response to the Graph
-* The `Format-GraphLog` command allows optimized formatting of Graph request logs from `Get-GraphLog`
-* The `Clear-GraphLog` command removes all previous log entries from the log
-* The `Set-GraphLogOption` command allows customization of the logging level and other logging behaviors
-* The `Get-GraphLogOption` command returns information about the current request logging configuration
+* The `ggl` alias for `Get-GraphLog` has been added
+* The `fgl` alias for `Format-GraphLog` has also been added
 
 ### Fixed defects
-None.
+
+See the release notes for AutoGraphPS-SDK 0.15.0 which inclues these fixes:
+
+* `Format-GraphLog` specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
+* `Format-GraphLog`: `Authentication` value for `View` parameter broken due to invalid property
+* `Permissions` column from `Get-GraphLog` only included requested permissions, not actual token permissions -- fixed
+  to reflect the latter
 
 '@
     } # End of PSData hashtable
