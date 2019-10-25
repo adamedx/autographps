@@ -60,7 +60,7 @@ This will prompt you to authenticate again and consent to allow the application 
 In addition to the `get-graphitem` cmdlet which returns data as a series of flat lists, you can use `get-graphchilditem` or its alias `gls` to retrieve your personal contacts:
 
 ```powershell
-PS> get-graphitemchilditem me/contacts
+PS> get-graphchilditem me/contacts
 
 Info Type    Preview        Name
 ---- ----    -------        ----
@@ -95,7 +95,7 @@ givenName            : Cosmo
 ...
 ```
 
-#### Easier content through `--ContentColumns`
+#### Easier content through `-ContentColumns`
 
 An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphChildItem`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
 
@@ -113,7 +113,7 @@ If one of the fields in `Content` has the same name as a field in the containing
 
 #### The `$LASTGRAPHITEMS variable
 
-As with any PowerShell cmdlet that returns a value, the `Get-GraphItem` and `Get-GraphhChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
+As with any PowerShell cmdlet that returns a value, the `Get-GraphItem` and `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
 
 ```powershell
 $mycontacts = gls me/contacts
@@ -224,7 +224,7 @@ Path
 
 The Microsoft Graph supports a rich set of query capabilities through its [OData](https://www.odata.org) support. You can learn the the specifics of MS Graph and OData query specification as part of MS Graph REST Uri's via [Graph's query documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters), the [OData query tutorial](http://www.odata.org/getting-started/basic-tutorial/#queryData), or simply by using the [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
-To use AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` and `Get-GetGraphChildItem` cmdletes (`ggi` and `gls` aliases respectively). To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
+AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` and `Get-GetGraphChildItem` cmdletes (`ggi` and `gls` aliases respectively). To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
 ### Filtering data with `-ODataFilter`
 
@@ -630,7 +630,7 @@ https://graph.microsoft.com/v1.0/me/drive/root/children/{driveItem}
 
 The `{driveItem}` segment tells you format of a hypothetical segment that could follow `children`, as well as the type (`driveItem`), allowing tools provide developers hints about possible queries and the data they can return.
 
-### USing Get-GraphToken with other Graph tools
+### Using Get-GraphToken with other Graph tools
 
 When using tools like Postman or Fiddler to troubleshoot or test the Graph, you'll need to acquire a token. Token acquisition continues to be one of the biggest barriers to using Graph, so use AutoGraphPS's `Get-GraphToken` cmdlet to automate it:
 
