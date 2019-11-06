@@ -80,7 +80,7 @@ Items with a `+` in the `Info` field returned by `Get-GraphItemWithMetadata` con
 Get-Graphitem me/contacts/XMKDFX1
 ```
 
-which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphItemWithMetadata` (alias `gls`) with a `Select` for the `Content` prpoerty on the first result:
+which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphItemWithMetadata` (alias `gls`) with a `Select` for the `Content` property on the first result:
 
 ```
 PS> gls me | select -expandproperty content -first 1
@@ -113,7 +113,7 @@ gls me/contacts | foreach { [PSCustomObject] @{Info=$_.Info; Preview=$_.Preview;
 
 If one of the fields in `Content` has the same name as a field in the containing object, it will be prepended with a `_` character when added to it in order to resolve the conflict.
 
-#### The `$LASTGRAPHITEMS variable
+#### The `$LASTGRAPHITEMS` variable
 
 As with any PowerShell cmdlet that returns a value, the `Get-GraphItem`, `Get-GraphItemWithMetadata`, `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
 
@@ -148,7 +148,7 @@ This makes ad-hoc exploration of the Graph less expensive -- you don't have to q
 
 Note that `Get-GraphChildItem` is similar to `Get-GraphItemWithMetadata`, except it does not exhibit the behavior in (2) above, it always exhibits both (1) and (3) at the same time.
 
-This makes `Get-GraphItemWithMetadata` / `gls` / `Get-GraphChildItem` an effective way to recursively discover the Uris for both Graph data and structure (metadata).
+This makes the `Get-GraphItemWithMetadata` / `gls` and `Get-GraphChildItem` commands effective ways to recursively discover the Uris for both Graph data and structure (metadata).
 
 ### Explore new locations
 
@@ -229,7 +229,7 @@ Path
 
 The Microsoft Graph supports a rich set of query capabilities through its [OData](https://www.odata.org) support. You can learn the the specifics of MS Graph and OData query specification as part of MS Graph REST Uri's via [Graph's query documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters), the [OData query tutorial](http://www.odata.org/getting-started/basic-tutorial/#queryData), or simply by using the [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
-AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` and `Get-GetGraphChildItem` cmdletes (`ggi` and `gls` aliases respectively). To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
+AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` `Get-GetGraphItemWithMetadata` (`ggi` and `gls` aliases respectively), and `Get-GraphChildItem` commands. To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
 ### Filtering data with `-ODataFilter`
 
