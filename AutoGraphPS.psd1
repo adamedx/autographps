@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.28.0'
+ModuleVersion = '0.29.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.15.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.16.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -164,7 +164,7 @@ PrivateData = @{
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/adamedx/poshgraph'
+        ProjectUri = 'https://github.com/adamedx/autographps'
 
         # A URL to an icon representing this module.
         IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png'
@@ -175,33 +175,34 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.28.0 Release Notes
+## AutoGraphPS 0.29.0 Release Notes
 
-This release updates the autographps-sdk dependency to 0.15.0 to obtain fixes and
+This release updates the autographps-sdk dependency to 0.16.0 to obtain fixes and
 minor improvements.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.15.0
+* AutoGraphPS-SDK 0.16.0
 
 ### Breaking changes
 None.
 
 ### New features
 
-The new features all originate from the AutoGraphPS-SDK 0.14.0 dependency:
+* URI parameter completion is enabled for the following commands exposed by AutoGraphPS-SDK: `Get-GraphItem`, `Invoke-GraphRequest`.
 
-* The `ggl` alias for `Get-GraphLog` has been added
-* The `fgl` alias for `Format-GraphLog` has also been added
+The following new features originate from the AutoGraphPS-SDK 0.16.0 dependency:
+
+* The `Get-GraphLog` command has a new `StatusFilter` parameter that specifies that the command must return only log etnries with an error status, only those with a success status, or any status (the default).
 
 ### Fixed defects
 
-See the release notes for AutoGraphPS-SDK 0.15.0 which inclues these fixes:
+* Fixed missing uri parameter completion for Get-GraphChildItem
+* Commands such as `New-GraphApplication` from AutoGraphPS-SDK failed if the current graph location set by `Set-GraphLocation` was no the root (default) -- this is fixed so that commands for managing applications such as `New-GraphApplication` are no longer influenced by the current graph location.
 
-* `Format-GraphLog` specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
-* `Format-GraphLog`: `Authentication` value for `View` parameter broken due to invalid property
-* `Permissions` column from `Get-GraphLog` only included requested permissions, not actual token permissions -- fixed
-  to reflect the latter
+Also, see the release notes for AutoGraphPS-SDK 0.16.0 which inclues these fixes:
+
+* Application management commands such as `New-GraphApplication` would fail due to a bad URI when used by a module like *AutoGraphPS* that allows the default base URI to be changed -- fixed so that URIs used by the application management commands are context invariant.
 
 '@
     } # End of PSData hashtable
