@@ -69,3 +69,5 @@ function Get-GraphChildItem {
 
     Get-GraphItemWithMetadata @targetParameters
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-Childtem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
