@@ -1,5 +1,5 @@
 AutoGraphPS Walkthrough
-=====================
+=======================
 
 This walkthrough will expose you to the key capabilities of AutoGraphPS and the Microsoft Graph. It is certainly not exhaustive, but should be enough for you understand how to use AutoGraphPS in your work, where it falls short, and how you might remedy any omissions with your own contributions to the project.
 
@@ -10,13 +10,15 @@ After you've installed the module, invoke AutoGraphPS cmdlets from any PowerShel
 
 ### Get started -- simple commands
 
-**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph. The easiest approach is to use the `Connect-Graph` cmdlet, after which you can execute other cmdlets such as `Get-GraphItem` which operate on the graph:
+**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph by signing in. If you have not already done this using `Connect-Graph`, that's ok -- any commands that need a connection will request one before communicating with the graph. After that, any subsequent commands will re-use that same connection, so you won't have to sign in again.
+
+Here's a really simple command you can execute -- if it asks you to sign-in, please do so:
 
 ```powershell
 Get-GraphItem me
 ```
 
-After you respond to authentication prompts, `GetGraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object:
+After you respond to authentication prompts, `Get-GraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object:
 
     id                : 82f53da9-b996-4227-b268-c20564ceedf7
     officeLocation    : 7/3191
@@ -32,7 +34,7 @@ After you respond to authentication prompts, `GetGraphItem` returns a PowerShell
 Since the first execution of `Get-GraphItem` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g. a subsequent invocation like
 
 ```powershell
-PS> get-graphitem organization
+PS> Get-GraphItem organization
 ```
 
 will not prompt for credentials but immediately return details about your organization:
@@ -57,10 +59,10 @@ Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
 
 This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
 
-In addition to the `get-graphitem` cmdlet which returns data as a series of flat lists, you can use `get-graphchilditem` or its alias `gls` to retrieve your personal contacts:
+In addition to the `Get-GraphItem` cmdlet which returns data as a series of flat lists, you can use `Get-GraphItemWithMetadata` or its alias `gls` to retrieve your personal contacts:
 
 ```powershell
-PS> get-graphchilditem me/contacts
+PS> Get-GraphItemWithMetadata me/contacts
 
 Info Type    Preview        Name
 ---- ----    -------        ----
@@ -70,15 +72,15 @@ t +> contact John Henry     XMKDFX4
 t +> contact Deandre George XMKDFX8
 ```
 
-The `Preview` column shows data returned from Graph that `get-graphchilditem` deems to be most human-readable -- in this case, the `displayName` of the `contact` entity.
+The `Preview` column shows data returned from Graph that `Get-GraphItemWithMetadata` deems to be most human-readable -- in this case, the `displayName` of the `contact` entity.
 
-Items with a `+` in the `Info` field returned by `get-graphchilditem` contain content. The actual content, i.e. data that would be returned by `Get-GraphItem` is not displayed by default, but you can use the `Select` alias of PowerShell to retrieve the `Content` property of each row. In this way `Get-GraphChildItem` returns a superset of the data returned from `Get-GraphItem`. The use of `Get-GraphItem` below
+Items with a `+` in the `Info` field returned by `Get-GraphItemWithMetadata` contain content. The actual content, i.e. data that would be returned by `Get-GraphItem` is not displayed by default, but you can use the `Select` alias of PowerShell to retrieve the `Content` property of each row. In this way `Get-GraphItemWithMetadata` returns a superset of the data returned from `Get-GraphItem`. The use of `Get-GraphItem` below
 
 ```powershell
 Get-Graphitem me/contacts/XMKDFX1
 ```
 
-which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphChildItem` (alais `gls`) with a `Select` for the `Content` prpoerty on the first result:
+which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphItemWithMetadata` (alias `gls`) with a `Select` for the `Content` prpoerty on the first result:
 
 ```
 PS> gls me | select -expandproperty content -first 1
@@ -97,7 +99,7 @@ givenName            : Cosmo
 
 #### Easier content through `-ContentColumns`
 
-An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphChildItem`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
+An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphItemWithMetadata`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
 
 For example, the following two commands are equivalent:
 ```powershell
@@ -113,7 +115,7 @@ If one of the fields in `Content` has the same name as a field in the containing
 
 #### The `$LASTGRAPHITEMS variable
 
-As with any PowerShell cmdlet that returns a value, the `Get-GraphItem` and `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
+As with any PowerShell cmdlet that returns a value, the `Get-GraphItem`, `Get-GraphItemWithMetadata`, `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
 
 ```powershell
 $mycontacts = gls me/contacts
@@ -138,23 +140,26 @@ PS> $LASTGRAPHITEMS[0].content.lastModifiedDateTime
 
 This makes ad-hoc exploration of the Graph less expensive -- you don't have to query the Graph again with another cmdlet to examine the objects you just recently retrieved. They are available in `$LASTGRAPHITEMS`.
 
-**IMPORTANT NOTE:** The example above illustrates an import aspect behavior of `Get-GraphChildItem`:
+**IMPORTANT NOTE:** The example above illustrates an import aspect behavior of `Get-GraphItemWithMetadata`:
 1. When the Uri argument for the cmdlet references a collection, the result is simply the items in the collection. This is actual data from Graph.
-2. But when the Uri references a single entity, the first element returned is the entity itself, and any additional elements are the allowed segments (if any) that can immediately follow the entity in a valid Uri for Graph. This is metadata about Graph that reveals its structure.
-3. This contrasts with `Get-GraphItem` which only exhibits the behavior in (1).
+2. But when the Uri references a single entity AND the URI is not empty AND is not the value `.`, only that entity is returned.
+3. If the URI references a single entity and is either not specified or is the value `.`, the returned elements are the allowed segments (if any) that can immediately follow the entity in a valid Uri for Graph. This is metadata about Graph that reveals its structure.
+4. This contrasts with `Get-GraphItem` which only exhibits the behavior in (1).
 
-This makes `Get-GraphChildItem` an effective way to recursively discover the Uris for both Graph data and structure (metadata).
+Note that `Get-GraphChildItem` is similar to `Get-GraphItemWithMetadata`, except it does not exhibit the behavior in (2) above, it always exhibits both (1) and (3) at the same time.
+
+This makes `Get-GraphItemWithMetadata` / `gls` / `Get-GraphChildItem` an effective way to recursively discover the Uris for both Graph data and structure (metadata).
 
 ### Explore new locations
 
-You may have noticed that after the first time you invoked `Get-GraphChildItem`, your PowerShell prompt displayed some additional information:
+You may have noticed that after the first time you invoked `gls`, your PowerShell prompt displayed some additional information:
 
 ```
 [starchild@mothership.io] /v1.0:/
 PS>
 ```
 
-By default, AutoGraphPS automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphChildItem`, `Get-GraphItem`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
+By default, AutoGraphPS automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphItemWithMetadata`, `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphItemWithMetadata`, `Get-GraphChildItem`, `Get-GraphItem`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
 
 With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
 
@@ -513,7 +518,7 @@ PSTypeName   : GraphSegmentDisplayType
 Get-GraphUri /me/drive/root | select -expandproperty uri
 ```
 
-In the above example, `Get-GraphUri` parsed the Uri in order to generate the returned information. If you were to give a Uri that is not valid for the, graph, you'd receive an error like the one below:
+In the above example, `Get-GraphUri` parsed the Uri in order to generate the returned information. If you were to give a Uri that is not valid for the current graph, you'd receive an error like the one below:
 
 ```
 Get-GraphUri /me/idontexist
