@@ -31,19 +31,21 @@ Describe "Autographps application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'Find-GraphPermission',
-                'update-graphmetadata',
-                'Get-Graph',
-                'Get-GraphChildItem',
-                'Get-GraphItemWithMetadata',
-                'Get-GraphLocation',
-                'New-Graph',
-                'Remove-Graph',
-                'Set-GraphLocation',
-                'Set-GraphPrompt',
-                'Show-GraphHelp',
-                'Get-GraphType',
-                'get-graphuri')
+                'Find-GraphPermission'
+                'Get-Graph'
+                'Get-GraphChildItem'
+                'Get-GraphItemWithMetadata'
+                'Get-GraphLocation'
+                'Get-GraphType'
+                'Get-GraphUri'
+                'New-Graph'
+                'New-GraphObject'
+                'Remove-Graph'
+                'Set-GraphLocation'
+                'Set-GraphPrompt'
+                'Show-GraphHelp'
+                'Update-GraphMetadata')
+
 
             $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 

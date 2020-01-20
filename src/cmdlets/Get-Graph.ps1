@@ -19,7 +19,7 @@ function Get-Graph {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='byname', position=0)]
-        $Graph = $null,
+        $Name = $null,
 
         [parameter(parametersetname='current', mandatory=$true)]
         [Switch] $Current
@@ -30,7 +30,7 @@ function Get-Graph {
     $targetGraph = if ( $Current.IsPresent ) {
         ($::.GraphContext |=> GetCurrent).name
     } else {
-        $Graph
+        $Name
     }
 
     $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
@@ -47,4 +47,4 @@ function Get-Graph {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-Graph Graph (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-Graph Name (new-so GraphParameterCompleter)

@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../typesystem/typemanager)
+. (import-script ../typesystem/TypeManager)
 
-function Get-GraphType {
+function New-GraphObject {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
     param(
         [parameter(position=0, mandatory=$true)]
-        [Alias('Name')]
         $TypeName,
 
         [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
-        [Alias('Class')]
         $TypeClass = 'Entity',
 
         [parameter(parametersetname='optionallyqualified')]
@@ -31,7 +29,9 @@ function Get-GraphType {
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
-        [switch] $FullyQualifiedTypeName
+        [switch] $FullyQualifiedTypeName,
+
+        [switch] $Json
     )
 
     Enable-ScriptClassVerbosePreference
@@ -40,12 +40,17 @@ function Get-GraphType {
 
     $typeManager = $::.TypeManager |=> Get $targetContext
 
-    $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $FullyQualifiedTypeName.IsPresent $true
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $FullyQualifiedTypeName.IsPresent
 
-    if ( ! $type ) {
-        throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+    if ( $prototype -eq $null ) {
+        throw "The specified type '$TypeName' was not found in graph '$($targetContext.name)'"
     }
 
-    $type
-}
+    $prototypeJson = $prototype | convertto-json -depth 24
 
+    if ( $Json.IsPresent ) {
+        $prototypeJSON
+    } else {
+        $prototypeJSON | convertfrom-json
+    }
+}

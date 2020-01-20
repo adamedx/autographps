@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.29.0'
+ModuleVersion = '0.30.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2019 Adam Edwards.'
+Copyright = '(c) 2020 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'CLI for automating and exploring the Microsoft Graph'
@@ -81,6 +81,7 @@ FunctionsToExport = @(
     'Get-GraphType',
     'Get-GraphUri',
     'New-Graph',
+    'New-GraphObject',
     'Remove-Graph',
     'Set-GraphLocation',
     'Set-GraphPrompt',
@@ -96,8 +97,8 @@ VariablesToExport = @(
     'GraphAutoPromptPreference'
     'GraphMetadataPreference'
     'GraphPromptColorPreference'
-    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
-    'LastGraphItems'               # From AutoGraphPS-=SDK
+    'GraphVerboseOutputPreference' # From AutoGraphPS-SDK
+    'LastGraphItems'               # From AutoGraphPS-SDK
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
@@ -125,6 +126,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
+        '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
@@ -150,6 +152,14 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\UriCache.ps1'
+        '.\src\typesystem\TypeMember.ps1',
+        '.\src\typesystem\TypeSchema.ps1',
+        '.\src\typesystem\TypeDefinition.ps1',
+        '.\src\typesystem\TypeProvider.ps1',
+        '.\src\typesystem\ScalarTypeProvider.ps1',
+        '.\src\typesystem\CompositeTypeProvider.ps1',
+        '.\src\typesystem\TypeManager.ps1',
+        '.\src\typesystem\GraphObjectBuilder.ps1'
     )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
@@ -175,34 +185,23 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.29.0 Release Notes
+## AutoGraphPS 0.30.0 Release Notes
 
-This release updates the autographps-sdk dependency to 0.16.0 to obtain fixes and
-minor improvements.
+This release adds the ability to create the data types defined in the Graph API and submit them in write API requests.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.16.0
+None.
 
 ### Breaking changes
 None.
 
 ### New features
 
-* URI parameter completion is enabled for the following commands exposed by AutoGraphPS-SDK: `Get-GraphItem`, `Invoke-GraphRequest`.
-
-The following new features originate from the AutoGraphPS-SDK 0.16.0 dependency:
-
-* The `Get-GraphLog` command has a new `StatusFilter` parameter that specifies that the command must return only log etnries with an error status, only those with a success status, or any status (the default).
+* New-GraphObject command
+* Get-GraphType command
 
 ### Fixed defects
-
-* Fixed missing uri parameter completion for Get-GraphChildItem
-* Commands such as `New-GraphApplication` from AutoGraphPS-SDK failed if the current graph location set by `Set-GraphLocation` was no the root (default) -- this is fixed so that commands for managing applications such as `New-GraphApplication` are no longer influenced by the current graph location.
-
-Also, see the release notes for AutoGraphPS-SDK 0.16.0 which inclues these fixes:
-
-* Application management commands such as `New-GraphApplication` would fail due to a bad URI when used by a module like *AutoGraphPS* that allows the default base URI to be changed -- fixed so that URIs used by the application management commands are context invariant.
 
 '@
     } # End of PSData hashtable
