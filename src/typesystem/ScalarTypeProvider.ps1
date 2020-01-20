@@ -19,6 +19,7 @@ ScriptClass ScalarTypeProvider {
     $primitiveDefinitions = $null
     $enumerationDefinitions = $null
     $enumerationNamespace = $null
+    $primitiveNames = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
@@ -42,8 +43,26 @@ ScriptClass ScalarTypeProvider {
         }
     }
 
+    function GetSortedTypeNames($typeClass) {
+        $this.scriptclass |=> ValidateTypeClass $typeClass
+
+        switch ( $typeClass ) {
+            'Primitive' {
+                if ( ! $this.primitiveNames ) {
+                    $this.primitiveNames = $this.primitiveDefinitions.keys | sort
+                }
+                $this.primitiveNames
+                break
+            }
+            'Enumeration' {
+                $this.enumerationDefinitions.keys
+                break
+            }
+        }
+    }
+
     function LoadEnumerationTypeDefinitions {
-        $enumerationDefinitions = @{}
+        $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
         $nativeSchemas = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel.schemadata.edmx.dataservices.schema.enumtype
 
         $nativeSchemas | foreach {
@@ -65,7 +84,7 @@ ScriptClass ScalarTypeProvider {
             $typeId = $::.TypeSchema |=> GetQualifiedTypeName $this.enumerationNamespace $_.name
 
             $definition = new-so TypeDefinition $typeId Enumeration $_.name $this.enumerationNamespace $null $enumerationValues $defaultValue $null $false $_
-            $enumerationDefinitions.Add($typeId, $definition)
+            $enumerationDefinitions.Add($typeId.tolower(), $definition)
         }
 
         $this.enumerationDefinitions = $enumerationDefinitions
@@ -95,7 +114,7 @@ ScriptClass ScalarTypeProvider {
     }
 
     function GetEnumerationDefinition($typeId) {
-        $definition = $this.enumerationDefinitions[$typeId]
+        $definition = $this.enumerationDefinitions[$typeId.tolower()]
 
         if ( ! $definition ) {
             throw "Enumeration type '$typeId' does not exist"

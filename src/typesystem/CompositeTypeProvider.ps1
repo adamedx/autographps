@@ -17,9 +17,13 @@
 
 ScriptClass CompositeTypeProvider {
     $base = $null
+    $namespace = $null
+    $entityTypeTable = $null
+    $complexTypeTable = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
+        $this.namespace = $this.base.scriptclass |=> GetGraphNamespace $this.base.graph
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -27,11 +31,9 @@ ScriptClass CompositeTypeProvider {
             throw "The '$($this.scriptclass.classname)' type provider does not support type class '$typeClass'"
         }
 
-        $namespace = $this.base.scriptclass |=> GetGraphNamespace $this.base.graph
+        $nameInfo = $::.TypeSchema |=> GetTypeNameInfo $this.namespace $typeId
 
-        $nameInfo = $::.TypeSchema |=> GetTypeNameInfo $namespace $typeId
-
-        $nativeSchema = GetNativeSchemaFromGraph $namespace $nameInfo.Name $typeClass
+        $nativeSchema = GetNativeSchemaFromGraph $nameInfo.Name $typeClass
 
         $members = if ( $nativeSchema | gm property -erroraction ignore ) {
             foreach ( $property in $nativeSchema.property ) {
@@ -44,25 +46,80 @@ ScriptClass CompositeTypeProvider {
             $nativeSchema.baseType
         }
 
-        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $namespace $baseType $members $null $null $true $nativeSchema
+        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $members $null $null $true $nativeSchema
     }
 
-    function GetNativeSchemaFromGraph($namespace, $unqualifiedTypeName, $typeClass) {
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+    function GetSortedTypeNames($typeClass) {
+        $this.scriptclass |=> ValidateTypeClass $typeClass
+
+        switch ( $typeClass ) {
+            'Entity' {
+                (GetEntityTypeSchemas).Keys
+                break
+            }
+            'Complex' {
+                (GetComplexTypeSchemas).Keys
+                break
+            }
+        }
+    }
+
+    function GetComplexTypeSchemas {
+        if ( ! $this.complexTypeTable ) {
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $complexTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
+            $complexTypeSchemas = $graphDataModel |=> GetComplexTypes
+            UpdateTypeTable $complexTypeTable $complexTypeSchemas
+            $this.complexTypeTable = $complexTypeTable
+        }
+
+        $this.complexTypeTable
+    }
+
+    function GetEntityTypeSchemas {
+        if ( ! $this.entityTypeTable ) {
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $entityTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
+            $entityTypeSchemas = $graphDataModel |=> GetEntityTypes
+            UpdateTypeTable $entityTypeTable $entityTypeSchemas
+            $this.entityTypeTable = $entityTypeTable
+        }
+
+        $this.entityTypeTable
+    }
+
+    function UpdateTypeTable($typeTable, $typeSchemas) {
+        foreach ( $schema in $typeSchemas ) {
+            $qualifiedTypeName = $::.TypeSchema |=> GetQualifiedTypeName $this.namespace $schema.name
+            $typeTable.Add($qualifiedTypeName.tolower(), $schema)
+        }
+    }
+
+    function GetTypeByName($typeClass, $typeName) {
+        $typeTable = if ( $typeClass -eq 'Entity' ) {
+            GetEntityTypeSchemas
+        } else {
+            GetComplexTypeSchemas
+        }
+
+        $typeTable[$typeName.tolower()]
+    }
+
+    function GetNativeSchemaFromGraph($unqualifiedTypeName, $typeClass) {
+        $qualifiedTypeName = $::.TypeSchema |=> GetQualifiedTypeName $this.namespace $unqualifiedTypeName
 
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
-            $qualifiedTypeName = $::.TypeSchema |=> GetQualifiedTypeName $namespace $unqualifiedTypeName
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
             # are known not to work due to a defect fixed in PowerShell 7.0
             try {
-                $graphDataModel |=> GetEntityTypeByName $qualifiedTypeName
+                GetTypeByName Entity $qualifiedTypeName
             } catch {
             }
         }
 
         if ( ! $nativeSchema -and ( $typeClass -eq 'Complex' -or $typeClass -eq 'Unknown' ) ) {
             $nativeSchema = try {
-                $graphDataModel |=> GetComplexTypes $unqualifiedTypeName
+                GetTypeByName Complex $qualifiedTypeName
             } catch {
             }
         }

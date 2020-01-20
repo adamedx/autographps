@@ -14,8 +14,13 @@
 
 ScriptClass GraphParameterCompleter {
     function CompleteCommandParameter {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-        $contextNames = $::.LogicalGraphManager |=> Get |=> GetContext | sort | select -expandproperty name
-        $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $contextNames
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+        $contexts = $::.LogicalGraphManager |=> Get |=> GetContext | where {
+            $_.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)
+        }
+
+        if ( $contexts ) {
+            $contexts | select -expandproperty name
+        }
     }
 }

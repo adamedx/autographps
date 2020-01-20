@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../typesystem/TypeManager)
+. (import-script common/TypeParameterCompleter)
 
 function New-GraphObject {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
@@ -40,7 +41,9 @@ function New-GraphObject {
 
     $typeManager = $::.TypeManager |=> Get $targetContext
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $FullyQualifiedTypeName.IsPresent
+    $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified
 
     if ( $prototype -eq $null ) {
         throw "The specified type '$TypeName' was not found in graph '$($targetContext.name)'"
@@ -54,3 +57,6 @@ function New-GraphObject {
         $prototypeJSON | convertfrom-json
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphObject TypeName (new-so TypeParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphObject GraphName (new-so GraphParameterCompleter)

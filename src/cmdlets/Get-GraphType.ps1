@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../typesystem/typemanager)
+. (import-script common/TypeParameterCompleter)
 
 function Get-GraphType {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
@@ -40,7 +41,9 @@ function Get-GraphType {
 
     $typeManager = $::.TypeManager |=> Get $targetContext
 
-    $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $FullyQualifiedTypeName.IsPresent $true
+    $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+
+    $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
 
     if ( ! $type ) {
         throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
@@ -49,3 +52,5 @@ function Get-GraphType {
     $type
 }
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType TypeName (new-so TypeParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType GraphName (new-so GraphParameterCompleter)

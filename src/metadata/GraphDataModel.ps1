@@ -46,10 +46,8 @@ ScriptClass GraphDataModel {
     }
 
     function GetEntityTypes {
-        $entityTypes = __InitializeTypesOnDemand $true
-        if ( ! $entityTypes ) {
-            $this.typeSchemas.values
-        }
+        __InitializeTypesOnDemand
+        $this.typeSchemas.values
     }
 
     function GetComplexTypes($typeName) {
@@ -80,7 +78,7 @@ ScriptClass GraphDataModel {
         $this.SchemaData.Edmx.DataServices.Schema.Function
     }
 
-    function __InitializeTypesOnDemand($returnNewTypes = $false) {
+    function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
             $typeSchemas = $this.SchemaData.Edmx.DataServices.Schema.EntityType
@@ -89,9 +87,7 @@ ScriptClass GraphDataModel {
                 $qualifiedName = $this.namespace, $_.name -join '.'
                 $this.typeSchemas.Add($qualifiedName, $_)
             }
-            if ( $returnNewTypes ) {
-                $typeSchemas
-            }
+
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types" -completed
         }
     }
