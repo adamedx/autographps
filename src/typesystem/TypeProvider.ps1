@@ -71,6 +71,11 @@ ScriptClass TypeProvider {
             GetTypeProviderByObjectClass $::.$providerModel $graph
         }
 
+        function GetSortedTypeNames([GraphTypeClass] $typeClass, $graph) {
+            $provider = GetTypePRovider $typeClass $graph
+            $provider |=> GetSortedTypeNames $typeClass
+        }
+
         function GetTypeProviderByObjectClass($classObject, $graph) {
             $classProviderTable = GetProviderTable $classObject
             GetItemByObject $classProviderTable $graph {param($className, $graph) new-so $className $graph} $classObject.classname, $graph

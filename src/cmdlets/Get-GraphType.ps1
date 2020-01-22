@@ -18,7 +18,8 @@
 function Get-GraphType {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
     param(
-        [parameter(position=0, mandatory=$true)]
+        [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
         [Alias('Name')]
         $TypeName,
 
@@ -27,29 +28,37 @@ function Get-GraphType {
         $TypeClass = 'Entity',
 
         [parameter(parametersetname='optionallyqualified')]
+        [parameter(parametersetname='fullyqualified')]
         $Namespace,
 
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
-        [switch] $FullyQualifiedTypeName
+        [switch] $FullyQualifiedTypeName,
+
+        [parameter(parametersetname='list', mandatory=$true)]
+        [switch] $List
     )
 
     Enable-ScriptClassVerbosePreference
 
     $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
-    $typeManager = $::.TypeManager |=> Get $targetContext
+    if ( ! $List.IsPresent ) {
+        $typeManager = $::.TypeManager |=> Get $targetContext
 
-    $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
+        $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
 
-    if ( ! $type ) {
-        throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+        if ( ! $type ) {
+            throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+        }
+
+        $type
+    } else {
+        $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
     }
-
-    $type
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType TypeName (new-so TypeParameterCompleter)

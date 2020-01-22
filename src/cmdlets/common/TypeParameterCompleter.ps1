@@ -34,10 +34,7 @@ ScriptClass TypeParameterCompleter {
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
         if ( $targetContext ) {
-            $typeProvider = $::.TypeProvider |=> GetTypeProvider $typeClass $targetContext
-
-            $typeNames = $typeProvider |=> GetSortedTypeNames $typeClass
-
+            $typeNames = $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
             $::.ParameterCompleter |=> FindMatchesStartingWith $targetWord $TypeNames
         }
     }
