@@ -221,8 +221,9 @@ function Get-GraphItemWithMetadata {
                 $results += $_
             }
         }
-        __AutoConfigurePrompt $context
     }
+
+    __AutoConfigurePrompt $context
 
     $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
     $targetResultVariable.value = $results

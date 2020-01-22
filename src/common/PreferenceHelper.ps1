@@ -44,7 +44,7 @@ function __AutoConfigurePrompt($context) {
     }
 
     if ( $GraphAutoPromptPreference -eq 'Auto' ) {
-        if ( $context.connection |=> IsConnected ) {
+        if ( ( $context.connection |=> IsConnected ) -or ! ( $context.location |=> IsRoot ) ) {
             if ( ! $originalPrompt ) {
                 Set-GraphPrompt -Enable
             }

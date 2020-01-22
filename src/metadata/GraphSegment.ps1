@@ -153,7 +153,7 @@ ScriptClass GraphSegment {
     }
 
     function IsRoot {
-        Test-ScriptObject $this.GraphElement EntityVertex -and ($this.GraphElement |=> IsRoot)
+        (Test-ScriptObject $this.GraphElement EntityVertex) -and ($this.GraphElement |=> IsRoot)
     }
 
     function ToGraphUri($graph = $null) {
