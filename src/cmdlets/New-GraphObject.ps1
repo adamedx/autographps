@@ -32,7 +32,9 @@ function New-GraphObject {
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
-        [switch] $Json
+        [switch] $Json,
+
+        [switch] $SetDefaultValues
     )
 
     Enable-ScriptClassVerbosePreference
@@ -43,7 +45,7 @@ function New-GraphObject {
 
     $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent
 
     if ( $prototype -eq $null ) {
         throw "The specified type '$TypeName' was not found in graph '$($targetContext.name)'"

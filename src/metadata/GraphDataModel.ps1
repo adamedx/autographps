@@ -17,10 +17,26 @@ ScriptClass GraphDataModel {
     $methodBindings = $null
     $typeSchemas = $null
     $namespace = $null
+    $namespaceAlias = $null
+    $firstNamespaceMatch = $null
+    $secondNamespaceMatch = $null
 
     function __initialize($schemaData) {
         $this.SchemaData = $schemaData
         $this.namespace = $schemaData.Edmx.DataServices.Schema.Namespace
+        $this.namespaceAlias = if ( $schemaData.Edmx.DataServices.Schema | gm Alias -erroraction ignore ) {
+            $schemaData.Edmx.DataServices.Schema.Alias
+        }
+
+        $this.firstNamespaceMatch = $this.namespace + '.'
+        if ( $this.namespaceAlias ) {
+            if ( $this.namespace.length -gt $this.namespaceAlias.length ) {
+                $this.secondNamespaceMatch = $this.namespaceAlias + '.'
+            } else {
+                $this.firstnamespaceMatch = $this.namespaceAlias + '.'
+                $this.secondNamespaceMatch = $this.namespace + '.'
+            }
+        }
     }
 
     function GetNamespace {
@@ -76,6 +92,26 @@ ScriptClass GraphDataModel {
     function GetFunctions {
         $::.ProgressWriter |=> WriteProgress -id 1 "Reading functions"
         $this.SchemaData.Edmx.DataServices.Schema.Function
+    }
+
+    function UnqualifyTypeName($qualifiedTypeName, $onlyIfQualified) {
+        $unqualified = if ( $qualifiedTypeName.Contains('.') ) {
+            $qualifierLength = if ( $qualifiedTypeName.startswith($this.firstNamespaceMatch) ) {
+                $this.firstNamespaceMatch.length
+            } elseif ( $this.secondNamespaceMatch -and $qualifiedTypeName.startswith($this.secondNamespaceMatch) ) {
+                $this.secondNamespaceMatch.length
+            }
+
+            if ( $qualifierLength -ne $null ) {
+                $qualifiedTypeName.substring($qualifierLength)
+            }
+        }
+
+        if ( $unqualified ) {
+            $unqualified
+        } elseif ( ! $onlyIfQualified ) {
+            $qualifiedTypeName
+        }
     }
 
     function __InitializeTypesOnDemand {

@@ -20,10 +20,12 @@ ScriptClass CompositeTypeProvider {
     $namespace = $null
     $entityTypeTable = $null
     $complexTypeTable = $null
+    $namespaceAlias = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
         $this.namespace = $this.base.scriptclass |=> GetGraphNamespace $this.base.graph
+        $this.namespaceAlias = (($::.GraphManager |=> GetGraph (gg -current).details).builder.dataModel).namespaceAlias
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -37,13 +39,13 @@ ScriptClass CompositeTypeProvider {
 
         $members = if ( $nativeSchema | gm property -erroraction ignore ) {
             foreach ( $property in $nativeSchema.property ) {
-                $typeInfo = GetNormalizedPropertyTypeInfo $property.Type
+                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $this.namespace $this.namespaceAlias $property.Type
                 new-so TypeMember $property.Name $typeInfo.TypeFullName $typeInfo.IsCollection
             }
         }
 
         $baseType = if ( $nativeSchema | gm BaseType -erroraction ignore) {
-            $nativeSchema.baseType
+            $::.Entity |=> UnAliasQualifiedName $this.namespace $this.namespaceAlias $nativeSchema.baseType
         }
 
         new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $members $null $null $true $nativeSchema
@@ -129,21 +131,6 @@ ScriptClass CompositeTypeProvider {
         }
 
         $nativeSchema
-    }
-
-    function GetNormalizedPropertyTypeInfo($typeSpec) {
-        $isCollection = $false
-        $typeName = if ($typeSpec -match 'Collection\((?<typename>.+)\)') {
-            $isCollection = $true
-            $matches.typename
-        } else {
-            $typeSpec
-        }
-
-        [PSCustomObject] @{
-            TypeFullName = $typeName
-            IsCollection = $isCollection
-        }
     }
 
     static {

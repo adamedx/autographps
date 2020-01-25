@@ -14,13 +14,15 @@
 
 ScriptClass Entity {
     $namespace = $null
+    $namespaceAlias = $null
     $name = $null
     $type = $null
     $typeData = $null
     $navigations = $null
 
-    function __initialize($schema, $namespace) {
+    function __initialize($schema, $namespace, $namespaceAlias) {
         $this.namespace = $namespace
+        $this.namespaceAlias = $namespaceAlias
 
         $schemaElement = $schema | select -first 1
         $this.type = $schemaElement | select -expandproperty localname
@@ -28,7 +30,7 @@ ScriptClass Entity {
         $this.typeData = GetEntityTypeData $schema
         $this.navigations = if ( ($schema | gm navigationproperty) -ne $null ) {
             $schema.navigationproperty | foreach {
-                new-so Entity $_ $namespace
+                new-so Entity $_ $namespace $namespaceAlias
             }
         }
     }
@@ -40,13 +42,13 @@ ScriptClass Entity {
     function GetEntityTypeData($schema) {
         $typeData = switch ($this.type) {
             'NavigationProperty' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.type
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $this.namespaceAlias $schema.type
             }
             'NavigationPropertyBinding' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.parameter.bindingparameter.type
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $this.namespaceAlias $schema.parameter.bindingparameter.type
             }
             'Function' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $schema.ReturnType
+                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $this.namespaceAlias $schema.ReturnType
             }
         }
 
@@ -90,7 +92,21 @@ ScriptClass Entity {
             "{0}.{1}" -f $namespace, $name
         }
 
-        function GetEntityTypeDataFromTypeName($entityTypeName) {
+        function UnAliasQualifiedName($namespace, $namespaceAlias, $name) {
+            if ( $namespaceAlias -and $name.contains('.') ) {
+                $unqualified = $name -split '\.' | select -last 1
+                $prefix = $name.substring(0, $name.length - $unqualified.length - 1)
+                if ( $prefix -eq $namespaceAlias ) {
+                    QualifyName $namespace $unqualified
+                } else {
+                    $name
+                }
+            } else {
+                $name
+            }
+        }
+
+        function GetEntityTypeDataFromTypeName($namespace, $namespaceAlias, $entityTypeName) {
             $isCollection = $false
             $scalarTypeName = if ($entityTypeName -match 'Collection\((?<typename>.+)\)') {
                 $isCollection = $true
@@ -99,7 +115,11 @@ ScriptClass Entity {
                 $entityTypeName
             }
 
-            [PSCustomObject]@{EntityTypeName=$scalarTypeName;IsCollection=$isCollection}
+            $canonicallyQualifiedTypeName = if ( $scalarTypeName ) {
+                UnAliasQualifiedName $namespace $namespaceAlias $scalarTypeName
+            }
+
+            [PSCustomObject]@{EntityTypeName=$canonicallyQualifiedTypeName;IsCollection=$isCollection}
         }
     }
 }

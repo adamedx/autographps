@@ -46,18 +46,12 @@ ScriptClass TypeSchema {
             }
         }
 
-        function GetNormalizedPropertyTypeInfo($typeSpec) {
-            $isCollection = $false
-            $typeName = if ($typeSpec -match 'Collection\((?<typename>.+)\)') {
-                $isCollection = $true
-                $matches.typename
-            } else {
-                $typeSpec
-            }
+        function GetNormalizedPropertyTypeInfo($namespace, $namespaceAlias, $typeSpec) {
+            $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $namespace $namespaceAlias $typeSpec
 
             [PSCustomObject] @{
-                TypeFullName = $typeName
-                IsCollection = $isCollection
+                TypeFullName = $typeData.EntityTypeName
+                IsCollection = $typeData.isCollection
             }
         }
     }

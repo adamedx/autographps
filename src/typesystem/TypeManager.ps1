@@ -30,19 +30,22 @@ ScriptClass TypeManager {
     function __initialize($graph) {
         $this.graph = $graph
         $this.definitions = @{}
-        $this.prototypes = @{}
+        $this.prototypes = @{
+            $false = @{}
+            $true = @{}
+        }
     }
 
-    function GetPrototype($typeClass, $typeName, $fullyQualified = $false) {
+    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false) {
         $typeId = GetOptionallyQualifiedName $typeClass $typeName $fullyQualified
 
-        $prototype = $this.prototypes[$typeId]
+        $prototype = $this.prototypes[$setDefaultValues][$typeId]
 
-        if ( ! $this.prototypes.containskey($typeId) ) {
+        if ( ! $this.prototypes[$setDefaultValues].containskey($typeId) ) {
             $type = FindTypeDefinition $typeClass $typeId $true $true
-            $builder = new-so GraphObjectBuilder $this $type
+            $builder = new-so GraphObjectBuilder $this $type $setDefaultValues
             $prototype = $builder |=> ToObject
-            $this.prototypes[$typeId] = $prototype
+            $this.prototypes[$setDefaultValues][$typeId] = $prototype
         }
         $prototype
     }

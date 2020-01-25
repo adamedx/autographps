@@ -18,11 +18,13 @@
 ScriptClass GraphObjectBuilder {
     $typeManager = $null
     $typeDefinition = $null
+    $setDefaultValues = $false
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
+        $this.setDefaultValues = $setDefaultValues
     }
 
     function ToObject {
@@ -36,10 +38,14 @@ ScriptClass GraphObjectBuilder {
         # For any collection, we simply want to provide an empty array or
         # other defaul representation of the collection
         if ( $isCollection ) {
-            if ( $typeDefinition.DefaultCollectionValue ) {
-                , ( . $typeDefinition.DefaultCollectionValue )
+            if ( $this.setDefaultValues ) {
+                if ( $typeDefinition.DefaultCollectionValue ) {
+                    , ( . $typeDefinition.DefaultCollectionValue )
+                } else {
+                    @()
+                }
             } else {
-                @()
+                $null
             }
         } else {
             # For non-collections, we want to embed the value directly in
@@ -81,12 +87,16 @@ ScriptClass GraphObjectBuilder {
     }
 
     function NewScalarValue($typeDefinition) {
-        if ( $typeDefinition.DefaultValue -ne $null ) {
-            if ( $typeDefinition.DefaultValue -is [ScriptBlock] ) {
-                . $typeDefinition.DefaultValue
-            } else {
-                $typeDefinition.DefaultValue
+        if ( $this.setDefaultValues ) {
+            if ( $typeDefinition.DefaultValue -ne $null ) {
+                if ( $typeDefinition.DefaultValue -is [ScriptBlock] ) {
+                    . $typeDefinition.DefaultValue
+                } else {
+                    $typeDefinition.DefaultValue
+                }
             }
+        } else {
+            $null
         }
     }
 
