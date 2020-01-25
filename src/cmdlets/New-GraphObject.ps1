@@ -34,6 +34,8 @@ function New-GraphObject {
 
         [switch] $Json,
 
+        [switch] $Recurse,
+
         [switch] $SetDefaultValues
     )
 
@@ -45,11 +47,7 @@ function New-GraphObject {
 
     $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent
-
-    if ( $prototype -eq $null ) {
-        throw "The specified type '$TypeName' was not found in graph '$($targetContext.name)'"
-    }
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent
 
     $prototypeJson = $prototype | convertto-json -depth 24
 

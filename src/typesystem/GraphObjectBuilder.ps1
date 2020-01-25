@@ -19,12 +19,18 @@ ScriptClass GraphObjectBuilder {
     $typeManager = $null
     $typeDefinition = $null
     $setDefaultValues = $false
+    $maxLevel = $null
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $maxLevel) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
         $this.setDefaultValues = $setDefaultValues
+        $this.maxLevel = if ( ! $maxLevel ) {
+            $this.scriptlass.MAX_OBJECT_DEPTH
+        } else {
+            $maxLevel
+        }
     }
 
     function ToObject {
@@ -34,6 +40,14 @@ ScriptClass GraphObjectBuilder {
 
     function GetMemberValue($typeDefinition, $isCollection) {
         $this.currentLevel += 1
+
+        if ( $this.currentLevel -gt $this.scriptclass.MAX_OBJECT_DEPTH ) {
+            throw "Object depth maximum of '$($this.scriptclass.MAX_OBJECT_DEPTH)' exceeded"
+        }
+
+        if ( $this.currentLevel -gt $this.maxLevel ) {
+            return $null
+        }
 
         # For any collection, we simply want to provide an empty array or
         # other defaul representation of the collection
@@ -61,10 +75,6 @@ ScriptClass GraphObjectBuilder {
     }
 
     function NewCompositeValue($typeDefinition) {
-        if ( $this.currentLevel -gt $this.scriptclass.MAX_OBJECT_DEPTH ) {
-            throw "Object depth maximum of '$($this.scriptclass_MAX_OBJECT_DEPTH)' exceeded"
-        }
-
         $this.scriptclass.maxLevel = [Math]::Max($this.scriptclass.maxLevel, $this.currentLevel)
 
         $object = @{}

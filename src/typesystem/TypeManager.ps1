@@ -36,16 +36,22 @@ ScriptClass TypeManager {
         }
     }
 
-    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false) {
+    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false) {
+        $depth = if ( $recursive ) {
+            24
+        } else {
+            1
+        }
+
         $typeId = GetOptionallyQualifiedName $typeClass $typeName $fullyQualified
 
-        $prototype = $this.prototypes[$setDefaultValues][$typeId]
+        $prototype = GetPrototypeFromCache $typeId $setDefaultValues $recursive
 
-        if ( ! $this.prototypes[$setDefaultValues].containskey($typeId) ) {
+        if ( ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             $type = FindTypeDefinition $typeClass $typeId $true $true
-            $builder = new-so GraphObjectBuilder $this $type $setDefaultValues
+            $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $depth
             $prototype = $builder |=> ToObject
-            $this.prototypes[$setDefaultValues][$typeId] = $prototype
+            AddPrototypeToCache $typeId $setDefaultValues $recursive $prototype
         }
         $prototype
     }
@@ -121,6 +127,25 @@ ScriptClass TypeManager {
         }
 
         $definition
+    }
+
+    function GetPrototypeId($typeId, $setDefaults, $recursive) {
+        '{0}:{1}:{2}' -f $typeId, ([int32] $setDefaults), ([int32] $recursive)
+    }
+
+    function GetPrototypeFromCache($typeId, $setDefaults, $recursive) {
+        $id = GetPrototypeId $typeId $setDefaults $recursive
+        $this.prototypes[$id]
+    }
+
+    function AddPrototypeToCache($typeId, $setDefaults, $recursive, $prototype) {
+        $id = GetPrototypeId $typeId $setDefaults $recursive
+        $this.prototypes.add($id, $prototype)
+    }
+
+    function HasCacheKey($typeId, $setDefaults, $recursive) {
+        $id = GetPrototypeId $typeId $setDefaults $recursive
+        $this.prototypes.ContainsKey($id)
     }
 
     function AddTypeDefinition($typeId, $type) {
