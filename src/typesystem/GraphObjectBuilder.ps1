@@ -19,34 +19,45 @@ ScriptClass GraphObjectBuilder {
     $typeManager = $null
     $typeDefinition = $null
     $setDefaultValues = $false
-    $maxLevel = $null
+    $maxLevel = 0
+    $propertyFilter = $null
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $maxLevel) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
-        $this.setDefaultValues = $setDefaultValues
-        $this.maxLevel = if ( ! $maxLevel ) {
-            $this.scriptlass.MAX_OBJECT_DEPTH
+        $this.setDefaultValues = $setDefaultValues -or $valueList
+
+        if ( $propertyFilter ) {
+            if ( $valueList -and ( $valueList.length -gt $propertyFilter.length ) ) {
+                throw 'Specified list of values has more elements than the specified set of properties'
+            }
+            $this.propertyFilter = @{}
+            for ( $propertyIndex = 0; $propertyIndex -lt $propertyFilter.length; $propertyIndex++ ) {
+                $hasValue = $false
+                $value = if ( $valueList -and ( $propertyIndex -lt $valueList.length ) ) {
+                    $hasValue = $true
+                    $valueList[$propertyIndex]
+                }
+
+                $this.propertyFilter.Add($propertyFilter[$propertyIndex], @{HasValue=$hasValue;Value=$value})
+            }
+        }
+        $this.maxLevel = if ( $recurse ) {
+            $this.scriptclass.MAX_OBJECT_DEPTH
         } else {
-            $maxLevel
+            0
         }
     }
 
     function ToObject {
         $this.currentLevel = 0
-        GetMemberValue $this.typeDefinition $false
+        GetMemberValue $null $this.typeDefinition $false $false $null
     }
 
-    function GetMemberValue($typeDefinition, $isCollection) {
-        $this.currentLevel += 1
-
-        if ( $this.currentLevel -gt $this.scriptclass.MAX_OBJECT_DEPTH ) {
-            throw "Object depth maximum of '$($this.scriptclass.MAX_OBJECT_DEPTH)' exceeded"
-        }
-
-        if ( $this.currentLevel -gt $this.maxLevel ) {
-            return $null
+    function GetMemberValue($memberName, $typeDefinition, $isCollection, $useCustomValue, $customValue) {
+        if ( $useCustomValue ) {
+            return $customValue
         }
 
         # For any collection, we simply want to provide an empty array or
@@ -70,27 +81,48 @@ ScriptClass GraphObjectBuilder {
                 NewScalarValue $typeDefinition
             }
         }
-
-        $this.currentLevel -= 1
     }
 
     function NewCompositeValue($typeDefinition) {
-        $this.scriptclass.maxLevel = [Math]::Max($this.scriptclass.maxLevel, $this.currentLevel)
+        if ( $this.currentLevel -gt $this.scriptclass.MAX_OBJECT_DEPTH ) {
+            throw "Object depth maximum of '$($this.scriptclass.MAX_OBJECT_DEPTH)' exceeded"
+        }
 
-        $object = @{}
+        if ( $this.currentLevel -gt $this.maxLevel ) {
+            return $null
+        }
 
-        if ( $typeDefinition.members ) {
-            foreach ( $member in $typeDefinition.members ) {
-                $memberTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $member.typeId $true
+        try {
+            $this.currentLevel += 1
 
-                if ( ! $memberTypeDefinition ) {
-                    throw "Unable to find type '$($member.typeId)' for member $($member.name) of type $($typeDefinition.typeId)"
+            $object = @{}
+
+            if ( $typeDefinition.members ) {
+                foreach ( $member in $typeDefinition.members ) {
+                    $propertyInfo = if ( $this.propertyFilter ) {
+                        $this.propertyFilter[$member.name]
+                    }
+
+                    if ( ! $this.propertyFilter -or $propertyInfo ) {
+                        $memberTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $member.typeId $true
+
+                        if ( ! $memberTypeDefinition ) {
+                            throw "Unable to find type '$($member.typeId)' for member $($member.name) of type $($typeDefinition.typeId)"
+                        }
+
+                        $hasValue = $propertyInfo -and $propertyInfo.HasValue
+                        $customValue = if ( $hasValue ) {
+                            $propertyInfo.Value
+                        }
+
+                        $value = GetMemberValue $member.Name $memberTypeDefinition $member.isCollection $hasValue $customValue
+
+                        $object.Add($member.Name, $value)
+                    }
                 }
-
-                $value = GetMemberValue $memberTypeDefinition $member.isCollection
-
-                $object.Add($member.Name, $value)
             }
+        } finally {
+            $this.currentLevel -= 1
         }
 
         $object

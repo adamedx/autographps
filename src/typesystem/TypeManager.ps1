@@ -36,22 +36,23 @@ ScriptClass TypeManager {
         }
     }
 
-    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false) {
-        $depth = if ( $recursive ) {
-            24
-        } else {
-            1
-        }
-
+    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList) {
         $typeId = GetOptionallyQualifiedName $typeClass $typeName $fullyQualified
 
-        $prototype = GetPrototypeFromCache $typeId $setDefaultValues $recursive
+        $prototype = if ( ! $propertyFilter ) {
+            GetPrototypeFromCache $typeId $setDefaultValues $recursive
+        }
 
-        if ( ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
-            $type = FindTypeDefinition $typeClass $typeId $true $true
-            $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $depth
-            $prototype = $builder |=> ToObject
-            AddPrototypeToCache $typeId $setDefaultValues $recursive $prototype
+        if ( $propertyFilter -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
+            if ( ! $prototype ) {
+                $type = FindTypeDefinition $typeClass $typeId $true $true
+                $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList
+                $prototype = $builder |=> ToObject
+            }
+
+            if ( ! $propertyFilter ) {
+                AddPrototypeToCache $typeId $setDefaultValues $recursive $prototype
+            }
         }
         $prototype
     }
