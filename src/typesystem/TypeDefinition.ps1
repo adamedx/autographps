@@ -48,5 +48,16 @@ ScriptClass TypeDefinition {
             $typeProvider = $::.TypeProvider |=> GetTypeProvider $typeClass $graph
             $typeProvider |=> GetTypeDefinition $typeClass $typeId
         }
+
+        function RegisterTypeDisplayType {
+            $coreProperties = @('TypeId', 'Class', 'BaseType', 'IsComposite', 'Properties')
+            Update-TypeData -typename $this.className -defaultdisplaypropertyset $coreProperties -force
+        }
+
+        function __initialize {
+            RegisterTypeDisplayType
+        }
     }
 }
+
+$::.TypeDefinition |=> __initialize
