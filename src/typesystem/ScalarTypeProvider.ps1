@@ -66,17 +66,17 @@ ScriptClass ScalarTypeProvider {
         $nativeSchemas = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel.schemadata.edmx.dataservices.schema.enumtype
 
         $nativeSchemas | foreach {
-            $members = [ordered] @{}
+            $properties = [ordered] @{}
 
-            $_.member |foreach {
-                $memberValue = [PSCustomObject] @{
+            $_.member | foreach {
+                $propertyValue = [PSCustomObject] @{
                     Type = 'Edm.String'
                     Name = [PSCUstomObject] @{Name=$_.name;Value=$_.value}
                 }
-                $members.Add($_.name, $memberValue)
+                $properties.Add($_.name, $propertyValue)
             }
 
-            $enumerationValues = $members.Values
+            $enumerationValues = $properties.Values
             $defaultValue = if ( $enumerationValues.count -gt 0 ) {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }

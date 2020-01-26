@@ -37,10 +37,10 @@ ScriptClass CompositeTypeProvider {
 
         $nativeSchema = GetNativeSchemaFromGraph $nameInfo.Name $typeClass
 
-        $members = if ( $nativeSchema | gm property -erroraction ignore ) {
+        $properties = if ( $nativeSchema | gm property -erroraction ignore ) {
             foreach ( $property in $nativeSchema.property ) {
                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $this.namespace $this.namespaceAlias $property.Type
-                new-so TypeMember $property.Name $typeInfo.TypeFullName $typeInfo.IsCollection
+                new-so TypeProperty $property.Name $typeInfo.TypeFullName $typeInfo.IsCollection
             }
         }
 
@@ -48,7 +48,7 @@ ScriptClass CompositeTypeProvider {
             $::.Entity |=> UnAliasQualifiedName $this.namespace $this.namespaceAlias $nativeSchema.baseType
         }
 
-        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $members $null $null $true $nativeSchema
+        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $properties $null $null $true $nativeSchema
     }
 
     function GetSortedTypeNames($typeClass) {

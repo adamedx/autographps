@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass TypeMember {
+ScriptClass TypeProperty {
     $Name = $null
     $TypeId = $null
     $IsCollection = $null

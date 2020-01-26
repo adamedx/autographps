@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script TypeMember)
+. (import-script TypeProperty)
 
 ScriptClass TypeDefinition {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
@@ -21,14 +21,14 @@ ScriptClass TypeDefinition {
     $BaseType = $null
     $Name = $null
     $Namespace = $null
-    $Members = $null
+    $Properties = $null
     $Class = $null
     $IsComposite = $false
     $DefaultValue = $null
     $DefaultCollectionValue = $null
     $NativeSchema = $null
 
-    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $members, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema) {
+    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $properties, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema) {
         $this.TypeId = $typeId
         $this.Class = $class
         $this.BaseType = $baseType
@@ -37,7 +37,7 @@ ScriptClass TypeDefinition {
         $this.IsComposite = $IsComposite
         $this.DefaultValue = $defaultValue
         $this.DefaultCollectionValue = $defaultCollectionValue
-        $this.Members = $members
+        $this.Properties = $properties
         $this.NativeSchema = $nativeSchema
     }
 

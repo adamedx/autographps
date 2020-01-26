@@ -153,7 +153,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\UriCache.ps1'
-        '.\src\typesystem\TypeMember.ps1',
+        '.\src\typesystem\TypeProperty.ps1',
         '.\src\typesystem\TypeSchema.ps1',
         '.\src\typesystem\TypeDefinition.ps1',
         '.\src\typesystem\TypeProvider.ps1',

@@ -23,24 +23,39 @@ ScriptClass GraphObjectBuilder {
     $propertyFilter = $null
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList, [HashTable[]] $propertyList ) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
-        $this.setDefaultValues = $setDefaultValues -or $valueList
+        $this.setDefaultValues = $setDefaultValues -or $valueList -or ! $typeDefinition.IsComposite
 
-        if ( $propertyFilter ) {
-            if ( $valueList -and ( $valueList.length -gt $propertyFilter.length ) ) {
+        $values = $valueList
+        $properties = $propertyFilter
+
+        if ( $propertyList ) {
+            $values = @()
+            $properties = @()
+
+            foreach ( $table in $propertyList ) {
+                foreach ( $propertyName in $table.keys ) {
+                    $properties += $propertyName
+                    $values += $table[$propertyName]
+                }
+            }
+        }
+
+        if ( $properties ) {
+            if ( $valueList -and ( $valueList.length -gt $properties.length ) ) {
                 throw 'Specified list of values has more elements than the specified set of properties'
             }
             $this.propertyFilter = @{}
-            for ( $propertyIndex = 0; $propertyIndex -lt $propertyFilter.length; $propertyIndex++ ) {
+            for ( $propertyIndex = 0; $propertyIndex -lt $properties.length; $propertyIndex++ ) {
                 $hasValue = $false
-                $value = if ( $valueList -and ( $propertyIndex -lt $valueList.length ) ) {
+                $value = if ( $values -and ( $propertyIndex -lt $values.length ) ) {
                     $hasValue = $true
-                    $valueList[$propertyIndex]
+                    $values[$propertyIndex]
                 }
 
-                $this.propertyFilter.Add($propertyFilter[$propertyIndex], @{HasValue=$hasValue;Value=$value})
+                $this.propertyFilter.Add($properties[$propertyIndex], @{HasValue=$hasValue;Value=$value})
             }
         }
         $this.maxLevel = if ( $recurse ) {
@@ -52,10 +67,10 @@ ScriptClass GraphObjectBuilder {
 
     function ToObject {
         $this.currentLevel = 0
-        GetMemberValue $null $this.typeDefinition $false $false $null
+        GetPropertyValue $this.typeDefinition $false $false $null
     }
 
-    function GetMemberValue($memberName, $typeDefinition, $isCollection, $useCustomValue, $customValue) {
+    function GetPropertyValue($typeDefinition, $isCollection, $useCustomValue, $customValue) {
         if ( $useCustomValue ) {
             return $customValue
         }
@@ -97,17 +112,17 @@ ScriptClass GraphObjectBuilder {
 
             $object = @{}
 
-            if ( $typeDefinition.members ) {
-                foreach ( $member in $typeDefinition.members ) {
+            if ( $typeDefinition.properties ) {
+                foreach ( $property in $typeDefinition.properties ) {
                     $propertyInfo = if ( $this.propertyFilter ) {
-                        $this.propertyFilter[$member.name]
+                        $this.propertyFilter[$property.name]
                     }
 
                     if ( ! $this.propertyFilter -or $propertyInfo ) {
-                        $memberTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $member.typeId $true
+                        $propertyTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $property.typeId $true
 
-                        if ( ! $memberTypeDefinition ) {
-                            throw "Unable to find type '$($member.typeId)' for member $($member.name) of type $($typeDefinition.typeId)"
+                        if ( ! $propertyTypeDefinition ) {
+                            throw "Unable to find type '$($property.typeId)' for property $($property.name) of type $($typeDefinition.typeId)"
                         }
 
                         $hasValue = $propertyInfo -and $propertyInfo.HasValue
@@ -115,9 +130,9 @@ ScriptClass GraphObjectBuilder {
                             $propertyInfo.Value
                         }
 
-                        $value = GetMemberValue $member.Name $memberTypeDefinition $member.isCollection $hasValue $customValue
+                        $value = GetPropertyValue $propertyTypeDefinition $property.isCollection $hasValue $customValue
 
-                        $object.Add($member.Name, $value)
+                        $object.Add($property.Name, $value)
                     }
                 }
             }
