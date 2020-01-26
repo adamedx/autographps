@@ -14,6 +14,7 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeParameterCompleter)
+. (import-script common/TypePropertyParameterCompleter)
 
 function New-GraphObject {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
@@ -24,18 +25,15 @@ function New-GraphObject {
         [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
         $TypeClass = 'Entity',
 
-        [parameter(parametersetname='optionallyqualified')]
-        $Namespace,
-
-        $GraphName,
-
-        [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='fullyqualified')]
+        [parameter(position=1, parametersetname='optionallyqualified')]
+        [parameter(position=1, parametersetname='fullyqualified')]
         [string[]] $Property,
 
-        [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='fullyqualified')]
+        [parameter(position=2, parametersetname='optionallyqualified')]
+        [parameter(position=2, parametersetname='fullyqualified')]
         [object[]] $Value,
+
+        $GraphName,
 
         [parameter(parametersetname='optionallyqualifiedproplist', mandatory=$true)]
         [parameter(parametersetname='fullyqualifiedproplist', mandatory=$true)]
@@ -72,4 +70,5 @@ function New-GraphObject {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphObject TypeName (new-so TypeParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphObject Property (new-so TypePropertyParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphObject GraphName (new-so GraphParameterCompleter)
