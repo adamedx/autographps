@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$manifestLocation   = Join-Path $here '..\..\autographps.psd1'
 
 Describe "The Test-Graph cmdlet" {
 

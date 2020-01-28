@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../typesystem/typemanager)
+. (import-script common/TypeHelper)
 . (import-script common/TypeParameterCompleter)
 
 function Get-GraphType {
@@ -55,7 +56,7 @@ function Get-GraphType {
             throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
         }
 
-        $type
+        $::.TypeHelper |=> ToPublic $type
     } else {
         $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
     }
