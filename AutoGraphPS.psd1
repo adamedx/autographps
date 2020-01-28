@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'autographps.psm1'
+RootModule = 'AutoGraphPS.psm1'
 
 # Version number of this module.
 ModuleVersion = '0.30.0'
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.16.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.17.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -113,7 +113,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 # List of all files packaged with this module
     FileList = @(
         '.\AutoGraphPS.psd1',
-        '.\autographps.psm1',
+        '.\AutoGraphPS.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
@@ -194,17 +194,21 @@ This release adds the ability to create the data types defined in the Graph API 
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.17.0
 
 ### Breaking changes
-None.
+
+* Get-GraphType has new parameter names and a different output type -- it is not compatible with the previous version of Get-GraphType.
 
 ### New features
 
-* New-GraphObject command
-* Get-GraphType command
+* `Get-GraphType` command re-implementation: `Get-GraphType` now returns a standard, reliably structured object that contains information about the type's name, its type class (i.e. whether it is an `Entity`, `Complex`, `Primitive`, or `Enumeration` type), and the properties that define the type's structure
+* `Get-GraphType` now supports Primitive and Enumeration types in addition to Entity and Complex types.
+* `New-GraphObject` command: This new command returns an object of the specified type class (see above) and optionally sets properties to default values appropriate to the types of those properties. This command can be used to create entity or other types that can be submitted in write requests to the Graph. The types are those defined in the API vesrion for the current context.
 
 ### Fixed defects
+
+* [Metadata regression 2020-01-22 caused by MS Graph](https://github.com/adamedx/autographps/issues/81): Commands such as `gls`, `gcd`, and any others relying on Graph metadata served at https://graph.microsoft.com/v1.0/$metadata started to fail on 2020-01-22. The cause was a change to enable namespace aliases in the schema rather than the prefix `microsoft.graph`. The fix was for AutoGraph to look for aliases and interpret types according to the alias -- previously it was not designed to handle aliases and assumed all type references would use the original, unaliased prefix.
 
 '@
     } # End of PSData hashtable

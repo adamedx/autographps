@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../typesystem/typemanager)
+. (import-script ../typesystem/TypeManager)
 . (import-script common/TypeHelper)
 . (import-script common/TypeParameterCompleter)
 

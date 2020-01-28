@@ -28,6 +28,16 @@ ScriptClass GraphDataModel {
             $schemaData.Edmx.DataServices.Schema.Alias
         }
 
+        # Previously, the "Namespace" attribute of the Schema element was sufficient to determine
+        # the fully qualified names of the types referenced in the rest of the schema. However, on
+        # 2020-01-22, the metadata hosted by the Graph service was changed to include an Alias attribute
+        # that allows use of the alias in a type name as a (typically shorter) synonym for the fully qualified
+        # name of the type. That change regressed this code which was unaware of the "Alias" attribute.
+        # The code below now accounts for it, though there is special handling in other parts of the code
+        # to resolve aliases when resolving type names.
+        # Note that namespace aliases are indeed legal and are documented for OData:
+        # https://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/.
+
         $this.firstNamespaceMatch = $this.namespace + '.'
         if ( $this.namespaceAlias ) {
             if ( $this.namespace.length -gt $this.namespaceAlias.length ) {

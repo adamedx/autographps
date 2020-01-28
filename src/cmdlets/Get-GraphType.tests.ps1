@@ -31,6 +31,7 @@ function GetAllTypes {
 Describe 'The Get-GraphType command' {
     Context 'When invoked using v1 metadata with namespace aliases' {
         BeforeAll {
+            $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
         }
 
@@ -190,6 +191,7 @@ Describe 'The Get-GraphType command' {
 
     Context 'When invoked using v1 metadata without namespace aliases (i.e. deprecated format)' {
         BeforeAll {
+            $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-no-ns-alias-2020-01-20.xml" -force -wait -warningaction silentlycontinue
         }
 

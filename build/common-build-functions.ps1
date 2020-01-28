@@ -778,7 +778,7 @@ function New-DotNetCoreProjFromPackagesConfig($packageConfigPath, $destinationFo
 
         set-content -path $packagesConfigCsProj -value $csProjectContent
     } else {
-        write-verbose "Config file '$packagesConfigCsPRoj' does not exist"
+        write-verbose "Config file '$packagesConfigCsProj' does not exist"
     }
 
     $packagesConfigCsProj

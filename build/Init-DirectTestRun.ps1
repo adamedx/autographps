@@ -25,6 +25,16 @@ $newpsmodulepath = $devDirectory + $OSPathSeparator + (gi env:PSModulePath).valu
 si env:PSModulePath $newpsmodulepath
 write-verbose "Updated PSModulePath environment variable to '$newpsmodulepath'"
 
+write-verbose "Fix potential case mismatch between module directory name and module name for AutoGraphPS-SDK that causes some module load issues."
+write-verbose "This is required currently on Linux because the powershellget / nuget infrastructure uses the casing of the name as registered"
+write-verbose "in PowerShell Gallery instead of the casing of the name in the module manifest to create the directory name of the module locally."
+write-verbose "On Linux, as of PowerShell 6.2.3 this results in an inability to load the module in some cases -- renaming the directory to match"
+write-verbose "the manifest's casing works around this."
+$moddir = get-item (join-path $devDirectory autographps-sdk) -erroraction ignore
+if ( $moddir ) {
+    move-item $moddir (join-path $devDirectory AutoGraphPS-SDK)
+}
+
 if ( test-path $testInitPath ) {
     write-verbose "Found init script '$testInitPath', will execute it"
     . $testInitPath

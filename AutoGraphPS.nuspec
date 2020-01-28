@@ -6,21 +6,21 @@
     <authors>adamedx</authors>
     <owners>adamedx</owners>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
-    <projectUrl>https://github.com/adamedx/poshgraph</projectUrl>
+    <projectUrl>https://github.com/adamedx/autographps</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line explorer for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
-      <dependency id="autographps-sdk" version="0.16.0" />
+      <dependency id="AutoGraphPS-SDK" version="0.17.0" />
     </dependencies>
   </metadata>
   <files>
     <file src="LICENSE.md" target="." />
     <file src="README.md" target="." />
     <file src="AutoGraphPS.psd1" target="." />
-    <file src="autographps.psm1" target="." />
+    <file src="AutoGraphPS.psm1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
   </files>

@@ -14,6 +14,8 @@
 
 set-strictmode -version 2
 
+# This test assumes the module has been imported
+
 . (join-path $psscriptroot ../../test/common/CompareCustomObject.ps1)
 
 function GetAllObjects {
@@ -31,6 +33,7 @@ function GetAllObjects {
 Describe 'The New-GraphObject command' {
     Context 'When invoked using v1 metadata with v1 metadata' {
         BeforeAll {
+            $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
         }
 
@@ -41,6 +44,7 @@ Describe 'The New-GraphObject command' {
 
     Context 'When invoked using beta metadata ' {
         BeforeAll {
+            $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-2020-01-23.xml" -force -wait -warningaction silentlycontinue
         }
 
