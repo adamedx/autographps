@@ -2,9 +2,11 @@
 
 ## To-do items -- prioritized
 
-* Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn
-
-
+* Fix CI on Linux to actually fail when test failures occur
+* Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitve types as for other type classes
+* Remove module rename workaround for case issues in CI on Linux
+* Possible refactor of ScalarTypeProvider and CompositeTypeProvider into per-typeclass providers
+* Fix connect-graph to preserve appid across invocations in some cases
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
