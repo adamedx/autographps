@@ -7,139 +7,48 @@ The TypeSystem subsystem of AutoGraphPS enables Graph API schema browsing and th
 
 The basis of the type system design includes the following concepts:
 
-* *Type schema*: This refers formally to definition of types found on the Common Schema Definition Language (CSDL) defined by the OData standard that is used by Graph to define APIs.
-* Use *type* to refer to the user-friendly type as returned by Get-GraphType -- raw from EDM
-* Use *definition* to refer to an alternate representation of the raw type from Graph
-* Use *declaration* when referencing a type, typically in the context of membership
-* Use *typename* to index types in a declaration
-* Use *prototype* to indicate a fully-resolved instance of a type
-
-Question: should types have both a resolved and unresolved state? That's the initial approach. This avoids a situation where we have separate type and definition objects with overlapping property sets. We seem to have separate concepts of members and declarations -- why?
-Think of what happens when you serialize -- if two types A and B both contain a member of type C, then serializing A and B duplicates C.
-To avoid this, I think we should separate into type and template, or type and prototype.
-
+* *Type schema*: This refers formally to the definition of the Graph API's types expressed through the OData standard Common Schema Definition Language (CSDL).
+* *Type class* refers to one of the four types that can be expressed in CSDL: Entity, Complex, Enumeration, and Primitive.
+* *Type definition* refers to a canonical representation of types expressed in CSDL and OData in a format specific to AutoGraphPS.
+* A *Property definition* is the subset of a *Type definition* that describes properties represented in CSDL.
+* A  *Type Id* is an identifier unique to each type exposed in the CSDL for a given Graph API.
+* The *Type provider* class can satsify queries that return *type definitions* and other type metadata for types of a given *type class*.
+* A *prototype* for a given type is an object that satisfies the type's *type definition* and therefore also its *type schema*.
 
 #### Classes
 
-* GraphType -- with singleton dictionary to unresolved graph types
-  - A, B, C, F
-  * TypeName
+Below are some schematic representations of the classes for this subsystem. This section does not literally describe the implementation in this codebase, rather it serves as the initial thinking around the responsibility and state for each class.
+
+* TypeSchema -- helper class with methods for accessing CSDL schema
+* TypeDefinition -- abstraction of types defined in the CSDL
+  * TypeId
+  * Namespace
   * TypeClass (Entity, Complex, Primitive, Enumeration)
-  * BaseTypeName
-  * Members
-* Member -- used to declare members
-  - G, D
-  * Name
-  * GraphType
-  * IsCollection
-* GraphTypeManager -- provides access to graph types and prototype objects
-  - H
-  * Methods
-    * GetGraphType
-* TypeDefinition
-  * Methods
-    * GetProperties
-* TypeDefinitionBuilder
-  * NewGraphType
-* ObjectBuilder -- builds objects from type definitions -- is this just the implementation of GetPrototype?
-  - Not one of the previously covered classes
-  * Methods
-    * GetPrototype
-    * NewObject
-* PrimitiveType -- singleton
-  - K, E
-  * Name
-  * Type
+  * BaseTypeId
   * DefaultValue
   * DefaultCollectionValue
-* EnumerationType -- singleton
-  - I, J
+  * Properties
+  * NativeSchema
+  * Methods
+    * Get
+* Property -- used to declare properties in a TypeDefinition
   * Name
-  * Members dictionary
-* ParameterBuilder? -- builds the body for a given method
-  * Can build functions (parameters in uri's)
-  * Can build actions (parameters in body)
-
-### Variation 4
-
-#### Terms
-
-* Use *type* as the abstract concept of a set of objects rather than a specific artifact of the design
-* Use *schema* to refer to the low-level "native" description of the type, including its composition based on other types. For entity and complex types, this is logically equivalent to the CSDL schema.
-* Use *type class* to refer to a classification of types -- primitive, enumeration, open, and complex with semantics from OData
-* Use *type definition* to refer to a canonical representation of a type described by some schema
-* Use *member* to denote a named subset of the data in an instance and description of that subset's structure via reference to a type definition
-* Use *typeid* to uniquely identify types in a graph and reference types in a type definition for a composite type
-* Use *prototype* to indicate an instance of a type definition whose structure conforms to the definition
-
-#### Classes
-
-* GraphTypeClass -- enumeration of different classes of type supported by Microsoft Graph:
-  * Primitive
-  * Enumeration
-  * Complex
-  * Open
-* TypeManager -- provides access to graph type definitions and prototype objects for a given graph
-  - H
+  * TypeId
+  * IsCollection
+* TypeManager -- provides access to graph types and prototype objects across Graph APIs
   * Methods
     * FindTypeDefinition
     * GetTypeDefinition
     * GetPrototype
-* TypeDefinition -- canonical representation of a type
-  - B, C, F
-  * TypeId
-  * BaseType
-  * Name
-  * Namespace
-  * Members
-  * Class
-  * IsComposite
-  * DefaultValue
-  * DefaultCollectionValue
-  * Static Methods
-    * Get -- Finds a type for a given type class and type id -- the only supported way to create an instance of this class
-* Member -- models structure of a subset of the data modeled by a type
-  - G, D
-  * Name
-  * TypeId
-  * IsCollection
-* TypeSchema -- helper class for accessing schema
-  * Static methods
-    * Methods for extracting and formatting information from schema data sources
-* TypeProvider
-  * GetTypeDefinition
-  * Static Methods
-    * GetTypePRovider
-* ScalarTypeProvider
-  - I, J, E
-  * GetTypeDefinition
-  * Static Methods
-    * GetTypeProvider
-* CompositeTypeProvider
-  - H
-  * GetTypeDefinition
-  * Static Methods
-    * GetTypeProvider
-* GraphObjectBuilder
-  - A
-  * ToObject
-
-### Commands
-
-* Invoke-GraphMethod
-* Set-GraphItem
-* New-GraphItem
-
-#### Code layout
-
-src/typesystem
-
-
-#### Feature rollout
-
-1. Type Creation
-2. Entity creation
-3. Parameter Creation
-4. Method invocation
-5. Patching
+* GraphObjectBuilder -- builds a prototype object given a type definition
+  * Methods
+    * ToObject
+* ScalarTypeProvider -- returns type definitions for scalar types, i.e. types whose structure cannot be decomposed further, specifically Enumeration and Primitive types.
+  * Methods
+    * GetTypeDefinition
+    * GetSortedTypeNames
+* CompositeTypeProvider -- returns type definitions for composite types, i.e. types whose structure is composed of properties of other types
+  * Methods
+    * GetTypeDefinition
+    * GetSortedTypeNames
 
