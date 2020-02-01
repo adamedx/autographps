@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 Describe "Autographps application" {
-    $manifestLocation = Join-Path $here 'AutoGraphPS.psd1'
+    $manifestLocation = Join-Path $psscriptroot 'AutoGraphPS.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
@@ -31,19 +29,21 @@ Describe "Autographps application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'Find-GraphPermission',
-                'update-graphmetadata',
-                'Get-Graph',
-                'Get-GraphChildItem',
-                'Get-GraphItemWithMetadata',
-                'Get-GraphLocation',
-                'New-Graph',
-                'Remove-Graph',
-                'Set-GraphLocation',
-                'Set-GraphPrompt',
-                'Show-GraphHelp',
-                'Get-GraphType',
-                'get-graphuri')
+                'Find-GraphPermission'
+                'Get-Graph'
+                'Get-GraphChildItem'
+                'Get-GraphItemWithMetadata'
+                'Get-GraphLocation'
+                'Get-GraphType'
+                'Get-GraphUri'
+                'New-Graph'
+                'New-GraphObject'
+                'Remove-Graph'
+                'Set-GraphLocation'
+                'Set-GraphPrompt'
+                'Show-GraphHelp'
+                'Update-GraphMetadata')
+
 
             $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 

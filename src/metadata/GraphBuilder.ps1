@@ -28,6 +28,7 @@ ScriptClass GraphBuilder {
     $version = $null
     $dataModel = $null
     $namespace = $null
+    $namespaceAlias = $null
 
     static {
         $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
@@ -40,6 +41,7 @@ ScriptClass GraphBuilder {
         $this.version = $version
         $this.dataModel = $dataModel
         $this.namespace = $this.dataModel |=> GetNamespace
+        $this.namespaceAlias = $this.dataModel.namespaceAlias
     }
 
     function InitializeGraph($graph) {
@@ -68,7 +70,7 @@ ScriptClass GraphBuilder {
     }
 
     function __AddVertex($graph, $schema) {
-        $entity = new-so Entity $schema $this.namespace
+        $entity = new-so Entity $schema $this.namespace $this.namespaceAlias
         $graph |=> AddVertex $entity
     }
 
@@ -95,13 +97,12 @@ ScriptClass GraphBuilder {
             @()
         }
 
-        $transitions | foreach {
-            $transition = $_
+        foreach ( $transition in $transitions ) {
             $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
 
             if ( ! $sink ) {
                 $name = $transition.typedata.entitytypename
-                $unqualifiedName = $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
+                $unqualifiedName = $this.dataModel |=> UnqualifyTypeName $name
                 $sinkSchema = $this.dataModel |=> GetEntityTypeByName $name
                 if ( $sinkSchema ) {
                     __AddEntityTypeVertex $graph $unqualifiedName
@@ -131,7 +132,7 @@ ScriptClass GraphBuilder {
         }
 
         $qualifiedTypeName = $vertex.entity.typedata.entitytypename
-        $unqualifiedTypeName = $qualifiedTypeName.substring($graph.namespace.length + 1, $qualifiedTypename.length - $graph.namespace.length - 1)
+        $unqualifiedTypeName = $this.dataModel |=> UnqualifyTypeName $qualifiedTypeName
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding edges for '$($vertex.name)'"
 
         __AddEdgesToEntityTypeVertex $graph $vertex
@@ -200,9 +201,7 @@ ScriptClass GraphBuilder {
 
                 if ( $typeVertex -eq $null ) {
                     $name = $typeName
-                    $unqualifiedName = if ( $name.startswith($graph.namespace) ) {
-                        $name.substring($graph.namespace.length + 1, $name.length - $graph.namespace.length - 1)
-                    }
+                    $unqualifiedName = $this.dataModel |=> UnqualifyTypeName $name $true
                     if ( $unqualifiedName ) {
                         try {
                             __AddEntityTypeVertex $graph $unqualifiedName
@@ -231,7 +230,7 @@ ScriptClass GraphBuilder {
 
     function __AddMethod($targetVertex, $methodSchema, $returnTypeVertex) {
         if ( ! ($targetVertex |=> EdgeExists($methodSchema.name)) ) {
-            $methodEntity = new-so Entity $methodSchema $this.namespace
+            $methodEntity = new-so Entity $methodSchema $this.namespace $this.namespaceAlias
             $edge = new-so EntityEdge $targetVertex $returnTypeVertex $methodEntity
             $targetVertex |=> AddEdge $edge
         } else {

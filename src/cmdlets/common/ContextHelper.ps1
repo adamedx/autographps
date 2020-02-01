@@ -48,6 +48,15 @@ ScriptClass ContextHelper {
                 Scopes = $scopes
                 Details = $context
             }
+
+        }
+
+        function GetContextByNameOrDefault($contextName) {
+            if ( $contextName ) {
+                $::.LogicalGraphManager |=> Get |=> GetContext $contextName
+            } else {
+                $::.GraphContext |=> GetCurrent
+            }
         }
 
         function __RegisterContextDisplayType {

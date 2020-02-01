@@ -42,6 +42,11 @@ ScriptClass GraphManager {
         }
 
         function GetMetadataStatus($context) {
+            # See comments in __GetGraph about the still unknown need for this
+            if ( ! $this.cache ) {
+                __initialize
+            }
+
             $this.cache |=> GetMetadataStatus $context.connection.GraphEndpoint.Graph $context.version
         }
 
@@ -50,6 +55,14 @@ ScriptClass GraphManager {
         }
 
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
+            # This really should not be necessary since __initialize is called at the script level, but there
+            # seems to be an issue when executing in automated CI where class members are not initialized,
+            # possibly due to some inability to call __initialize at some point -- we call it here if we detect
+            # uninitalized state and this seems to "fix" the CI.
+            if ( ! $this.cache ) {
+                __initialize
+            }
+
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion
             }

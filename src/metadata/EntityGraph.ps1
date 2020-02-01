@@ -24,6 +24,7 @@ ScriptClass EntityGraph {
     $rootVertices = $null
     $typeVertices = $null
     $namespace = $null
+    $namespaceAlias = $null
     $builder = $null
 
     function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel ) {
@@ -33,6 +34,7 @@ ScriptClass EntityGraph {
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
+        $this.namespaceAlias = $dataModel.namespaceAlias
         $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
@@ -51,7 +53,7 @@ ScriptClass EntityGraph {
     }
 
     function TypeVertexFromTypeName($typeName) {
-        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $typeName
+        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $this.namespace $this.namespaceAlias $typeName
 
         $this.typeVertices[$typeData.EntityTypeName]
     }

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,48 +12,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../metadata/GraphManager)
+. (import-script ../typesystem/TypeManager)
+. (import-script common/TypeHelper)
+. (import-script common/TypeParameterCompleter)
 
 function Get-GraphType {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
     param(
-        [parameter(position=0)]
-        $Name = $null,
-        $Graph = $null,
-        [Switch] $ComplexType
+        [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
+        [Alias('Name')]
+        $TypeName,
+
+        [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
+        [Alias('Class')]
+        $TypeClass = 'Entity',
+
+        [parameter(parametersetname='optionallyqualified')]
+        [parameter(parametersetname='fullyqualified')]
+        $Namespace,
+
+        $GraphName,
+
+        [parameter(parametersetname='fullyqualified', mandatory=$true)]
+        [switch] $FullyQualifiedTypeName,
+
+        [parameter(parametersetname='list', mandatory=$true)]
+        [switch] $List
     )
 
     Enable-ScriptClassVerbosePreference
 
-    $context = if ( $Graph ) {
-        $::.Logicalgraphmanager.Get().contexts[$Graph].Context
+    $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
+
+    if ( ! $List.IsPresent ) {
+        $typeManager = $::.TypeManager |=> Get $targetContext
+
+        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+
+        $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
+
+        if ( ! $type ) {
+            throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+        }
+
+        $::.TypeHelper |=> ToPublic $type
     } else {
-        $::.GraphContext |=> GetCurrent
-    }
-
-    if ( ! $context ) {
-        throw "Unable to find specified context '$Graph'"
-    }
-
-    $entityGraph = $::.GraphManager |=> GetGraph $context
-
-    if ( ! $ComplexType.IsPresent ) {
-        $types = if ( $Name ) {
-            $qualifiedName = $::.Entity |=> QualifyName $entityGraph.namespace $Name
-            $entityGraph.builder.dataModel |=> GetEntityTypeByName $qualifiedName
-        } else {
-            $entityGraph.builder.dataModel |=> GetEntityTypes
-        }
-
-        if ( $name -and ! $types ) {
-            throw "Graph entity type '$Name' was not found in Graph '$($context.name)'"
-        }
-        $types
-    } else {
-        $result = $entityGraph.builder.dataModel |=> GetComplexTypes $name
-        if ( $Name -and ! $result ) {
-            throw "Graph complex type '$Name' was not found in Graph '$($context.name)'"
-        }
-        $result
+        $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType TypeName (new-so TypeParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType GraphName (new-so GraphParameterCompleter)

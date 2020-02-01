@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'autographps.psm1'
+RootModule = 'AutoGraphPS.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.29.0'
+ModuleVersion = '0.30.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2019 Adam Edwards.'
+Copyright = '(c) 2020 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'CLI for automating and exploring the Microsoft Graph'
@@ -67,7 +67,7 @@ PowerShellVersion = '5.1'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.16.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='AutoGraphPS-SDK';ModuleVersion='0.17.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -81,6 +81,7 @@ FunctionsToExport = @(
     'Get-GraphType',
     'Get-GraphUri',
     'New-Graph',
+    'New-GraphObject',
     'Remove-Graph',
     'Set-GraphLocation',
     'Set-GraphPrompt',
@@ -96,8 +97,8 @@ VariablesToExport = @(
     'GraphAutoPromptPreference'
     'GraphMetadataPreference'
     'GraphPromptColorPreference'
-    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
-    'LastGraphItems'               # From AutoGraphPS-=SDK
+    'GraphVerboseOutputPreference' # From AutoGraphPS-SDK
+    'LastGraphItems'               # From AutoGraphPS-SDK
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
@@ -112,7 +113,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 # List of all files packaged with this module
     FileList = @(
         '.\AutoGraphPS.psd1',
-        '.\autographps.psm1',
+        '.\AutoGraphPS.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
@@ -125,6 +126,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
+        '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
@@ -133,6 +135,9 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
+        '.\src\cmdlets\common\TypeHelper.ps1',
+        '.\src\cmdlets\common\TypeParameterCompleter.ps1',
+        '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
@@ -150,6 +155,14 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\UriCache.ps1'
+        '.\src\typesystem\TypeProperty.ps1',
+        '.\src\typesystem\TypeSchema.ps1',
+        '.\src\typesystem\TypeDefinition.ps1',
+        '.\src\typesystem\TypeProvider.ps1',
+        '.\src\typesystem\ScalarTypeProvider.ps1',
+        '.\src\typesystem\CompositeTypeProvider.ps1',
+        '.\src\typesystem\TypeManager.ps1',
+        '.\src\typesystem\GraphObjectBuilder.ps1'
     )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
@@ -175,34 +188,27 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.29.0 Release Notes
+## AutoGraphPS 0.30.0 Release Notes
 
-This release updates the autographps-sdk dependency to 0.16.0 to obtain fixes and
-minor improvements.
+This release adds the ability to create the data types defined in the Graph API and submit them in write API requests.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.16.0
+* AutoGraphPS-SDK 0.17.0
 
 ### Breaking changes
-None.
+
+* Get-GraphType has new parameter names and a different output type -- it is not compatible with the previous version of Get-GraphType.
 
 ### New features
 
-* URI parameter completion is enabled for the following commands exposed by AutoGraphPS-SDK: `Get-GraphItem`, `Invoke-GraphRequest`.
-
-The following new features originate from the AutoGraphPS-SDK 0.16.0 dependency:
-
-* The `Get-GraphLog` command has a new `StatusFilter` parameter that specifies that the command must return only log etnries with an error status, only those with a success status, or any status (the default).
+* `Get-GraphType` command re-implementation: `Get-GraphType` now returns a standard, reliably structured object that contains information about the type's name, its type class (i.e. whether it is an `Entity`, `Complex`, `Primitive`, or `Enumeration` type), and the properties that define the type's structure
+* `Get-GraphType` now supports Primitive and Enumeration types in addition to Entity and Complex types.
+* `New-GraphObject` command: This new command returns an object of the specified type class (see above) and optionally sets properties to default values appropriate to the types of those properties. This command can be used to create entity or other types that can be submitted in write requests to the Graph. The types are those defined in the API vesrion for the current context.
 
 ### Fixed defects
 
-* Fixed missing uri parameter completion for Get-GraphChildItem
-* Commands such as `New-GraphApplication` from AutoGraphPS-SDK failed if the current graph location set by `Set-GraphLocation` was no the root (default) -- this is fixed so that commands for managing applications such as `New-GraphApplication` are no longer influenced by the current graph location.
-
-Also, see the release notes for AutoGraphPS-SDK 0.16.0 which inclues these fixes:
-
-* Application management commands such as `New-GraphApplication` would fail due to a bad URI when used by a module like *AutoGraphPS* that allows the default base URI to be changed -- fixed so that URIs used by the application management commands are context invariant.
+* [Metadata regression 2020-01-22 caused by MS Graph](https://github.com/adamedx/autographps/issues/81): Commands such as `gls`, `gcd`, and any others relying on Graph metadata served at https://graph.microsoft.com/v1.0/$metadata started to fail on 2020-01-22. The cause was a change to enable namespace aliases in the schema rather than the prefix `microsoft.graph`. The fix was for AutoGraph to look for aliases and interpret types according to the alias -- previously it was not designed to handle aliases and assumed all type references would use the original, unaliased prefix.
 
 '@
     } # End of PSData hashtable

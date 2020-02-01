@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass GraphParameterCompleter {
-    function CompleteCommandParameter {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-        $contexts = $::.LogicalGraphManager |=> Get |=> GetContext | where {
-            $_.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)
-        }
+. (import-script TypeMember.ps1)
+. (import-script TypeSchema.ps1)
+. (import-script TypeDefinition.ps1)
+. (import-script TypeProvider.ps1)
+. (import-script ScalarTypeProvider.ps1)
+. (import-script CompositeTypeProvider.ps1)
+. (import-script TypeManager.ps1)
+. (import-script GraphObjectBuilder.ps1)
 
-        if ( $contexts ) {
-            $contexts | select -expandproperty name
-        }
-    }
-}

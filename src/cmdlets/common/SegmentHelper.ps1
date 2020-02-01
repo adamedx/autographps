@@ -124,7 +124,7 @@ ScriptClass SegmentHelper {
         }
 
         function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
-            $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.Type).EntityTypeName
+            $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.namespace $null $parentPublicSegment.Type).EntityTypeName
             $typeComponents = $fullTypeName -split '\.'
 
             # Objects may actually be raw json, or even binary, depending

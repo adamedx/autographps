@@ -2,16 +2,19 @@
 
 ## To-do items -- prioritized
 
+* Fix CI on Linux to actually fail when test failures occur
+* Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitve types as for other type classes
+* Remove module rename workaround for case issues in CI on Linux
+* Possible refactor of ScalarTypeProvider and CompositeTypeProvider into per-typeclass providers
+* Fix connect-graph to preserve appid across invocations in some cases
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
 * Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
-* Add enumeration type support to get-graphtype
 * Move app to new tenant (or create a new one)
 
 * EntityAccess
-  * Ability to create Graph JSON
   * Associate json fragments with graph object state
 
 * Clean up parse methods in GraphUtilities
@@ -254,6 +257,8 @@
 * fix get-childitem logic with containers vs non-containers
 * change mode output to reflect containers
 * add client request id to get-graphchilditem, getgraphitemwithmetadata
+* Add enumeration type support to get-graphtype
+* Ability to create Graph JSON
 
 ### Postponed
 

@@ -206,6 +206,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
 | Remove-GraphApplication   | Deletes an Azure AD application                                                                         |

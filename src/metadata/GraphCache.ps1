@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ..\common\PreferenceHelper)
+. (import-script ../common/PreferenceHelper)
 . (import-script GraphDataModel)
 . (import-script EntityGraph)
 
@@ -175,8 +175,8 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
-        $dependencyModule = join-path $psscriptroot '..\..\AutoGraphPS.psd1'
-        $thiscode = join-path $psscriptroot '..\graph.ps1'
+        $dependencyModule = 'AutoGraphPS'
+        $thiscode = join-path $psscriptroot '../graph.ps1'
 
         $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
