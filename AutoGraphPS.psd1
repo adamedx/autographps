@@ -12,7 +12,7 @@
 RootModule = 'AutoGraphPS.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.30.0'
+ModuleVersion = '0.31.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -188,27 +188,25 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.30.0 Release Notes
+## AutoGraphPS 0.31.0 Release Notes
 
-This release adds the ability to create the data types defined in the Graph API and submit them in write API requests.
+This release contains fixes for regressions and other minor defects.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.17.0
+None.
 
 ### Breaking changes
 
-* Get-GraphType has new parameter names and a different output type -- it is not compatible with the previous version of Get-GraphType.
+None.
 
 ### New features
 
-* `Get-GraphType` command re-implementation: `Get-GraphType` now returns a standard, reliably structured object that contains information about the type's name, its type class (i.e. whether it is an `Entity`, `Complex`, `Primitive`, or `Enumeration` type), and the properties that define the type's structure
-* `Get-GraphType` now supports Primitive and Enumeration types in addition to Entity and Complex types.
-* `New-GraphObject` command: This new command returns an object of the specified type class (see above) and optionally sets properties to default values appropriate to the types of those properties. This command can be used to create entity or other types that can be submitted in write requests to the Graph. The types are those defined in the API vesrion for the current context.
+None.
 
 ### Fixed defects
 
-* [Metadata regression 2020-01-22 caused by MS Graph](https://github.com/adamedx/autographps/issues/81): Commands such as `gls`, `gcd`, and any others relying on Graph metadata served at https://graph.microsoft.com/v1.0/$metadata started to fail on 2020-01-22. The cause was a change to enable namespace aliases in the schema rather than the prefix `microsoft.graph`. The fix was for AutoGraph to look for aliases and interpret types according to the alias -- previously it was not designed to handle aliases and assumed all type references would use the original, unaliased prefix.
+* Commands like `gls` and `Get-GraphUri` no longer return actions and functions. This was a regression caused when adding functionality for the new `Get-GraphType` and `New-GraphObject` commands in the previous release.
 
 '@
     } # End of PSData hashtable

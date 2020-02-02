@@ -18,6 +18,7 @@ set-strictmode -version 2
 
 function GetAllTypes {
     'Complex', 'Enumeration', 'Primitive', 'Entity' | foreach {
+        $progresspreference = 'silentlycontinue'
         $typeClass = $_
         Get-GraphType -list -typeclass $typeClass | foreach {
             $type = Get-GraphType -TypeClass $typeClass $_
@@ -36,6 +37,7 @@ Describe 'The Get-GraphType command' {
         }
 
         It "Should fail both times to retrieve a nonexistent type" {
+            $progresspreference = 'silentlycontinue'
             { get-graphtype idontexist } | Should Throw
             { get-graphtype idontexist } | Should Throw
         }
@@ -196,6 +198,7 @@ Describe 'The Get-GraphType command' {
         }
 
         It "Should be able to successfully return the same data in successive calls for a type of typeclass Entity when typeclass is not specified" {
+            $progresspreference = 'silentlycontinue'
             $user = get-graphtype user
             ! (! $user) | Should Be $true
         }
