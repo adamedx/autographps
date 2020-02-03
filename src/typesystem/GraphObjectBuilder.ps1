@@ -50,9 +50,16 @@ ScriptClass GraphObjectBuilder {
             $this.propertyFilter = @{}
             for ( $propertyIndex = 0; $propertyIndex -lt $properties.length; $propertyIndex++ ) {
                 $hasValue = $false
-                $value = if ( $values -and ( $propertyIndex -lt $values.length ) ) {
+                # WARNING: Be very careful in how the value supplied by the user is handled. PowerShell
+                # has a very strange behavior where a function cannot return a single element array -- the
+                # array gets converted to just the single element! The conditional 'if' statement shares
+                # this behavior. There are various workarounds, though the simplest to understand is to
+                # avoid returning arrays from a function or assigning from an if, try, or other statement.
+                # See https://blog.tyang.org/2011/02/24/powershell-functions-do-not-return-single-element-arrays/.
+                $value = $null
+                if ( $values -and ( $propertyIndex -lt $values.length ) ) {
                     $hasValue = $true
-                    $values[$propertyIndex]
+                    $value = $values[$propertyIndex]
                 }
 
                 $this.propertyFilter.Add($properties[$propertyIndex], @{HasValue=$hasValue;Value=$value})
@@ -72,7 +79,11 @@ ScriptClass GraphObjectBuilder {
 
     function GetPropertyValue($typeDefinition, $isCollection, $useCustomValue, $customValue) {
         if ( $useCustomValue ) {
-            return $customValue
+            if ( $customValue -and $customValue.GetType().IsArray -and ( $customValue.length -eq 1 ) ) {
+                return , $customValue
+            } else {
+                return $customValue
+            }
         }
 
         # For any collection, we simply want to provide an empty array or
@@ -126,8 +137,10 @@ ScriptClass GraphObjectBuilder {
                         }
 
                         $hasValue = $propertyInfo -and $propertyInfo.HasValue
-                        $customValue = if ( $hasValue ) {
-                            $propertyInfo.Value
+
+                        $customValue = $null
+                        if ( $hasValue ) {
+                            $customValue = $propertyInfo.Value
                         }
 
                         $value = GetPropertyValue $propertyTypeDefinition $property.isCollection $hasValue $customValue

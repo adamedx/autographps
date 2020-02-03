@@ -33,7 +33,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but may work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
@@ -84,7 +84,9 @@ Get-GraphItem users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
+As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphItem`.
+
+To more details or reference material describing the resources available in the Graph API and how to make valid requests, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
 
 ### More fun commands
 
@@ -141,14 +143,69 @@ t +> driveItem Recipes       13J3XD#
 t +> driveItem Pyramid.js    13J3KD2
 ```
 
+#### Don't forget write operations
+
+Yes, you can perform write-operations using the `Invoke-GraphRequet` command, as in this example which creates a new `contact`:
+
+```powershell
+$contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
+Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+```
+
+As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.*
+
+Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
+
+##### New-GraphObject makes write operations easier
+
+In the example above we constructed a PowerShell `HashTable` to supply the argument; specifying this structure is fairly intuitive if you know the JSON format you need. Just make the keys of the JSON object keys of the `HashTable`, and the values of the JSON object values of the `HashTable`. AutoGraphPS can use PowerShell's JSON serialization to transform it into the JSON required by Graph. If you commonly deal with PowerShell `HashTable` objects and syntax, this is a natural and concise way to specify JSON parameters.
+
+The `New-GraphObject` command makes this even easier. If you know the name of the type of object, in this case `contact`, and you know the properties you need to set, you can specify that information explicitly. This would result in the more readable version of the previous example below:
+
+```powershell
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Work, cleo@soulsonic.org
+$contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', $emailAddress
+Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+
+```
+
+Note that support for a simpler command interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read-only commands. Key problems to solve here include discovering the kinds of object and types you need (including removing the need to know when to use the `TypeClass` parameter in the example above) and simplifying and standardizing the command and parameters used to issue the actual write operation.
+
+#### So how do I find all the URIs and JSON for Graph?
+
+In the examples above, specific URIs were featured to explain how common uses of the Graph API are surfaced in AutoGraphPS. But in general how does one discover which URIs implement which functionality? And particularly for write requests, what is the required structure for the JSON body?
+
+In general, this information may be found in the [Graph documentation](https://docs.microsoft.com/en-us/graph/?view=graph-rest-1.0). The [reference section](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0) in particular is organized around *resources* such as `user`, `group`, `message`, `contact`, `driveItem`, `profilePhoto`, .etc, which model the surface of what can be managed with Graph. These resources are named after concepts that are likely familiar and accessible to you; you can learn browse through the reference and related documentation with these concepts as a guide to finding the resource, and thus its documented URI, that corresponds to the capability you'd like to exercise.
+
+In the spirit of documentation, AutoGraphPS includes the `Show-GraphHelp` command that provides a shortcut to the documentation. Just specify the name of a resource, such as `user`, and it will launch a web browser to that landing page:
+
+```powershell
+Show-GraphHelp user
+```
+
+This command above shows help for user for the `v1.0` API version. To see help for the `beta` version, you can use
+
+```powershell
+Show-GraphHelp user -version beta
+```
+
+`Show-GraphHelp` launches the system's default web browser to display documentation. If you'd like to use a different web browser, or if AutoGraphPS is running in a browser-free environment, `ShowGraph-Help` can output the URI instead of starting a browser. Specify the `ShowHelpUri` parameter to obtain this URI:
+
+```powershell
+Show-GraphHelp user -ShowHelpUri
+https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user
+```
+
 #### AutoGraphPS tips
 Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
 **1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
-**2. AutoGraphPS supports write operations on the Graph:** Use the `Invoke-GraphRequest` cmdlet to access write methods such as `PUT`, `POST`, `PATCH`, and `DELETE`. For operations that require input, the cmdlet provides options such as `-body` which allow the specificatio of `JSON` formatted objects. Support for a simpler cmdlet interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read cmdlets.
+**2. Use tab-completion to learn and save time:** Many AutoGraphPS commands, including `Get-GraphITem`, `gls`, and `gcd` will tab-complete command parameters just like many other popular PowerShell commands do. URIs, resource names, and permission names are just some of the kinds of parameters that AutoGraphPS will tab-complete for you to reduce the time needed to issue a command and also clue you in on when you're potentially providing invalid input.
 
-**3. You can access the Beta version of the Graph API**: By default, AutoGraphPS is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- just use the following commands to "mount" the `beta` version and set the current location to its root:
+**3. Use commands like `gcd` and `gls` to explore the Graph!** In addition to browsing Graph documentation to find out how to use Graph APIs, you can use AutoGraphPS to browse the Graph itself. Try executing the command `gls`, and then performing a `gcd` to one of the items of the output. Invoking another `gls` may show you additional destinations to which you can `gcd`. And auto-complete is there to auto-complete URIs and minimize user input labor. By using AutoGraphPS commands in this way, you can explore the API surface of the Graph in the way you'd explore your local file system with commands like `cd` and `ls`.
+
+**4. You can access the Beta version of the Graph API**: By default, AutoGraphPS is targeted at the default API version of Graph, `v1.0`. It also works with the `beta` version -- many commands provide a `-Version` parameter for which you can supply the value `beta` to run that command against the `beta` API version. You can tell AutoGraphPS to use `beta` for all commands by "mounting" the `beta` version. Below we mount `beta`  and set the current location to its root:
 
 ```powershell
 # You could also issue the command 'new-graph beta' to mount beta explicitly

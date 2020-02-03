@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,33 @@
 # limitations under the License.
 
 ScriptClass TypeParameterCompleter {
+    $explicitTypeClass = $null
+    $unqualified = $false
+
+    function __initialize( $explicitTypeClass = $null, $unqualified = $false ) {
+        $this.explicitTypeClass = $explicitTypeClass
+        $this.unqualified = $unqualified
+    }
+
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-        $typeClass = $fakeBoundParameters['TypeClass']
         $graphName = $fakeBoundParameters['GraphName']
-        $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
-            $fakeBoundParameters.IsPresent
+        $fullyQualified = $null
+
+        $typeClass = if ( $this.explicitTypeClass ) {
+            $this.explicitTypeClass
+        } else {
+            $fakeBoundParameters['TypeClass']
+            $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
+                $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
+            }
         }
 
         if ( ! $typeClass ) {
             $typeClass = 'Entity'
         }
 
-        $targetWord = if ( $fullyQualified -or $typeClass -eq 'Primitive' -or $wordToComplete.Contains('.') ) {
+        $targetWord = if ( $this.unqualified -or $fullyQualified -or ( $typeClass -eq 'Primitive' ) -or $wordToComplete.Contains('.') ) {
             $wordToComplete
         } else {
             'microsoft.graph.' + $wordToComplete
@@ -35,7 +49,12 @@ ScriptClass TypeParameterCompleter {
 
         if ( $targetContext ) {
             $typeNames = $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
-            $::.ParameterCompleter |=> FindMatchesStartingWith $targetWord $TypeNames
+            $candidates = if ( $this.unqualified ) {
+                $typeNames | foreach { $_ -split '\.' | select -last 1 }
+            } else {
+                $typeNames
+            }
+            $::.ParameterCompleter |=> FindMatchesStartingWith $targetWord $candidates
         }
     }
 }

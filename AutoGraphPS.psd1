@@ -190,7 +190,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.31.0 Release Notes
 
-This release contains fixes for regressions and other minor defects.
+This release addresses an incomplete fix for the Graph metadata schema change on 2020-01-22, and also adds new usability features and fixes other minor issues.
 
 ### New dependencies
 
@@ -202,11 +202,13 @@ None.
 
 ### New features
 
-None.
+* `Show-GraphHelp` now supports tab-completion for the `ResourceName` parameter for faster input and for "browsing" of resource names
+* `Show-GraphHelp` supports the `GraphName` parameter that can be used to indicate that help should correspond to the API version of the specified Graph
 
 ### Fixed defects
 
-* Commands like `gls` and `Get-GraphUri` no longer return actions and functions. This was a regression caused when adding functionality for the new `Get-GraphType` and `New-GraphObject` commands in the previous release.
+* [Metadata regression](https://github.com/adamedx/autographps/issues/83): Commands like `gls` and `Get-GraphUri` no longer return actions and functions due to a change to the public Graph metadata format on 2020-01-22. This was supposed to be addressed with [the fix for an earlier issue](https://github.com/adamedx/autographps/issues/81), but that fix was incomplete and missed the case of actions and functions.
+* [Single element values incorrectly set in properties for object returned by New-GraphObject](https://github.com/adamedx/autographps/issues/85): If you use the `Values` parameter of `New-GraphObject` to pass an array that has only one element, it will not be stored as an array, and the resulting object will result in bad request errors when sent to Graph.
 
 '@
     } # End of PSData hashtable
