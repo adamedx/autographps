@@ -37,6 +37,26 @@ Describe 'The New-GraphObject command' {
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
         }
 
+        It 'Should emit an array object for a given property even when the array specified by the value parameter has only one element when the type of the property is an array' {
+            $emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Home, sorry@thisman.org
+            $contactdata = New-GraphObject microsoft.graph.contact -PropertyList @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
+
+            $expectedJSON = '{"givenName":"SorryTo ThisMan","emailAddresses":[{"name":"Home","address":"sorry@thisman.org"}]}'
+
+            $contactData.emailAddresses.GetType().isarray | Should Be $true
+            $contactData | convertTo-json -compress | Should Be $expectedJSON
+        }
+
+        It 'Should emit an array object for a given property even when the array specified by the PropertyList parameter has only one element when the type of the property is an array' {
+            $emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Home, sorry@thisman.org
+            $contactdata = New-GraphObject microsoft.graph.contact -PropertyList @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
+
+            $expectedJSON = '{"givenName":"SorryTo ThisMan","emailAddresses":[{"name":"Home","address":"sorry@thisman.org"}]}'
+
+            $contactData.emailAddresses.GetType().isarray | Should Be $true
+            $contactData | convertTo-json -compress | Should Be $expectedJSON
+        }
+
         It 'Should be able to return all the objects in the v1 metadata' {
             { GetAllObjects } | Should Not Throw
         }
