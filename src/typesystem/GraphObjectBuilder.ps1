@@ -127,14 +127,27 @@ ScriptClass GraphObjectBuilder {
             return $null
         }
 
+        $object = @{}
+        $usedProperties = @{}
+        $unusedPropertyCount = 0
+
         try {
             $this.currentLevel += 1
 
-            $object = @{}
+            if ( $this.PropertyFilter ) {
+                foreach ( $referencedProperty in $this.PropertyFilter.keys ) {
+                    $usedProperties.Add($referencedProperty, $false)
+                    $unusedPropertyCount++
+                }
+            }
 
             if ( $typeDefinition.properties ) {
                 foreach ( $property in $typeDefinition.properties ) {
                     $propertyInfo = if ( $this.propertyFilter ) {
+                        if ( $usedProperties.ContainsKey($property.name) ) {
+                            $usedProperties[$property.name] = $true
+                            $unusedPropertyCount--
+                        }
                         $this.propertyFilter[$property.name]
                     }
 
@@ -160,6 +173,11 @@ ScriptClass GraphObjectBuilder {
             }
         } finally {
             $this.currentLevel -= 1
+        }
+
+        if ( $unusedPropertyCount -ne 0 ) {
+            $unusedProperties = ( $usedProperties.keys | where { ! $usedProperties[$_] } ) -join ', '
+            throw "One or more specified properties is not a valid property for type '$($TypeDefinition.name)': '$unusedProperties'"
         }
 
         $object
