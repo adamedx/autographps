@@ -60,11 +60,17 @@ Describe 'The New-GraphObject command' {
         }
 
         It 'Should throw an error if a property is specified through the Property parameter that does not exist for the specified type' {
-            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw "One or more specified properties is not a valid property for type 'user': 'idontexist, neitherdoi'"
+            # Check for three different strings because properties in the error output can be returned in non-deterministic order
+            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw "One or more specified properties is not a valid property for type 'user'"
+            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw 'idontexist'
+            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw 'neitherdoi'
         }
 
         It 'Should throw an error if a property is specified through the PropertyList parameter that does not exist for the specified type' {
-            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw "One or more specified properties is not a valid property for type 'user': 'idontexist, neitherdoi'"
+            # Check for three different strings because properties in the error output can be returned in non-deterministic order
+            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw "One or more specified properties is not a valid property for type 'user'"
+            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'idontexist'
+            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'neitherdoi'
         }
 
         It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the Property parameter that does not exist for the specified type' {
