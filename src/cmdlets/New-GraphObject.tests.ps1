@@ -34,7 +34,7 @@ Describe 'The New-GraphObject command' {
     Context 'When invoked using v1 metadata with v1 metadata' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
-#            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
         }
 
         It 'Should emit an array object for a given property even when the array specified by the value parameter has only one element when the type of the property is an array' {
@@ -59,19 +59,35 @@ Describe 'The New-GraphObject command' {
             $contactData | convertTo-json -compress | Should Be $expectedJSON
         }
 
+        It 'Should throw an error if a property is specified through the Property parameter that does not exist for the specified type' {
+            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw "One or more specified properties is not a valid property for type 'user': 'idontexist, neitherdoi'"
+        }
+
+        It 'Should throw an error if a property is specified through the PropertyList parameter that does not exist for the specified type' {
+            { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw "One or more specified properties is not a valid property for type 'user': 'idontexist, neitherdoi'"
+        }
+
+        It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the Property parameter that does not exist for the specified type' {
+            { New-GraphObject user -SkipPropertyCheck -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Not Throw
+        }
+
+        It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the PropertyList parameter that does not exist for the specified type' {
+            { New-GraphObject user -SkipPropertyCheck -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Not Throw
+        }
+
         It 'Should be able to return all the objects in the v1 metadata' {
-#            { GetAllObjects } | Should Not Throw
+            { GetAllObjects } | Should Not Throw
         }
     }
 
     Context 'When invoked using beta metadata ' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
-#            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-2020-01-23.xml" -force -wait -warningaction silentlycontinue
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-2020-01-23.xml" -force -wait -warningaction silentlycontinue
         }
 
         It 'Should be able to return all objects in the beta metadata' {
-#            { GetAllObjects } | Should Not Throw
+            { GetAllObjects } | Should Not Throw
         }
     }
 }

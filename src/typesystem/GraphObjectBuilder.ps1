@@ -19,14 +19,16 @@ ScriptClass GraphObjectBuilder {
     $typeManager = $null
     $typeDefinition = $null
     $setDefaultValues = $false
+    $skipPropertyCheck = $false
     $maxLevel = 0
     $propertyFilter = $null
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList, [HashTable[]] $propertyList ) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList, [HashTable[]] $propertyList, [bool] $skipPropertyCheck ) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
         $this.setDefaultValues = $setDefaultValues -or $valueList -or ! $typeDefinition.IsComposite
+        $this.skipPropertyCheck = $skipPropertyCheck
 
         $values = $valueList
         $properties = $propertyFilter
@@ -175,7 +177,7 @@ ScriptClass GraphObjectBuilder {
             $this.currentLevel -= 1
         }
 
-        if ( $unusedPropertyCount -ne 0 ) {
+        if ( ! $this.skipPropertyCheck -and $unusedPropertyCount -ne 0 ) {
             $unusedProperties = ( $usedProperties.keys | where { ! $usedProperties[$_] } ) -join ', '
             throw "One or more specified properties is not a valid property for type '$($TypeDefinition.name)': '$unusedProperties'"
         }

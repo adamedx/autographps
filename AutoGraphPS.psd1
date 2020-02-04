@@ -198,12 +198,13 @@ None.
 
 ### Breaking changes
 
-None.
+* `New-GraphObject` now fails in certain cases where it previously ignored an error. See subsequent "New features" note about new functionality for `New-GraphObject`.
 
 ### New features
 
 * `Show-GraphHelp` now supports tab-completion for the `ResourceName` parameter for faster input and for "browsing" of resource names
 * `Show-GraphHelp` supports the `GraphName` parameter that can be used to indicate that help should correspond to the API version of the specified Graph
+* `New-GraphObject` now fails if an invalid property for the given type is specified for the `Property` or `PropertyList` arguments. Previously specifying a non-existent property for the type was a no-op. The error correctly informs the caller that they've made a mistake. Such errors can be ignored by specifying the `SkipPropertyCheck` parameter.
 
 ### Fixed defects
 
