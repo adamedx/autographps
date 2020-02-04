@@ -16,7 +16,7 @@ ScriptClass GraphParameterCompleter {
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $contexts = $::.LogicalGraphManager |=> Get |=> GetContext | where {
-            $_.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)
+            $_.name.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)
         }
 
         if ( $contexts ) {

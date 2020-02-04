@@ -124,6 +124,11 @@ ScriptClass GraphDataModel {
         }
     }
 
+    function UnaliasQualifiedName($name) {
+        $unqualifiedName = UnqualifyTypeName $name $true
+        $this.namespace, $unqualifiedName -join '.'
+    }
+
     function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
@@ -143,11 +148,11 @@ ScriptClass GraphDataModel {
     }
 
     function __AddMethodBinding($typeName, $methodSchema) {
-        if ( $this.methodBindings[$typeName] -eq $null ) {
-            $this.methodBindings[$typeName] = @()
-         }
+        $unaliasedName = UnaliasQualifiedName $typeName
+        if ( $this.methodBindings[$unaliasedName] -eq $null ) {
+            $this.methodBindings[$unaliasedName] = @()
+        }
 
-        $this.methodBindings[$typeName] += $methodSchema
+        $this.methodBindings[$unaliasedName] += $methodSchema
     }
-
 }

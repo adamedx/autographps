@@ -106,13 +106,14 @@ ScriptClass Entity {
             }
         }
 
-        function GetEntityTypeDataFromTypeName($namespace, $namespaceAlias, $entityTypeName) {
+        function GetEntityTypeDataFromTypeName([string] $namespace, [string] $namespaceAlias, [string] $typeName) {
             $isCollection = $false
-            $scalarTypeName = if ($entityTypeName -match 'Collection\((?<typename>.+)\)') {
+
+            $scalarTypeName = if ($typeName -match 'Collection\((?<typename>.+)\)') {
                 $isCollection = $true
                 $matches.typename
             } else {
-                $entityTypeName
+                $typeName
             }
 
             $canonicallyQualifiedTypeName = if ( $scalarTypeName ) {

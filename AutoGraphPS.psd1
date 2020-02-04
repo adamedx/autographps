@@ -12,7 +12,7 @@
 RootModule = 'AutoGraphPS.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.30.0'
+ModuleVersion = '0.31.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -188,27 +188,28 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.30.0 Release Notes
+## AutoGraphPS 0.31.0 Release Notes
 
-This release adds the ability to create the data types defined in the Graph API and submit them in write API requests.
+This release addresses an incomplete fix for the Graph metadata schema change on 2020-01-22, and also adds new usability features and fixes other minor issues.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.17.0
+None.
 
 ### Breaking changes
 
-* Get-GraphType has new parameter names and a different output type -- it is not compatible with the previous version of Get-GraphType.
+* `New-GraphObject` now fails in certain cases where it previously ignored an error. See subsequent "New features" note about new functionality for `New-GraphObject`.
 
 ### New features
 
-* `Get-GraphType` command re-implementation: `Get-GraphType` now returns a standard, reliably structured object that contains information about the type's name, its type class (i.e. whether it is an `Entity`, `Complex`, `Primitive`, or `Enumeration` type), and the properties that define the type's structure
-* `Get-GraphType` now supports Primitive and Enumeration types in addition to Entity and Complex types.
-* `New-GraphObject` command: This new command returns an object of the specified type class (see above) and optionally sets properties to default values appropriate to the types of those properties. This command can be used to create entity or other types that can be submitted in write requests to the Graph. The types are those defined in the API vesrion for the current context.
+* `Show-GraphHelp` now supports tab-completion for the `ResourceName` parameter for faster input and for "browsing" of resource names
+* `Show-GraphHelp` supports the `GraphName` parameter that can be used to indicate that help should correspond to the API version of the specified Graph
+* `New-GraphObject` now fails if an invalid property for the given type is specified for the `Property` or `PropertyList` arguments. Previously specifying a non-existent property for the type was a no-op. The error correctly informs the caller that they've made a mistake. Such errors can be ignored by specifying the `SkipPropertyCheck` parameter.
 
 ### Fixed defects
 
-* [Metadata regression 2020-01-22 caused by MS Graph](https://github.com/adamedx/autographps/issues/81): Commands such as `gls`, `gcd`, and any others relying on Graph metadata served at https://graph.microsoft.com/v1.0/$metadata started to fail on 2020-01-22. The cause was a change to enable namespace aliases in the schema rather than the prefix `microsoft.graph`. The fix was for AutoGraph to look for aliases and interpret types according to the alias -- previously it was not designed to handle aliases and assumed all type references would use the original, unaliased prefix.
+* [Metadata regression](https://github.com/adamedx/autographps/issues/83): Commands like `gls` and `Get-GraphUri` no longer return actions and functions due to a change to the public Graph metadata format on 2020-01-22. This was supposed to be addressed with [the fix for an earlier issue](https://github.com/adamedx/autographps/issues/81), but that fix was incomplete and missed the case of actions and functions.
+* [Single element values incorrectly set in properties for object returned by New-GraphObject](https://github.com/adamedx/autographps/issues/85): If you use the `Values` parameter of `New-GraphObject` to pass an array that has only one element, it will not be stored as an array, and the resulting object will result in bad request errors when sent to Graph.
 
 '@
     } # End of PSData hashtable

@@ -47,7 +47,9 @@ function New-GraphObject {
 
         [switch] $Recurse,
 
-        [switch] $SetDefaultValues
+        [switch] $SetDefaultValues,
+
+        [switch] $SkipPropertyCheck
     )
 
     Enable-ScriptClassVerbosePreference
@@ -58,7 +60,7 @@ function New-GraphObject {
 
     $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyList
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyList $SkipPropertyCheck.IsPresent
 
     $prototypeJson = $prototype | convertto-json -depth 24
 

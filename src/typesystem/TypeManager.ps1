@@ -36,7 +36,7 @@ ScriptClass TypeManager {
         }
     }
 
-    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList) {
+    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck) {
         $typeId = GetOptionallyQualifiedName $typeClass $typeName $fullyQualified
         $hasProperties = $propertyFilter -ne $null -or $propertyList -ne $null
 
@@ -47,7 +47,7 @@ ScriptClass TypeManager {
         if ( $hasProperties -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             if ( ! $prototype ) {
                 $type = FindTypeDefinition $typeClass $typeId $true $true
-                $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList
+                $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
                 $prototype = $builder |=> ToObject
             }
 

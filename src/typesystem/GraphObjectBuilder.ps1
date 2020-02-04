@@ -19,14 +19,16 @@ ScriptClass GraphObjectBuilder {
     $typeManager = $null
     $typeDefinition = $null
     $setDefaultValues = $false
+    $skipPropertyCheck = $false
     $maxLevel = 0
     $propertyFilter = $null
     $currentLevel = 0
 
-    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList, [HashTable[]] $propertyList ) {
+    function __initialize([PSTypeName('TypeManager')] $typeManager, [PSTypeName('TypeDefinition')] $typeDefinition, $setDefaultValues, $recurse, [string[]] $propertyFilter, [object[]] $valueList, [HashTable[]] $propertyList, [bool] $skipPropertyCheck ) {
         $this.typeManager = $typeManager
         $this.typeDefinition = $typeDefinition
         $this.setDefaultValues = $setDefaultValues -or $valueList -or ! $typeDefinition.IsComposite
+        $this.skipPropertyCheck = $skipPropertyCheck
 
         $values = $valueList
         $properties = $propertyFilter
@@ -38,7 +40,15 @@ ScriptClass GraphObjectBuilder {
             foreach ( $table in $propertyList ) {
                 foreach ( $propertyName in $table.keys ) {
                     $properties += $propertyName
-                    $values += $table[$propertyName]
+
+                    # The rather awkward way of adding a value to this array is necessitated by the behavior described
+                    # in a "WARNING" elsewhere in this file: if you use the += operator to add the value and the value
+                    # is an array with one element, it adds the element, rather than the actual array value. This is absolutely
+                    # not the desired behavior in this context -- the types used by the caller are to be used literally in
+                    # order to deterministically serialize into JSON that meets the API contract where the object being built
+                    # by this instance will likely be used.
+                    $values += $null # Make space in the array first
+                    $values[$values.length -1] = $table[$propertyName] # Then add the element -- a simple assignment preserves the type
                 }
             }
         }
@@ -50,9 +60,17 @@ ScriptClass GraphObjectBuilder {
             $this.propertyFilter = @{}
             for ( $propertyIndex = 0; $propertyIndex -lt $properties.length; $propertyIndex++ ) {
                 $hasValue = $false
-                $value = if ( $values -and ( $propertyIndex -lt $values.length ) ) {
+                # WARNING: Be very careful in how the value supplied by the user is handled. PowerShell
+                # has a very strange behavior where a function cannot return a single element array -- the
+                # array gets converted to just the single element! The conditional 'if' statement shares
+                # this behavior. There are various workarounds, though the simplest to understand is to
+                # avoid returning arrays from a function or assigning from an if, try, or other statement.
+                # See https://blog.tyang.org/2011/02/24/powershell-functions-do-not-return-single-element-arrays/.
+                # Ultimately unit tests are the only defense against regressions in this area.
+                $value = $null
+                if ( $values -and ( $propertyIndex -lt $values.length ) ) {
                     $hasValue = $true
-                    $values[$propertyIndex]
+                    $value = $values[$propertyIndex]
                 }
 
                 $this.propertyFilter.Add($properties[$propertyIndex], @{HasValue=$hasValue;Value=$value})
@@ -72,7 +90,11 @@ ScriptClass GraphObjectBuilder {
 
     function GetPropertyValue($typeDefinition, $isCollection, $useCustomValue, $customValue) {
         if ( $useCustomValue ) {
-            return $customValue
+            if ( $customValue -and $customValue.GetType().IsArray -and ( $customValue.length -eq 1 ) ) {
+                return , $customValue
+            } else {
+                return $customValue
+            }
         }
 
         # For any collection, we simply want to provide an empty array or
@@ -107,14 +129,27 @@ ScriptClass GraphObjectBuilder {
             return $null
         }
 
+        $object = @{}
+        $usedProperties = @{}
+        $unusedPropertyCount = 0
+
         try {
             $this.currentLevel += 1
 
-            $object = @{}
+            if ( $this.PropertyFilter ) {
+                foreach ( $referencedProperty in $this.PropertyFilter.keys ) {
+                    $usedProperties.Add($referencedProperty, $false)
+                    $unusedPropertyCount++
+                }
+            }
 
             if ( $typeDefinition.properties ) {
                 foreach ( $property in $typeDefinition.properties ) {
                     $propertyInfo = if ( $this.propertyFilter ) {
+                        if ( $usedProperties.ContainsKey($property.name) ) {
+                            $usedProperties[$property.name] = $true
+                            $unusedPropertyCount--
+                        }
                         $this.propertyFilter[$property.name]
                     }
 
@@ -126,8 +161,10 @@ ScriptClass GraphObjectBuilder {
                         }
 
                         $hasValue = $propertyInfo -and $propertyInfo.HasValue
-                        $customValue = if ( $hasValue ) {
-                            $propertyInfo.Value
+
+                        $customValue = $null
+                        if ( $hasValue ) {
+                            $customValue = $propertyInfo.Value
                         }
 
                         $value = GetPropertyValue $propertyTypeDefinition $property.isCollection $hasValue $customValue
@@ -138,6 +175,11 @@ ScriptClass GraphObjectBuilder {
             }
         } finally {
             $this.currentLevel -= 1
+        }
+
+        if ( ! $this.skipPropertyCheck -and $unusedPropertyCount -ne 0 ) {
+            $unusedProperties = ( $usedProperties.keys | where { ! $usedProperties[$_] } ) -join ', '
+            throw "One or more specified properties is not a valid property for type '$($TypeDefinition.name)': '$unusedProperties'"
         }
 
         $object

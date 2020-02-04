@@ -191,11 +191,7 @@ ScriptClass GraphBuilder {
         $methods | foreach {
             $method = $_
             $sink = if ( $method | gm ReturnType ) {
-                $typeName = if ( $method.localname -eq 'function' ) {
-                    $method.ReturnType | select -expandproperty Type
-                } else {
-                    $method.ReturnType | select -expandproperty Type
-                }
+                $typeName = $method.ReturnType | select -expandproperty Type
 
                 $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
 

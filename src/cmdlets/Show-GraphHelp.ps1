@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,37 @@
 # limitations under the License.
 
 function Show-GraphHelp {
-    [cmdletbinding()]
+    [cmdletbinding(defaultparametersetname='bydefaultversion', positionalbinding=$false)]
     param(
+        [parameter(position=0)]
         [String] $ResourceName = $null,
 
         [ValidateSet('Default', 'v1.0', 'beta')]
-        [String] $Version = 'Default'
+        [parameter(position=1, parametersetname='byversion', mandatory=$true)]
+        [parameter(position=1, parametersetname='byversionpassthru', mandatory=$true)]
+        [String] $Version = 'Default',
+
+        [parameter(parametersetname='bygraph', mandatory=$true)]
+        [parameter(parametersetname='bygraphpassthru', mandatory=$true)]
+        $GraphName,
+
+        [switch] $ShowHelpUri,
+
+        [parameter(parametersetname='bygraphpassthru', mandatory=$true)]
+        [parameter(parametersetname='byversionpassthru', mandatory=$true)]
+        [parameter(parametersetname='bydefaultversionpassthru', mandatory=$true)]
+        [switch] $PassThru
     )
 
     Enable-ScriptClassVerbosePreference
 
-    $targetVersion = if ( $Version -eq 'Default' ) {
+    $targetVersion = if ( $GraphName ) {
+        $graphVersion = ($::.LogicalGraphManager |=> Get |=> GetContext $GraphName).version
+        if ( ! $graphVersion ) {
+            throw "No Graph with the specified name '$GraphName' for the GraphName parameter could be found"
+        }
+        $graphVersion
+    } elseif ( $Version -eq 'Default' ) {
         $currentVersion = ($::.GraphContext |=> GetCurrent).version
         if ( $currentVersion -in 'v1.0', 'beta' ) {
             $currentVersion
@@ -38,11 +58,19 @@ function Show-GraphHelp {
     $uriTemplate = 'https://developer.microsoft.com/en-us/graph/docs/api-reference/{0}/resources/{1}'
 
     $uri = if ( $ResourceName ) {
-        $uriTemplate -f $targetVersion, $ResourceName
+        $unqualifiedName = $ResourceName -split '\.' | select -last 1
+        $uriTemplate -f $targetVersion, $unqualifiedName
     } else {
         'https://docs.microsoft.com/en-us/graph/overview'
     }
 
-    write-verbose "Accessing documentation with URI '$uri'"
-    start-process $uri
+    if ( ! $ShowHelpUri.IsPresent ) {
+        write-verbose "Accessing documentation with URI '$uri'"
+        start-process $uri -passthru:($PassThru.IsPresent)
+    } else {
+        ([Uri] $uri).tostring()
+    }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Show-GraphHelp ResourceName (new-so TypeParameterCompleter Entity $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Show-GraphHelp GraphName (new-so GraphParameterCompleter)
