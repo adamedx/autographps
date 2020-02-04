@@ -463,16 +463,62 @@ This means you can use `Invoke-GraphRequest` for not just read operations as wit
 
 #### Write access through `Invoke-GraphRequest`
 
-In this example, we create a new contact. This will require specifying data in JSON format, and fortunately this is fairly simple as PowerShell has good support for JSON:
+> Note: The requirements for write operations vary among the different entities exposed by the Graph -- consult the [Microsoft Graph documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/overview) for information on creating, updating, and deleting objects in the Graph.
+
+In this example, we create a new contact. This will require we specify data in a structure that can be serialized into JSON format, and fortunately this is fairly simple as PowerShell has easy-to-use support for JSON:
 
 ```powershell
 $contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest me/contacts -Method POST -Body ($contactData | convertto-json)
+Invoke-GraphRequest me/contacts -Method POST -Body $contactData
 ```
 
-This will return the newly created contact object (you can inspect it further by accessing `$LASTGRAPHITEMS[0]` here).
+This will return the newly created contact object (you can inspect it further by accessing `$LASTGRAPHITEMS[0]`).
 
-The requirements for write operations vary among the different entities exposed by the Graph -- consult the [Microsoft Graph documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/overview) for information on creating, updating, and deleting objects in the Graph.
+The `contactData` variable was assigned to a structure that would result in the JSON required for the Graph type `contact` whose JSON representation can be found in the [Graph documentation](https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/contact). The rules for creating such an object are roughly as follows:
+
+* For key-value pairs of a Javascript object, simply use a PowerShell `HashTable` that contains all the keys and values. You can use the `@{}` syntax for the PowerShell `HashTable`.
+* If there are values that are also Javascript objects (i.e. they are not strings, numbers, etc.), those themselves can be PowerShell `HashTable` instances with their own keys and values. Thus, you'll likely end up with one or more levels of nested `HashTable` instances
+* If a value is an array, express the array using PowerShell's `Array` type via the `@()` syntax. The elements of the array can be any type as well, including `HashTable` instances that represent Javascript objects, other arrays expressed via `@()` syntax, and of course simple types like numbers and strings.
+* If it isn't clear, the `HashTable` instances can contain arrays.
+
+The ability of PowerShell to express mutual nesting of arrays and `HashTable` instances via compact `@()` and `@{}` syntax makes it fairly intuitive and readable to express any object that can be expressed as JSON.
+
+##### Making it easier with New-GraphObject
+
+While relatively simple manual construction of JSON serializable objects is feasible with PowerShell syntax, the process still requires human understanding of the detailed correspondence between JSON format and PowerShell data types with mistake-free rendering of the object.
+
+Fortunately, AutoGraphPS provides the `New-GraphObject` command which correctly renders the object according to the API schema and removes the source of much of the human error. For example, the, following sequence of commands can be used to create a contact just as in the previous `contact` example:
+
+```powershell
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -Value Work, cleo@soulsonic.org
+$contactData = New-GraphObject contact -Property givenName, emailAddresses -Value 'Cleopatra Jones', @($emailAddress)
+Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+```
+
+While this command takes 3 lines instead of 2, its lack of `@()` and `@{}` syntax makes its intent more plain. The `Property` parameter allows you to specify which properties of the object you'd like to include. The optional `Value` property lets you specify the value of the property -- each element of the `Value` parameter corresponds to the desired value of the property named by an element at the same position in the list specified to `Property`. The command will keep you honest by throwing an error if you specify a property that does not exist on the object; this error checking is not available with the shorter 2 line version -- rather than finding out your error sooner with an explicit error message, the failure occurs when making the request to Graph, and the error message may not always be explicit about which property is set incorrectly.
+
+Note that the `Value` parameter is not mandatory, and in fact does not require the same cardinality as `Property` -- any properties without a corresponding value are simply set to a default value.
+
+One difficulty is that Graph defines to kinds of composite types, the `Entity` and `Complex` types of OData. To avoid the potentially incorrect asssumption that type names are unique across `Entity` and `Complex` types, you must specify the `TypeClass` parameter with the value `Complext` to override the default type class of `Entity` that `New-GraphObject` uses to build the object.
+
+##### The PropertyList alternative
+The `PropertyList` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
+
+```powershell
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyList @{
+    name = 'Work'
+    address = 'cleo@soulsonic.org'
+}
+
+$contactData = New-GraphObject contact -PropertyList @{
+    givenName = 'Cleopatra Jones'
+    emailAddresses = @($emailAddress)
+}
+
+Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+```
+
+This approach, while certainly using more lines than the others, is even more readable and easier to express correctly than the parallel lists.
 
 ### Get-GraphUri -- understanding the Graph's structure
 
