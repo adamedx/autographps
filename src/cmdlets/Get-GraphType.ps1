@@ -18,6 +18,7 @@
 
 function Get-GraphType {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
+    [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
