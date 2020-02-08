@@ -12,7 +12,7 @@
 RootModule = 'AutoGraphPS.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.31.0'
+ModuleVersion = '0.32.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -188,28 +188,25 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.31.0 Release Notes
+## AutoGraphPS 0.32.0 Release Notes
 
-This release addresses an incomplete fix for the Graph metadata schema change on 2020-01-22, and also adds new usability features and fixes other minor issues.
+This release adds minor improvements and features and addresses some issues related to build tooling and build issues on platforms with case sensitive file systems.
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.18.0
 
 ### Breaking changes
 
-* `New-GraphObject` now fails in certain cases where it previously ignored an error. See subsequent "New features" note about new functionality for `New-GraphObject`.
+None.
 
 ### New features
 
-* `Show-GraphHelp` now supports tab-completion for the `ResourceName` parameter for faster input and for "browsing" of resource names
-* `Show-GraphHelp` supports the `GraphName` parameter that can be used to indicate that help should correspond to the API version of the specified Graph
-* `New-GraphObject` now fails if an invalid property for the given type is specified for the `Property` or `PropertyList` arguments. Previously specifying a non-existent property for the type was a no-op. The error correctly informs the caller that they've made a mistake. Such errors can be ignored by specifying the `SkipPropertyCheck` parameter.
+* `Get-GraphType` now supports tab-completion for output, so commands like select can be used interactively when building commands in the shell
 
 ### Fixed defects
 
-* [Metadata regression](https://github.com/adamedx/autographps/issues/83): Commands like `gls` and `Get-GraphUri` no longer return actions and functions due to a change to the public Graph metadata format on 2020-01-22. This was supposed to be addressed with [the fix for an earlier issue](https://github.com/adamedx/autographps/issues/81), but that fix was incomplete and missed the case of actions and functions.
-* [Single element values incorrectly set in properties for object returned by New-GraphObject](https://github.com/adamedx/autographps/issues/85): If you use the `Values` parameter of `New-GraphObject` to pass an array that has only one element, it will not be stored as an array, and the resulting object will result in bad request errors when sent to Graph.
+* Test execution in CI requires special module-specific logic to rename the AutoGraphPS-SDK modules installed for testing to lower case
 
 '@
     } # End of PSData hashtable
