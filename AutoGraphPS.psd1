@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'AutoGraphPS.psm1'
+RootModule = 'autographps.psm1'
 
 # Version number of this module.
 ModuleVersion = '0.32.0'
@@ -112,8 +112,8 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\AutoGraphPS.psd1',
-        '.\AutoGraphPS.psm1',
+        '.\autographps.psd1',
+        '.\autographps.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
