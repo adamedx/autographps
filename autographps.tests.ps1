@@ -13,7 +13,7 @@
 # limitations under the License.
 
 Describe "Autographps application" {
-    $manifestLocation = Join-Path $psscriptroot 'AutoGraphPS.psd1'
+    $manifestLocation = Join-Path $psscriptroot 'autographps.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
