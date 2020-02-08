@@ -336,7 +336,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2019 Adam Edwards
+Copyright:: Copyright (c) 2020 Adam Edwards
 
 License:: Apache License, Version 2.0
 
