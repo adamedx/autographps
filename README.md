@@ -24,7 +24,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
