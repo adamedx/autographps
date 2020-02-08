@@ -3,19 +3,10 @@ AutoGraphPS
 
 <img src="https://raw.githubusercontent.com/adamedx/autographps/master/assets/PoshGraphIcon.png" width="100">
 
-----
+| [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Usage](#usage) | [Reference](#reference) | [Contributing and development](#contributing-and-development) |
+|-------------|-------------|-------------|-------------|-------------|
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=master)
-
-* [Overview](#Overview)
-* [Installation](#Installation)
-* [Using AutoGraphPS](#using-autographps)
-* [Common uses](#common-uses)
-* [Command inventory](#command-inventory)
-* [Developer installation from source](#developer-installation-from-source)
-* [Contributing and development](#contributing-and-development)
-* [Quickstart](#quickstart)
-* [License and authors](#license-and-authors)
 
 ## Overview
 
@@ -33,7 +24,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
@@ -42,7 +33,7 @@ AutoGraphPS is available through the [PowerShell Gallery](https://www.powershell
 Install-Module AutoGraphPS -scope currentuser
 ```
 
-## Using AutoGraphPS
+## Usage
 Once you've installed, you can use an AutoGraphPS cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
@@ -228,11 +219,11 @@ AutoGraphPS is your PowerShell interface to the Microsoft Graph REST API. In wha
 
 There are probably many more uses for AutoGraphPS, as wide-ranging as the Graph itself.
 
-## Command inventory
+## Reference
 
 The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve significantly along with their usage. Additional documentation will be provided for them as their status solidifies.
 
-Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/adamedx/autographPS-sdk), this list includes cmdlets from AutoGraphPS-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on AutoGraphPS-SDK rather than AutoGraphPS if its subset of cmdlets suits your use case.
+Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk), this list includes cmdlets from AutoGraphPS-SDK as well. If you are building a Graph-based application in PowerShell, consider taking a dependency on AutoGraphPS-SDK rather than AutoGraphPS if its subset of cmdlets suits your use case.
 
 | Cmdlet (alias)            | Description                                                                                             |
 |---------------------------|---------------------------------------------------------------------------------------------------------|

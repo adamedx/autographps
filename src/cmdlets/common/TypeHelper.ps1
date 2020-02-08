@@ -18,23 +18,34 @@ ScriptClass TypeHelper {
     static {
         const DisplayTypeName 'GraphTypeDisplayType'
 
+        $displayProperties = @{
+            TypeId = 'TypeId'
+            Namespace = 'Namespace'
+            TypeClass = 'Class'
+            BaseType = 'BaseType'
+            Properties = 'Properties'
+            IsComposite = 'IsComposite'
+            NativeSchema = 'NativeSchema'
+            }
+
+
         function __initialize {
             __RegisterDisplayType
         }
 
         function ToPublic( $privateObject ) {
-            # Seems like ScriptClass constants have a strange behavior when used as a typename here.
-            # To work around this, use ToString()
-            [PSCustomObject]@{
-                PSTypeName = ($this.DisplayTypeName.tostring())
-                TypeId = $privateObject.TypeId
-                Namespace = $privateObject.Namespace
-                TypeClass = $privateObject.Class
-                BaseType = $privateObject.BaseType
-                Properties = $privateObject.Properties
-                IsComposite = $privateObject.IsComposite
-                NativeSchema = $privateObject.NativeSchema
+            $result = [PSCustomObject] @{
+                TypeId = $privateObject.($this.displayProperties.TypeId)
+                Namespace = $privateObject.($this.displayProperties.Namespace)
+                TypeClass = $privateObject.($this.displayProperties.TypeClass)
+                BaseType = $privateObject.($this.displayProperties.BaseType)
+                Properties = [PSCustomObject] ($privateObject.($this.displayProperties.Properties))
+                IsComposite = $privateObject.($this.displayProperties.IsComposite)
+                NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
             }
+
+            $result.psobject.typenames.add($this. DisplayTypeName)
+            $result
         }
 
         function __RegisterDisplayType {
@@ -43,11 +54,22 @@ ScriptClass TypeHelper {
             $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties')
 
             $displayTypeArguments = @{
-                TypeName    = $this.DisplayTypeName
+                TypeName = $this.DisplayTypeName
                 DefaultDisplayPropertySet = $coreProperties
             }
 
             Update-TypeData -force @displayTypeArguments
+
+            $this.displayProperties.keys | foreach {
+                $memberArgs = @{
+                    TypeName = $this.DisplayTypeName
+                    MemberType = 'NoteProperty'
+                    MemberName = $_
+                    Value = $null
+                }
+
+                Update-TypeData -force @memberArgs
+            }
         }
     }
 }
