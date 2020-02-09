@@ -15,6 +15,7 @@
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
+. (import-script common/WriteOperationParameterCompleter)
 
 function New-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
@@ -98,6 +99,6 @@ function New-GraphItem {
     Invoke-GraphRequest $Uri -Method $createMethod -Body $newObject -erroraction 'stop'
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so TypeParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypePropertyParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so WriteOperationParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)
