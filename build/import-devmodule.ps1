@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole)
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, $Path)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -21,7 +21,13 @@ $moduleName = Get-ModuleName
 $currentpsmodulepath = gi env:PSModulePath
 $devDirectory = Get-DevModuleDirectory
 $OSPathSeparator = ';'
-$moduleManifestPath = get-childitem -r -path $devDirectory -filter *.psd1 | where basename -eq $moduleName | select -expandproperty fullname
+$moduleManifestPath = if ( $FromSource.IsPresent ) {
+    (get-item "$psscriptroot/../$moduleName.psd1").fullname
+} elseif ( $Path ) {
+    $Path
+} else {
+    get-childitem -r -path $devDirectory -filter *.psd1 | where basename -eq $moduleName | select -expandproperty fullname
+}
 
 try {
     if ( $PSVersionTable.PSEdition -eq 'Core' ) {
@@ -30,6 +36,12 @@ try {
         }
     }
 } catch {
+}
+
+$moduleArg = if ( $FromSource.IsPresent -or $Path ) {
+    $moduleManifestPath
+} else {
+    $moduleName
 }
 
 if (! $NoNewShell.ispresent ) {
@@ -41,12 +53,18 @@ if (! $NoNewShell.ispresent ) {
 
     write-verbose ("WaitForProcess = {0}, ReuseWindow = {1}" -f $shouldWait, $noNewWindow)
 
+    $moduleArg = if ( $FromSource.IsPresent -or $Path ) {
+        $moduleManifestPath
+    } else {
+        $moduleName
+    }
+
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(
     if ( ! $NoNewWindow ) {
-        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" -Wait:$shouldWait | out-null
+        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleArg'; $InitialCommand" -Wait:$shouldWait | out-null
     } else {
-        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleName'; $InitialCommand" -Wait:$shouldWait -nonewwindow | out-null
+        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleArg'; $InitialCommand" -Wait:$shouldWait -nonewwindow | out-null
     }
     write-host "Successfully launched module '$moduleName' in a new PowerShell console."
     return
@@ -77,7 +95,7 @@ $scriptBlock = @"
         # So for now, we assume its not already loaded -- maybe we can add a check
         # for that and fail in the future to avoid situations where one runs with
         # pre-existing state rather than the latest version of the module
-        `$moduleInfo = import-module '$moduleName' -verbose -passthru # No '-force' -- see above!
+        `$moduleInfo = import-module '$moduleArg' -verbose -passthru # No '-force' -- see above!
 
         `$moduleBase = `$moduleInfo.moduleBase
         if ( `$moduleBase -ne `$moduleExpectedParent ) {

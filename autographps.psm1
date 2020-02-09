@@ -24,6 +24,7 @@ $functions = @(
     'Get-GraphUri',
     'New-Graph',
     'New-GraphObject',
+    'New-GraphItem',
     'Remove-Graph',
     'Set-GraphLocation',
     'Set-GraphPrompt',
