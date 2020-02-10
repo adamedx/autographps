@@ -14,14 +14,34 @@
 
 ScriptClass TypeUriHelper {
     static {
+        const TYPE_METHOD_NAME __ItemType
+
         function DefaultUriForType($targetContext, $entityTypeName) {
             $entitySet = ($::.GraphManager |=> GetGraph $targetContext).builder |=> GetEntityTypeToEntitySetMapping $entityTypeName
             [Uri] "/$entitySet"
         }
 
         function TypeFromUri([Uri] $uri) {
-            $uriInfo = Get-GraphUri $Uri
+            $uriInfo = Get-GraphUri $Uri -erroraction stop
             $uriInfo.FullTypeName
+        }
+
+        function DecorateObjectWithType($graphObject, $typeName) {
+            $graphObject | add-member -membertype ScriptMethod -name  $this.TYPE_METHOD_NAME -value ([ScriptBlock]::Create("'$typeName'"))
+        }
+
+        function GetTypeFromDecoratedObject($graphObject) {
+            if ( $graphObject | gm $this.TYPE_METHOD_NAME -erroraction ignore ) {
+                $graphObject.($this.TYPE_METHOD_NAME)()
+            }
+        }
+
+        function GetUriFromDecoratedObject($targetContext, $graphObject) {
+            $type = GetTypeFromDecoratedObject $graphObject
+
+            if ( $type ) {
+                DefaultUriForType $targetContext $type
+            }
         }
     }
 }
