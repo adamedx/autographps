@@ -37,6 +37,7 @@ Describe "Autographps application" {
                 'Get-GraphType'
                 'Get-GraphUri'
                 'New-Graph'
+                'New-GraphItem'
                 'New-GraphObject'
                 'New-Item'
                 'Remove-Graph'

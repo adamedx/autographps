@@ -14,8 +14,9 @@
 
 ScriptClass TypeUriHelper {
     static {
-        function DefaultUriForType($typeName) {
-            throw [NotImplementedException]::new('Not implemented')
+        function DefaultUriForType($targetContext, $entityTypeName) {
+            $entitySet = ($::.GraphManager |=> GetGraph $targetContext).builder |=> GetEntityTypeToEntitySetMapping $entityTypeName
+            [Uri] "/$entitySet"
         }
 
         function TypeFromUri([Uri] $uri) {

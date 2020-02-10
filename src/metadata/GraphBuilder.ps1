@@ -29,6 +29,7 @@ ScriptClass GraphBuilder {
     $dataModel = $null
     $namespace = $null
     $namespaceAlias = $null
+    $typeToSetMapping = @{}
 
     static {
         $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
@@ -57,19 +58,23 @@ ScriptClass GraphBuilder {
 
     function __AddRootVertices($graph) {
         $singletons = $this.dataModel |=> GetSingletons
-        __AddVerticesFromSchemas $graph $singletons
+        __AddVerticesFromSchemas $graph $singletons Singleton
 
         $entitySets = $this.dataModel |=> GetEntitySets
-        __AddVerticesFromSchemas $graph $entitySets
+        __AddVerticesFromSchemas $graph $entitySets EntitySet
     }
 
-    function __AddVerticesFromSchemas($graph, $schemas) {
+    function __AddVerticesFromSchemas($graph, $schemas, $vertexType) {
         $schemas | foreach {
-            __AddVertex $graph $_
+            __AddVertex $graph $_ $vertexType
         }
     }
 
-    function __AddVertex($graph, $schema) {
+    function __AddVertex($graph, $schema, $vertexType) {
+        if ( $vertexType -eq 'EntitySet' ) {
+            __AddEntityTypeToEntitySetMapping $schema.entitytype $schema.name
+        }
+
         $entity = new-so Entity $schema $this.namespace $this.namespaceAlias
         $graph |=> AddVertex $entity
     }
@@ -83,7 +88,7 @@ ScriptClass GraphBuilder {
 
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding type '$unqualifiedTypeName'"
 
-        __AddVerticesFromSchemas $graph $entityType
+        __AddVerticesFromSchemas $graph $entityType EntityType
     }
 
     function __AddEdgesToEntityTypeVertex($graph, $sourceVertex) {
@@ -232,6 +237,14 @@ ScriptClass GraphBuilder {
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
         }
+    }
+
+    function __AddEntityTypeToEntitySetMapping($entityTypeName, $entitySetName) {
+        $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
+    }
+
+    function GetEntityTypeToEntitySetMapping($entityTypeName) {
+        $this.typeToSetMapping[$entityTypeName]
     }
 }
 
