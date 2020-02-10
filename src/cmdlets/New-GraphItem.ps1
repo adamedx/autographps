@@ -70,70 +70,76 @@ function New-GraphItem {
         [switch] $SkipPropertyCheck
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
+    }
 
-    $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
+    process {
+        $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
-    $targetUri = $Uri
+        $targetUri = $Uri
 
-    $targetType = if ( $TypeName ) {
-        $qualifiedParam = @{FullyQualifiedTypeName = $FullyQualifiedTypeName}
-        $resolvedType = Get-GraphType $TypeName -TypeClass Entity @qualifiedParam -erroraction stop
-        $targetUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $resolvedType.TypeId
+        $targetType = if ( $TypeName ) {
+            $qualifiedParam = @{FullyQualifiedTypeName = $FullyQualifiedTypeName}
+            $resolvedType = Get-GraphType $TypeName -TypeClass Entity @qualifiedParam -erroraction stop
+            $targetUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $resolvedType.TypeId
+
+            if ( ! $targetUri ) {
+                throw "Unable to find Uri for type '$TypeName' -- explicitly specify the target URI through the 'Uri' parameter and retry."
+            }
+
+            $resolvedType.typeId
+        } elseif ($Uri)  {
+            $uriInfo = Get-GraphUri $Uri -erroraction stop
+            $uriInfo.FullTypeName
+        } elseif ( $GraphObject ) {
+            $objectUri =  $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $GraphObject
+            if ( $objectUri ) {
+                $targetUri = $objectUri
+            }
+        }
 
         if ( ! $targetUri ) {
-            throw "Unable to find Uri for type '$TypeName' -- explicitly specify the target URI through the 'Uri' parameter and retry."
+            throw [ArgumentInvalidException]::new('Either the TypeName or Uri parameter must be specified')
         }
 
-        $resolvedType.typeId
-    } elseif ($Uri)  {
-        $uriInfo = Get-GraphUri $Uri -erroraction stop
-        $uriInfo.FullTypeName
-    } elseif ( $GraphObject ) {
-        $objectUri =  $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $GraphObject
-        if ( $objectUri ) {
-            $targetUri = $objectUri
+        $newGraphObjectParameters = @{}
+
+        @(
+            'Property'
+            'Value'
+            'GraphName'
+            'PropertyList'
+            'FullyQualifiedTypeName'
+            'Recurse'
+            'SetDefaultValues'
+            'SkipPropertyCheck'
+        ) | foreach {
+            if ( $PSBoundParameters[$_] -ne $null ) {
+                $newGraphObjectParameters[$_] = $PSBoundParameters[$_]
+            }
         }
-    }
 
-    if ( ! $targetUri ) {
-        throw [ArgumentInvalidException]::new('Either the TypeName or Uri parameter must be specified')
-    }
-
-    $newGraphObjectParameters = @{}
-
-    @(
-        'Property'
-        'Value'
-        'GraphName'
-        'PropertyList'
-        'FullyQualifiedTypeName'
-        'Recurse'
-        'SetDefaultValues'
-        'SkipPropertyCheck'
-    ) | foreach {
-        if ( $PSBoundParameters[$_] -ne $null ) {
-            $newGraphObjectParameters[$_] = $PSBoundParameters[$_]
-        }
-    }
-
-    $newObject = if ( $GraphObject ) {
-        $GraphObject
-    } else {
-        New-GraphObject -TypeName $targetType -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
-    }
-
-    $createMethod = if ( $Method ) {
-        $Method
-    } else {
-        if ( ( $newObject | gm Id -erroraction ignore ) -and $newObject.Id ) {
-            'PUT'
+        $newObject = if ( $GraphObject ) {
+            $GraphObject
         } else {
-            'POST'
+            New-GraphObject -TypeName $targetType -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
+
+        $createMethod = if ( $Method ) {
+            $Method
+        } else {
+            if ( ( $newObject | gm Id -erroraction ignore ) -and $newObject.Id ) {
+                'PUT'
+            } else {
+                'POST'
+            }
+        }
+
+        Invoke-GraphRequest $targetUri -Method $createMethod -Body $newObject -erroraction 'stop'
     }
 
-    Invoke-GraphRequest $targetUri -Method $createMethod -Body $newObject -erroraction 'stop'
+    end {}
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
