@@ -90,8 +90,7 @@ function New-GraphItem {
 
             $resolvedType.typeId
         } elseif ($Uri)  {
-            $uriInfo = Get-GraphUri $Uri -erroraction stop
-            $uriInfo.FullTypeName
+            $::.TypeUrihelper |=> TypeFromUri $Uri
         } elseif ( $GraphObject ) {
             $objectUri =  $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $GraphObject
             if ( $objectUri ) {
@@ -136,7 +135,7 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphRequest $targetUri -Method $createMethod -Body $newObject -erroraction 'stop'
+        Invoke-GraphRequest $targetUri -Method $createMethod -Body $newObject -connection $targetContext.connection -erroraction 'stop'
     }
 
     end {}
