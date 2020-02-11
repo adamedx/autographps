@@ -243,8 +243,9 @@ ScriptClass GraphBuilder {
         $existingMapping = $this.typeToSetMapping[$entityTypeName]
         if ( $existingMapping -and $existingMapping -ne $entitySetName ) {
             throw "Conflicting entity set '$entitySetName' being referenced for type '$entityTypeName' which is already mapped to '$existingMapping'"
+        } else {
+            $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
         }
-        $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
     }
 
     function GetEntityTypeToEntitySetMapping($entityTypeName) {
