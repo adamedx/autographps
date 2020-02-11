@@ -17,7 +17,7 @@ ScriptClass TypeUriHelper {
         const TYPE_METHOD_NAME __ItemType
 
         function DefaultUriForType($targetContext, $entityTypeName) {
-            $entitySet = ($::.GraphManager |=> GetGraph $targetContext).builder |=> GetEntityTypeToEntitySetMapping $entityTypeName
+            $entitySet = $::.GraphManager |=> GetGraph $targetContext |=> GetEntityTypeToEntitySetMapping $entityTypeName
             [Uri] "/$entitySet"
         }
 

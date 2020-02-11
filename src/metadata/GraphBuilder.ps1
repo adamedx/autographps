@@ -29,7 +29,6 @@ ScriptClass GraphBuilder {
     $dataModel = $null
     $namespace = $null
     $namespaceAlias = $null
-    $typeToSetMapping = @{}
 
     static {
         $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
@@ -71,10 +70,6 @@ ScriptClass GraphBuilder {
     }
 
     function __AddVertex($graph, $schema, $vertexType) {
-        if ( $vertexType -eq 'EntitySet' ) {
-            __AddEntityTypeToEntitySetMapping $schema.entitytype $schema.name
-        }
-
         $entity = new-so Entity $schema $this.namespace $this.namespaceAlias
         $graph |=> AddVertex $entity
     }
@@ -237,21 +232,6 @@ ScriptClass GraphBuilder {
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
         }
-    }
-
-    function __AddEntityTypeToEntitySetMapping($entityTypeName, $entitySetName) {
-        $existingMapping = $this.typeToSetMapping[$entityTypeName]
-        if ( $existingMapping ) {
-            if ( $existingMapping -ne $entitySetName ) {
-                throw "Conflicting entity set '$entitySetName' cannot be added for type '$entityTypeName' because the type is already mapped to '$existingMapping'"
-            }
-        } else {
-            $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
-        }
-    }
-
-    function GetEntityTypeToEntitySetMapping($entityTypeName) {
-        $this.typeToSetMapping[$entityTypeName]
     }
 }
 
