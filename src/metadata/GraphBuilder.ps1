@@ -242,8 +242,8 @@ ScriptClass GraphBuilder {
     function __AddEntityTypeToEntitySetMapping($entityTypeName, $entitySetName) {
         $existingMapping = $this.typeToSetMapping[$entityTypeName]
         if ( $existingMapping ) {
-            if ( -ne $entitySetName ) {
-                throw "Conflicting entity set '$entitySetName' being referenced for type '$entityTypeName' which is already mapped to '$existingMapping'"
+            if ( $existingMapping -ne $entitySetName ) {
+                throw "Conflicting entity set '$entitySetName' cannot be added for type '$entityTypeName' because the type is already mapped to '$existingMapping'"
             }
         } else {
             $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
