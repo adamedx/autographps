@@ -75,32 +75,7 @@ function New-GraphItem {
     }
 
     process {
-        $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
-
-        $targetUri = $Uri
-
-        $targetType = if ( $TypeName ) {
-            $qualifiedParam = @{FullyQualifiedTypeName = $FullyQualifiedTypeName}
-            $resolvedType = Get-GraphType $TypeName -TypeClass Entity @qualifiedParam -erroraction stop
-            $targetUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $resolvedType.TypeId
-
-            if ( ! $targetUri ) {
-                throw "Unable to find Uri for type '$TypeName' -- explicitly specify the target URI through the 'Uri' parameter and retry."
-            }
-
-            $resolvedType.typeId
-        } elseif ($Uri)  {
-            $::.TypeUrihelper |=> TypeFromUri $Uri
-        } elseif ( $GraphObject ) {
-            $objectUri =  $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $GraphObject
-            if ( $objectUri ) {
-                $targetUri = $objectUri
-            }
-        }
-
-        if ( ! $targetUri ) {
-            throw [ArgumentInvalidException]::new('Either the TypeName or Uri parameter must be specified')
-        }
+        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $GraphObject
 
         $newGraphObjectParameters = @{}
 
@@ -122,7 +97,7 @@ function New-GraphItem {
         $newObject = if ( $GraphObject ) {
             $GraphObject
         } else {
-            New-GraphObject -TypeName $targetType -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
+            New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
         $createMethod = if ( $Method ) {
@@ -135,7 +110,7 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphRequest $targetUri -Method $createMethod -Body $newObject -connection $targetContext.connection -erroraction 'stop'
+        Invoke-GraphRequest $writeRequestInfo.Uri -Method $createMethod -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
     }
 
     end {}

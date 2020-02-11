@@ -43,5 +43,39 @@ ScriptClass TypeUriHelper {
                 DefaultUriForType $targetContext $type
             }
         }
+
+        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $typedGraphObject) {
+            $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
+
+            $targetUri = $uri
+
+            $targetType = if ( $typeName ) {
+                $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $graphName -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
+                $targetUri = DefaultUriForType $targetContext $resolvedType.TypeId
+
+                if ( ! $targetUri ) {
+                    throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI and retry."
+                }
+
+                $resolvedType.typeId
+            } elseif ($uri)  {
+                TypeFromUri $uri
+            } elseif ( $typedGraphObject ) {
+                $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject
+                if ( $objectUri ) {
+                    $targetUri = $objectUri
+                }
+            }
+
+            if ( ! $targetUri ) {
+                throw [ArgumentInvalidException]::new('Either a type name or URI must be specified')
+            }
+
+            [PSCustomObject] @{
+                Context = $targetContext
+                TypeName = $targetType
+                Uri = $targetUri
+            }
+        }
     }
 }
