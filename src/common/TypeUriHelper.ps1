@@ -30,40 +30,75 @@ ScriptClass TypeUriHelper {
             $graphObject | add-member -membertype ScriptMethod -name  $this.TYPE_METHOD_NAME -value ([ScriptBlock]::Create("'$typeName'"))
         }
 
+        function GetUriFromDecoratedResponseObject($targetContext, $responseObject, $resourceId) {
+            if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
+                $objectUri = $requestUri.GraphRelativeUri
+
+                # TODO: When an object is supplied, its URI had better end with whatever id was supplied.
+                # This will not always be true of the uri retrieved from the object because this URI is the
+                # URI that was used to request the object from Graph, not necessarily the object's actual
+                # URI. For example, a request to POST to /groups will return an object located at
+                # /groups/9318e52c-6cd7-430e-9095-a54aa5754381. But __ItemContext contains the URI that was
+                # used to make the POST request, i.e. /groups. However, since the id is supplied to this method,
+                # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
+                if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
+                    $objectUri = $objectUri, $id -join '/'
+                }
+
+                $objectUri
+            }
+        }
+
         function GetTypeFromDecoratedObject($graphObject) {
-            if ( $graphObject | gm $this.TYPE_METHOD_NAME -erroraction ignore ) {
+            if ( $graphObject | gm -membertype scriptmethod $this.TYPE_METHOD_NAME -erroraction ignore ) {
                 $graphObject.($this.TYPE_METHOD_NAME)()
             }
         }
 
         function GetUriFromDecoratedObject($targetContext, $graphObject) {
-            $type = GetTypeFromDecoratedObject $graphObject
+            $objectUri = GetUriFromDecoratedResponseObject $targetContext $graphObject
 
-            if ( $type ) {
-                DefaultUriForType $targetContext $type
+            if ( ! $objectUri ) {
+                $type = GetTypeFromDecoratedObject $graphObject
+
+                if ( $type ) {
+                    $objectUri = DefaultUriForType $targetContext $type
+                }
             }
+
+            $objectUri
         }
 
-        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $typedGraphObject) {
+        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
             $targetUri = $uri
 
             $targetType = if ( $typeName ) {
                 $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $graphName -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
-                $targetUri = DefaultUriForType $targetContext $resolvedType.TypeId
+                $typeUri = DefaultUriForType $targetContext $resolvedType.TypeId
 
-                if ( ! $targetUri ) {
+                if ( $typeUri ) {
+                    $targetUri = $typeUri, $id -join '/'
+                } else {
                     throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI and retry."
                 }
 
                 $resolvedType.typeId
-            } elseif ($uri)  {
+            } elseif ( $uri )  {
                 TypeFromUri $uri
             } elseif ( $typedGraphObject ) {
-                $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject
+                $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
                 if ( $objectUri ) {
                     $targetUri = $objectUri
+
+                    # TODO: When an object is supplied, it had better end with whatever id was supplied.
+                    # This will not always be true of the uri retrieved from the object
+                    if ( $id -and ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
+                        $targetUri = $targetUri, $id -join '/'
+                    }
+                    TypeFromUri $targetUri
                 }
             }
 

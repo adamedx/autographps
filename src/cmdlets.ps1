@@ -23,6 +23,7 @@
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\Remove-Graph)
+. (import-script cmdlets\Set-GraphItemProperty)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Show-GraphHelp)

@@ -3,6 +3,9 @@
 ## To-do items -- prioritized
 
 * Fix CI on Linux to actually fail when test failures occur
+* Rename propertylist in new-graphitem, new-graphobject to propertymap
+* Add-GraphItemReference
+* 
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitve types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
 * Possible refactor of ScalarTypeProvider and CompositeTypeProvider into per-typeclass providers
@@ -765,3 +768,71 @@ Here is a proposal -- here `gls` refers to `Get-GraphChildItem`:
 6. Another alias / function can proxy and always give the `ItemAndChild` behavior
 7. We could make another command that `gls` aliases -- that way `Get-GraphChildItem` can retain the consistent container semantics expected in the `Get*-ChildItem` cmdlets.
 
+### Set-GraphItemProperty parameters
+Parameter sets in decreasing order of common usage. Basic issue is computing the abstract parameters:
+
+* The target object -- there are various ways to describe this, but ultimately it must resolve to a URI. Options are:
+  * By type + id
+  * By Uri
+  * By Uri (parent) + Id
+  * By object
+  * By object + type
+  * By Uri (parent) + object
+* The properties to set and their values -- this is the set of properties to change to specified values. This must ultimately resolve to a set P of properties with a 1:1 mapping to the set V of values.
+  * By parallel list
+  * By hash tables
+  * By JSON object
+
+```powershell
+
+# Looks like parameters have the following parameterset counts
+# TypeName: 8
+# Uri: 6
+# InputObject 4
+# TemplateObject: (8+6+4)/2 = 9, Property: (8+6+4)/2 = 9, Value: (8+6+4)/2 = 9
+
+# Default: TypeAndIdList
+
+# By type name
+
+# TypeAndIdList
+# TypeAndIdMap
+Set-GraphItemProperty user userid prop1, prop2 val1, val2
+Set-GraphItemProperty user userid -TemplateObject @{prop1=val1;prop2=val2}
+
+# By object
+
+# TypedObjectList
+# TypedObjectMap
+$existing | Set-GraphItemProperty prop1, prop2 val1, val2
+$existing | Set-GraphItemProperty -TemplateObject @{prop1=val1;prop2=val2}
+
+# ObjectAndTypeList
+# ObjectAndTypeMap
+$existing | Set-GraphItemProperty user prop1, prop2 val1, val2
+$existing | Set-GraphItemProperty user @{prop1=val1;prop2=val2}
+
+# By property
+
+# TypeAndPropertyNameList
+# TypeAndPropertyNameMap
+# UriParentAndPropertyNameList
+# UriParentAndPropertyNameMap
+Set-GraphItemProperty user -ByProperty name -ByValue myname prop1, prop2 val1, val2
+Set-GraphItemProperty user -ByProperty name -ByValue myname @{prop1=val1;prop2=val2}
+Set-GraphItemProperty -uri /users -ByProperty name -ByValue myname prop1, prop2 val1, val2
+Set-GraphItemProperty -uri /users -ByProperty name -ByValue myname -TemplateObject @{prop1=val1;prop2=val2}
+
+# By Uri
+
+# UriList
+# UriMap
+# UriParentAndObjectList
+# UriParentAndObjectMap
+Set-GraphItemProperty -uri /users/userid prop1, prop2 val1, val2
+Set-GraphItemProperty -uri /users/userid -TemplateObject @{prop1=val1;prop2=val2}
+$existing | Set-GraphItemProperty -uri /users prop1, prop2 val1, val2
+$existing | Set-GraphItemProperty -uri /users -TemplateObject @{prop1=val1;prop2=val2}
+
+
+```
