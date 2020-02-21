@@ -51,7 +51,7 @@ function Set-GraphItemProperty {
         [parameter(parametersetname='typeandpropertymap', mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', mandatory=$true)]
         [parameter(parametersetname='uriandpropertymap', mandatory=$true)]
-        $PropertyList,
+        $PropertyMap,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -81,7 +81,7 @@ function Set-GraphItemProperty {
             'Property'
             'Value'
             'GraphName'
-            'PropertyList'
+            'PropertyMap'
             'FullyQualifiedTypeName'
             'Recurse'
             'SetDefaultValues'
@@ -98,10 +98,10 @@ function Set-GraphItemProperty {
 
         $newObject = if ( $writeRequestInfo.TypeName ) {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
-        } elseif ( $propertyList ) {
-            $propertyList
+        } elseif ( $propertyMap ) {
+            $propertyMap
         } else {
-            throw "Object type is ambiguous -- specify the PropertyList parameter and try again"
+            throw "Object type is ambiguous -- specify the PropertyMap parameter and try again"
         }
 
         Invoke-GraphRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'

@@ -35,12 +35,12 @@ function New-GraphObject {
 
         $GraphName,
 
-        [parameter(parametersetname='optionallyqualifiedproplist', mandatory=$true)]
-        [parameter(parametersetname='fullyqualifiedproplist', mandatory=$true)]
-        $PropertyList,
+        [parameter(parametersetname='optionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedpropmap', mandatory=$true)]
+        $PropertyMap,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
-        [parameter(parametersetname='fullyqualifiedproplist', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedpropmap', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
         [switch] $Json,
@@ -60,7 +60,7 @@ function New-GraphObject {
 
     $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyList $SkipPropertyCheck.IsPresent
+    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyMap $SkipPropertyCheck.IsPresent
 
     $prototypeJson = $prototype.ObjectPrototype | convertto-json -depth 24
 

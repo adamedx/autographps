@@ -56,7 +56,7 @@ function New-GraphItem {
         [parameter(parametersetname='bytypeoptionallyqualifiedproplist', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedproplist', mandatory=$true)]
         [parameter(parametersetname='byuriproplist', mandatory=$true)]
-        $PropertyList,
+        $PropertyMap,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedproplist', mandatory=$true)]
@@ -75,7 +75,7 @@ function New-GraphItem {
     }
 
     process {
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $GraphObject
+        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphObject
 
         $newGraphObjectParameters = @{}
 
@@ -83,7 +83,7 @@ function New-GraphItem {
             'Property'
             'Value'
             'GraphName'
-            'PropertyList'
+            'PropertyMap'
             'FullyQualifiedTypeName'
             'Recurse'
             'SetDefaultValues'
