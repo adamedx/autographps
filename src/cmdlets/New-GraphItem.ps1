@@ -22,8 +22,8 @@ function New-GraphItem {
     param(
         [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypefullyqualified', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeoptionallyqualifiedproplist', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypefullyqualifiedproplist', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
         $TypeName,
@@ -39,7 +39,7 @@ function New-GraphItem {
         [object[]] $Value,
 
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuriproplist')]
+        [parameter(parametersetname='byuripropmap')]
         [parameter(parametersetname='byurifromobject')]
         [Uri] $Uri,
 
@@ -53,13 +53,13 @@ function New-GraphItem {
 
         $GraphName,
 
-        [parameter(parametersetname='bytypeoptionallyqualifiedproplist', mandatory=$true)]
-        [parameter(parametersetname='bytypefullyqualifiedproplist', mandatory=$true)]
-        [parameter(parametersetname='byuriproplist', mandatory=$true)]
+        [parameter(parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='byuripropmap', mandatory=$true)]
         $PropertyMap,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
-        [parameter(parametersetname='bytypefullyqualifiedproplist', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
