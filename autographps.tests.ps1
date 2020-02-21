@@ -40,6 +40,7 @@ Describe "Autographps application" {
                 'New-GraphItem'
                 'New-GraphObject'
                 'Remove-Graph'
+                'Set-GraphItemProperty'
                 'Set-GraphLocation'
                 'Set-GraphPrompt'
                 'Show-GraphHelp'
