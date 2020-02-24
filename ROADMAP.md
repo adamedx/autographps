@@ -5,7 +5,6 @@
 * Fix CI on Linux to actually fail when test failures occur
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
-* 
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitve types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
 * Possible refactor of ScalarTypeProvider and CompositeTypeProvider into per-typeclass providers

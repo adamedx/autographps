@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script client/LocationContext)
 
+. (import-script cmdlets\Add-GraphItemReference)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphItemWithMetadata)

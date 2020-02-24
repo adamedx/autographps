@@ -17,26 +17,32 @@
 
 ScriptClass WriteOperationParameterCompleter {
     $typeCompleter = $null
+    $typeParameterName = $null
 
-    function __initialize( $parameterType, $unqualified = $false ) {
+    function __initialize( $parameterType, $unqualified = $false, $typeParameterName = $null ) {
+        $this.typeParameterName = if ( $typeParameterName ) {
+            $typeParameterName
+        } else {
+            'TypeName'
+        }
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
         } elseif ( $parameterType -eq 'Property' ) {
             new-so TypePropertyParameterCompleter
         } else {
-            throw [ArgmentInvalidException]::new("The specified parameter type '$parameterType' must be one of 'TypeName' or 'Property'")
+            throw [ArgumentException]::new("The specified parameter type '$parameterType' must be one of 'TypeName' or 'Property'")
         }
     }
 
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $uriParam = $fakeBoundParameters['Uri']
-        $typeNameParam = $fakeBoundParameters['TypeName']
+        $typeNameParam = $fakeBoundParameters[$this.typeParameterName]
 
         $typeName = if ( $typeNameParam ) {
             $typeNameParam
         } else {
-            $::.TypeUriHelper |=> TypeFromUri $UriParam
+            $::.TypeUriHelper |=> TypeFromUri $UriParam | select -expandproperty FullTypeName
         }
 
         $forwardedBoundParams = @{

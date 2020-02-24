@@ -44,11 +44,18 @@ ScriptClass CompositeTypeProvider {
             }
         }
 
+        $navigationProperties = if ( $nativeSchema | gm navigationproperty -erroraction ignore ) {
+            foreach ( $navigationProperty in $nativeSchema.navigationproperty ) {
+                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $this.namespace $this.namespaceAlias $navigationproperty.Type
+                new-so TypeProperty $navigationproperty.Name $navigationInfo.TypeFullName $navigationInfo.IsCollection
+            }
+        }
+
         $baseType = if ( $nativeSchema | gm BaseType -erroraction ignore) {
             $::.Entity |=> UnAliasQualifiedName $this.namespace $this.namespaceAlias $nativeSchema.baseType
         }
 
-        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $properties $null $null $true $nativeSchema
+        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $properties $null $null $true $nativeSchema $navigationProperties
     }
 
     function GetSortedTypeNames($typeClass) {

@@ -15,6 +15,7 @@
 . (join-path $psscriptroot src/graph.ps1)
 
 $functions = @(
+    'Add-GraphItemReference',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',

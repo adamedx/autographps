@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../typesystem/TypeManager)
+. (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/WriteOperationParameterCompleter)

@@ -23,7 +23,10 @@ ScriptClass TypeUriHelper {
 
         function TypeFromUri([Uri] $uri) {
             $uriInfo = Get-GraphUri $Uri -erroraction stop
-            $uriInfo.FullTypeName
+            [PSCustomObject] @{
+                FullTypeName = $uriInfo.FullTypeName
+                IsCollection = $uriInfo.Collection
+            }
         }
 
         function DecorateObjectWithType($graphObject, $typeName) {
@@ -35,13 +38,15 @@ ScriptClass TypeUriHelper {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
 
-                # TODO: When an object is supplied, its URI had better end with whatever id was supplied.
+                # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
                 # URI that was used to request the object from Graph, not necessarily the object's actual
                 # URI. For example, a request to POST to /groups will return an object located at
                 # /groups/9318e52c-6cd7-430e-9095-a54aa5754381. But __ItemContext contains the URI that was
                 # used to make the POST request, i.e. /groups. However, since the id is supplied to this method,
                 # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
+                # TODO: Get an explicit object URI from the object itself rather than this workaround which
+                # will have problematic corner cases.
                 if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
                     $objectUri = $objectUri, $id -join '/'
                 }
@@ -73,9 +78,11 @@ ScriptClass TypeUriHelper {
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
-            $targetUri = $uri
+            $targetUri = if ( $uri ) {
+                $::.GraphUtilities |=> ToGraphRelativeUri $uri $targetContext
+            }
 
-            $targetType = if ( $typeName ) {
+            $targetTypeInfo = if ( $typeName ) {
                 $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $graphName -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
                 $typeUri = DefaultUriForType $targetContext $resolvedType.TypeId
 
@@ -85,7 +92,10 @@ ScriptClass TypeUriHelper {
                     throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI and retry."
                 }
 
-                $resolvedType.typeId
+                [PSCustomObject] @{
+                    FullTypeName = $resolvedType.typeId
+                    IsCollection = $false
+                }
             } elseif ( $uri )  {
                 TypeFromUri $uri
             } elseif ( $typedGraphObject ) {
@@ -103,14 +113,21 @@ ScriptClass TypeUriHelper {
             }
 
             if ( ! $targetUri ) {
-                throw [ArgumentInvalidException]::new('Either a type name or URI must be specified')
+                throw [ArgumentException]::new('Either a type name or URI must be specified')
             }
 
             [PSCustomObject] @{
                 Context = $targetContext
-                TypeName = $targetType
+                TypeName = $targetTypeInfo.FullTypeName
+                IsCollection = $targetTypeInfo.IsCollection
+                TypeInfo = $targetTypeInfo
                 Uri = $targetUri
             }
+        }
+
+        function ToGraphAbsoluteUri($targetContext, [Uri] $graphRelativeUri) {
+            $uriString = $targetContext.connection.graphendpoint.graph.tostring(), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
+            [Uri] $uriString
         }
     }
 }
