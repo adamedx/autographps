@@ -39,7 +39,7 @@ Describe 'The New-GraphObject command' {
 
         It 'Should emit an array object for a given property even when the array specified by the value parameter has only one element when the type of the property is an array' {
             $emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Home, sorry@thisman.org
-            $contactdata = New-GraphObject microsoft.graph.contact -PropertyList @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
+            $contactdata = New-GraphObject microsoft.graph.contact -PropertyMap @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
 
             $expectedContactData = @{givenName='SorryTo ThisMan';emailAddresses=@(@{name='Home';Address='sorry@thisman.org'})}
             $expectedJSON = $expectedContactData | ConvertTo-Json -Compress
@@ -48,9 +48,9 @@ Describe 'The New-GraphObject command' {
             $contactData | convertTo-json -compress | Should Be $expectedJSON
         }
 
-        It 'Should emit an array object for a given property even when the array specified by the PropertyList parameter has only one element when the type of the property is an array' {
+        It 'Should emit an array object for a given property even when the array specified by the PropertyMap parameter has only one element when the type of the property is an array' {
             $emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Home, sorry@thisman.org
-            $contactdata = New-GraphObject microsoft.graph.contact -PropertyList @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
+            $contactdata = New-GraphObject microsoft.graph.contact -PropertyMap @{givenName='SorryTo ThisMan';emailAddresses = @($emailAddress)}
 
             $expectedContactData = @{givenName='SorryTo ThisMan';emailAddresses=@(@{name='Home';Address='sorry@thisman.org'})}
             $expectedJSON = $expectedContactData | ConvertTo-Json -Compress
@@ -66,18 +66,18 @@ Describe 'The New-GraphObject command' {
             { New-GraphObject user -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Throw 'neitherdoi'
         }
 
-        It 'Should throw an error if a property is specified through the PropertyList parameter that does not exist for the specified type' {
+        It 'Should throw an error if a property is specified through the PropertyMap parameter that does not exist for the specified type' {
             # Check for three different strings because properties in the error output can be returned in non-deterministic order
-            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw "One or more specified properties is not a valid property for type 'user'"
-            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'idontexist'
-            { New-GraphObject user -PropertyList @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'neitherdoi'
+            { New-GraphObject user -PropertyMap @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw "One or more specified properties is not a valid property for type 'user'"
+            { New-GraphObject user -PropertyMap @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'idontexist'
+            { New-GraphObject user -PropertyMap @{displayName='hi';idontexist='yes';neitherdoi='no';userPrincipalName='a@b.com'} } | Should Throw 'neitherdoi'
         }
 
         It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the Property parameter that does not exist for the specified type' {
             { New-GraphObject user -SkipPropertyCheck -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Not Throw
         }
 
-        It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the PropertyList parameter that does not exist for the specified type' {
+        It 'Should not throw an error if SkipPropertyCheck is specified and a property is specified through the PropertyMap parameter that does not exist for the specified type' {
             { New-GraphObject user -SkipPropertyCheck -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Not Throw
         }
 
