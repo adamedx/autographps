@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../../common/TypeUriHelper)
+. (import-script TypeUriHelper)
 . (import-script TypeParameterCompleter)
 
 ScriptClass WriteOperationParameterCompleter {

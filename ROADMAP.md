@@ -2,10 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Implement new Get-GraphItem, Remove-GraphItem commands
+* Rationalize Get-GraphChildItem and new Get-GraphItem
 * Fix CI on Linux to actually fail when test failures occur
-* Rename propertylist in new-graphitem, new-graphobject to propertymap
-* Add-GraphItemReference
-* Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitve types as for other type classes
+* Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
 * Possible refactor of ScalarTypeProvider and CompositeTypeProvider into per-typeclass providers
 * Fix connect-graph to preserve appid across invocations in some cases
@@ -273,6 +273,8 @@
 * Add continue feature?
 * Test Release
 * Get a fix from sdk for scope helper in find-graphpermissions
+* Rename propertylist in new-graphitem, new-graphobject to propertymap
+* Add-GraphItemReference
 
 ### Abandoned
 
@@ -835,3 +837,26 @@ $existing | Set-GraphItemProperty -uri /users -TemplateObject @{prop1=val1;prop2
 
 
 ```
+
+### Get-GraphItem vs. Get-GraphResource
+
+As new write commands `New-GraphItem`, `Add-GraphItemReference`, `Set-GraphItemProperty` are added,
+it becomes clear that these commands are not symmetric with the pre-existing "Item" commands
+`Get-GraphItem` and `RemoveGraph-Item`. The newer commands are dependent on metadata, while the older
+ones are not. The newer commands allow the user to specify Graph locations by type + id or
+even by passing in an object obtained form the Graph, the older ones do not.
+
+To resolve this, the following refactoring of the commands across modules is made, along with
+clarification of their purposes:
+
+* The existing `Get-GraphItem` and `Remove-GraphItem` commands will be renamed `Get-GraphResource` and `Remove-GraphResource`. They will remain in the `autographps-sdk` module as their purpose and dependencies aligns with that of the module: enable access to the Graph solely via REST without any dependency on metadata. The noun *Resource*" is actually appropriate here as the interface for these commands is URI-based, i.e. *Uniform Resource Identifier*-based.
+* New versions of `Get-GraphItem` and `Remove-GraphItem` will be implemented in `autographps` rather than `autographps-sdk`. These commands will conform to the selection facilities used by `Set-GraphItemProperty` and the other new commands to specify a specific object.
+  * `Get-GraphItem` will use `Property` rather than select to specify properties, other search / filter capabilities will probably be removed.
+  * `Get-GraphItem` will output fully resolved type URIs via `Get-GraphUri`.
+  * The default parameterset for `Get-GraphItem` may actually be URI-based -- URI's work for all cases, where type + id only works for entity types and does not return collections.
+    * We could make a single element parameter set assume a singleton, a two-element parameter set a type + id, and `Uri` would have to be explicit.
+* `Get-GraphChildItem` will be re-implemented using the same selection capability as `Get-GraphItem`.
+* `Get-GraphItemWithMetadata` will be changed to `Get-GraphResourceWithMetadata`.
+* The `gls` alias will continue to point to `Get-GraphResourceWithMetadata` as its behavior conforms more closely to the user experience of `ls` than `Get-GraphChildItem` does.
+* Note that `AutoGraphPS` core aliases preserve the idea of "navigating" the Graph vs. retrieving objects, and this is even compatible with the new commands which support a `Uri` parameter which is compatible with the navigable resource paradigm exposed by `AutoGraphPS`.
+
