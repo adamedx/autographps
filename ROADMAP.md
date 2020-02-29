@@ -4,6 +4,8 @@
 
 * Implement new Get-GraphItem, Remove-GraphItem commands
 * Rationalize Get-GraphChildItem and new Get-GraphItem
+* Add methods to Get-GraphType
+* Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
@@ -858,5 +860,5 @@ clarification of their purposes:
 * `Get-GraphChildItem` will be re-implemented using the same selection capability as `Get-GraphItem`.
 * `Get-GraphItemWithMetadata` will be changed to `Get-GraphResourceWithMetadata`.
 * The `gls` alias will continue to point to `Get-GraphResourceWithMetadata` as its behavior conforms more closely to the user experience of `ls` than `Get-GraphChildItem` does.
-* Note that `AutoGraphPS` core aliases preserve the idea of "navigating" the Graph vs. retrieving objects, and this is even compatible with the new commands which support a `Uri` parameter which is compatible with the navigable resource paradigm exposed by `AutoGraphPS`.
+* Note that `AutoGraphPS` core aliases preserve the idea of resource-based navigation of the Graph vs. retrieving objects, and this is even compatible with the new commands which support a `Uri` parameter which is compatible with the navigable resource paradigm.
 
