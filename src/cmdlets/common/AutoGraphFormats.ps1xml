@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- *******************************************************************
+Copyright 2020, Adam Edwards
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+******************************************************************** -->
+
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>GraphSegmentDisplayType</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphSegmentDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <!-- This GropuBy tag causes an extra row of output to be displayed above the table
+             header, which we use to provide the name of the URI being enumerated or requested,
+             the same way that Get-ChildItem shows a directory title for the file system. -->
+        <PropertyName>ParentPath</PropertyName>
+        <Label>Graph Location</Label>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Preview</Label>
+            <!-- Per docs, this should be max column width, but it seems to have no effect in testing. -->
+            <Width>48</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Info</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Type</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Preview</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>

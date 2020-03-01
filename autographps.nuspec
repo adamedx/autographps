@@ -22,6 +22,7 @@
     <file src="autographps.psd1" target="." />
     <file src="autographps.psm1" target="." />
     <file src="src\**\*.ps1" target="src/" />
+    <file src="src\**\*.ps1xml" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
   </files>
 </package>

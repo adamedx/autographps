@@ -19,6 +19,15 @@ ScriptClass SegmentHelper {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
 
         function __initialize {
+            # NOTE: There is one or more ps1xml files that defines display formats for this type basedon
+            # on the PSTypeName. That may override behaviors like default columns defined here, though other
+            # aspects like serialization behavior should be preserved as the ps1xml options are *merged*
+            # with exisitng options. In particular the ps1xml file provides the ability to emit a "title row"
+            # to the display for DOS dir-style "directory listings" like PowerShell's Get-ChildItem command.
+            # This allows us to use this type to provide an ls-like user experience when navigating the Graph.
+            # Primarily for this reason the ps1xml is included. These files are enabled through the
+            # 'FormatsToProcess' field of the module manifest, but can also be dynamically updated through
+            # Update-FormatData.
             __RegisterSegmentDisplayType
         }
 

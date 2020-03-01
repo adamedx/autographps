@@ -63,7 +63,7 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
@@ -138,6 +138,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
+        '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
