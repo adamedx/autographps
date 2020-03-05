@@ -4,7 +4,6 @@
 |-------------|-------------|-------------|-------------|-------------|
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=master)
-
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)

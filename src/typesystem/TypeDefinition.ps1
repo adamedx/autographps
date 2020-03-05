@@ -22,13 +22,14 @@ ScriptClass TypeDefinition {
     $Name = $null
     $Namespace = $null
     $Properties = $null
+    $NavigationProperties = $null
     $Class = $null
     $IsComposite = $false
     $DefaultValue = $null
     $DefaultCollectionValue = $null
     $NativeSchema = $null
 
-    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $properties, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema) {
+    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $properties, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema, $navigationProperties) {
         $this.TypeId = $typeId
         $this.Class = $class
         $this.BaseType = $baseType
@@ -38,6 +39,7 @@ ScriptClass TypeDefinition {
         $this.DefaultValue = $defaultValue
         $this.DefaultCollectionValue = $defaultCollectionValue
         $this.Properties = $properties
+        $this.NavigationProperties = $navigationProperties
         $this.NativeSchema = $nativeSchema
     }
 

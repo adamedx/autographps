@@ -63,7 +63,7 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
@@ -72,7 +72,8 @@ NestedModules = @(
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @(
+    FunctionsToExport = @(
+    'Add-GraphItemReference',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
@@ -81,8 +82,10 @@ FunctionsToExport = @(
     'Get-GraphType',
     'Get-GraphUri',
     'New-Graph',
+    'New-GraphItem',
     'New-GraphObject',
     'Remove-Graph',
+    'Set-GraphItemProperty',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',
@@ -118,6 +121,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
+        '.\src\cmdlets\Add-GraphItemReference.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
@@ -126,21 +130,26 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\New-Graph.ps1',
+        '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
+        '.\src\cmdlets\Set-GraphItemProperty.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
         '.\src\cmdlets\Update-GraphMetadata.ps1',
+        '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
         '.\src\cmdlets\common\TypeParameterCompleter.ps1',
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
+        '.\src\cmdlets\common\TypeUriHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
+        '.\src\cmdlets\common\WriteOperationParameterCompleter.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\metadata\metadata.ps1',

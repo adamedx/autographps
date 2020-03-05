@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script client/LocationContext)
 
+. (import-script cmdlets\Add-GraphItemReference)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphItemWithMetadata)
@@ -23,11 +24,13 @@
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\Remove-Graph)
+. (import-script cmdlets\Set-GraphItemProperty)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Show-GraphHelp)
 . (import-script cmdlets\Update-GraphMetadata)
 . (import-script cmdlets\New-GraphObject)
+. (import-script cmdlets\New-GraphItem)
 
 # Add parameter completion to commands exported by a different module as a UX enhancement
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest RelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

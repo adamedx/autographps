@@ -501,16 +501,16 @@ Note that the `Value` parameter is not mandatory, and in fact does not require t
 
 One difficulty is that Graph defines to kinds of composite types, the `Entity` and `Complex` types of OData. To avoid the potentially incorrect asssumption that type names are unique across `Entity` and `Complex` types, you must specify the `TypeClass` parameter with the value `Complext` to override the default type class of `Entity` that `New-GraphObject` uses to build the object.
 
-##### The PropertyList alternative
-The `PropertyList` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
+##### The PropertyMap alternative
+The `PropertyMap` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
 
 ```powershell
-$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyList @{
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyMap @{
     name = 'Work'
     address = 'cleo@soulsonic.org'
 }
 
-$contactData = New-GraphObject contact -PropertyList @{
+$contactData = New-GraphObject contact -PropertyMap @{
     givenName = 'Cleopatra Jones'
     emailAddresses = @($emailAddress)
 }

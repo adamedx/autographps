@@ -23,6 +23,7 @@ ScriptClass EntityGraph {
     $vertices = $null
     $rootVertices = $null
     $typeVertices = $null
+    $typeToSetMapping = $null
     $namespace = $null
     $namespaceAlias = $null
     $builder = $null
@@ -31,6 +32,7 @@ ScriptClass EntityGraph {
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
+        $this.typeToSetMapping = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
         $this.namespace = $namespace
@@ -49,6 +51,9 @@ ScriptClass EntityGraph {
             $this.typeVertices.Add(($vertex.typeName), $vertex)
         } elseif ( $vertex.type -eq 'EntitySet' -or $vertex.type -eq 'Singleton' ) {
             $this.rootVertices.Add($vertex.name, $vertex)
+            if ( $vertex.type -eq 'EntitySet' ) {
+                __AddEntityTypeToEntitySetMapping $entity.typeData.EntityTypeName $entity.name
+            }
         }
     }
 
@@ -80,6 +85,10 @@ ScriptClass EntityGraph {
         $vertex.outgoingEdges
     }
 
+    function GetEntityTypeToEntitySetMapping($entityTypeName) {
+        $this.typeToSetMapping[$entityTypeName]
+    }
+
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
@@ -105,6 +114,17 @@ ScriptClass EntityGraph {
 
     function __IsVertexComplete($vertex) {
         $vertex.TestFlags($::.GraphBuilder.AllBuildFlags) -eq $::.GraphBuilder.AllBuildFlags
+    }
+
+    function __AddEntityTypeToEntitySetMapping($entityTypeName, $entitySetName) {
+        $existingMapping = $this.typeToSetMapping[$entityTypeName]
+        if ( $existingMapping ) {
+            if ( $existingMapping -ne $entitySetName ) {
+                throw "Conflicting entity set '$entitySetName' cannot be added for type '$entityTypeName' because the type is already mapped to '$existingMapping'"
+            }
+        } else {
+            $this.typeToSetMapping.Add($entityTypeName, $entitySetName)
+        }
     }
 
     static {

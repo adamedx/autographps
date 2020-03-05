@@ -55,7 +55,10 @@ ScriptClass TypeManager {
                 AddPrototypeToCache $typeId $setDefaultValues $recursive $prototype
             }
         }
-        $prototype
+        [PSCustomObject] @{
+            Type = $typeId
+            ObjectProtoType = $prototype
+        }
     }
 
     function FindTypeDefinition($typeClass, $typeName, $fullyQualified, $errorIfNotFound = $false) {
