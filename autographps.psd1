@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.18.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.19.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -77,7 +77,7 @@ NestedModules = @(
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
-    'Get-GraphItemWithMetadata',
+    'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
     'Get-GraphUri',
@@ -125,7 +125,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
-        '.\src\cmdlets\Get-GraphItemWithMetadata.ps1',
+        '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
@@ -199,23 +199,28 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.32.0 Release Notes
 
-This release adds minor improvements and features and addresses some issues related to build tooling and build issues on platforms with case sensitive file systems.
+This release includes major breaking changes in command names and adds minor improvements and features and addresses some issues related to build tooling and build issues on platforms with case sensitive file systems.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.18.0
+* AutoGraphPS-SDK 0.19.0
 
 ### Breaking changes
 
-None.
+* Includes breaking changes from [AutoGraphPS-SDK 0.19.0](https://github.com/adamedx/autographps-sdk/releases/tag/v0.19.0) -- `Get-GraphItem` and `Remove-GraphItem` from `AutoGraphPS-SDK` have been renamed to `Get-GraphResource` and `Remove-GraphResource`
+* `Get-GraphItemWithMetadata` has been renamed to `Get-GraphResourceWithMetadata`
+* New implementations of `Get-GraphItem` and `Remove-GraphItem` are introduced in this module -- previously they were part of `AutoGraphPS-SDK` and had different functionality than the new version in this module
 
 ### New features
 
 * `Get-GraphType` now supports tab-completion for output, so commands like select can be used interactively when building commands in the shell
+* New `Get-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware access of objects by `id` and other type-related facilities.
+* New `Remove-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware removal of objects by `id` and other type-related facilities.
 
 ### Fixed defects
 
 * Test execution in CI requires special module-specific logic to rename the AutoGraphPS-SDK modules installed for testing to lower case
+* The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been regressed for several releases due to a syntax error which is now fixed.
 
 '@
     } # End of PSData hashtable

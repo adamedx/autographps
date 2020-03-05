@@ -17,7 +17,7 @@
 . (import-script cmdlets\Add-GraphItemReference)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
-. (import-script cmdlets\Get-GraphItemWithMetadata)
+. (import-script cmdlets\Get-GraphResourceWithMetadata)
 . (import-script cmdlets\Get-GraphChildItem)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphType)
@@ -33,5 +33,5 @@
 . (import-script cmdlets\New-GraphItem)
 
 # Add parameter completion to commands exported by a different module as a UX enhancement
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest RelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
