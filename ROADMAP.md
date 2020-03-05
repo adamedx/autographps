@@ -4,6 +4,7 @@
 
 * Implement new Get-GraphItem, Remove-GraphItem commands
 * Rationalize Get-GraphChildItem and new Get-GraphItem
+* Rename ODataFilter parameter to Filter
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
@@ -862,3 +863,10 @@ clarification of their purposes:
 * The `gls` alias will continue to point to `Get-GraphResourceWithMetadata` as its behavior conforms more closely to the user experience of `ls` than `Get-GraphChildItem` does.
 * Note that `AutoGraphPS` core aliases preserve the idea of resource-based navigation of the Graph vs. retrieving objects, and this is even compatible with the new commands which support a `Uri` parameter which is compatible with the navigable resource paradigm.
 
+#### New Get-GraphChildItem parameters
+
+`Get-GraphChildItem` will have all the parameters of `Get-GraphItem` in addition to the following:
+
+* `PropertyFilter`: constructs a where clause of conjoined property equality expressions
+* `ODataFilter`: allows for the user of an arbitrary OData filter
+* `Search`: allows use of OData search
