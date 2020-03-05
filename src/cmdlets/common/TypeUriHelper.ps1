@@ -26,7 +26,6 @@ ScriptClass TypeUriHelper {
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
-                UriInfo = $uriInfo
             }
         }
 

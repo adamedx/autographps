@@ -50,6 +50,7 @@ function Get-GraphUri {
 
         [Switch] $IgnoreMissingMetadata,
 
+        [parameter(parametersetname='FromObject')]
         [String] $GraphScope = $null,
 
         [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]

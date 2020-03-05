@@ -60,9 +60,7 @@ function Get-GraphItemWithMetadata {
 
         [Guid] $ClientRequestId,
 
-        [string] $ResultVariable = $null,
-
-        [string] $GraphName
+        [string] $ResultVariable = $null
     )
 
     Enable-ScriptClassVerbosePreference
@@ -73,19 +71,8 @@ function Get-GraphItemWithMetadata {
     $assumeRoot = $false
 
     $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
-        $GraphArgument = @{}
-
-        if ( $GraphName ) {
-            $graphContext = $::.logicalgraphmanager.Get().contexts[$GraphName]
-            if ( ! $graphContext ) {
-                throw "The specified graph '$GraphName' does not exist"
-            }
-            $context = $graphContext.context
-            $GraphArgument['GraphScope'] = $GraphName
-        }
-
         $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-        Get-GraphUri $ItemRelativeUri[0] @metadataArgument @GraphArgument -erroraction stop
+        Get-GraphUri $ItemRelativeUri[0] @metadataArgument
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
@@ -103,10 +90,7 @@ function Get-GraphItemWithMetadata {
     if ( ! $context ) {
         $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
         $context = if ( $parsedPath.ContextName ) {
-            $graphContext = $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName]
-            if ( $graphContext ) {
-                $graphContext.context
-            }
+            $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName].Context
         }
         if ( ! $context ) {
             throw "'$($resolvedUri.Path)' is not a valid graph location uri"
@@ -130,7 +114,6 @@ function Get-GraphItemWithMetadata {
         First=$pscmdlet.pagingparameters.first
         Skip=$pscmdlet.pagingparameters.skip
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
-        Connection = $context.connection
         # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
         # for the current module and not the module we are calling into, we explicitly set
         # verbose for a command from outside this module
