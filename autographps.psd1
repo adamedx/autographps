@@ -220,6 +220,7 @@ This release includes major breaking changes in command names and adds minor imp
 ### Fixed defects
 
 * Test execution in CI requires special module-specific logic to rename the AutoGraphPS-SDK modules installed for testing to lower case
+* The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been regressed for several releases due to a syntax error which is now fixed.
 
 '@
     } # End of PSData hashtable

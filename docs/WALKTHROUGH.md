@@ -231,19 +231,19 @@ The Microsoft Graph supports a rich set of query capabilities through its [OData
 
 AutoGraphPS's query capabilities are exposed in the `Get-GraphResource` `Get-GetGraphItemWithMetadata` (`ggr` and `gls` aliases respectively), and `Get-GraphChildItem` commands. To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
-### Filtering data with `-ODataFilter`
+### Filtering data with `-Filter`
 
-The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-ODataFilter` option on `Get-GraphResource` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
+The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-Filter` option on `Get-GraphResource` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
 
 ```powershell
-gls me/people -ODataFilter "department eq 'Ministry of Funk'"
+gls me/people -Filter "department eq 'Ministry of Funk'"
 ```
 
 In the example above we've retrieved all people related to `me` whose `department` property is equal to `Ministry of Funk`. Note that single quotes are used to delimit strings in the OData query syntax, and `eq` is an equality operator. OData supports many other operators, including mathematical and logical operators as well as additional operators related to strings, such as `startsWith`:
 
 
 ```powershell
-gls /users -ODataFilter "startsWith(mail, 'pfunk')"
+gls /users -Filter "startsWith(mail, 'pfunk')"
 ```
 
 This example returns all the users whose `mail` property (i.e. their e-mail address) starts with `pfunk`.
@@ -337,7 +337,7 @@ The `$false` assignment in the hash table means that the field will use *ascendi
 The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
 
 ```
-gls /users -ODataFilter "startsWith(mail, 'p')" -top 20
+gls /users -Filter "startsWith(mail, 'p')" -top 20
 gls /users -Query       "`$filter=startsWith(mail, 'p')&`top=20"
 ```
 
@@ -352,7 +352,7 @@ For more details on how to construct this parameter, see the [MS Graph REST API 
 Whether it's due to coding defects in scripts or typos during your exploration of the Graph, you'll inevitably encounter errors. The cmdlet `Get-GraphError` will show you the last error returned by the Microsoft Graph API during your last cmdlet invocation:
 
 ```powershell
-Get-GraphResource /users -ODataFilter "startwith(userPrincipalName, 'pfunk')"
+Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
 ```
 
 This results in an error:
@@ -397,7 +397,7 @@ StatusDescription : Bad Request
 A close look at the filter clause shows that `startwith` is missing an `s` after `start` -- the corrected command below will succeed with a `200`:
 
 ```
-Get-GraphResource /users -ODataFilter "startwith(userPrincipalName, 'pfunk')"
+Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
 
 Info Type Preview     Name
 ---- ---- -------     ----

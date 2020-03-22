@@ -47,7 +47,7 @@ function Remove-_GraphItem {
         $filterParameter = @{}
         $filterValue = $::.QueryHelper |=> ToFilterParameter $null $Filter
         if ( $filterValue ) {
-            $filterParameter['ODataFilter'] = $filterValue
+            $filterParameter['Filter'] = $filterValue
         }
     }
 

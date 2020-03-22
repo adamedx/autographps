@@ -61,7 +61,7 @@ function Get-_GraphItem {
         $filterParameter = @{}
         $filterValue = $::.QueryHelper |=> ToFilterParameter $PropertyFilter $Filter
         if ( $filterValue ) {
-            $filterParameter['ODataFilter'] = $filterValue
+            $filterParameter['Filter'] = $filterValue
         }
     }
 
@@ -79,7 +79,7 @@ function Get-_GraphItem {
         if ( $requestInfo.IsCollection ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphResourceWithMetadata -ItemRelativeUri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
         }
     }
 

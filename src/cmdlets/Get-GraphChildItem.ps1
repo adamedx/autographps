@@ -16,12 +16,12 @@ function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0)]
-        [Uri[]] $ItemRelativeUri = @('.'),
+        [Uri[]] $Uri = @('.'),
 
         [parameter(position=1)]
         [String] $Query = $null,
 
-        [String] $ODataFilter = $null,
+        [String] $Filter = $null,
 
         [String] $Search = $null,
 
@@ -70,4 +70,4 @@ function Get-GraphChildItem {
     Get-GraphResourceWithMetadata @targetParameters
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
