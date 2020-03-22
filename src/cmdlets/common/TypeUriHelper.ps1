@@ -26,6 +26,7 @@ ScriptClass TypeUriHelper {
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
+                UriInfo = $uriInfo
             }
         }
 
@@ -38,6 +39,10 @@ ScriptClass TypeUriHelper {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
 
+                $id = if ( $responseObject | gm id -erroraction ignore ) {
+                    $responseObject.id
+                }
+
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
                 # URI that was used to request the object from Graph, not necessarily the object's actual
@@ -48,10 +53,10 @@ ScriptClass TypeUriHelper {
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
                 if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                    $objectUri = $objectUri, $id -join '/'
+                    $objectUri = $objectUri.tostring(), $id -join '/'
                 }
 
-                $objectUri
+                $objectUri.tostring()
             }
         }
 
