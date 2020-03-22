@@ -67,7 +67,7 @@ function Get-GraphChildItem {
 
     $targetParameters['StrictOutput'] = [System.Management.Automation.SwitchParameter]::new($true)
 
-    Get-GraphItemWithMetadata @targetParameters
+    Get-GraphResourceWithMetadata @targetParameters
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

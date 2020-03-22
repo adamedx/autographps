@@ -16,7 +16,7 @@
 . (import-script Get-GraphUri)
 . (import-script ../common/GraphAccessDeniedException)
 
-function Get-GraphItemWithMetadata {
+function Get-GraphResourceWithMetadata {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0)]
@@ -247,5 +247,5 @@ function Get-GraphItemWithMetadata {
     $results
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemWithMetadata ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 

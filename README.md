@@ -236,7 +236,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
-| Get-GraphItemWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
+| Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |

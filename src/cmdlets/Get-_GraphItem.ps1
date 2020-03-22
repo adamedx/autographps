@@ -79,7 +79,7 @@ function Get-_GraphItem {
         if ( $requestInfo.IsCollection ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphItemWithMetadata -ItemRelativeUri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
+            Get-GraphResourceWithMetadata -ItemRelativeUri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
         }
     }
 

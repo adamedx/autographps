@@ -14,7 +14,7 @@
 
 # This test assumes the module has been imported
 
-Describe 'The Get-GraphItemWithMetadata cmdlet' {
+Describe 'The Get-GraphResourceWithMetadata cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $global:meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
@@ -47,7 +47,7 @@ Describe 'The Get-GraphItemWithMetadata cmdlet' {
         }
 
         It 'Should return an object with the expected user principal when given the argument me' {
-            $meResponse = Get-GraphItemWithMetadata me 3> $null
+            $meResponse = Get-GraphResourceWithMetadata me 3> $null
             $meResponse[0].content.userPrincipalName | Should Be $expectedUserPrincipalName
             $meResponse.Preview | Should Be 'Search Man'
         }
