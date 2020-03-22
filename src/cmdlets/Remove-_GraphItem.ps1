@@ -58,7 +58,7 @@ function Remove-_GraphItem {
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
 
-        $objects = Get-GraphItem $requestInfo.Uri @filterParameter -erroraction stop
+        $objects = Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
 
         foreach ( $targetObject in $objects ) {
             if ( ! ( $targetObject | gm id -erroraction ignore ) ) {
