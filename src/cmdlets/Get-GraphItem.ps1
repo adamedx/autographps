@@ -25,6 +25,7 @@ function Get-GraphItem {
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -34,6 +35,7 @@ function Get-GraphItem {
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [parameter(position=1, parametersetname='byuri')]
         [parameter(position=1, parametersetname='uriandpropertyfilter')]
+        [parameter(position=1, parametersetname='bytypeandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
@@ -46,9 +48,11 @@ function Get-GraphItem {
         [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuri')]
         $Filter,
+
+        [switch] $ContentOnly,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -76,10 +80,16 @@ function Get-GraphItem {
             $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
         }
 
-        if ( $requestInfo.IsCollection ) {
+        $result = if ( $requestInfo.IsCollection ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
             Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
+        }
+
+        if ( $ContentOnly.IsPresent ) {
+            $result.Content
+        } else {
+            $result
         }
     }
 

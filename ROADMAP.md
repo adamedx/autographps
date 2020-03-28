@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Implement new Get-GraphItem, Remove-GraphItem commands
+* Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Rationalize Get-GraphChildItem and new Get-GraphItem
 * Rename ODataFilter parameter to Filter
 * Add methods to Get-GraphType
@@ -264,6 +264,7 @@
 * add client request id to get-graphchilditem, getgraphitemwithmetadata
 * Add enumeration type support to get-graphtype
 * Ability to create Graph JSON
+* Implement new Get-GraphItem, Remove-GraphItem commands
 
 ### Postponed
 
