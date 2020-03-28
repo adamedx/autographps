@@ -25,6 +25,7 @@ function Remove-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -35,7 +36,7 @@ function Remove-GraphItem {
 
         $GraphName,
 
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuri')]
         $Filter,
 
