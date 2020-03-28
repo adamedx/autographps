@@ -63,7 +63,7 @@ ScriptClass ScalarTypeProvider {
 
     function LoadEnumerationTypeDefinitions {
         $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
-        $nativeSchemas = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel.schemadata.edmx.dataservices.schema.enumtype
+        $nativeSchemas = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel.GetSchema().enumtype
 
         $nativeSchemas | foreach {
             $properties = [ordered] @{}

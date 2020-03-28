@@ -89,7 +89,7 @@ Describe 'The New-GraphObject command' {
     Context 'When invoked using beta metadata ' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
-            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-2020-01-23.xml" -force -wait -warningaction silentlycontinue
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-multi-namespace-2020-03-25.xml" -force -wait -warningaction silentlycontinue
         }
 
         It 'Should be able to return all objects in the beta metadata' {

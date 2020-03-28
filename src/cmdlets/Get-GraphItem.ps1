@@ -20,11 +20,12 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/WriteOperationParameterCompleter)
 
-function Get-_GraphItem {
+function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -34,6 +35,7 @@ function Get-_GraphItem {
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [parameter(position=1, parametersetname='byuri')]
         [parameter(position=1, parametersetname='uriandpropertyfilter')]
+        [parameter(position=1, parametersetname='bytypeandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
@@ -46,9 +48,11 @@ function Get-_GraphItem {
         [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuri')]
         $Filter,
+
+        [switch] $ContentOnly,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -76,16 +80,22 @@ function Get-_GraphItem {
             $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
         }
 
-        if ( $requestInfo.IsCollection ) {
+        $result = if ( $requestInfo.IsCollection ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
             Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
+        }
+
+        if ( $ContentOnly.IsPresent ) {
+            $result.Content
+        } else {
+            $result
         }
     }
 
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-_GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-_GraphItem Property (new-so WriteOperationParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-_GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)

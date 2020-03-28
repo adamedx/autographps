@@ -228,14 +228,15 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
 | Format-GraphLog (fgl)       | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
-| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
 | Get-GraphApplication              | Gets a list of Azure AD applications in the tenant                                              |
 | Get-GraphApplicationCertificate   | Gets the certificates with public keys configured on the application                            |
 | Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
-| Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
+| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
+| Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
-| Get-GraphResource (ggr)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
+| Get-GraphItem (gls)       | Retrieves an entity specified by type and ID or URI |
+| Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
@@ -249,14 +250,17 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
+| New-GraphItem             | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
 | Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
 | Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
 | Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
+| Remove-GraphItem          | Removes an entity specified by type and ID or URI |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
+| Set-GraphItemProperty     | Sets properties of a given Graph entity with the specified values |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
 | Set-GraphLogOption        | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |

@@ -18,6 +18,7 @@ $functions = @(
     'Add-GraphItemReference',
     'Find-GraphPermission',
     'Get-Graph',
+    'Get-GraphItem',
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
@@ -27,6 +28,7 @@ $functions = @(
     'New-GraphObject',
     'New-GraphItem',
     'Remove-Graph',
+    'Remove-GraphItem',
     'Set-GraphItemProperty',
     'Set-GraphLocation',
     'Set-GraphPrompt',
@@ -34,7 +36,7 @@ $functions = @(
     'Update-GraphMetadata'
 )
 
-$aliases = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
+$aliases = @('gcd', 'gg', 'ggu', 'ggci', 'ggi', 'gls', 'gwd')
 
 # Note that in order to make variables from nested modules
 # accessible without the user directly invoking them,

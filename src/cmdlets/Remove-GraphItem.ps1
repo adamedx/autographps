@@ -19,11 +19,13 @@
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/WriteOperationParameterCompleter)
-set-strictmode -version 2
-function Remove-_GraphItem {
+. (import-script Get-GraphItem)
+
+function Remove-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -34,7 +36,7 @@ function Remove-_GraphItem {
 
         $GraphName,
 
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuri')]
         $Filter,
 
@@ -73,5 +75,5 @@ function Remove-_GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-_GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-_GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)
