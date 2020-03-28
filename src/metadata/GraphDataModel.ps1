@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
 # limitations under the License.
 
 ScriptClass GraphDataModel {
-    $SchemaData = $null
+    $apiMetadata = $null
+    $apiSchema = $null
     $methodBindings = $null
     $typeSchemas = $null
     $namespace = $null
@@ -21,11 +22,12 @@ ScriptClass GraphDataModel {
     $firstNamespaceMatch = $null
     $secondNamespaceMatch = $null
 
-    function __initialize($schemaData) {
-        $this.SchemaData = $schemaData
-        $this.namespace = $schemaData.Edmx.DataServices.Schema.Namespace
-        $this.namespaceAlias = if ( $schemaData.Edmx.DataServices.Schema | gm Alias -erroraction ignore ) {
-            $schemaData.Edmx.DataServices.Schema.Alias
+    function __initialize($apiMetadata) {
+        $this.apiMetadata = $apiMetadata
+        $this.apiSchema = $apiMetadata.Edmx.DataServices.Schema | where Namespace -eq 'microsoft.graph' | select -first 1
+        $this.namespace = $this.apiSchema.NAmespace
+        $this.namespaceAlias = if ( $this.apiSchema | gm Alias -erroraction ignore ) {
+            $this.apiSchema.Alias
         }
 
         # Previously, the "Namespace" attribute of the Schema element was sufficient to determine
@@ -50,7 +52,11 @@ ScriptClass GraphDataModel {
     }
 
     function GetNamespace {
-        $this.SchemaData.Edmx.DataServices.Schema.Namespace
+        $this.apiSchema.NAMespace
+    }
+
+    function GetSchema {
+        $this.apiSchema
     }
 
     function GetEntityTypeByName($typeName) {
@@ -78,30 +84,30 @@ ScriptClass GraphDataModel {
 
     function GetComplexTypes($typeName) {
         if ( $typeName ) {
-            $this.SchemaData.Edmx.DataServices.Schema.ComplexType | where Name -eq $typeName
+            $this.apiSchema.ComplexType | where Name -eq $typeName
         } else {
-            $this.SchemaData.Edmx.DataServices.Schema.ComplexType
+            $this.apiSchema.ComplexType
         }
     }
 
     function GetEntitySets {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity sets"
-        $this.SchemaData.Edmx.DataServices.Schema.EntityContainer.EntitySet
+        $this.apiSchema.EntityContainer.EntitySet
     }
 
     function GetSingletons {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading singletons"
-        $this.SchemaData.Edmx.DataServices.Schema.EntityContainer.Singleton
+        $this.apiSchema.EntityContainer.Singleton
     }
 
     function GetActions {
         $::.ProgressWriter |=> WriteProgress -id 1 "Reading actions"
-        $this.SchemaData.Edmx.DataServices.Schema.Action
+        $this.apiSchema.Action
     }
 
     function GetFunctions {
         $::.ProgressWriter |=> WriteProgress -id 1 "Reading functions"
-        $this.SchemaData.Edmx.DataServices.Schema.Function
+        $this.apiSchema.Function
     }
 
     function UnqualifyTypeName($qualifiedTypeName, $onlyIfQualified) {
@@ -132,7 +138,7 @@ ScriptClass GraphDataModel {
     function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
-            $typeSchemas = $this.SchemaData.Edmx.DataServices.Schema.EntityType
+            $typeSchemas = $this.apiSchema.EntityType
             $this.typeSchemas = @{}
             $typeSchemas | foreach {
                 $qualifiedName = $this.namespace, $_.name -join '.'

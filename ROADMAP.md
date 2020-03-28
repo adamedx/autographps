@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Fix alias bug -- support only the microsoft.graph namespace :(
+* Support multiple namespaces :(
+* Add contentonly to get-graphresourcewithmetadata
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Rationalize Get-GraphChildItem and new Get-GraphItem
 * Rename ODataFilter parameter to Filter
