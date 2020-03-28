@@ -77,6 +77,7 @@ NestedModules = @(
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
+    'Get-GraphItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
@@ -85,6 +86,7 @@ NestedModules = @(
     'New-GraphItem',
     'New-GraphObject',
     'Remove-Graph',
+    'Remove-GraphItem',
     'Set-GraphItemProperty',
     'Set-GraphLocation',
     'Set-GraphPrompt',
@@ -105,7 +107,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
+    AliasesToExport = @('gcd', 'gg', 'ggci', 'ggi', 'ggu', 'gls', 'gwd')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -124,6 +126,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\Add-GraphItemReference.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
+        '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
@@ -133,6 +136,7 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
+        '.\src\cmdlets\Remove-GraphItem.ps1',
         '.\src\cmdlets\Set-GraphItemProperty.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
@@ -142,16 +146,17 @@ AliasesToExport = @('gcd', 'gg', 'ggu', 'ggci', 'gls', 'gwd')
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
+        '.\src\cmdlets\common\LocationHelper.ps1',
+        '.\src\cmdlets\common\PermissionHelper.ps1',
+        '.\src\cmdlets\common\QueryHelper.ps1',
+        '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
         '.\src\cmdlets\common\TypeParameterCompleter.ps1',
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeUriHelper.ps1',
-        '.\src\cmdlets\common\LocationHelper.ps1',
-        '.\src\cmdlets\common\PermissionHelper.ps1',
-        '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\WriteOperationParameterCompleter.ps1',
-        '.\src\common\PreferenceHelper.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
+        '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
         '.\src\metadata\Entity.ps1',
         '.\src\metadata\EntityEdge.ps1',

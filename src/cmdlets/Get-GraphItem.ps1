@@ -19,33 +19,47 @@
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/WriteOperationParameterCompleter)
-set-strictmode -version 2
-function Remove-_GraphItem {
+
+function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
         $Id,
 
+        [parameter(position=2, parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='typeandpropertyfilter')]
+        [parameter(position=1, parametersetname='byuri')]
+        [parameter(position=1, parametersetname='uriandpropertyfilter')]
+        [string[]] $Property,
+
         [parameter(parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
         $GraphName,
+
+        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
+        $PropertyFilter,
 
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='byuri')]
         $Filter,
 
-        [switch] $FullyQualifiedTypeName
+        [switch] $FullyQualifiedTypeName,
+
+        [switch] $SkipPropertyCheck
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
 
         $filterParameter = @{}
-        $filterValue = $::.QueryHelper |=> ToFilterParameter $null $Filter
+        $filterValue = $::.QueryHelper |=> ToFilterParameter $PropertyFilter $Filter
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
         }
@@ -58,20 +72,20 @@ function Remove-_GraphItem {
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
 
-        $objects = Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
+        if ( ! $SkipPropertyCheck.IsPresent ) {
+            $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
+        }
 
-        foreach ( $targetObject in $objects ) {
-            if ( ! ( $targetObject | gm id -erroraction ignore ) ) {
-                break
-            }
-
-            $targetUri = $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject
-            Invoke-GraphRequest $targetUri -Method DELETE -erroraction stop -connection $requestInfo.Context.Connection | out-null
+        if ( $requestInfo.IsCollection ) {
+            $requestInfo.TypeInfo.UriInfo
+        } else {
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
         }
     }
 
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-_GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-_GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)

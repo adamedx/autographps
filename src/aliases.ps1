@@ -16,6 +16,7 @@ set-alias gcd Set-GraphLocation
 set-alias gg  Get-Graph
 set-alias ggu Get-GraphUri
 set-alias ggci Get-GraphChildItem
+set-alias ggi Get-GraphItem
 set-alias gls Get-GraphResourceWithMetadata
 set-alias gwd Get-GraphLocation
 
