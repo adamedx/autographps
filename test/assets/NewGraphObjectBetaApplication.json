@@ -1,0 +1,28 @@
+﻿
+
+api                       : @{preAuthorizedApplications=; knownClientApplications=System.Object[]; requestedAccessTokenVersion=0; 
+                            oauth2PermissionScopes=; acceptMappedClaims=False}
+appId                     : 
+displayName               : 
+tags                      : {}
+web                       : @{logoutUrl=; redirectUris=System.Object[]; oauth2AllowImplicitFlow=False; implicitGrantSettings=; homePageUrl=}
+isFallbackPublicClient    : False
+createdDateTime           : 1/1/2020 8:00:00 AM
+publicClient              : @{redirectUris=System.Object[]}
+tokenEncryptionKeyId      : 00000000-0000-0000-0000-000000000000
+info                      : @{supportUrl=; marketingUrl=; logoUrl=; privacyStatementUrl=; termsOfServiceUrl=}
+logo                      : 
+isDeviceOnlyAuthSupported : False
+keyCredentials            : 
+identifierUris            : {}
+groupMembershipClaims     : 
+optionalClaims            : @{saml2Token=; accessToken=; idToken=}
+parentalControlSettings   : @{legalAgeGroupRule=; countriesBlockedForMinors=System.Object[]}
+publisherDomain           : 
+appRoles                  : 
+passwordCredentials       : 
+signInAudience            : 
+requiredResourceAccess    : 
+
+
+

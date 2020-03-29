@@ -103,7 +103,7 @@ ScriptClass TypeProvider {
         }
 
         function GetGraphNamespace($graph) {
-            ($::.GraphManager |=> GetGraph $graph).namespace
+            ($::.GraphManager |=> GetGraph $graph) |=> GetDefaultNamespace
         }
 
         function ValidateTypeClass($derivedClass, [GraphTypeClass] $typeClass) {

@@ -14,7 +14,7 @@
 
 set-strictmode -version 2
 
-Describe 'The Get-GraphUri command' {
+Describe 'The Get-GraphUri command' -tag testnow {
     Context 'When invoked using v1 metadata with namespace aliases' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
@@ -28,6 +28,9 @@ Describe 'The Get-GraphUri command' {
 
             $children = get-graphuri /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, Uri, Version
 
+
+            # Use this command to generate the file:
+            # get-graphuri /me -Children | sort Id | select 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version' | convertto-json -Depth 1
             $GetGraphUriMeResult = get-content $psscriptroot/../../test/assets/GetGraphUriMe.json
 
             $expectedChildren = $GetGraphUriMeResult | ConvertFrom-Json
@@ -38,7 +41,6 @@ Describe 'The Get-GraphUri command' {
                 foreach ( $property in $propertiesToValidate ) {
                     $result = $children[$index] | select -expandproperty $property
                     $expect = $expectedChildren[$index] | select -expandproperty $property
-
                     $result | Should Be $expect
                 }
             }

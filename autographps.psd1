@@ -168,6 +168,7 @@ VariablesToExport = @(
         '.\src\metadata\GraphManager.ps1',
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
+        '.\src\metadata\QualifiedSchema.ps1',
         '.\src\metadata\UriCache.ps1'
         '.\src\typesystem\TypeProperty.ps1',
         '.\src\typesystem\TypeSchema.ps1',

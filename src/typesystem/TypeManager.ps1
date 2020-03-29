@@ -179,7 +179,8 @@ ScriptClass TypeManager {
 
     function GetOptionallyQualifiedName($typeClass, $typeName, $isFullyQualified) {
         if ( $isFullyQualified ) {
-            $typeName
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.graph).builder.datamodel
+            $graphDataModel |=> UnaliasQualifiedName $typeName
         } else {
             $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
             $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName

@@ -2,8 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix alias bug -- support only the microsoft.graph namespace :(
-* Support multiple namespaces :(
 * Add contentonly to get-graphresourcewithmetadata
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Rationalize Get-GraphChildItem and new Get-GraphItem
@@ -268,6 +266,8 @@
 * Add enumeration type support to get-graphtype
 * Ability to create Graph JSON
 * Implement new Get-GraphItem, Remove-GraphItem commands
+* Fix alias bug -- support only the microsoft.graph namespace :(
+* Support multiple namespaces :(
 
 ### Postponed
 
@@ -872,5 +872,89 @@ clarification of their purposes:
 `Get-GraphChildItem` will have all the parameters of `Get-GraphItem` in addition to the following:
 
 * `PropertyFilter`: constructs a where clause of conjoined property equality expressions
-* `ODataFilter`: allows for the user of an arbitrary OData filter
+* `Filter`: allows for the user of an arbitrary OData filter
 * `Search`: allows use of OData search
+
+#### Multiple namepsace support
+
+Because types can refer to types defined in other namespaces, we'll need to continue to provide a "merged" view across all namespaces. So we might as well maintain the GraphDataModel class as that source of merged types.
+
+Alternatively, the type provider and metadata components that consume the data model could process multiple data models, but this complexity must be duplicated in both contexts. The merged data model still seems to hold value.
+
+Here is a suggestion on how to implement this:
+
+* The existing data model becomes ScopedAPIModel
+* A new implementation of GraphDataModel merges all those APIs
+  * This should eventually be renamed, something like GraphAPIModel or CompositeAPIModel
+
+##### Name qualification
+
+To qualify a name, the following approach is used:
+
+* There is a default namespace, microsoft.graph
+* If a namespace is specified, that namespace is used to qualify
+* If no namespace is specified, then all namepaces are searched for the unqualified name:
+  * If there is exactly one match, it is used to qualify
+  * If there is more than one match and there is a match with the default namespace, qualification uses the default namespace
+  * If there is more than one match but none from the default namespace, an exception is given, even though there are multiple matches in other namespaces
+
+Since the no-namespace case can result in non-matches due to the lack of a defined mechanism for multiple matches, it should be considered non-deterministic and used only as an "aid" or heuristic for assisting humans in understanding types, e.g. as in auto-complete scenarios.
+
+##### Name unqualification
+
+The complementary unqualification method is used:
+
+* The default namespace is microsoft.graph
+* If a namespace is specified, that namesapce is used to unqualify
+* If no namespace is specified, then all namespaces are searched for the qualified name:
+  * If exactly one namespace is found that has a type with that qualified name, that namespace is used to unqualify.
+  * If multiple are found and there is a match in the default namespace, the name is unqualified agains the default namespace
+  * If multiple are found and there is no match in the default namespace, an exception is thrown
+
+As in the qualification method, unqualification without a known namespace should not be attempted outside of scenarios where failure is not fatal, e.g. "best-effort" UX assistance in comprehending types.
+
+##### Assumptions and refactoring considerations
+
+Currently numerous code locations assume a single namespace -- this needs be changed in multiple places:
+
+* GraphDataModel should no longer have a namespace, but a default namespace
+* The EntityGraph and all classes it references must associate a specific namespace to each vertex
+  * The EntityGraph itself must not have a namespace -- instead it should have a default namespace
+* The TypeProvider classes and other parts of the type system, including the Types themselves must specific a specific namespace
+* Type qualification operations currently seem to specify a namespace, but those operations must ensure that the correct namespace, not an assumed global or uniform namespace is used, and this will likely require additional refactoring.
+
+##### Notes from multi-namespace investigation
+
+Here are the methods currently exposed by GraphDataModel:
+
+TypeName: GraphDataModel
+
+    Name                                 MemberType   Definition
+    ----                                 ----------   ----------
+    GetActions                           ScriptMethod System.Object GetActions();
+    GetComplexTypes                      ScriptMethod System.Object GetComplexTypes();
+    GetEntitySets                        ScriptMethod System.Object GetEntitySets();
+    GetEntityTypeByName                  ScriptMethod System.Object GetEntityTypeByName();
+    GetEntityTypes                       ScriptMethod System.Object GetEntityTypes();
+    GetFunctions                         ScriptMethod System.Object GetFunctions();
+    GetMethodBindingsForType             ScriptMethod System.Object GetMethodBindingsForType();
+    GetNamespace                         ScriptMethod System.Object GetNamespace();
+    GetSchema                            ScriptMethod System.Object GetSchema();
+    GetScriptObjectHashCode              ScriptMethod System.Object GetScriptObjectHashCode();
+    GetSingletons                        ScriptMethod System.Object GetSingletons();
+    UnaliasQualifiedName                 ScriptMethod System.Object UnaliasQualifiedName();
+    UnqualifyTypeName                    ScriptMethod System.Object UnqualifyTypeName();
+
+Other class notes:
+
+* For TypeProvider, there is a GetGraphNamespace -- this is redundant as there is a GetDefaultNamespace, and in any event the graph can only have a default namespace in the multi-namespace model.
+  * Perhaps GetGraphNamespace should be GetGraphDefaultNamespace
+* CompositeTypeProvider has a namespace, and this will need to be changed
+  * It also has a default namespace, which it gets from the EntityGraph, so this is ok
+* ScalarTypeProvider hard-codes the namespace for primitive types, which is fine
+  * But it assumes all enumeration types come from the same (default) namespace so this must be changed
+* Fortunately, TypeDefinition *does* have a namespace, and this means we can use it, assuming it is correctly initialized
+* Entity also has a namespace (and alias), so this should be ok
+* The new GraphDataModel should return a namespace when returning any schema information
+  * We can define a new class, e.g. SchemaElement, that includes schema data and the namespace
+* Everything else must use fully qualified names

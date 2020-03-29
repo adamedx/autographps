@@ -12,51 +12,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script QualifiedSchema)
+
 ScriptClass GraphDataModel {
     $apiMetadata = $null
-    $apiSchema = $null
+    $apiModels = $null
+    $aliases = $null
     $methodBindings = $null
     $typeSchemas = $null
-    $namespace = $null
-    $namespaceAlias = $null
-    $firstNamespaceMatch = $null
-    $secondNamespaceMatch = $null
+
+    static {
+        const DefaultNamespace 'microsoft.graph'
+    }
 
     function __initialize($apiMetadata) {
         $this.apiMetadata = $apiMetadata
-        $this.apiSchema = $apiMetadata.Edmx.DataServices.Schema | where Namespace -eq 'microsoft.graph' | select -first 1
-        $this.namespace = $this.apiSchema.NAmespace
-        $this.namespaceAlias = if ( $this.apiSchema | gm Alias -erroraction ignore ) {
-            $this.apiSchema.Alias
-        }
+        $this.apiModels = @{}
+        $this.aliases = @{}
 
-        # Previously, the "Namespace" attribute of the Schema element was sufficient to determine
-        # the fully qualified names of the types referenced in the rest of the schema. However, on
-        # 2020-01-22, the metadata hosted by the Graph service was changed to include an Alias attribute
-        # that allows use of the alias in a type name as a (typically shorter) synonym for the fully qualified
-        # name of the type. That change regressed this code which was unaware of the "Alias" attribute.
-        # The code below now accounts for it, though there is special handling in other parts of the code
-        # to resolve aliases when resolving type names.
-        # Note that namespace aliases are indeed legal and are documented for OData:
-        # https://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/.
+        $apiMetadata.Edmx.DataServices.Schema | foreach {
+            $schema = $_
+            $namespace = $schema.Namespace
 
-        $this.firstNamespaceMatch = $this.namespace + '.'
-        if ( $this.namespaceAlias ) {
-            if ( $this.namespace.length -gt $this.namespaceAlias.length ) {
-                $this.secondNamespaceMatch = $this.namespaceAlias + '.'
-            } else {
-                $this.firstnamespaceMatch = $this.namespaceAlias + '.'
-                $this.secondNamespaceMatch = $this.namespace + '.'
+            if ( $this.apiModels[$namespace] ) {
+                throw "Namespace '$namespace' already exists as a namespace or alias"
             }
+
+            $alias = $null
+
+            # For more information about namespace aliases, see the following OData documentation:
+            # https://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/
+            if ( $schema | gm Alias -erroraction ignore ) {
+                $alias = $schema.alias
+                if ( $this.aliases[$alias] -or $this.apiModels[$alias] ) {
+                    throw "Alias '$alias' already exists as a namespace or alias"
+                }
+                $this.aliases.add($alias, $namespace)
+            }
+
+            $model = [PSCustomObject] @{
+                Namespace = $namespace
+                Alias = $alias
+                Schema = $schema
+            }
+
+            $this.apiModels.add($namespace, $model)
         }
     }
 
-    function GetNamespace {
-        $this.apiSchema.NAMespace
+    function GetDefaultNamespace {
+        $this.scriptclass.DefaultNamespace
     }
 
-    function GetSchema {
-        $this.apiSchema
+    function GetNamespaces {
+        $this.apiModels.keys
+    }
+
+    function GetSchema($namespace) {
+        if ( ! $this.apiModels[$namespace] ) {
+            throw "No model could be found for the specified namespace '$namespace'"
+        }
+
+        $this.apiModels[$namespace].Schema
     }
 
     function GetEntityTypeByName($typeName) {
@@ -79,78 +96,146 @@ ScriptClass GraphDataModel {
 
     function GetEntityTypes {
         __InitializeTypesOnDemand
-        $this.typeSchemas.values
+        $this.typeSchemas.Values
     }
 
     function GetComplexTypes($typeName) {
-        if ( $typeName ) {
-            $this.apiSchema.ComplexType | where Name -eq $typeName
-        } else {
-            $this.apiSchema.ComplexType
+        foreach ( $model in $this.apiModels.Values ) {
+            if ( $model.Schema | gm ComplexType -erroraction ignore ) {
+                $complexTypeSchemas = if ( $typeName ) {
+                    $model.Schema.ComplexType | where Name -eq $typeName
+                } else {
+                    $model.Schema.ComplexType
+                }
+
+                foreach ( $complexType in $complexTypeSchemas ) {
+                    new-so QualifiedSchema ComplexType $model.namespace $complexType.name $complexType
+                }
+            }
         }
     }
 
     function GetEntitySets {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity sets"
-        $this.apiSchema.EntityContainer.EntitySet
+        foreach ( $model in $this.apiModels.Values ) {
+            if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
+                __QualifySchemaClass EntitySet $model.namespace $model.Schema.EntityContainer
+            }
+        }
     }
 
     function GetSingletons {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading singletons"
-        $this.apiSchema.EntityContainer.Singleton
+        foreach ( $model in $this.apiModels.Values ) {
+            if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
+                __QualifySchemaClass Singleton $model.namespace $model.Schema.EntityContainer
+            }
+        }
+    }
+
+    function GetEnumTypes {
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading enumerated types"
+        foreach ( $model in $this.apiModels.Values ) {
+                __QualifySchemaClass EnumType $model.namespace $model.Schema
+        }
     }
 
     function GetActions {
         $::.ProgressWriter |=> WriteProgress -id 1 "Reading actions"
-        $this.apiSchema.Action
+        foreach ( $model in $this.apiModels.Values ) {
+            __QualifySchemaClass Action $model.namespace $model.Schema
+        }
     }
 
     function GetFunctions {
         $::.ProgressWriter |=> WriteProgress -id 1 "Reading functions"
-        $this.apiSchema.Function
+        foreach ( $model in $this.apiModels.Values ) {
+            __QualifySchemaClass Function $model.namespace $model.Schema
+        }
     }
 
-    function UnqualifyTypeName($qualifiedTypeName, $onlyIfQualified) {
+    function UnqualifyTypeName($qualifiedTypeName, $onlyIfQualified = $false, $includeNamespace = $false) {
+        $prefix = ''
+        $namespace = $null
         $unqualified = if ( $qualifiedTypeName.Contains('.') ) {
-            $qualifierLength = if ( $qualifiedTypeName.startswith($this.firstNamespaceMatch) ) {
-                $this.firstNamespaceMatch.length
-            } elseif ( $this.secondNamespaceMatch -and $qualifiedTypeName.startswith($this.secondNamespaceMatch) ) {
-                $this.secondNamespaceMatch.length
+            $lastElement = $null
+
+            $qualifiedTypeName -split '\.' | foreach {
+                $lastElement = $_
+                if ( $prefix.length + 1 + $_.length -lt $qualifiedTypeName.length ) {
+                    if ( $prefix.length -gt 0 ) {
+                        $prefix += '.'
+                    }
+                    $prefix += "$_"
+                }
             }
 
-            if ( $qualifierLength -ne $null ) {
-                $qualifiedTypeName.substring($qualifierLength)
+            if ( $this.apiModels[$prefix] ) {
+                $namespace = $prefix
+                $lastElement
+            } elseif ( $this.aliases[$prefix] ) {
+                $namespace = $this.aliases[$prefix]
+                $lastElement
             }
         }
 
-        if ( $unqualified ) {
+        $nameResult = if ( $unqualified ) {
             $unqualified
         } elseif ( ! $onlyIfQualified ) {
             $qualifiedTypeName
         }
+
+        if ( $includeNamespace ) {
+            [PSCustomObject] @{
+                Namespace = $namespace
+                UnqualifiedName = $nameResult
+            }
+        } else {
+            $nameResult
+        }
     }
 
     function UnaliasQualifiedName($name) {
-        $unqualifiedName = UnqualifyTypeName $name $true
-        $this.namespace, $unqualifiedName -join '.'
+        $nameInfo = UnqualifyTypeName $name $true $true
+        if ( $nameInfo.namespace ) {
+            $nameInfo.namespace, $nameInfo.UnqualifiedName -join '.'
+        } else {
+            $name
+        }
+    }
+
+    function GetNamespaceAlias($namespace) {
+        $this.aliases[$namespace]
     }
 
     function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
-            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
-            $typeSchemas = $this.apiSchema.EntityType
             $this.typeSchemas = @{}
-            $typeSchemas | foreach {
-                $qualifiedName = $this.namespace, $_.name -join '.'
-                $this.typeSchemas.Add($qualifiedName, $_)
+            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
+            foreach ( $model in $this.apiModels.Values ) {
+                if ( $model.Schema | gm EntityType -erroraction ignore ) {
+                    $typeSchemas = $model.Schema.EntityType
+                    $typeSchemas | foreach {
+                        $qualifiedSchema = new-so QualifiedSchema EntityType $model.namespace $_.name $_
+                        $this.typeSchemas.Add($qualifiedSchema.qualifiedName, $qualifiedSchema)
+                    }
+                }
             }
 
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types" -completed
         }
     }
 
+    function __QualifySchemaClass($schemaClass, $namespace, $schemaContainer) {
+        if ( $schemaContainer | gm $schemaClass -erroraction ignore ) {
+            foreach ( $schemaElement in $schemaContainer.$schemaClass ) {
+                new-so QualifiedSchema $schemaClass $namespace $schemaElement.name $schemaElement
+            }
+        }
+    }
+
     function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
-        $methodSchemas | foreach { $methodSchema = $_; $_.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+        $methodSchemas | foreach { $methodSchema = $_.Schema; $methodSchema.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
     }
 
     function __AddMethodBinding($typeName, $methodSchema) {

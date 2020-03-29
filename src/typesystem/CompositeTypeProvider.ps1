@@ -17,15 +17,11 @@
 
 ScriptClass CompositeTypeProvider {
     $base = $null
-    $namespace = $null
     $entityTypeTable = $null
     $complexTypeTable = $null
-    $namespaceAlias = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
-        $this.namespace = $this.base.scriptclass |=> GetGraphNamespace $this.base.graph
-        $this.namespaceAlias = (($::.GraphManager |=> GetGraph (gg -current).details).builder.dataModel).namespaceAlias
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -33,29 +29,28 @@ ScriptClass CompositeTypeProvider {
             throw "The '$($this.scriptclass.classname)' type provider does not support type class '$typeClass'"
         }
 
-        $nameInfo = $::.TypeSchema |=> GetTypeNameInfo $this.namespace $typeId
+        $nativeSchema = GetNativeSchemaFromGraph $typeId $typeClass
 
-        $nativeSchema = GetNativeSchemaFromGraph $nameInfo.Name $typeClass
-
-        $properties = if ( $nativeSchema | gm property -erroraction ignore ) {
-            foreach ( $property in $nativeSchema.property ) {
-                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $this.namespace $this.namespaceAlias $property.Type
-                new-so TypeProperty $property.Name $typeInfo.TypeFullName $typeInfo.IsCollection
+        $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
+            foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
+                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $propertySchema.Type
+                new-so TypeProperty $propertySchema.Name $typeInfo.TypeFullName $typeInfo.IsCollection
             }
         }
 
-        $navigationProperties = if ( $nativeSchema | gm navigationproperty -erroraction ignore ) {
-            foreach ( $navigationProperty in $nativeSchema.navigationproperty ) {
-                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $this.namespace $this.namespaceAlias $navigationproperty.Type
+        $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
+            foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
+                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $navigationproperty.Type
                 new-so TypeProperty $navigationproperty.Name $navigationInfo.TypeFullName $navigationInfo.IsCollection
             }
         }
 
-        $baseType = if ( $nativeSchema | gm BaseType -erroraction ignore) {
-            $::.Entity |=> UnAliasQualifiedName $this.namespace $this.namespaceAlias $nativeSchema.baseType
+        $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
-        new-so TypeDefinition $typeId $typeClass $nativeSchema.name $this.namespace $baseType $properties $null $null $true $nativeSchema $navigationProperties
+        new-so TypeDefinition $typeId $typeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
     }
 
     function GetSortedTypeNames($typeClass) {
@@ -99,7 +94,7 @@ ScriptClass CompositeTypeProvider {
 
     function UpdateTypeTable($typeTable, $typeSchemas) {
         foreach ( $schema in $typeSchemas ) {
-            $qualifiedTypeName = $::.TypeSchema |=> GetQualifiedTypeName $this.namespace $schema.name
+            $qualifiedTypeName = $schema.QualifiedName
             $typeTable.Add($qualifiedTypeName.tolower(), $schema)
         }
     }
@@ -114,27 +109,27 @@ ScriptClass CompositeTypeProvider {
         $typeTable[$typeName.tolower()]
     }
 
-    function GetNativeSchemaFromGraph($unqualifiedTypeName, $typeClass) {
-        $qualifiedTypeName = $::.TypeSchema |=> GetQualifiedTypeName $this.namespace $unqualifiedTypeName
-
+    function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
+        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+        $unaliasedTypeName = $graphDataModel |=> UnAliasQualifiedName $qualifiedTypeName
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
             # are known not to work due to a defect fixed in PowerShell 7.0
             try {
-                GetTypeByName Entity $qualifiedTypeName
+                GetTypeByName Entity $unaliasedTypeName
             } catch {
             }
         }
 
         if ( ! $nativeSchema -and ( $typeClass -eq 'Complex' -or $typeClass -eq 'Unknown' ) ) {
             $nativeSchema = try {
-                GetTypeByName Complex $qualifiedTypeName
+                GetTypeByName Complex $unaliasedTypeName
             } catch {
             }
         }
 
         if ( ! $nativeSchema ) {
-            throw "Schema for type '$unqualifiedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graph.name)'"
+            throw "Schema for type '$qualifiedTypeName' unaliased as '$unaliasedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graph.version)'"
         }
 
         $nativeSchema
