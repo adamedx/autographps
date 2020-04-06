@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass GraphDataModel {
+ScriptClass ScopedAPIDataModel {
     $apiMetadata = $null
     $apiSchema = $null
     $methodBindings = $null
@@ -23,8 +23,7 @@ ScriptClass GraphDataModel {
     $secondNamespaceMatch = $null
 
     function __initialize($apiMetadata) {
-        $this.apiMetadata = $apiMetadata
-        $this.apiSchema = $apiMetadata.Edmx.DataServices.Schema | where Namespace -eq 'microsoft.graph' | select -first 1
+        $this.apiSchema = $apiMetadata | where Namespace -eq 'microsoft.graph' | select -first 1
         $this.namespace = $this.apiSchema.NAmespace
         $this.namespaceAlias = if ( $this.apiSchema | gm Alias -erroraction ignore ) {
             $this.apiSchema.Alias
