@@ -167,7 +167,6 @@ VariablesToExport = @(
         '.\src\metadata\GraphDataModel.ps1',
         '.\src\metadata\GraphManager.ps1',
         '.\src\metadata\GraphSegment.ps1',
-        '.\src\metadata\ScopedAPIDataModel.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\QualifiedSchema.ps1',
         '.\src\metadata\UriCache.ps1'
