@@ -30,7 +30,7 @@ ScriptClass GraphDataModel {
         $this.apiModels = @{}
         $this.aliases = @{}
 
-        $apiMetadata.Edmx.DataServices.Schema | select -first 1 | foreach {
+        $apiMetadata.Edmx.DataServices.Schema | foreach {
             $schema = $_
             $namespace = $schema.Namespace
 
@@ -101,14 +101,16 @@ ScriptClass GraphDataModel {
 
     function GetComplexTypes($typeName) {
         foreach ( $model in $this.apiModels.Values ) {
-            $complexTypeSchemas = if ( $typeName ) {
-                $model.Schema.ComplexType | where Name -eq $typeName
-            } else {
-                $model.Schema.ComplexType
-            }
+            if ( $model.Schema | gm ComplexType -erroraction ignore ) {
+                $complexTypeSchemas = if ( $typeName ) {
+                    $model.Schema.ComplexType | where Name -eq $typeName
+                } else {
+                    $model.Schema.ComplexType
+                }
 
-            foreach ( $complexType in $complexTypeSchemas ) {
-                new-so QualifiedSchema ComplexType $model.namespace $complexType.name $complexType
+                foreach ( $complexType in $complexTypeSchemas ) {
+                    new-so QualifiedSchema ComplexType $model.namespace $complexType.name $complexType
+                }
             }
         }
     }
@@ -116,14 +118,18 @@ ScriptClass GraphDataModel {
     function GetEntitySets {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity sets"
         foreach ( $model in $this.apiModels.Values ) {
-            __QualifySchemaClass EntitySet $model.namespace $model.Schema.EntityContainer
+            if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
+                __QualifySchemaClass EntitySet $model.namespace $model.Schema.EntityContainer
+            }
         }
     }
 
     function GetSingletons {
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading singletons"
         foreach ( $model in $this.apiModels.Values ) {
+            if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
                 __QualifySchemaClass Singleton $model.namespace $model.Schema.EntityContainer
+            }
         }
     }
 
@@ -204,13 +210,15 @@ ScriptClass GraphDataModel {
 
     function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
+            $this.typeSchemas = @{}
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
             foreach ( $model in $this.apiModels.Values ) {
-                $typeSchemas = $model.Schema.EntityType
-                $this.typeSchemas = @{}
-                $typeSchemas | foreach {
-                    $qualifiedSchema = new-so QualifiedSchema EntityType $model.namespace $_.name $_
-                    $this.typeSchemas.Add($qualifiedSchema.qualifiedName, $qualifiedSchema)
+                if ( $model.Schema | gm EntityType -erroraction ignore ) {
+                    $typeSchemas = $model.Schema.EntityType
+                    $typeSchemas | foreach {
+                        $qualifiedSchema = new-so QualifiedSchema EntityType $model.namespace $_.name $_
+                        $this.typeSchemas.Add($qualifiedSchema.qualifiedName, $qualifiedSchema)
+                    }
                 }
             }
 
@@ -219,8 +227,10 @@ ScriptClass GraphDataModel {
     }
 
     function __QualifySchemaClass($schemaClass, $namespace, $schemaContainer) {
-        foreach ( $schemaElement in $schemaContainer.$schemaClass ) {
-            new-so QualifiedSchema $schemaClass $namespace $schemaElement.name $schemaElement
+        if ( $schemaContainer | gm $schemaClass -erroraction ignore ) {
+            foreach ( $schemaElement in $schemaContainer.$schemaClass ) {
+                new-so QualifiedSchema $schemaClass $namespace $schemaElement.name $schemaElement
+            }
         }
     }
 
