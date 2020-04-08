@@ -142,7 +142,7 @@ ScriptClass GraphObjectBuilder {
                     $unusedPropertyCount++
                 }
             }
-
+            # TODO: Add base types!
             if ( $typeDefinition.properties ) {
                 foreach ( $property in $typeDefinition.properties ) {
                     $propertyInfo = if ( $this.propertyFilter ) {

@@ -25,6 +25,7 @@ ScriptClass EntityGraph {
     $typeVertices = $null
     $typeToSetMapping = $null
     $defaultNamespace = $null
+    $dataModel = $null
     $builder = $null
 
     function __initialize($defaultNamespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel) {
@@ -35,6 +36,7 @@ ScriptClass EntityGraph {
         $this.typeToSetMapping = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
+        $this.dataModel = $dataModel
         $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
@@ -56,7 +58,7 @@ ScriptClass EntityGraph {
     }
 
     function TypeVertexFromTypeName($typeName) {
-        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $null $typeName
+        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $typeName
 
         $this.typeVertices[$typeData.EntityTypeName]
     }
@@ -89,6 +91,22 @@ ScriptClass EntityGraph {
 
     function GetDefaultNamespace {
         $this.defaultNamespace
+    }
+
+    function UnaliasQualifiedName($typeName) {
+        $this.dataModel |=> UnaliasQualifiedName $typeName
+    }
+
+    function GetEnumTypes {
+        $this.dataModel |=> GetEnumTypes
+    }
+
+    function GetEntityTypes {
+        $this.dataModel |=> GetEntityTypes
+    }
+
+    function GetComplexTypes {
+        $this.dataModel |=> GetComplexTypes
     }
 
     function __UpdateVertex($vertex) {

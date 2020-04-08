@@ -33,21 +33,20 @@ ScriptClass CompositeTypeProvider {
 
         $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
-                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $propertySchema.Type
+                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
                 new-so TypeProperty $propertySchema.Name $typeInfo.TypeFullName $typeInfo.IsCollection
             }
         }
 
         $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
             foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
-                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $navigationproperty.Type
+                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $navigationproperty.Type
                 new-so TypeProperty $navigationproperty.Name $navigationInfo.TypeFullName $navigationInfo.IsCollection
             }
         }
 
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
-            $graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
+            $this.base.graph |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
         new-so TypeDefinition $typeId $typeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
@@ -70,9 +69,8 @@ ScriptClass CompositeTypeProvider {
 
     function GetComplexTypeSchemas {
         if ( ! $this.complexTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
             $complexTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
-            $complexTypeSchemas = $graphDataModel |=> GetComplexTypes
+            $complexTypeSchemas = $this.base.graph |=> GetComplexTypes
             UpdateTypeTable $complexTypeTable $complexTypeSchemas
             $this.complexTypeTable = $complexTypeTable
         }
@@ -82,9 +80,8 @@ ScriptClass CompositeTypeProvider {
 
     function GetEntityTypeSchemas {
         if ( ! $this.entityTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
             $entityTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
-            $entityTypeSchemas = $graphDataModel |=> GetEntityTypes
+            $entityTypeSchemas = $this.base.graph |=> GetEntityTypes
             UpdateTypeTable $entityTypeTable $entityTypeSchemas
             $this.entityTypeTable = $entityTypeTable
         }
@@ -110,8 +107,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
-        $unaliasedTypeName = $graphDataModel |=> UnAliasQualifiedName $qualifiedTypeName
+        $unaliasedTypeName = $this.base.graph |=> UnAliasQualifiedName $qualifiedTypeName
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
             # are known not to work due to a defect fixed in PowerShell 7.0
@@ -129,7 +125,7 @@ ScriptClass CompositeTypeProvider {
         }
 
         if ( ! $nativeSchema ) {
-            throw "Schema for type '$qualifiedTypeName' unaliased as '$unaliasedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graph.version)'"
+            throw "Schema for type '$qualifiedTypeName' unaliased as '$unaliasedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graph.ApiVersion)'"
         }
 
         $nativeSchema
@@ -145,7 +141,7 @@ ScriptClass CompositeTypeProvider {
         }
 
         function GetDefaultNamespace($typeClass, $graph) {
-            $::.TypeProvider |=> GetGraphNamespace $graph
+            $graph |=> GetDefaultNamespace
         }
 
         function ValidateTypeClass($typeClass) {

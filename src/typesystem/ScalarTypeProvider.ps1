@@ -62,8 +62,7 @@ ScriptClass ScalarTypeProvider {
 
     function LoadEnumerationTypeDefinitions {
         $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel
-        $nativeSchemas = $graphDataModel |=> GetEnumTypes
+        $nativeSchemas = $this.base.graph |=> GetEnumTypes
 
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
@@ -81,7 +80,7 @@ ScriptClass ScalarTypeProvider {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }
 
-            $typeId = $graphDataModel |=> UnaliasQualifiedName $_.QualifiedName
+            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
 
             $definition = new-so TypeDefinition $typeId Enumeration $_.Schema.name $_.Namespace $null $enumerationValues $defaultValue $null $false $_.Schema
             $enumerationDefinitions.Add($typeId.tolower(), $definition)
@@ -165,7 +164,7 @@ ScriptClass ScalarTypeProvider {
             if ( $typeClass -eq 'Primitive' ) {
                 $this.PRIMITIVE_TYPE_NAMESPACE
             } else {
-                $::.TypeProvider |=> GetGraphNamespace $graph
+                $graph |=> GetDefaultNamespace
             }
         }
 

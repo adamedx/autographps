@@ -72,13 +72,19 @@ ScriptClass TypeProvider {
         }
 
         function GetSortedTypeNames([GraphTypeClass] $typeClass, $graph) {
-            $provider = GetTypePRovider $typeClass $graph
+            $provider = GetTypeProvider $typeClass $graph
             $provider |=> GetSortedTypeNames $typeClass
         }
 
         function GetTypeProviderByObjectClass($classObject, $graph) {
             $classProviderTable = GetProviderTable $classObject
             GetItemByObject $classProviderTable $graph {param($className, $graph) new-so $className $graph} $classObject.classname, $graph
+        }
+
+        function RemoveTypeProvidersForGraph($graph) {
+            foreach ( $providerTable in $this.providersByScriptClass.Values ) {
+                __RemoveItemByObject $providerTable $graph
+            }
         }
 
         function GetProviderForClass([GraphTypeClass] $typeClass) {
@@ -102,8 +108,14 @@ ScriptClass TypeProvider {
             $item
         }
 
-        function GetGraphNamespace($graph) {
-            ($::.GraphManager |=> GetGraph $graph) |=> GetDefaultNamespace
+        function __RemoveItemByObject($table, $object) {
+            $itemId = $object |=> GetScriptObjectHashCode
+
+            $item = $table[$itemId]
+
+            if ( $item ) {
+                $table.Remove($itemId)
+            }
         }
 
         function ValidateTypeClass($derivedClass, [GraphTypeClass] $typeClass) {

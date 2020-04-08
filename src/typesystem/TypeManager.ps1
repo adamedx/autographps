@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script TypeSchema)
 . (import-script TypeProvider)
 . (import-script ScalarTypeProvider)
 . (import-script CompositeTypeProvider)
@@ -179,8 +180,7 @@ ScriptClass TypeManager {
 
     function GetOptionallyQualifiedName($typeClass, $typeName, $isFullyQualified) {
         if ( $isFullyQualified ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.graph).builder.datamodel
-            $graphDataModel |=> UnaliasQualifiedName $typeName
+            $this.graph |=> UnaliasQualifiedName $typeName
         } else {
             $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
             $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
@@ -188,18 +188,21 @@ ScriptClass TypeManager {
     }
 
     static {
-        $managerByGraph = @{}
-
-        function Get($graph) {
-            $graphId = $graph |=> GetScriptObjectHashCode
-            $manager = $managerByGraph[$graphId]
+        function Get($graphContext) {
+            $manager = $graphContext |=> GetState TypeManager
 
             if ( ! $manager ) {
+                $graph = $::.GraphManager |=> GetGraph $graphContext
                 $manager = new-so TypeManager $graph
-                $managerByGraph[$graphId] = $manager
+                $graphContext |=> AddState TypeManager $manager
             }
 
             $manager
+        }
+
+        function GetSortedTypeNames($typeClass, $graphContext) {
+            $graph = $::.GraphManager |=> GetGraph $graphContext
+            $::.TypeProvider |=> GetSortedTypeNames $typeClass $graph
         }
     }
 }

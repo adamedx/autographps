@@ -31,7 +31,7 @@ function GetAllObjects {
 }
 
 Describe 'The New-GraphObject command' {
-    Context 'When invoked using v1 metadata with v1 metadata' {
+    Context 'When invoked using v1 metadata with a single namespace' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
@@ -99,7 +99,7 @@ Describe 'The New-GraphObject command' {
             $actual = new-graphobject microsoft.graph.application -SetDefaultValues | convertto-json | convertfrom-json
             $actualProperties = $actual | gm -membertype noteproperty
 
-            $expectedProperties.length | Should Be $actualProperties.length
+            $actualProperties.length | Should Be $expectedProperties.length
             $expectedProperties | foreach {
                 $actualProperties | where name -eq $_.name | Should Not be $null
                 ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
@@ -113,7 +113,7 @@ Describe 'The New-GraphObject command' {
             $actual = new-graphobject microsoft.graph.callRecords.callRecord -SetDefaultValues | convertto-json | convertfrom-json
             $actualProperties = $actual | gm -membertype noteproperty
 
-            $expectedProperties.length | Should Be $actualProperties.length
+            $actualProperties.length | Should Be $expectedProperties.length
             $expectedProperties | foreach {
                 $actualProperties | where name -eq $_.name | Should Not be $null
                 ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
