@@ -20,8 +20,8 @@ ScriptClass ScalarTypeProvider {
     $enumerationDefinitions = $null
     $primitiveNames = $null
 
-    function __initialize($graph) {
-        $this.base = new-so TypeProvider $this $graph
+    function __initialize($graphContext) {
+        $this.base = new-so TypeProvider $this $graphContext
 
         LoadEnumerationTypeDefinitions
         LoadPrimitiveTypeDefinitions
@@ -62,7 +62,7 @@ ScriptClass ScalarTypeProvider {
 
     function LoadEnumerationTypeDefinitions {
         $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel
+        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.datamodel
         $nativeSchemas = $graphDataModel |=> GetEnumTypes
 
         $nativeSchemas | foreach {
@@ -143,8 +143,8 @@ ScriptClass ScalarTypeProvider {
     static {
         const PRIMITIVE_TYPE_NAMESPACE Edm
 
-        function GetTypeProvider($graph) {
-            $::.TypeProvider |=> GetTypeProvider $this $graph
+        function GetTypeProvider($graphContext) {
+            $::.TypeProvider |=> GetTypeProvider $this $graphContext
         }
 
         function IsPrimitiveType($typeId) {
@@ -161,11 +161,11 @@ ScriptClass ScalarTypeProvider {
             @('Primitive', 'Enumeration')
         }
 
-        function GetDefaultNamespace($typeClass, $graph) {
+        function GetDefaultNamespace($typeClass, $graphContext) {
             if ( $typeClass -eq 'Primitive' ) {
                 $this.PRIMITIVE_TYPE_NAMESPACE
             } else {
-                $::.TypeProvider |=> GetGraphNamespace $graph
+                $::.TypeProvider |=> GetGraphNamespace $graphContext
             }
         }
 

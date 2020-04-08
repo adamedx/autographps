@@ -15,12 +15,12 @@
 . (import-script TypeDefinition)
 
 ScriptClass TypeProvider {
-    $graph = $null
+    $graphContext = $null
     $derived = $null
 
-    function __initialize($derived, $graph) {
+    function __initialize($derived, $graphContext) {
         $this.derived = $derived
-        $this.graph = $graph
+        $this.graphContext = $graphContext
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -57,33 +57,33 @@ ScriptClass TypeProvider {
             Entity = 'CompositeTypeProvider'
         }
 
-        function GetDefaultNamespace([GraphTypeClass] $typeClass, $graph) {
+        function GetDefaultNamespace([GraphTypeClass] $typeClass, $graphContext) {
             $providerModel = GetProviderForClass $typeClass
-            $providerModel |::> GetDefaultNamespace $typeClass $graph
+            $providerModel |::> GetDefaultNamespace $typeClass $graphContext
         }
 
         function GetRequiredTypeInfo {
             @($this.REQUIRED_ENUM_AS_PRIMITIVE_TYPE)
         }
 
-        function GetTypeProvider([GraphTypeClass] $typeClass, $graph) {
+        function GetTypeProvider([GraphTypeClass] $typeClass, $graphContext) {
             $providerModel = GetProviderForClass $typeClass
-            GetTypeProviderByObjectClass $::.$providerModel $graph
+            GetTypeProviderByObjectClass $::.$providerModel $graphContext
         }
 
-        function GetSortedTypeNames([GraphTypeClass] $typeClass, $graph) {
-            $provider = GetTypePRovider $typeClass $graph
+        function GetSortedTypeNames([GraphTypeClass] $typeClass, $graphContext) {
+            $provider = GetTypePRovider $typeClass $graphContext
             $provider |=> GetSortedTypeNames $typeClass
         }
 
-        function GetTypeProviderByObjectClass($classObject, $graph) {
+        function GetTypeProviderByObjectClass($classObject, $graphContext) {
             $classProviderTable = GetProviderTable $classObject
-            GetItemByObject $classProviderTable $graph {param($className, $graph) new-so $className $graph} $classObject.classname, $graph
+            GetItemByObject $classProviderTable $graphContext {param($className, $graphContext) new-so $className $graphContext} $classObject.classname, $graphContext
         }
 
-        function RemoveTypeProvidersForGraph($graph) {
+        function RemoveTypeProvidersForGraph($graphContext) {
             foreach ( $providerTable in $this.providersByScriptClass.Values ) {
-                __RemoveItemByObject $providerTable $graph
+                __RemoveItemByObject $providerTable $graphContext
             }
         }
 
@@ -118,8 +118,8 @@ ScriptClass TypeProvider {
             }
         }
 
-        function GetGraphNamespace($graph) {
-            ($::.GraphManager |=> GetGraph $graph) |=> GetDefaultNamespace
+        function GetGraphNamespace($graphContext) {
+            ($::.GraphManager |=> GetGraph $graphContext) |=> GetDefaultNamespace
         }
 
         function ValidateTypeClass($derivedClass, [GraphTypeClass] $typeClass) {

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script TypeSchema)
 . (import-script TypeProvider)
 . (import-script ScalarTypeProvider)
 . (import-script CompositeTypeProvider)
@@ -22,13 +23,13 @@
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
 
-    $graph = $null
+    $graphContext = $null
     $definitions = $null
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
 
-    function __initialize($graph) {
-        $this.graph = $graph
+    function __initialize($graphContext) {
+        $this.graphContext = $graphContext
         $this.definitions = @{}
         $this.prototypes = @{
             $false = @{}
@@ -105,14 +106,14 @@ ScriptClass TypeManager {
                 InitializeRequiredTypes
             }
 
-            $type = $::.TypeDefinition |=> Get $this.graph $typeClass $typeId
+            $type = $::.TypeDefinition |=> Get $this.graphContext $typeClass $typeId
 
             $requiredTypes = @($type)
 
             $baseTypeId = $type.BaseType
 
             while ( $baseTypeId ) {
-                $baseType = $::.TypeDefinition |=> Get $this.graph Unknown $baseTypeId
+                $baseType = $::.TypeDefinition |=> Get $this.graphContext Unknown $baseTypeId
                 $requiredTypes += $baseType
 
                 $baseTypeId = if ( $baseType | gm BaseType -erroraction ignore ) {
@@ -179,40 +180,40 @@ ScriptClass TypeManager {
 
     function GetOptionallyQualifiedName($typeClass, $typeName, $isFullyQualified) {
         if ( $isFullyQualified ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.graph).builder.datamodel
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.graphContext).builder.datamodel
             $graphDataModel |=> UnaliasQualifiedName $typeName
         } else {
-            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
+            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graphContext
             $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
         }
     }
 
     static {
-        $managerByGraph = @{}
+        $managerByGraphContext = @{}
 
-        function Get($graph) {
-            $graphId = $graph |=> GetScriptObjectHashCode
-            $manager = $managerByGraph[$graphId]
+        function Get($graphContext) {
+            $contextId = $graphContext |=> GetScriptObjectHashCode
+            $manager = $this.managerByGraphContext[$contextId]
 
             if ( ! $manager ) {
-                $manager = new-so TypeManager $graph
-                $managerByGraph[$graphId] = $manager
+                $manager = new-so TypeManager $graphContext
+                $this.managerByGraphContext[$contextId] = $manager
             }
 
             $manager
         }
 
-        function Clear($graph) {
+        function Clear($graphContext) {
             # TODO -- remove the static parts of this class and add the logic
             # to GraphManager which adds context to each Graph
-            $graphId = $graph |=> GetScriptObjectHashCode
-            $manager = $managerByGraph[$graphId]
+            $contextId = $graphContext |=> GetScriptObjectHashCode
+            $manager = $this.managerByGraphContext[$contextId]
 
             if ( $manager ) {
                 # TODO -- similar issue here -- GraphManager should jsut
                 # associate the type providers with the graph context
-                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graph
-                $managerByGraph.Remove($graphId)
+                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graphContext
+                $this.managerByGraphContext.Remove($contextId)
             }
         }
     }

@@ -20,8 +20,8 @@ ScriptClass CompositeTypeProvider {
     $entityTypeTable = $null
     $complexTypeTable = $null
 
-    function __initialize($graph) {
-        $this.base = new-so TypeProvider $this $graph
+    function __initialize($graphContext) {
+        $this.base = new-so TypeProvider $this $graphContext
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -46,7 +46,7 @@ ScriptClass CompositeTypeProvider {
         }
 
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
@@ -70,7 +70,7 @@ ScriptClass CompositeTypeProvider {
 
     function GetComplexTypeSchemas {
         if ( ! $this.complexTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $complexTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
             $complexTypeSchemas = $graphDataModel |=> GetComplexTypes
             UpdateTypeTable $complexTypeTable $complexTypeSchemas
@@ -82,7 +82,7 @@ ScriptClass CompositeTypeProvider {
 
     function GetEntityTypeSchemas {
         if ( ! $this.entityTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $entityTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
             $entityTypeSchemas = $graphDataModel |=> GetEntityTypes
             UpdateTypeTable $entityTypeTable $entityTypeSchemas
@@ -110,7 +110,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graph).builder.dataModel
+        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
         $unaliasedTypeName = $graphDataModel |=> UnAliasQualifiedName $qualifiedTypeName
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
@@ -129,23 +129,23 @@ ScriptClass CompositeTypeProvider {
         }
 
         if ( ! $nativeSchema ) {
-            throw "Schema for type '$qualifiedTypeName' unaliased as '$unaliasedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graph.version)'"
+            throw "Schema for type '$qualifiedTypeName' unaliased as '$unaliasedTypeName' of type class '$typeClass' was not found in Graph '$($this.base.graphContext.version)'"
         }
 
         $nativeSchema
     }
 
     static {
-        function GetTypeProvider($graph) {
-            $::.TypeProvider |=> GetTypeProvider $this $graph
+        function GetTypeProvider($graphContext) {
+            $::.TypeProvider |=> GetTypeProvider $this $graphContext
         }
 
         function GetSupportedTypeClasses {
             @('Entity', 'Complex')
         }
 
-        function GetDefaultNamespace($typeClass, $graph) {
-            $::.TypeProvider |=> GetGraphNamespace $graph
+        function GetDefaultNamespace($typeClass, $graphContext) {
+            $::.TypeProvider |=> GetGraphNamespace $graphContext
         }
 
         function ValidateTypeClass($typeClass) {
