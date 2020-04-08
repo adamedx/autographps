@@ -201,6 +201,20 @@ ScriptClass TypeManager {
 
             $manager
         }
+
+        function Clear($graph) {
+            # TODO -- remove the static parts of this class and add the logic
+            # to GraphManager which adds context to each Graph
+            $graphId = $graph |=> GetScriptObjectHashCode
+            $manager = $managerByGraph[$graphId]
+
+            if ( $manager ) {
+                # TODO -- similar issue here -- GraphManager should jsut
+                # associate the type providers with the graph context
+                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graph
+                $managerByGraph.Remove($graphId)
+            }
+        }
     }
 }
 

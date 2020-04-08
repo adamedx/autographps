@@ -53,7 +53,7 @@ ScriptClass TypeHelper {
         function __RegisterDisplayType {
             remove-typedata -typename $this.DisplayTypeName -erroraction ignore
 
-            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'NavigationPropeties')
+            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'NavigationProperties')
 
             $displayTypeArguments = @{
                 TypeName = $this.DisplayTypeName

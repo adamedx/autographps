@@ -81,6 +81,12 @@ ScriptClass TypeProvider {
             GetItemByObject $classProviderTable $graph {param($className, $graph) new-so $className $graph} $classObject.classname, $graph
         }
 
+        function RemoveTypeProvidersForGraph($graph) {
+            foreach ( $providerTable in $this.providersByScriptClass.Values ) {
+                __RemoveItemByObject $providerTable $graph
+            }
+        }
+
         function GetProviderForClass([GraphTypeClass] $typeClass) {
             $this.providerModels[$typeClass.tostring()]
         }
@@ -100,6 +106,16 @@ ScriptClass TypeProvider {
             }
 
             $item
+        }
+
+        function __RemoveItemByObject($table, $object) {
+            $itemId = $object |=> GetScriptObjectHashCode
+
+            $item = $table[$itemId]
+
+            if ( $item ) {
+                $table.Remove($itemId)
+            }
         }
 
         function GetGraphNamespace($graph) {
