@@ -154,7 +154,11 @@ ScriptClass GraphDataModel {
         }
     }
 
-    function UnqualifyTypeName($qualifiedTypeName, $onlyIfQualified = $false, $includeNamespace = $false) {
+    function UnqualifyTypeName($qualifiedTypeName) {
+        (ParseTypeName $qualifiedTypeName).UnqualifiedName
+    }
+
+    function ParseTypeName($qualifiedTypeName, $onlyIfQualified = $false) {
         $prefix = ''
         $namespace = $null
         $unqualified = if ( $qualifiedTypeName.Contains('.') ) {
@@ -185,18 +189,14 @@ ScriptClass GraphDataModel {
             $qualifiedTypeName
         }
 
-        if ( $includeNamespace ) {
-            [PSCustomObject] @{
-                Namespace = $namespace
-                UnqualifiedName = $nameResult
-            }
-        } else {
-            $nameResult
+        [PSCustomObject] @{
+            Namespace = $namespace
+            UnqualifiedName = $nameResult
         }
     }
 
     function UnaliasQualifiedName($name) {
-        $nameInfo = UnqualifyTypeName $name $true $true
+        $nameInfo = ParseTypeName $name $true
         if ( $nameInfo.namespace ) {
             $nameInfo.namespace, $nameInfo.UnqualifiedName -join '.'
         } else {

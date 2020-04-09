@@ -231,7 +231,7 @@ ScriptClass GraphBuilder {
     }
 
     function __GetNamespaceInfoFromQualifiedTypeName($qualifiedTypeName) {
-        $nameInfo = $this.dataModel |=> UnqualifyTypeName $qualifiedTypeName $true $true
+        $nameInfo = $this.dataModel |=> ParseTypeName $qualifiedTypeName $true
         [PSCustomObject] @{
             Namespace = $nameInfo.Namespace
             NamespaceAlias = $this.dataModel |=> GetNamespaceAlias $nameInfo.namespace

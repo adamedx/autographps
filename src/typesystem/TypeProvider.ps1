@@ -74,7 +74,7 @@ ScriptClass TypeProvider {
         }
 
         function GetSortedTypeNames([GraphTypeClass] $typeClass, $graphContext) {
-            $provider = GetTypePRovider $typeClass $graphContext
+            $provider = GetTypeProvider $typeClass $graphContext
             $provider |=> GetSortedTypeNames $typeClass
         }
 

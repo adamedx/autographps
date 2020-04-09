@@ -46,7 +46,6 @@ ScriptClass CompositeTypeProvider {
         }
 
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
-            $this.base.graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $this.base.graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
