@@ -16,11 +16,13 @@
 
 ScriptClass TypeProvider {
     $graphContext = $null
+    $graphDataModel = $null
     $derived = $null
 
     function __initialize($derived, $graphContext) {
         $this.derived = $derived
         $this.graphContext = $graphContext
+        $this.graphDataModel = ($::.GraphManager |=> GetGraph $this.graphContext).builder.datamodel
     }
 
     function GetTypeDefinition($typeClass, $typeId) {

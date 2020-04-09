@@ -46,8 +46,8 @@ ScriptClass CompositeTypeProvider {
         }
 
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
-            $graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
+            $this.base.graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
+            $this.base.graphDataModel |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
         new-so TypeDefinition $typeId $typeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
@@ -70,9 +70,8 @@ ScriptClass CompositeTypeProvider {
 
     function GetComplexTypeSchemas {
         if ( ! $this.complexTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $complexTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
-            $complexTypeSchemas = $graphDataModel |=> GetComplexTypes
+            $complexTypeSchemas = $this.base.graphDataModel |=> GetComplexTypes
             UpdateTypeTable $complexTypeTable $complexTypeSchemas
             $this.complexTypeTable = $complexTypeTable
         }
@@ -82,9 +81,8 @@ ScriptClass CompositeTypeProvider {
 
     function GetEntityTypeSchemas {
         if ( ! $this.entityTypeTable ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
             $entityTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
-            $entityTypeSchemas = $graphDataModel |=> GetEntityTypes
+            $entityTypeSchemas = $this.base.graphDataModel |=> GetEntityTypes
             UpdateTypeTable $entityTypeTable $entityTypeSchemas
             $this.entityTypeTable = $entityTypeTable
         }
@@ -110,8 +108,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
-        $graphDataModel = ($::.GraphManager |=> GetGraph $this.base.graphContext).builder.dataModel
-        $unaliasedTypeName = $graphDataModel |=> UnAliasQualifiedName $qualifiedTypeName
+        $unaliasedTypeName = $this.base.graphDataModel |=> UnAliasQualifiedName $qualifiedTypeName
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
             # are known not to work due to a defect fixed in PowerShell 7.0
