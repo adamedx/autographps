@@ -56,7 +56,7 @@ ScriptClass EntityGraph {
     }
 
     function TypeVertexFromTypeName($typeName) {
-        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $null $typeName
+        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $typeName
 
         $this.typeVertices[$typeData.EntityTypeName]
     }

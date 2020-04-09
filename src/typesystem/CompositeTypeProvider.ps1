@@ -33,14 +33,14 @@ ScriptClass CompositeTypeProvider {
 
         $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
-                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $propertySchema.Type
+                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
                 new-so TypeProperty $propertySchema.Name $typeInfo.TypeFullName $typeInfo.IsCollection
             }
         }
 
         $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
             foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
-                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $null $navigationproperty.Type
+                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $navigationproperty.Type
                 new-so TypeProperty $navigationproperty.Name $navigationInfo.TypeFullName $navigationInfo.IsCollection
             }
         }

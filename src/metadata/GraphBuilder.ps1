@@ -70,7 +70,7 @@ ScriptClass GraphBuilder {
     }
 
     function __AddVertex($graph, $schema, $vertexType, $namespace, $namespaceAlias) {
-        $entity = new-so Entity $schema $namespace $namespaceAlias
+        $entity = new-so Entity $schema $namespace
         $graph |=> AddVertex $entity
     }
 
@@ -222,7 +222,7 @@ ScriptClass GraphBuilder {
     function __AddMethod($targetVertex, $methodSchema, $returnTypeVertex) {
         if ( ! ($targetVertex |=> EdgeExists($methodSchema.name)) ) {
             $nameInfo = __GetNamespaceInfoFromQualifiedTypeName $targetVertex.typeName
-            $methodEntity = new-so Entity $methodSchema $nameInfo.Namespace $NameInfo.namespaceAlias
+            $methodEntity = new-so Entity $methodSchema $nameInfo.Namespace
             $edge = new-so EntityEdge $targetVertex $returnTypeVertex $methodEntity
             $targetVertex |=> AddEdge $edge
         } else {
