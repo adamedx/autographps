@@ -34,10 +34,16 @@ ScriptClass GraphManager {
 
         function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false) {
             __GetGraph ($context |=> GetEndpoint) $context.version $metadata $wait $force $true | out-null
-
             $uriCache = $context |=> GetState uriCache
             if ( $uriCache ) {
                 $uriCache.Clear() # Need to change this to handle async retrieval of new graph
+            }
+
+            $typeManager = $context |=> GetState TypeManager
+
+            if ( $typeManager ) {
+                $::.TypeProvider |=> RemoveTypeProvidersForGraph $context
+                $context |=> RemoveState TypeManager
             }
         }
 

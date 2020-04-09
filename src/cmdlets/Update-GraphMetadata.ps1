@@ -41,6 +41,5 @@ function Update-GraphMetadata {
         $::.GraphContext |=> GetCurrent
     }
 
-    $::.TypeManager |=> Clear($context) # TODO: move this into GraphManager
     $::.GraphManager |=> UpdateGraph $context $metadata $wait.ispresent $force.ispresent
 }

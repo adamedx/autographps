@@ -189,32 +189,15 @@ ScriptClass TypeManager {
     }
 
     static {
-        $managerByGraphContext = @{}
-
         function Get($graphContext) {
-            $contextId = $graphContext |=> GetScriptObjectHashCode
-            $manager = $this.managerByGraphContext[$contextId]
+            $manager = $graphContext |=> GetState TypeManager
 
             if ( ! $manager ) {
                 $manager = new-so TypeManager $graphContext
-                $this.managerByGraphContext[$contextId] = $manager
+                $graphContext |=> AddState TypeManager $manager
             }
 
             $manager
-        }
-
-        function Clear($graphContext) {
-            # TODO -- remove the static parts of this class and add the logic
-            # to GraphManager which adds context to each Graph
-            $contextId = $graphContext |=> GetScriptObjectHashCode
-            $manager = $this.managerByGraphContext[$contextId]
-
-            if ( $manager ) {
-                # TODO -- similar issue here -- GraphManager should jsut
-                # associate the type providers with the graph context
-                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graphContext
-                $this.managerByGraphContext.Remove($contextId)
-            }
         }
     }
 }
