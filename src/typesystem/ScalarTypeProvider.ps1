@@ -18,12 +18,11 @@ ScriptClass ScalarTypeProvider {
     $base = $null
     $primitiveDefinitions = $null
     $enumerationDefinitions = $null
-    $enumerationNamespace = $null
     $primitiveNames = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
-        $this.enumerationNamespace = $this.scriptclass |=> GetDefaultNamespace Enumeration $graph
+
         LoadEnumerationTypeDefinitions
         LoadPrimitiveTypeDefinitions
     }
@@ -63,12 +62,12 @@ ScriptClass ScalarTypeProvider {
 
     function LoadEnumerationTypeDefinitions {
         $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
-        $nativeSchemas = ($::.GraphManager |=> GetGraph $this.base.graph).builder.datamodel.GetSchema().enumtype
+        $nativeSchemas = $this.base.graph |=> GetEnumTypes
 
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
 
-            $_.member | foreach {
+            $_.Schema.member | foreach {
                 $propertyValue = [PSCustomObject] @{
                     Type = 'Edm.String'
                     Name = [PSCUstomObject] @{Name=$_.name;Value=$_.value}
@@ -81,9 +80,9 @@ ScriptClass ScalarTypeProvider {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }
 
-            $typeId = $::.TypeSchema |=> GetQualifiedTypeName $this.enumerationNamespace $_.name
+            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
 
-            $definition = new-so TypeDefinition $typeId Enumeration $_.name $this.enumerationNamespace $null $enumerationValues $defaultValue $null $false $_
+            $definition = new-so TypeDefinition $typeId Enumeration $_.Schema.name $_.Namespace $null $enumerationValues $defaultValue $null $false $_.Schema
             $enumerationDefinitions.Add($typeId.tolower(), $definition)
         }
 
@@ -165,7 +164,7 @@ ScriptClass ScalarTypeProvider {
             if ( $typeClass -eq 'Primitive' ) {
                 $this.PRIMITIVE_TYPE_NAMESPACE
             } else {
-                $::.TypeProvider |=> GetGraphNamespace $graph
+                $graph |=> GetDefaultNamespace
             }
         }
 

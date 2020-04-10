@@ -31,7 +31,7 @@ function GetAllObjects {
 }
 
 Describe 'The New-GraphObject command' {
-    Context 'When invoked using v1 metadata with v1 metadata' {
+    Context 'When invoked using v1 metadata with a single namespace' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
@@ -86,10 +86,38 @@ Describe 'The New-GraphObject command' {
         }
     }
 
-    Context 'When invoked using beta metadata ' {
+    Context 'When invoked using beta metadata with namespace aliases and multiple namepaces' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-multi-namespace-2020-03-25.xml" -force -wait -warningaction silentlycontinue
+        }
+
+        It "Should be able to get an object in the 'microsoft.graph' namespace" {
+            $expected = get-content "$psscriptroot/../../test/assets/NewGraphBetaObjectApplication.json" | out-string | convertfrom-json
+            $expectedProperties = $expected | gm -membertype noteproperty
+
+            $actual = new-graphobject microsoft.graph.application -SetDefaultValues | convertto-json | convertfrom-json
+            $actualProperties = $actual | gm -membertype noteproperty
+
+            $actualProperties.length | Should Be $expectedProperties.length
+            $expectedProperties | foreach {
+                $actualProperties | where name -eq $_.name | Should Not be $null
+                ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
+            }
+        }
+
+        It "Should be able to get an object in the 'microsoft.graph.callRecords' namespace" {
+            $expected = get-content "$psscriptroot/../../test/assets/NewGraphBetaObjectCallRecord.json" | out-string | convertfrom-json
+            $expectedProperties = $expected | gm -membertype noteproperty
+
+            $actual = new-graphobject microsoft.graph.callRecords.callRecord -SetDefaultValues | convertto-json | convertfrom-json
+            $actualProperties = $actual | gm -membertype noteproperty
+
+            $actualProperties.length | Should Be $expectedProperties.length
+            $expectedProperties | foreach {
+                $actualProperties | where name -eq $_.name | Should Not be $null
+                ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
+            }
         }
 
         It 'Should be able to return all objects in the beta metadata' {

@@ -59,7 +59,7 @@ function Get-GraphType {
 
         $::.TypeHelper |=> ToPublic $type
     } else {
-        $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetContext
+        $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
     }
 }
 

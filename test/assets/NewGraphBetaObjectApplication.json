@@ -1,0 +1,28 @@
+﻿{
+    "api":  null,
+    "appId":  "",
+    "displayName":  "",
+    "tags":  [
+                 ""
+             ],
+    "web":  null,
+    "isFallbackPublicClient":  false,
+    "createdDateTime":  "\/Date(1577865600000)\/",
+    "publicClient":  null,
+    "tokenEncryptionKeyId":  "00000000-0000-0000-0000-000000000000",
+    "info":  null,
+    "logo":  null,
+    "isDeviceOnlyAuthSupported":  false,
+    "keyCredentials":  null,
+    "identifierUris":  [
+                           ""
+                       ],
+    "groupMembershipClaims":  "",
+    "optionalClaims":  null,
+    "parentalControlSettings":  null,
+    "publisherDomain":  "",
+    "appRoles":  null,
+    "passwordCredentials":  null,
+    "signInAudience":  "",
+    "requiredResourceAccess":  null
+}
