@@ -48,8 +48,7 @@ ScriptClass TypeParameterCompleter {
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
         if ( $targetContext ) {
-            $targetGraph = $::.GraphManager |=> GetGraph $targetContext
-            $typeNames = $::.TypeProvider |=> GetSortedTypeNames $typeClass $targetGraph
+            $typeNames = $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
             $candidates = if ( $this.unqualified ) {
                 $typeNames | foreach { $_ -split '\.' | select -last 1 }
             } else {

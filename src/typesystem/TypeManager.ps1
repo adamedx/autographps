@@ -199,6 +199,11 @@ ScriptClass TypeManager {
 
             $manager
         }
+
+        function GetSortedTypeNames($typeClass, $graphContext) {
+            $graph = $::.GraphManager |=> GetGraph $graphContext
+            $::.TypeProvider |=> GetSortedTypeNames $typeClass $graph
+        }
     }
 }
 
