@@ -23,13 +23,13 @@
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
 
-    $graphContext = $null
+    $graph = $null
     $definitions = $null
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
 
-    function __initialize($graphContext) {
-        $this.graphContext = $graphContext
+    function __initialize($graph) {
+        $this.graph = $graph
         $this.definitions = @{}
         $this.prototypes = @{
             $false = @{}
@@ -106,14 +106,14 @@ ScriptClass TypeManager {
                 InitializeRequiredTypes
             }
 
-            $type = $::.TypeDefinition |=> Get $this.graphContext $typeClass $typeId
+            $type = $::.TypeDefinition |=> Get $this.graph $typeClass $typeId
 
             $requiredTypes = @($type)
 
             $baseTypeId = $type.BaseType
 
             while ( $baseTypeId ) {
-                $baseType = $::.TypeDefinition |=> Get $this.graphContext Unknown $baseTypeId
+                $baseType = $::.TypeDefinition |=> Get $this.graph Unknown $baseTypeId
                 $requiredTypes += $baseType
 
                 $baseTypeId = if ( $baseType | gm BaseType -erroraction ignore ) {
@@ -180,10 +180,9 @@ ScriptClass TypeManager {
 
     function GetOptionallyQualifiedName($typeClass, $typeName, $isFullyQualified) {
         if ( $isFullyQualified ) {
-            $graphDataModel = ($::.GraphManager |=> GetGraph $this.graphContext).builder.datamodel
-            $graphDataModel |=> UnaliasQualifiedName $typeName
+            $this.graph |=> UnaliasQualifiedName $typeName
         } else {
-            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graphContext
+            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
             $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
         }
     }
@@ -193,7 +192,8 @@ ScriptClass TypeManager {
             $manager = $graphContext |=> GetState TypeManager
 
             if ( ! $manager ) {
-                $manager = new-so TypeManager $graphContext
+                $graph = $::.GraphManager |=> GetGraph $graphContext
+                $manager = new-so TypeManager $graph
                 $graphContext |=> AddState TypeManager $manager
             }
 

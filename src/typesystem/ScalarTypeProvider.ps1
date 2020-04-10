@@ -20,8 +20,8 @@ ScriptClass ScalarTypeProvider {
     $enumerationDefinitions = $null
     $primitiveNames = $null
 
-    function __initialize($graphContext) {
-        $this.base = new-so TypeProvider $this $graphContext
+    function __initialize($graph) {
+        $this.base = new-so TypeProvider $this $graph
 
         LoadEnumerationTypeDefinitions
         LoadPrimitiveTypeDefinitions
@@ -62,7 +62,7 @@ ScriptClass ScalarTypeProvider {
 
     function LoadEnumerationTypeDefinitions {
         $enumerationDefinitions = [System.Collections.Generic.SortedList[String, Object]]::new()
-        $nativeSchemas = $this.base.graphDataModel |=> GetEnumTypes
+        $nativeSchemas = $this.base.graph |=> GetEnumTypes
 
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
@@ -80,7 +80,7 @@ ScriptClass ScalarTypeProvider {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }
 
-            $typeId = $this.base.graphDataModel |=> UnaliasQualifiedName $_.QualifiedName
+            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
 
             $definition = new-so TypeDefinition $typeId Enumeration $_.Schema.name $_.Namespace $null $enumerationValues $defaultValue $null $false $_.Schema
             $enumerationDefinitions.Add($typeId.tolower(), $definition)
@@ -142,8 +142,8 @@ ScriptClass ScalarTypeProvider {
     static {
         const PRIMITIVE_TYPE_NAMESPACE Edm
 
-        function GetTypeProvider($graphContext) {
-            $::.TypeProvider |=> GetTypeProvider $this $graphContext
+        function GetTypeProvider($graph) {
+            $::.TypeProvider |=> GetTypeProvider $this $graph
         }
 
         function IsPrimitiveType($typeId) {
@@ -160,11 +160,11 @@ ScriptClass ScalarTypeProvider {
             @('Primitive', 'Enumeration')
         }
 
-        function GetDefaultNamespace($typeClass, $graphContext) {
+        function GetDefaultNamespace($typeClass, $graph) {
             if ( $typeClass -eq 'Primitive' ) {
                 $this.PRIMITIVE_TYPE_NAMESPACE
             } else {
-                $::.TypeProvider |=> GetGraphNamespace $graphContext
+                $graph |=> GetDefaultNamespace
             }
         }
 

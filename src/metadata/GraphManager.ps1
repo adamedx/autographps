@@ -33,7 +33,7 @@ ScriptClass GraphManager {
         }
 
         function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false) {
-            __GetGraph ($context |=> GetEndpoint) $context.version $metadata $wait $force $true | out-null
+            $graph =__GetGraph ($context |=> GetEndpoint) $context.version $metadata $wait $force $true
             $uriCache = $context |=> GetState uriCache
             if ( $uriCache ) {
                 $uriCache.Clear() # Need to change this to handle async retrieval of new graph
@@ -42,7 +42,7 @@ ScriptClass GraphManager {
             $typeManager = $context |=> GetState TypeManager
 
             if ( $typeManager ) {
-                $::.TypeProvider |=> RemoveTypeProvidersForGraph $context
+                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graph
                 $context |=> RemoveState TypeManager
             }
         }
