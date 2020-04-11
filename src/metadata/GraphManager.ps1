@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@ ScriptClass GraphManager {
     static {
         $cache = $null
 
+        const TimeStateKey TimeData
+        const UriCacheStateKey UriCache
+        const TypeStateKey TypeManager
+        const MetadataSourceStateKey MetadataSource
+
         function __initialize {
             $this.cache = new-so GraphCache
             # Start an asynchronous load of the metadata unless this is disabled
@@ -32,19 +37,42 @@ ScriptClass GraphManager {
             }
         }
 
-        function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false) {
-            $graph =__GetGraph ($context |=> GetEndpoint) $context.version $metadata $wait $force $true
-            $uriCache = $context |=> GetState uriCache
+        function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false, $metadataSourceOverridePath) {
+            $graphEndpoint = $context |=> GetEndpoint
+            $graph =__GetGraph $graphEndpoint $context.version $metadata $wait $force $true
+            $uriCache = $context |=> GetState $this.UriCacheStateKey
             if ( $uriCache ) {
                 $uriCache.Clear() # Need to change this to handle async retrieval of new graph
             }
 
-            $typeManager = $context |=> GetState TypeManager
+            $typeManager = $context |=> GetState $this.TypeStateKey
 
             if ( $typeManager ) {
                 $::.TypeProvider |=> RemoveTypeProvidersForGraph $graph
-                $context |=> RemoveState TypeManager
+                $context |=> RemoveState $this.TypeStateKey
             }
+
+            $updateTime = [DateTimeOffset]::Now
+            $timeData = $context |=> GetState $this.TimeStateKey
+
+            if ( $timeData ) {
+                $timeData.UpdatedTime = $updateTime
+            } else {
+                $timeData = [PSCustomObject] @{
+                    CreatedTime = $updateTime
+                    UpdatedTime = $updateTime
+                }
+            }
+
+            $context |=> SetState $this.TimeStateKey $timeData
+
+            $updateSource = if ( $metadataSourceOverridePath ) {
+                $metadataSourceOverridePath
+            } else {
+                $graphEndpoint.tostring().trimend('/'), $context.version, '$metadata' -join '/'
+            }
+
+            $context |=> SetState $this.MetadataSourceStateKey $updateSource
         }
 
         function GetMetadataStatus($context) {

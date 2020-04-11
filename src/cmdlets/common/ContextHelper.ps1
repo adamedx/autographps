@@ -28,10 +28,13 @@ ScriptClass ContextHelper {
             $userId = $userInfo.userId
             $scopes = $userInfo.scopes
 
+            $timeData = $context |=> GetState $::.GraphManager.TimeStateKey
+
             # Seems like ScriptClass constants have a strange behavior when used as a typename here.
             # To work around this, use ToString()
             [PSCustomObject]@{
                 PSTypeName = ($this.ContextDisplayTypeName.tostring())
+                Id = $context.Id
                 Name = $context.name
                 Version = $context.version
                 Endpoint = ($context |=> GetEndpoint)
@@ -46,6 +49,9 @@ ScriptClass ContextHelper {
                 AuthType = $context.connection.identity.app.authtype
                 UserId = $userId
                 Scopes = $scopes
+                CreationTime = $timeData.CreatedTime
+                LastUpdateTime = $timeData.UpdatedTime
+                LastTypeMetadataSource = $context |=> GetState $::.GraphManager.MetadataSourceStateKey
                 Details = $context
             }
 

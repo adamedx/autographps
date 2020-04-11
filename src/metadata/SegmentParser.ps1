@@ -38,10 +38,10 @@ ScriptClass SegmentParser {
         }
 
         if ( ! $this.UriCache ) {
-            $uriCache = $this.context |=> GetState uriCache
+            $uriCache = $this.context |=> GetState $::.GraphManager.UriCacheStateKey
             if ( ! $uriCache ) {
                 $uriCache = new-so UriCache 1000
-                $this.context |=> AddState uriCache $uriCache
+                $this.context |=> AddState $::.GraphManager.UriCacheStateKey $uriCache
             }
             $this.uriCache = $uriCache
         }
