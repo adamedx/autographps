@@ -189,12 +189,12 @@ ScriptClass TypeManager {
 
     static {
         function Get($graphContext) {
-            $manager = $graphContext |=> GetState TypeManager
+            $manager = $graphContext |=> GetState $::.GraphManager.TypeStateKey
 
             if ( ! $manager ) {
                 $graph = $::.GraphManager |=> GetGraph $graphContext
                 $manager = new-so TypeManager $graph
-                $graphContext |=> AddState TypeManager $manager
+                $graphContext |=> AddState $::.GraphManager.TypeStateKey $manager
             }
 
             $manager
