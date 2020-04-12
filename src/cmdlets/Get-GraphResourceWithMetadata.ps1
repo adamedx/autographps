@@ -38,8 +38,6 @@ function Get-GraphResourceWithMetadata {
 
         [Switch] $Descending,
 
-        [Object] $ContentColumns = $null,
-
         [switch] $RawContent,
 
         [switch] $AbsoluteUri,
@@ -49,6 +47,8 @@ function Get-GraphResourceWithMetadata {
         [switch] $Recurse,
 
         [switch] $DetailedChildren,
+
+        [switch] $ContentOnly,
 
         [switch] $DataOnly,
 
@@ -170,40 +170,13 @@ function Get-GraphResourceWithMetadata {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
-                    $_ | Get-GraphUri
+                    if ( ! $ContentOnly.IsPresent ) {
+                        $_ | Get-GraphUri
+                    } else {
+                        $_
+                    }
                 } else {
                     $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
-                }
-
-                $translatedResult = if ( ! $RawContent.IsPresent -and $ContentColumns ) {
-                    $ContentColumns | foreach {
-                        $specificOutputColumn = $false
-                        $outputColumnName = $_
-                        $contentColumnName = if ( $_ -is [String] ) {
-                            $_
-                        } elseif ( $_ -is [HashTable] ) {
-                            if ( $_.count -ne 1 ) {
-                                throw "Argument '$($_)' must have exactly one key, specify '@{source1=dest1}, @{source2=dest2}' instead"
-                            }
-                            $specificOutputColumn = $true
-                            $outputColumnName = $_.values[0]
-                            $_.keys[0]
-                        } else {
-                            throw "Invalid Content column '$($_.tostring())' of type '$($_.gettype())' specified -- only types [String] and [HashTable] are permitted"
-                        }
-
-                        $propertyName = if ( $specificOutputColumn ) {
-                            $outputColumnName
-                        } else {
-                            if ( $result | gm $outputColumnName -erroraction ignore ) {
-                                "_$outputColumnName"
-                            } else {
-                                $outputColumnName
-                            }
-                        }
-
-                        $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction ignore -expandproperty $contentColumnName)
-                    }
                 }
 
                 $results += $result

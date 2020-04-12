@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Add contentonly to get-graphresourcewithmetadata
+* Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Rationalize Get-GraphChildItem and new Get-GraphItem
 * Add methods to Get-GraphType
@@ -269,6 +269,7 @@
 * Support multiple namespaces :(
 * Rename ODataFilter parameter to Filter
 * Include base type properties with New-GraphObject
+* Add contentonly to get-graphresourcewithmetadata
 
 ### Postponed
 
