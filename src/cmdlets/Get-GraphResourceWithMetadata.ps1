@@ -46,6 +46,8 @@ function Get-GraphResourceWithMetadata {
 
         [switch] $Recurse,
 
+        [switch] $ChildrenOnly,
+
         [switch] $DetailedChildren,
 
         [switch] $ContentOnly,
@@ -155,9 +157,9 @@ function Get-GraphResourceWithMetadata {
         $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
         $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
     } else {
-        $emitTarget = ( ! $noUri -or $ignoreMetadata ) -or $resolvedUri.Collection
+        $emitTarget = ( ( ! $noUri -or $ignoreMetadata ) -and ! $ChildrenOnly.IsPresent ) -or $resolvedUri.Collection
         $emitRoot = ! $noUri -or $ignoreMetadata
-        $emitChildren = $noUri -or ! $emitTarget -or $Recurse.IsPresent
+        $emitChildren = ( $noUri -or ! $emitTarget -or $Recurse.IsPresent ) -or $ChildrenOnly.IsPresent
     }
 
     write-verbose "Uri unspecified: $noUri, Emit Root: $emitRoot, Emit target: $emitTarget, EmitChildren: $emitChildren"

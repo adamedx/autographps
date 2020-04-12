@@ -34,15 +34,13 @@ function Get-GraphChildItem {
 
         [Switch] $Descending,
 
-        [Object] $ContentColumns = $null,
+        [switch] $ContentOnly,
 
         [switch] $RawContent,
 
         [switch] $AbsoluteUri,
 
         [switch] $IncludeAll,
-
-        [switch] $Recurse,
 
         [switch] $DetailedChildren,
 
@@ -65,9 +63,7 @@ function Get-GraphChildItem {
         $targetParameters[$_] = $PSBoundParameters[$_]
     }
 
-    $targetParameters['StrictOutput'] = [System.Management.Automation.SwitchParameter]::new($true)
-
-    Get-GraphResourceWithMetadata @targetParameters
+    Get-GraphResourceWithMetadata @targetParameters -ChildrenOnly:$true
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

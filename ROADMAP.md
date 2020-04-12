@@ -2,9 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Rationalize Get-GraphChildItem and new Get-GraphItem
 * Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
-* Rationalize Get-GraphChildItem and new Get-GraphItem
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
