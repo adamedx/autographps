@@ -142,9 +142,11 @@ ScriptClass GraphObjectBuilder {
                     $unusedPropertyCount++
                 }
             }
-            # TODO: Add base types!
+
             if ( $typeDefinition.properties ) {
-                foreach ( $property in $typeDefinition.properties ) {
+                $typeProperties = $this.typeManager |=> GetTypeDefinitionTransitiveProperties $typeDefinition
+
+                foreach ( $property in $typeProperties ) {
                     $propertyInfo = if ( $this.propertyFilter ) {
                         if ( $usedProperties.ContainsKey($property.name) ) {
                             $usedProperties[$property.name] = $true

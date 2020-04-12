@@ -66,56 +66,8 @@ ScriptClass TypeProvider {
             @($this.REQUIRED_ENUM_AS_PRIMITIVE_TYPE)
         }
 
-        function GetTypeProvider([GraphTypeClass] $typeClass, $graph) {
-            $providerModel = GetProviderForClass $typeClass
-            GetTypeProviderByObjectClass $::.$providerModel $graph
-        }
-
-        function GetSortedTypeNames([GraphTypeClass] $typeClass, $graph) {
-            $provider = GetTypeProvider $typeClass $graph
-            $provider |=> GetSortedTypeNames $typeClass
-        }
-
-        function GetTypeProviderByObjectClass($classObject, $graph) {
-            $classProviderTable = GetProviderTable $classObject
-            GetItemByObject $classProviderTable $graph {param($className, $graph) new-so $className $graph} $classObject.classname, $graph
-        }
-
-        function RemoveTypeProvidersForGraph($graph) {
-            foreach ( $providerTable in $this.providersByScriptClass.Values ) {
-                __RemoveItemByObject $providerTable $graph
-            }
-        }
-
         function GetProviderForClass([GraphTypeClass] $typeClass) {
             $this.providerModels[$typeClass.tostring()]
-        }
-
-        function GetProviderTable($class) {
-            GetItemByObject $this.providersByScriptClass $class {@{}}
-        }
-
-        function GetItemByObject($table, $object, $createBlock, $createArguments) {
-            $itemId = $object |=> GetScriptObjectHashCode
-
-            $item = $table[$itemId]
-
-            if ( ! $item ) {
-                $item = invoke-command $createBlock -argumentlist $createArguments
-                $table.Add($itemId, $item)
-            }
-
-            $item
-        }
-
-        function __RemoveItemByObject($table, $object) {
-            $itemId = $object |=> GetScriptObjectHashCode
-
-            $item = $table[$itemId]
-
-            if ( $item ) {
-                $table.Remove($itemId)
-            }
         }
 
         function ValidateTypeClass($derivedClass, [GraphTypeClass] $typeClass) {

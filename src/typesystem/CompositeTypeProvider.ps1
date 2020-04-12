@@ -31,6 +31,16 @@ ScriptClass CompositeTypeProvider {
 
         $nativeSchema = GetNativeSchemaFromGraph $typeId $typeClass
 
+        $foundTypeClass = if ( $typeClass -ne 'Unknown' ) {
+            $typeClass
+        } elseif ( $nativeSchema.SchemaClass -eq 'EntityType' ) {
+            'Entity'
+        } elseif ( $nativeSchema.SchemaClass -eq 'ComplexType' ) {
+            'Complex'
+        } else {
+            throw "Found invalid native schema of type '$($nativeSchema.SchemaClass)' for type '$typeId': the only valid values are 'ComplexType' and 'EntityType'"
+        }
+
         $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
@@ -49,7 +59,7 @@ ScriptClass CompositeTypeProvider {
             $this.base.graph |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
-        new-so TypeDefinition $typeId $typeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
+        new-so TypeDefinition $typeId $foundTypeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
     }
 
     function GetSortedTypeNames($typeClass) {
