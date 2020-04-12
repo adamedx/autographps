@@ -17,7 +17,7 @@
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
-. (import-script common/WriteOperationParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 
 function New-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
@@ -118,6 +118,6 @@ function New-GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)

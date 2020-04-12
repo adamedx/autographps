@@ -15,6 +15,7 @@
 . (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
 . (import-script ../common/GraphAccessDeniedException)
+. (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphResourceWithMetadata {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -23,13 +24,15 @@ function Get-GraphResourceWithMetadata {
         [Uri[]] $Uri = @('.'),
 
         [parameter(position=1)]
-        [String] $Query = $null,
+        [Alias('Property')]
+        [String[]] $Select = $null,
 
+        [parameter(position=2)]
         [String] $Filter = $null,
 
-        [String] $Search = $null,
+        [String] $Query = $null,
 
-        [String[]] $Select = $null,
+        [String] $Search = $null,
 
         [String[]] $Expand = $null,
 
@@ -45,6 +48,8 @@ function Get-GraphResourceWithMetadata {
         [switch] $IncludeAll,
 
         [switch] $Recurse,
+
+        [switch] $ChildrenOnly,
 
         [switch] $DetailedChildren,
 
@@ -155,9 +160,9 @@ function Get-GraphResourceWithMetadata {
         $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
         $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
     } else {
-        $emitTarget = ( ! $noUri -or $ignoreMetadata ) -or $resolvedUri.Collection
+        $emitTarget = ( ( ! $noUri -or $ignoreMetadata ) -and ! $ChildrenOnly.IsPresent ) -or $resolvedUri.Collection
         $emitRoot = ! $noUri -or $ignoreMetadata
-        $emitChildren = $noUri -or ! $emitTarget -or $Recurse.IsPresent
+        $emitChildren = ( $noUri -or ! $emitTarget -or $Recurse.IsPresent ) -or $ChildrenOnly.IsPresent
     }
 
     write-verbose "Uri unspecified: $noUri, Emit Root: $emitRoot, Emit target: $emitTarget, EmitChildren: $emitChildren"
@@ -176,7 +181,11 @@ function Get-GraphResourceWithMetadata {
                         $_
                     }
                 } else {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                    if ( ! $ContentOnly.IsPresent ) {
+                        $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                    } else {
+                        $_
+                    }
                 }
 
                 $results += $result
@@ -221,4 +230,4 @@ function Get-GraphResourceWithMetadata {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)

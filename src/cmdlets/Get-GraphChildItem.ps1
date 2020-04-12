@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,62 +12,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../typesystem/TypeManager)
+. (import-script common/TypeUriHelper)
+. (import-script common/QueryHelper)
+. (import-script common/GraphParameterCompleter)
+. (import-script common/TypeParameterCompleter)
+. (import-script common/TypePropertyParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
+
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0)]
-        [Uri[]] $Uri = @('.'),
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [Uri] $Uri,
 
-        [parameter(position=1)]
-        [String] $Query = $null,
+        [parameter(parametersetname='bytypecollection', mandatory=$true)]
+        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
+        $TypeName,
 
-        [String] $Filter = $null,
+        [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
+        $Id,
 
-        [String] $Search = $null,
+        [parameter(position=2, parametersetname='byuri')]
+        [parameter(position=2, parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='bytypecollection')]
+        [parameter(position=2, parametersetname='typeandpropertyfilter')]
+        [string[]] $Property,
 
-        [String[]] $Select = $null,
+        $GraphName,
 
-        [String[]] $Expand = $null,
+        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        $PropertyFilter,
 
-        [Alias('Sort')]
-        $OrderBy = $null,
+        [parameter(parametersetname='bytypecollection')]
+        [parameter(parametersetname='bytypecollectionpropertyfilter')]
+        $Filter,
 
-        [Switch] $Descending,
+        [switch] $ContentOnly,
 
-        [Object] $ContentColumns = $null,
+        [switch] $FullyQualifiedTypeName,
 
-        [switch] $RawContent,
-
-        [switch] $AbsoluteUri,
-
-        [switch] $IncludeAll,
-
-        [switch] $Recurse,
-
-        [switch] $DetailedChildren,
-
-        [switch] $DataOnly,
-
-        [Switch] $RequireMetadata,
-
-        [HashTable] $Headers = $null,
-
-        [Guid] $ClientRequestId,
-
-        [string] $ResultVariable = $null
+        [switch] $SkipPropertyCheck
     )
+    $remappedParameters = $PSBoundParameters
 
-    Enable-ScriptClassVerbosePreference
-
-    $targetParameters = @{}
-
-    $PSBoundParameters.keys | foreach {
-        $targetParameters[$_] = $PSBoundParameters[$_]
+    $remappedUri = if ( $TypeName -and ! $Id -and ! $Filter ) {
+        $remappedParameters = @{}
+        foreach ( $parameterName in $remappedParameters.Keys ) {
+            if ( $parameterName -ne 'TypeName' ) {
+                $remappedParameter.Add($parameterName, $PSBoundParameters[$parameterName])
+            }
+        }
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $null $null $null
+        $remappedParameters['Uri'] = $requestInfo.Uri
     }
 
-    $targetParameters['StrictOutput'] = [System.Management.Automation.SwitchParameter]::new($true)
-
-    Get-GraphResourceWithMetadata @targetParameters
+    Get-GraphItem @remappedParameters -ChildrenOnly:$true
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
+

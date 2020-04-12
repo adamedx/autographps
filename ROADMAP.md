@@ -2,9 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Make Get-GraphResource Property alias for Select
+* Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
-* Rationalize Get-GraphChildItem and new Get-GraphItem
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
@@ -270,6 +272,11 @@
 * Rename ODataFilter parameter to Filter
 * Include base type properties with New-GraphObject
 * Add contentonly to get-graphresourcewithmetadata
+* Rationalize Get-GraphChildItem and new Get-GraphItem
+* Add Property as a positional parameter of gls
+* Let get-graphchilditem take a type without an id
+* Rename writeoperationparametercompleter to something generic unrelated to writes
+* Fix parametersets for add-graphitemreference and set-graphitemproperty
 
 ### Postponed
 

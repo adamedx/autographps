@@ -38,13 +38,27 @@ ScriptClass QueryHelper {
             }
         }
 
-        function ValidatePropertyProjection($typeInfo, $projection) {
+        function ValidatePropertyProjection($graphContext, $typeInfo, $projection, $propertyTypeToValidate) {
             if ( $projection ) {
-                $typeData = Get-GraphType $typeInfo.FullTypeName
+                $allowedPropertyTypes = 'Property', 'NavigationProperty'
+
+                $propertyTypes = if ( ! $propertyTypeToValidate ) {
+                    $allowedPropertyTypes
+                } elseif ( $allowedPropertyTyeps -contains $propertyTypeToValidate ) {
+                    $propertyTypeToValidate
+                } else {
+                    throw "Invalid property type '$propertyTypeToValidate'"
+                }
+
+                $typeManager = $::.TypeManager |=> Get $graphContext
+
+                $typeData = $typeManager |=> GetTypeDefinition Entity $typeInfo.FullTypeName
+
+                $properties = foreach ( $propertyType in $propertyTypes ) {
+                    $typeManager |=> GetTypeDefinitionTransitiveProperties $typeData $propertyType
+                }
 
                 $propertyMap = @{}
-
-                $properties = $typeData.properties
 
                 foreach ( $property in $properties ) {
                     $propertyMap.Add($property.name, $property)
