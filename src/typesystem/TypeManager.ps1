@@ -23,18 +23,22 @@
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
 
+    $graphContext = $null
     $graph = $null
     $definitions = $null
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
+    $typeProviders = $null
 
-    function __initialize($graph) {
-        $this.graph = $graph
+    function __initialize($graphContext) {
+        $this.graphContext = $graphContext
+        $this.graph = $::.GraphManager |=> GetGraph $this.graphContext
         $this.definitions = @{}
         $this.prototypes = @{
             $false = @{}
             $true = @{}
         }
+        $this.typeProviders = @{}
     }
 
     function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck) {
@@ -106,14 +110,17 @@ ScriptClass TypeManager {
                 InitializeRequiredTypes
             }
 
-            $type = $::.TypeDefinition |=> Get $this.graph $typeClass $typeId
+            $typeProvider = __GetTypeProvider $typeClass $this.graph
+            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId
 
             $requiredTypes = @($type)
 
             $baseTypeId = $type.BaseType
 
             while ( $baseTypeId ) {
-                $baseType = $::.TypeDefinition |=> Get $this.graph Unknown $baseTypeId
+                $baseTypeProvider = __GetTypeProvider $typeClass $this.graph
+                $baseType = $baseTypeProvider |=> GetTypeDefinition Unknown $baseTypeId
+
                 $requiredTypes += $baseType
 
                 $baseTypeId = if ( $baseType | gm BaseType -erroraction ignore ) {
@@ -133,6 +140,30 @@ ScriptClass TypeManager {
         }
 
         $definition
+    }
+
+    function GetTypeDefinitionTransitiveProperties($typeDefinition) {
+        $properties = @()
+
+        if ( $typeDefinition.Properties ) {
+            $properties += $typeDefinition.Properties
+        }
+
+        $visitedBaseTypes = @{}
+        $baseTypeId = $typeDefinition.BaseType
+
+        while ( $baseTypeId -and ! $visitedBaseTypes[$baseTypeId] ) {
+            $visitedBaseTypes[$baseTypeId] = $true
+            $baseTypeDefinition = FindTypeDefinition $typeDefinition.Class $baseTypeId $true
+            if ( $baseTypeDefinition ) {
+                $properties += $baseTypeDefinition.Properties
+                $baseTypeId = $baseTypeDefinition.BaseType
+            } else {
+                $baseTypeId = $null
+            }
+        }
+
+        $properties
     }
 
     function GetPrototypeId($typeId, $setDefaults, $recursive) {
@@ -167,7 +198,7 @@ ScriptClass TypeManager {
             $requiredTypeInfo = $::.TypeProvider |=> GetRequiredTypeInfo
 
             $requiredTypeInfo | foreach {
-                GetTypeDefinition $requiredTypeInfo.typeClass $requiredTypeInfo.typeId $true | out-null
+                GetTypeDefinition $_.typeClass $_.typeId $true | out-null
             }
 
             $this.hasRequiredTypeDefinitions = $true
@@ -187,13 +218,27 @@ ScriptClass TypeManager {
         }
     }
 
+    function __GetTypeProvider([GraphTypeClass] $typeClass) {
+        $providerObjectClass = $::.TypeProvider |=> GetProviderForClass $typeClass
+        __GetTypeProviderByObjectClass $providerObjectClass
+    }
+
+    function __GetTypeProviderByObjectClass($providerObjectClass) {
+        $provider = $this.typeProviders[$providerObjectClass]
+        if ( ! $provider ) {
+            $provider = new-so $providerObjectClass $this.graph
+            $this.typeProviders[$providerObjectClass] = $provider
+        }
+        $provider
+    }
+
     static {
         function Get($graphContext) {
             $manager = $graphContext |=> GetState $::.GraphManager.TypeStateKey
 
             if ( ! $manager ) {
                 $graph = $::.GraphManager |=> GetGraph $graphContext
-                $manager = new-so TypeManager $graph
+                $manager = new-so TypeManager $graphContext
                 $graphContext |=> AddState $::.GraphManager.TypeStateKey $manager
             }
 
@@ -201,8 +246,9 @@ ScriptClass TypeManager {
         }
 
         function GetSortedTypeNames($typeClass, $graphContext) {
-            $graph = $::.GraphManager |=> GetGraph $graphContext
-            $::.TypeProvider |=> GetSortedTypeNames $typeClass $graph
+            $manager = Get $graphContext
+            $typeProvider = $manager |=> __GetTypeProvider $typeClass
+            $typeProvider |=> GetSortedTypeNames $typeClass
         }
     }
 }

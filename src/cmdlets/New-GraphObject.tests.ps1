@@ -81,6 +81,43 @@ Describe 'The New-GraphObject command' {
             { New-GraphObject user -SkipPropertyCheck -Property displayName, idontexist, neitherdoi, userPrincipalName } | Should Not Throw
         }
 
+        It 'Include properties inherited from multiple levels of base classes' {
+            $level3Type = Get-GraphType microsoft.graph.windowsMobileMsi
+            $level3Type.BaseType | Should Be microsoft.graph.mobileLobApp
+
+            $level2Type = Get-GraphType microsoft.graph.mobileLobApp
+            $level2Type.BaseType | Should Be microsoft.graph.mobileApp
+
+            $level1Type = Get-GraphType microsoft.graph.mobileApp
+            $level1Type.BaseType | Should Be microsoft.graph.entity
+
+            $level0Type = Get-GraphType microsoft.graph.entity
+            $level0Type.BaseType | Should Be $null
+
+            $expectedTotalPropertyCount = 21
+
+            $level3ObjectProperties = new-graphobject microsoft.graph.windowsMobileMsi | gm -membertype noteproperty
+            $level3ObjectProperties.length | Should Be $expectedTotalPropertyCount
+
+            $level3Type.properties.length + $level2Type.properties.length + $level1Type.properties.length + $level0Type.properties.length | Should Be $level3ObjectProperties.length
+
+            $allProperties = @{}
+
+            $level3Type, $level2Type, $level1Type, $level0Type | foreach {
+                $_.properties | foreach {
+                    $allProperties[$_.name] | Should Be $null
+                    $allProperties.Add($_.name, $_)
+                }
+            }
+
+            # Redundant, but might catch test code defects
+            $allProperties.Count | Should Be $level3Objectproperties.length
+
+            $allProperties.keys | foreach {
+                $_ | Should BeIn $level3ObjectProperties.name
+            }
+        }
+
         It 'Should be able to return all the objects in the v1 metadata' {
             { GetAllObjects } | Should Not Throw
         }
@@ -100,9 +137,21 @@ Describe 'The New-GraphObject command' {
             $actualProperties = $actual | gm -membertype noteproperty
 
             $actualProperties.length | Should Be $expectedProperties.length
+
             $expectedProperties | foreach {
-                $actualProperties | where name -eq $_.name | Should Not be $null
-                ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
+                $_.name | Should BeIn $actualProperties.name
+                $expectedPropertyValue = $expected.$($_.name)
+                $actualPropertyValue = $actual.$($_.name)
+                if ( $_.name -ne 'id' ) {
+                    ( $actualPropertyValue -eq $null ) | Should Be ( $expectedPropertyValue -eq $null )
+                    if ( $actualPropertyValue -ne $null ) {
+                        # Just compare type as some types, e.g. DateTime and DateTimeOffset, will have different
+                        # values depending on when the test is run. This could be addressed through mocking or by
+                        # comparing values of all types other than those related to time. For now, this check
+                        # is sufficient.
+                        $actualPropertyValue.gettype() | Should Be $expectedPropertyValue.gettype()
+                    }
+                }
             }
         }
 
@@ -114,9 +163,21 @@ Describe 'The New-GraphObject command' {
             $actualProperties = $actual | gm -membertype noteproperty
 
             $actualProperties.length | Should Be $expectedProperties.length
+
             $expectedProperties | foreach {
-                $actualProperties | where name -eq $_.name | Should Not be $null
-                ( $expected | select -expandproperty $_.name ) | Should Be ( $actual | select -expandproperty $_.name )
+                $_.name | Should BeIn $actualProperties.name
+                $expectedPropertyValue = $expected.$($_.name)
+                $actualPropertyValue = $actual.$($_.name)
+                if ( $_.name -ne 'id' ) {
+                    ( $actualPropertyValue -eq $null ) | Should Be ( $expectedPropertyValue -eq $null )
+                    if ( $actualPropertyValue -ne $null ) {
+                        # Just compare type as some types, e.g. DateTime and DateTimeOffset, will have different
+                        # values depending on when the test is run. This could be addressed through mocking or by
+                        # comparing values of all types other than those related to time. For now, this check
+                        # is sufficient.
+                        $actualPropertyValue.gettype() | Should Be $expectedPropertyValue.gettype()
+                    }
+                }
             }
         }
 

@@ -39,19 +39,27 @@ ScriptClass GraphManager {
 
         function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false, $metadataSourceOverridePath) {
             $graphEndpoint = $context |=> GetEndpoint
-            $graph =__GetGraph $graphEndpoint $context.version $metadata $wait $force $true
+
+            # Trigger a graph update -- we purposefully ignore the result as it may not be a graph
+            # but instead an incomplete retrieval. The goal here is simply to trigger the update, not
+            # to get the results.
+            __GetGraph $graphEndpoint $context.version $metadata $wait $force $true | out-null
+
+            # Clear any existing cache as it is no longer valid given that the graph is being updated.
             $uriCache = $context |=> GetState $this.UriCacheStateKey
             if ( $uriCache ) {
-                $uriCache.Clear() # Need to change this to handle async retrieval of new graph
+                $uriCache.Clear() # TODO: Need to change this to handle async retrieval of new graph
             }
 
+            # Also remove any state for the TypeManager as the updated graph will invalidate it as well.
             $typeManager = $context |=> GetState $this.TypeStateKey
 
             if ( $typeManager ) {
-                $::.TypeProvider |=> RemoveTypeProvidersForGraph $graph
                 $context |=> RemoveState $this.TypeStateKey
             }
 
+            # Set the time of creation if this context is new and otherwise
+            # change the last updated time to reflect the time of this update
             $updateTime = [DateTimeOffset]::Now
             $timeData = $context |=> GetState $this.TimeStateKey
 
@@ -66,6 +74,8 @@ ScriptClass GraphManager {
 
             $context |=> SetState $this.TimeStateKey $timeData
 
+            # Finally set the location from which the graph's metadata is retrieved
+            # to reflect what is being used in this update.
             $updateSource = if ( $metadataSourceOverridePath ) {
                 $metadataSourceOverridePath
             } else {

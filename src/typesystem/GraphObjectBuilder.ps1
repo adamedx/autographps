@@ -142,35 +142,35 @@ ScriptClass GraphObjectBuilder {
                     $unusedPropertyCount++
                 }
             }
-            # TODO: Add base types!
-            if ( $typeDefinition.properties ) {
-                foreach ( $property in $typeDefinition.properties ) {
-                    $propertyInfo = if ( $this.propertyFilter ) {
-                        if ( $usedProperties.ContainsKey($property.name) ) {
-                            $usedProperties[$property.name] = $true
-                            $unusedPropertyCount--
-                        }
-                        $this.propertyFilter[$property.name]
+
+            $typeProperties = $this.typeManager |=> GetTypeDefinitionTransitiveProperties $typeDefinition
+
+            foreach ( $property in $typeProperties ) {
+                $propertyInfo = if ( $this.propertyFilter ) {
+                    if ( $usedProperties.ContainsKey($property.name) ) {
+                        $usedProperties[$property.name] = $true
+                        $unusedPropertyCount--
+                    }
+                    $this.propertyFilter[$property.name]
+                }
+
+                if ( ! $this.propertyFilter -or $propertyInfo ) {
+                    $propertyTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $property.typeId $true
+
+                    if ( ! $propertyTypeDefinition ) {
+                        throw "Unable to find type '$($property.typeId)' for property $($property.name) of type $($typeDefinition.typeId)"
                     }
 
-                    if ( ! $this.propertyFilter -or $propertyInfo ) {
-                        $propertyTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $property.typeId $true
+                    $hasValue = $propertyInfo -and $propertyInfo.HasValue
 
-                        if ( ! $propertyTypeDefinition ) {
-                            throw "Unable to find type '$($property.typeId)' for property $($property.name) of type $($typeDefinition.typeId)"
-                        }
-
-                        $hasValue = $propertyInfo -and $propertyInfo.HasValue
-
-                        $customValue = $null
-                        if ( $hasValue ) {
-                            $customValue = $propertyInfo.Value
-                        }
-
-                        $value = GetPropertyValue $propertyTypeDefinition $property.isCollection $hasValue $customValue
-
-                        $object.Add($property.Name, $value)
+                    $customValue = $null
+                    if ( $hasValue ) {
+                        $customValue = $propertyInfo.Value
                     }
+
+                    $value = GetPropertyValue $propertyTypeDefinition $property.isCollection $hasValue $customValue
+
+                    $object.Add($property.Name, $value)
                 }
             }
         } finally {
