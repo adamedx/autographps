@@ -80,16 +80,10 @@ function Get-GraphItem {
             $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
         }
 
-        $result = if ( $requestInfo.IsCollection ) {
+        if ( $requestInfo.IsCollection ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter
-        }
-
-        if ( $ContentOnly.IsPresent ) {
-            $result.Content
-        } else {
-            $result
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent)
         }
     }
 
