@@ -149,13 +149,17 @@ ScriptClass TypeManager {
             $properties += $typeDefinition.Properties
         }
 
+        $visitedBaseTypes = @{}
         $baseTypeId = $typeDefinition.BaseType
 
-        while ( $baseTypeId ) {
+        while ( $baseTypeId -and ! $visitedBaseTypes[$baseTypeId] ) {
+            $visitedBaseTypes[$baseTypeId] = $true
             $baseTypeDefinition = FindTypeDefinition $typeDefinition.Class $baseTypeId $true
             if ( $baseTypeDefinition ) {
                 $properties += $baseTypeDefinition.Properties
                 $baseTypeId = $baseTypeDefinition.BaseType
+            } else {
+                $baseTypeId = $null
             }
         }
 

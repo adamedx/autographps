@@ -5,7 +5,6 @@
 * Add contentonly to get-graphresourcewithmetadata
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Rationalize Get-GraphChildItem and new Get-GraphItem
-* Rename ODataFilter parameter to Filter
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
@@ -268,6 +267,8 @@
 * Implement new Get-GraphItem, Remove-GraphItem commands
 * Fix alias bug -- support only the microsoft.graph namespace :(
 * Support multiple namespaces :(
+* Rename ODataFilter parameter to Filter
+* Include base type properties with New-GraphObject
 
 ### Postponed
 
