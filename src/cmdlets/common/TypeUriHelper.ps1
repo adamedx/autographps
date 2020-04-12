@@ -18,7 +18,9 @@ ScriptClass TypeUriHelper {
 
         function DefaultUriForType($targetContext, $entityTypeName) {
             $entitySet = $::.GraphManager |=> GetGraph $targetContext |=> GetEntityTypeToEntitySetMapping $entityTypeName
-            [Uri] "/$entitySet"
+            if ( $entitySet ) {
+                [Uri] "/$entitySet"
+            }
         }
 
         function TypeFromUri([Uri] $uri) {
