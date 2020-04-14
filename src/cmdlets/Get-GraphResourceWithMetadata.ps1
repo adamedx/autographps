@@ -178,7 +178,11 @@ function Get-GraphResourceWithMetadata {
                         $_
                     }
                 } else {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                    if ( ! $ContentOnly.IsPresent ) {
+                        $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                    } else {
+                        $_
+                    }
                 }
 
                 $results += $result

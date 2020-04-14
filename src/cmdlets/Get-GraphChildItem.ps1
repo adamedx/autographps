@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,58 +12,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../typesystem/TypeManager)
+. (import-script common/TypeUriHelper)
+. (import-script common/QueryHelper)
+. (import-script common/GraphParameterCompleter)
+. (import-script common/TypeParameterCompleter)
+. (import-script common/TypePropertyParameterCompleter)
+. (import-script common/WriteOperationParameterCompleter)
+
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0)]
-        [Uri[]] $Uri = @('.'),
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [Uri] $Uri,
 
-        [parameter(position=1)]
-        [String] $Query = $null,
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
+        $TypeName,
 
-        [String] $Filter = $null,
+        [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
+        $Id,
 
-        [String] $Search = $null,
+        [parameter(position=2, parametersetname='byuri')]
+        [parameter(position=2, parametersetname='byuriandfilter')]
+        [parameter(position=2, parametersetname='typeandpropertyfilter')]
+        [parameter(position=2, parametersetname='bytypeandfilter')]
+        [string[]] $Property,
 
-        [String[]] $Select = $null,
+        $GraphName,
 
-        [String[]] $Expand = $null,
+        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        $PropertyFilter,
 
-        [Alias('Sort')]
-        $OrderBy = $null,
-
-        [Switch] $Descending,
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        $Filter,
 
         [switch] $ContentOnly,
 
-        [switch] $RawContent,
+        [switch] $FullyQualifiedTypeName,
 
-        [switch] $AbsoluteUri,
-
-        [switch] $IncludeAll,
-
-        [switch] $DetailedChildren,
-
-        [switch] $DataOnly,
-
-        [Switch] $RequireMetadata,
-
-        [HashTable] $Headers = $null,
-
-        [Guid] $ClientRequestId,
-
-        [string] $ResultVariable = $null
+        [switch] $SkipPropertyCheck
     )
-
-    Enable-ScriptClassVerbosePreference
-
-    $targetParameters = @{}
-
-    $PSBoundParameters.keys | foreach {
-        $targetParameters[$_] = $PSBoundParameters[$_]
-    }
-
-    Get-GraphResourceWithMetadata @targetParameters -ChildrenOnly:$true
+    Get-GraphItem @PSBoundParameters -ChildrenOnly:$true
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildtem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
+

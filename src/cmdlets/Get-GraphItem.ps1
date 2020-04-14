@@ -33,26 +33,29 @@ function Get-GraphItem {
 
         [parameter(position=2, parametersetname='bytypeandid')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
-        [parameter(position=1, parametersetname='byuri')]
-        [parameter(position=1, parametersetname='uriandpropertyfilter')]
-        [parameter(position=1, parametersetname='bytypeandfilter')]
+        [parameter(position=2, parametersetname='bytypeandfilter')]
+        [parameter(position=2, parametersetname='byuri')]
+        [parameter(position=2, parametersetname='byuriandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
-        [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
         $GraphName,
 
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='uriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
-        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
         $Filter,
 
         [switch] $ContentOnly,
+
+        [switch] $ChildrenOnly,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -80,10 +83,10 @@ function Get-GraphItem {
             $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
         }
 
-        if ( $requestInfo.IsCollection ) {
+        if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent)
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent)
         }
     }
 
@@ -93,3 +96,4 @@ function Get-GraphItem {
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so WriteOperationParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
