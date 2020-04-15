@@ -83,7 +83,7 @@ function Get-GraphItem {
             $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
         }
 
-        if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent ) {
+        if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
             Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent)

@@ -38,13 +38,19 @@ ScriptClass QueryHelper {
             }
         }
 
-        function ValidatePropertyProjection($typeInfo, $projection) {
+        function ValidatePropertyProjection($typeInfo, $projection, $validateNavigationProperties) {
             if ( $projection ) {
                 $typeData = Get-GraphType $typeInfo.FullTypeName
 
                 $propertyMap = @{}
 
-                $properties = $typeData.properties
+                $propertyType = if ( $validateNavigationProperties ) {
+                    'NavigationProperty'
+                } else {
+                    'Property'
+                }
+
+                $properties = $::.TypeManager |=> GetTypeDefinitionTransitiveProperties $typeData $propertyType
 
                 foreach ( $property in $properties ) {
                     $propertyMap.Add($property.name, $property)

@@ -13,6 +13,17 @@
 # limitations under the License.
 
 ScriptClass TypePropertyParameterCompleter {
+    enum PropertyType {
+        Property
+        NavigationProperty
+    }
+
+    $PropertyType = $null
+
+    function __initialize($propertyType = 'Property') {
+        $this.propertyType = [PropertyType] $propertyType
+    }
+
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $typeClass = $fakeBoundParameters['TypeClass']
@@ -38,7 +49,7 @@ ScriptClass TypePropertyParameterCompleter {
 
             $type = $typeManager |=> FindTypeDefinition $typeClass $typeName $isFullyQualified $true
             $typeProperties = if ( $type ) {
-                $typeManager |=> GetTypeDefinitionTransitiveProperties $type
+                $typeManager |=> GetTypeDefinitionTransitiveProperties $type $this.propertyType
             }
 
             $typeProperties.name | where { $_.startswith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase) }

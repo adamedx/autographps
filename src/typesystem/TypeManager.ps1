@@ -142,11 +142,24 @@ ScriptClass TypeManager {
         $definition
     }
 
-    function GetTypeDefinitionTransitiveProperties($typeDefinition) {
+    enum PropertyType {
+        Property
+        NavigationProperty
+    }
+
+    function GetTypeDefinitionTransitiveProperties($typeDefinition, $propertyType = 'Property') {
         $properties = @()
 
+        $validatedPropertyType = [PropertyType] $propertyType
+
+        $propertyMember = if ( $validatedPropertyType -eq 'NavigationProperty' ) {
+            'NavigationProperties'
+        } else {
+            'Properties'
+        }
+
         if ( $typeDefinition.Properties ) {
-            $properties += $typeDefinition.Properties
+            $properties += $typeDefinition.$propertyMember
         }
 
         $visitedBaseTypes = @{}
@@ -156,7 +169,7 @@ ScriptClass TypeManager {
             $visitedBaseTypes[$baseTypeId] = $true
             $baseTypeDefinition = FindTypeDefinition $typeDefinition.Class $baseTypeId $true
             if ( $baseTypeDefinition ) {
-                $properties += $baseTypeDefinition.Properties
+                $properties += $baseTypeDefinition.$PropertyMember
                 $baseTypeId = $baseTypeDefinition.BaseType
             } else {
                 $baseTypeId = $null
