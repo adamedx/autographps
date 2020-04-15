@@ -19,12 +19,13 @@ ScriptClass WriteOperationParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
 
-    function __initialize( $parameterType, $unqualified = $false, $typeParameterName = $null ) {
+    function __initialize( $parameterType, $unqualified = $false) {
         $this.typeParameterName = if ( $typeParameterName ) {
             $typeParameterName
         } else {
             'TypeName'
         }
+
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
         } elseif ( $parameterType -eq 'Property' ) {

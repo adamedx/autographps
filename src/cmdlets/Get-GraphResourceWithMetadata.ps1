@@ -23,13 +23,15 @@ function Get-GraphResourceWithMetadata {
         [Uri[]] $Uri = @('.'),
 
         [parameter(position=1)]
-        [String] $Query = $null,
+        [Alias('Property')]
+        [String[]] $Select = $null,
 
+        [parameter(position=2)]
         [String] $Filter = $null,
 
-        [String] $Search = $null,
+        [String] $Query = $null,
 
-        [String[]] $Select = $null,
+        [String] $Search = $null,
 
         [String[]] $Expand = $null,
 
@@ -227,4 +229,4 @@ function Get-GraphResourceWithMetadata {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so WriteOperationParameterCompleter Property)

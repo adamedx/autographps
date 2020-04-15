@@ -62,7 +62,7 @@ function Get-GraphChildItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so WriteOperationParameterCompleter TypeName $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so WriteOperationParameterCompleter Property $true)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
 
