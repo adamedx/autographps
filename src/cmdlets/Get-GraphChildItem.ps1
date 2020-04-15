@@ -24,32 +24,33 @@ function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri', mandatory=$true)]
-        [parameter(position=0, parametersetname='byuriandfilter', mandatory=$true)]
         [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
+        [parameter(parametersetname='bytypecollection', mandatory=$true)]
+        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='bytypeandid', mandatory=$true)]
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
         $Id,
 
         [parameter(position=2, parametersetname='byuri')]
-        [parameter(position=2, parametersetname='byuriandfilter')]
+        [parameter(position=2, parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='bytypecollection')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
-        [parameter(position=2, parametersetname='bytypeandfilter')]
         [string[]] $Property,
 
         $GraphName,
 
+        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
-        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
-        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='bytypecollection')]
+        [parameter(parametersetname='bytypecollectionpropertyfilter')]
         $Filter,
 
         [switch] $ContentOnly,
@@ -58,7 +59,20 @@ function Get-GraphChildItem {
 
         [switch] $SkipPropertyCheck
     )
-    Get-GraphItem @PSBoundParameters -ChildrenOnly:$true
+    $remappedParameters = $PSBoundParameters
+
+    $remappedUri = if ( $TypeName -and ! $Id -and ! $Filter ) {
+        $remappedParameters = @{}
+        foreach ( $parameterName in $remappedParameters.Keys ) {
+            if ( $parameterName -ne 'TypeName' ) {
+                $remappedParameter.Add($parameterName, $PSBoundParameters[$parameterName])
+            }
+        }
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $null $null $null
+        $remappedParameters['Uri'] = $requestInfo.Uri
+    }
+
+    Get-GraphItem @remappedParameters -ChildrenOnly:$true
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

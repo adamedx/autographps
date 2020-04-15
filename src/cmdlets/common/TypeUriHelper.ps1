@@ -101,7 +101,7 @@ ScriptClass TypeUriHelper {
 
                 [PSCustomObject] @{
                     FullTypeName = $resolvedType.typeId
-                    IsCollection = $false
+                    IsCollection = $true
                 }
             } elseif ( $uri )  {
                 TypeFromUri $uri
