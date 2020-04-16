@@ -18,7 +18,7 @@
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
-. (import-script common/WriteOperationParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
@@ -76,7 +76,7 @@ function Get-GraphChildItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so WriteOperationParameterCompleter TypeName $true)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so WriteOperationParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $true)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
 

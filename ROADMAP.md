@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Let get-graphchilditem take a type without an id
+* Fix parametersets for add-graphitemreference and set-graphitemproperty
+* Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
@@ -272,6 +273,8 @@
 * Add contentonly to get-graphresourcewithmetadata
 * Rationalize Get-GraphChildItem and new Get-GraphItem
 * Add Property as a positional parameter of gls
+* Let get-graphchilditem take a type without an id
+* Rename writeoperationparametercompleter to something generic unrelated to writes
 
 ### Postponed
 

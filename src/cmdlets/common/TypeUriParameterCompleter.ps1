@@ -15,7 +15,7 @@
 . (import-script TypeUriHelper)
 . (import-script TypeParameterCompleter)
 
-ScriptClass WriteOperationParameterCompleter {
+ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
 

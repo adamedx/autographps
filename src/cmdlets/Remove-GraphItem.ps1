@@ -18,7 +18,7 @@
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
-. (import-script common/WriteOperationParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 . (import-script Get-GraphItem)
 
 function Remove-GraphItem {
@@ -75,5 +75,5 @@ function Remove-GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)

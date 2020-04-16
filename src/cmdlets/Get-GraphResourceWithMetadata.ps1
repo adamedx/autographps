@@ -229,4 +229,4 @@ function Get-GraphResourceWithMetadata {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)

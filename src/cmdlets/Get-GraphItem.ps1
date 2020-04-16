@@ -18,7 +18,7 @@
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
-. (import-script common/WriteOperationParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
@@ -93,7 +93,7 @@ function Get-GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so WriteOperationParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so WriteOperationParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
