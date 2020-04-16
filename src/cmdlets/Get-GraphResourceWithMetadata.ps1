@@ -15,6 +15,7 @@
 . (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
 . (import-script ../common/GraphAccessDeniedException)
+. (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphResourceWithMetadata {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
