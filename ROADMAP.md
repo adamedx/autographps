@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix parametersets for add-graphitemreference and set-graphitemproperty
+* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Make Get-GraphResource Property alias for Select
 * Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
@@ -275,6 +276,7 @@
 * Add Property as a positional parameter of gls
 * Let get-graphchilditem take a type without an id
 * Rename writeoperationparametercompleter to something generic unrelated to writes
+* Fix parametersets for add-graphitemreference and set-graphitemproperty
 
 ### Postponed
 

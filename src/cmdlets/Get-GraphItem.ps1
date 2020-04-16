@@ -80,7 +80,7 @@ function Get-GraphItem {
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
-            $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.TypeInfo $Property
+            $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
         }
 
         if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {

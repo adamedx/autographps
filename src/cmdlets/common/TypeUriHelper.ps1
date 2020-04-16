@@ -37,6 +37,14 @@ ScriptClass TypeUriHelper {
         }
 
         function GetUriFromDecoratedResponseObject($targetContext, $responseObject, $resourceId) {
+            # This method handles two cases:
+            #
+            #   * Objects returned by Get-GraphResource which are decorated with the __ItemContext scriptmethod
+            #   * Oboject returned by Get-GraphResourceWithMetadata which are PSCustomObjects of GraphSgementDisplayType
+            #
+            # The latter has a Path member with exactly the uri needed to resolve the object, the other requires
+            # a workaround since it may only have a partial URI originally used as the target of a POST that created it.
+
             if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
@@ -59,6 +67,8 @@ ScriptClass TypeUriHelper {
                 }
 
                 $objectUri.tostring()
+            } elseif ( ( $responseObject -is [PSCustomObject] ) -and ( $responseObject.psobject.typenames -contains 'GraphSegmentDisplayType' ) ) {
+                $responseObject.GraphUri.tostring()
             }
         }
 

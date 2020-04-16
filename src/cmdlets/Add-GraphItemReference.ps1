@@ -28,8 +28,8 @@ function Add-GraphItemReference {
         [Alias('FromType')]
         $TypeName,
 
-        [parameter(parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertytotargetobject', mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromId')]
         $Id,
 
@@ -38,8 +38,8 @@ function Add-GraphItemReference {
         [Alias('FromObject')]
         [object] $GraphObject,
 
-        [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [parameter(position=1, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=1, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
         [parameter(position=1, parametersetname='uriandpropertytotargetid')]
@@ -62,7 +62,7 @@ function Add-GraphItemReference {
         [ValidateSet('Auto', 'SeparateRequest', 'SharedRequest')]
         [string] $RequestOptimizationMode = 'SeparateRequest',
 
-        [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='uriandpropertytotargetid', mandatory=$true)]
         [Alias('ToId')]
