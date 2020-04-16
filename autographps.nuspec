@@ -14,6 +14,7 @@
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
       <dependency id="autographps-sdk" version="0.19.0" />
+      <dependency id="ThreadJob" version="2.0.3" />
     </dependencies>
   </metadata>
   <files>
