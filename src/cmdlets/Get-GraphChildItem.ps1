@@ -14,7 +14,6 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeUriHelper)
-. (import-script common/QueryHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)

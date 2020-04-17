@@ -14,7 +14,7 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeUriHelper)
-. (import-script common/QueryHelper)
+. (import-script common/QueryTranslationHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
@@ -47,7 +47,7 @@ function Remove-GraphItem {
         Enable-ScriptClassVerbosePreference
 
         $filterParameter = @{}
-        $filterValue = $::.QueryHelper |=> ToFilterParameter $null $Filter
+        $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $null $Filter
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
         }

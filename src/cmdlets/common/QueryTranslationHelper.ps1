@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass QueryHelper {
+ScriptClass QueryTranslationHelper {
     static {
         function ToFilterParameter([HashTable] $propertyFilter, [string] $oDataFilter) {
             if ( $oDataFilter ) {

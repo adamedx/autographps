@@ -14,7 +14,7 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeUriHelper)
-. (import-script common/QueryHelper)
+. (import-script common/QueryTranslationHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
@@ -66,7 +66,7 @@ function Get-GraphItem {
         Enable-ScriptClassVerbosePreference
 
         $filterParameter = @{}
-        $filterValue = $::.QueryHelper |=> ToFilterParameter $PropertyFilter $Filter
+        $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
         }
@@ -80,7 +80,7 @@ function Get-GraphItem {
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
-            $::.QueryHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
+            $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
         }
 
         if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {
