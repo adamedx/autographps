@@ -77,6 +77,8 @@ function Get-GraphResourceWithMetadata {
     $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
     $assumeRoot = $false
 
+    $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
+
     $resolvedUri = if ( $Uri[0] -ne '.' ) {
         $GraphArgument = @{}
 
@@ -175,13 +177,13 @@ function Get-GraphResourceWithMetadata {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
-                    if ( ! $ContentOnly.IsPresent ) {
+                    if ( ! $responseContentOnly ) {
                         $_ | Get-GraphUri
                     } else {
                         $_
                     }
                 } else {
-                    if ( ! $ContentOnly.IsPresent ) {
+                    if ( ! $responseContentOnly ) {
                         $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
                     } else {
                         $_

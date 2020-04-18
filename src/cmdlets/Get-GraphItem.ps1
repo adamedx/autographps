@@ -57,6 +57,8 @@ function Get-GraphItem {
 
         [switch] $ContentOnly,
 
+        [switch] $RawContent,
+
         [switch] $ChildrenOnly,
 
         [switch] $FullyQualifiedTypeName,
@@ -93,7 +95,7 @@ function Get-GraphItem {
                 $expandArgument['Expand'] = $Expand
             }
 
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand -RawContent:$($RawContent.IsPresent)
         }
     }
 

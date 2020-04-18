@@ -5,7 +5,6 @@
 * Add Search support
 * Add Sort, including descending
 * Add First and skip
-* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Make Get-GraphResource Property alias for Select
 * Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
@@ -295,6 +294,7 @@
 * Get a fix from sdk for scope helper in find-graphpermissions
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
+* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 
 ### Abandoned
 

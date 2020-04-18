@@ -56,6 +56,8 @@ function Get-GraphChildItem {
 
         [switch] $ContentOnly,
 
+        [switch] $RawContent,
+
         [switch] $FullyQualifiedTypeName,
 
         [switch] $SkipPropertyCheck
