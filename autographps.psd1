@@ -244,6 +244,7 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 * The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
 
 ### New features
+
 * New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
 * New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
 * New command `Get-GraphItemRelationship`: this command returns the specified relationships from a given object to other objects
