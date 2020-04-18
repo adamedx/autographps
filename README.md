@@ -4,6 +4,7 @@
 |-------------|-------------|-------------|-------------|-------------|
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=master)
+
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
@@ -232,7 +233,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphApplicationCertificate   | Gets the certificates with public keys configured on the application                            |
 | Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
-| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
+| Get-GraphChildItem (ggci) | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
 | Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem (gls)       | Retrieves an entity specified by type and ID or URI |
@@ -277,7 +278,7 @@ Some AutoGraphPS cmdlets also work with [Azure Active Directory Graph](https://m
 Get-GraphResource me -aadgraph
 ```
 
-Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS.
+All functionality of AAD Graph is currently available through Microsoft Graph itself, so the use of the direct AAD Graph endpoint is no longer necessary. The AAD Graph functionality in this tool is provided mostly for informational purposes and is likely to be removed in future versions of this module.
 
 ### More about how it works
 
