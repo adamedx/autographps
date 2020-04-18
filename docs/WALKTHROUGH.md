@@ -15,10 +15,10 @@ After you've installed the module, invoke AutoGraphPS cmdlets from any PowerShel
 Here's a really simple command you can execute -- if it asks you to sign-in, please do so:
 
 ```powershell
-Get-GraphItem me
+Get-GraphResource me
 ```
 
-After you respond to authentication prompts, `Get-GraphItem` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object:
+After you respond to authentication prompts, `Get-GraphResource` returns a PowerShell object representing MS Graph's view of the `me` entity, i.e. the entity that represents your user object:
 
     id                : 82f53da9-b996-4227-b268-c20564ceedf7
     officeLocation    : 7/3191
@@ -31,10 +31,10 @@ After you respond to authentication prompts, `Get-GraphItem` returns a PowerShel
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Since the first execution of `Get-GraphItem` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g. a subsequent invocation like
+Since the first execution of `Get-GraphResource` establishes a logical "session," you can continue to execute cmdlets without being asked to re-authenticate, e.g. a subsequent invocation like
 
 ```powershell
-PS> Get-GraphItem organization
+PS> Get-GraphResource organization
 ```
 
 will not prompt for credentials but immediately return details about your organization:
@@ -59,10 +59,10 @@ Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
 
 This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
 
-In addition to the `Get-GraphItem` cmdlet which returns data as a series of flat lists, you can use `Get-GraphItemWithMetadata` or its alias `gls` to retrieve your personal contacts:
+In addition to the `Get-GraphResource` cmdlet which returns data as a series of flat lists, you can use `Get-GraphResourceWithMetadata` or its alias `gls` to retrieve your personal contacts:
 
 ```powershell
-PS> Get-GraphItemWithMetadata me/contacts
+PS> Get-GraphResourceWithMetadata me/contacts
 
 Info Type    Preview        Name
 ---- ----    -------        ----
@@ -72,15 +72,15 @@ t +> contact John Henry     XMKDFX4
 t +> contact Deandre George XMKDFX8
 ```
 
-The `Preview` column shows data returned from Graph that `Get-GraphItemWithMetadata` deems to be most human-readable -- in this case, the `displayName` of the `contact` entity.
+The `Preview` column shows data returned from Graph that `Get-GraphResourceWithMetadata` deems to be most human-readable -- in this case, the `displayName` of the `contact` entity.
 
-Items with a `+` in the `Info` field returned by `Get-GraphItemWithMetadata` contain content. The actual content, i.e. data that would be returned by `Get-GraphItem` is not displayed by default, but you can use the `Select` alias of PowerShell to retrieve the `Content` property of each row. In this way `Get-GraphItemWithMetadata` returns a superset of the data returned from `Get-GraphItem`. The use of `Get-GraphItem` below
+Items with a `+` in the `Info` field returned by `Get-GraphResourceWithMetadata` contain content. The actual content, i.e. data that would be returned by `Get-GraphResource` is not displayed by default, but you can use the `Select` alias of PowerShell to retrieve the `Content` property of each row. In this way `Get-GraphResourceWithMetadata` returns a superset of the data returned from `Get-GraphResource`. The use of `Get-GraphResource` below
 
 ```powershell
-Get-Graphitem me/contacts/XMKDFX1
+Get-GraphResource me/contacts/XMKDFX1
 ```
 
-which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphItemWithMetadata` (alias `gls`) with a `Select` for the `Content` property on the first result:
+which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphResourceWithMetadata` (alias `gls`) with a `Select` for the `Content` property on the first result:
 
 ```
 PS> gls me | select -expandproperty content -first 1
@@ -99,7 +99,7 @@ givenName            : Cosmo
 
 #### Easier content through `-ContentColumns`
 
-An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphItemWithMetadata`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
+An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphResourceWithMetadata`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
 
 For example, the following two commands are equivalent:
 ```powershell
@@ -115,7 +115,7 @@ If one of the fields in `Content` has the same name as a field in the containing
 
 #### The `$LASTGRAPHITEMS` variable
 
-As with any PowerShell cmdlet that returns a value, the `Get-GraphItem`, `Get-GraphItemWithMetadata`, `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
+As with any PowerShell cmdlet that returns a value, the `Get-GraphResource`, `Get-GraphResourceWithMetadata`, `Get-GraphChildItem` cmdlets can be assigned to a variable for use with other commands or simply to allow you to dump properties of objects and their child objects:
 
 ```powershell
 $mycontacts = gls me/contacts
@@ -140,15 +140,15 @@ PS> $LASTGRAPHITEMS[0].content.lastModifiedDateTime
 
 This makes ad-hoc exploration of the Graph less expensive -- you don't have to query the Graph again with another cmdlet to examine the objects you just recently retrieved. They are available in `$LASTGRAPHITEMS`.
 
-**IMPORTANT NOTE:** The example above illustrates an import aspect behavior of `Get-GraphItemWithMetadata`:
+**IMPORTANT NOTE:** The example above illustrates an import aspect behavior of `Get-GraphResourceWithMetadata`:
 1. When the Uri argument for the cmdlet references a collection, the result is simply the items in the collection. This is actual data from Graph.
 2. But when the Uri references a single entity AND the URI is not empty AND is not the value `.`, only that entity is returned.
 3. If the URI references a single entity and is either not specified or is the value `.`, the returned elements are the allowed segments (if any) that can immediately follow the entity in a valid Uri for Graph. This is metadata about Graph that reveals its structure.
-4. This contrasts with `Get-GraphItem` which only exhibits the behavior in (1).
+4. This contrasts with `Get-GraphResource` which only exhibits the behavior in (1).
 
-Note that `Get-GraphChildItem` is similar to `Get-GraphItemWithMetadata`, except it does not exhibit the behavior in (2) above, it always exhibits both (1) and (3) at the same time.
+Note that `Get-GraphChildItem` is similar to `Get-GraphResourceWithMetadata`, except it does not exhibit the behavior in (2) above, it always exhibits both (1) and (3) at the same time.
 
-This makes the `Get-GraphItemWithMetadata` / `gls` and `Get-GraphChildItem` commands effective ways to recursively discover the Uris for both Graph data and structure (metadata).
+This makes the `Get-GraphResourceWithMetadata` / `gls` and `Get-GraphChildItem` commands effective ways to recursively discover the Uris for both Graph data and structure (metadata).
 
 ### Explore new locations
 
@@ -159,7 +159,7 @@ You may have noticed that after the first time you invoked `gls`, your PowerShel
 PS>
 ```
 
-By default, AutoGraphPS automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphItemWithMetadata`, `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphItemWithMetadata`, `Get-GraphChildItem`, `Get-GraphItem`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
+By default, AutoGraphPS automatically adds this to your path on your first use of the exploration-oriented cmdlets `Get-GraphResourceWithMetadata`, `Get-GraphChildItem` and `Set-GraphLocation` (alias `gcd`). The text in square brackets denotes the user identity with which you've logged in. The next part before the `:` tells you what Graph API version you're using, in this case the default of `v1.0`. The part following this is your *location* within that API version. Any Uris specified to `Get-GraphResourceWithMetadata`, `Get-GraphChildItem`, `Get-GraphResource`, or `Set-GraphLocation` are interpreted as relative to the current location, in very much the same way that file-system oriented shells like `bash` and PowerShell interpret paths specified to commands as relative to the current working directory. In this case, your current location in the Graph is `/`, the root of the graph.
 
 With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
 
@@ -229,21 +229,21 @@ Path
 
 The Microsoft Graph supports a rich set of query capabilities through its [OData](https://www.odata.org) support. You can learn the the specifics of MS Graph and OData query specification as part of MS Graph REST Uri's via [Graph's query documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters), the [OData query tutorial](http://www.odata.org/getting-started/basic-tutorial/#queryData), or simply by using the [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
-AutoGraphPS's query capabilities are exposed in the `Get-GraphItem` `Get-GetGraphItemWithMetadata` (`ggi` and `gls` aliases respectively), and `Get-GraphChildItem` commands. To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
+AutoGraphPS's query capabilities are exposed in the `Get-GraphResource` `Get-GetGraphItemWithMetadata` (`ggr` and `gls` aliases respectively), and `Get-GraphChildItem` commands. To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
-### Filtering data with `-ODataFilter`
+### Filtering data with `-Filter`
 
-The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-ODataFilter` option on `Get-GraphItem` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
+The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-Filter` option on `Get-GraphResource` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
 
 ```powershell
-gls me/people -ODataFilter "department eq 'Ministry of Funk'"
+gls me/people -Filter "department eq 'Ministry of Funk'"
 ```
 
 In the example above we've retrieved all people related to `me` whose `department` property is equal to `Ministry of Funk`. Note that single quotes are used to delimit strings in the OData query syntax, and `eq` is an equality operator. OData supports many other operators, including mathematical and logical operators as well as additional operators related to strings, such as `startsWith`:
 
 
 ```powershell
-gls /users -ODataFilter "startsWith(mail, 'pfunk')"
+gls /users -Filter "startsWith(mail, 'pfunk')"
 ```
 
 This example returns all the users whose `mail` property (i.e. their e-mail address) starts with `pfunk`.
@@ -278,7 +278,7 @@ gls me/contacts -skip 3 -first 3
 By default, Graph does not return all properties of an object -- it returns those deemed most likely to be useful without retrieving every field to avoid excessive network traffic. For example, the query below for a given user is missing the `department` property in the response:
 
 ```
-ggi /users/starchild@mothership.io
+ggr /users/starchild@mothership.io
 
 id                : 82f53da9-b996-4227-b268-c20564ceedf7
 officeLocation    : 7/3191
@@ -295,7 +295,7 @@ displayName       : Starchild Okorafor
 To fix this, use `-select` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
 
 ```
-ggi me -select displayName, department, mail, officeLocation
+ggr me -select displayName, department, mail, officeLocation
 
 @odata.context : https://graph.microsoft.com/v1.0/$metadata#users(displayName,department,mail,officeLocation)
                  /$entity
@@ -314,19 +314,19 @@ Particularly when retrieving large result sets, it is important to be able to sp
 The following example uses the `-OrderBy` option to retrieve the 10 oldest messages -- note that we use PowerShell's client-side select cmdlet to limit the displayed fields:
 
 ```
-ggi /me/messages -first 10 -OrderBy receivedDateTime | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -OrderBy receivedDateTime | select ReceivedDateTime, Importance, Subject
 ```
 
 However, to retrieve the 10 newest high-importance items, you should specify the `-Descending` option, which means that all fields specified through `OrderBy` will have a descending order by default:
 
 ```
-ggi /me/messages -first 10 -OrderBy receivedDateTime, importance -Descending | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -OrderBy receivedDateTime, importance -Descending | select ReceivedDateTime, Importance, Subject
 ```
 
 What if you want to sort using ascending order for one field, and descending for another? You can specify a PowerShell `HashTable` to identify sort directions for specific fields. This lets you find the oldest high-importance items:
 
 ```
-ggi /me/messages -first 10 -OrderBy @{receivedDateTime=$false;importance=$true} | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -OrderBy @{receivedDateTime=$false;importance=$true} | select ReceivedDateTime, Importance, Subject
 ```
 
 
@@ -337,7 +337,7 @@ The `$false` assignment in the hash table means that the field will use *ascendi
 The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
 
 ```
-gls /users -ODataFilter "startsWith(mail, 'p')" -top 20
+gls /users -Filter "startsWith(mail, 'p')" -top 20
 gls /users -Query       "`$filter=startsWith(mail, 'p')&`top=20"
 ```
 
@@ -352,7 +352,7 @@ For more details on how to construct this parameter, see the [MS Graph REST API 
 Whether it's due to coding defects in scripts or typos during your exploration of the Graph, you'll inevitably encounter errors. The cmdlet `Get-GraphError` will show you the last error returned by the Microsoft Graph API during your last cmdlet invocation:
 
 ```powershell
-Get-GraphItem /users -ODataFilter "startwith(userPrincipalName, 'pfunk')"
+Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
 ```
 
 This results in an error:
@@ -397,7 +397,7 @@ StatusDescription : Bad Request
 A close look at the filter clause shows that `startwith` is missing an `s` after `start` -- the corrected command below will succeed with a `200`:
 
 ```
-Get-GraphItem /users -ODataFilter "startwith(userPrincipalName, 'pfunk')"
+Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
 
 Info Type Preview     Name
 ---- ---- -------     ----
@@ -408,7 +408,7 @@ t +> user PFunk 4Life 30285b8b-70ba-42e0-9bd9-fbcee5d1ce64
 You can inspect the various properties and object returned by `Get-GraphError` to find additional details that help you debug a failure.
 
 ### Diagnostic output via `-verbose`
-All AutoGraphPS cmdlets support the PowerShell standard option `-verbose` and the associated `$VerbosePreference` preference variable. When using cmdlets such as `Get-GraphItem` and `Get-GraphChildItem`, specifying `-verbose` will output not only the `http` verb and `uri` used to access the Graph, but also the request headers and for responses the response body and headers.
+All AutoGraphPS cmdlets support the PowerShell standard option `-verbose` and the associated `$VerbosePreference` preference variable. When using cmdlets such as `Get-GraphResource` and `Get-GraphChildItem`, specifying `-verbose` will output not only the `http` verb and `uri` used to access the Graph, but also the request headers and for responses the response body and headers.
 
 By default, the response body is truncated after a certain length, though the behavior can be overridden by setting `GraphVerboseOutputPreference` to `High`.
 
@@ -457,7 +457,7 @@ The commands below are described briefly as their usage is (currently) less comm
 
 ### Invoke-GraphRequest -- the universal Graph cmdlet
 
-The `Invoke-GraphRequest` cmdlet supports all of the functionality of `Get-GraphItem`, and exceeds it in a key aspect: where `Get-GraphItem` only enables APIs that support the `GET` `http` method, `Invoke-GraphRequest` supports all http methods, including `PUT`, `POST`, `PATCH`, and `DELETE`.
+The `Invoke-GraphRequest` cmdlet supports all of the functionality of `Get-GraphResource`, and exceeds it in a key aspect: where `Get-GraphResource` only enables APIs that support the `GET` `http` method, `Invoke-GraphRequest` supports all http methods, including `PUT`, `POST`, `PATCH`, and `DELETE`.
 
 This means you can use `Invoke-GraphRequest` for not just read operations as with the `Get-Graph*Item` cmdlets, but write operations as well. Note that the syntax and parameter specification for such cases is cumbersome, so in the future dedicated cmdlets with a simpler syntax will be provided to handle the most common cases where `Invoke-GraphRequest` is today's only solution.
 
@@ -637,7 +637,7 @@ As for what it does, the "Type" column indicates that a `GET` for that Uri shoul
 `Get-GraphUri` doesn't just parse static Uris, but any that are syntactically valid, i.e.
 
 ```
-Get-GraphItem /me/drive/root/children/myfile.txt | fl *
+Get-GraphResource /me/drive/root/children/myfile.txt | fl *
 ```
 
 returns the following whether or not that Uri (and the OneDrive file this particular path represents) exists in the Graph:

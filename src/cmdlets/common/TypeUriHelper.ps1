@@ -18,7 +18,9 @@ ScriptClass TypeUriHelper {
 
         function DefaultUriForType($targetContext, $entityTypeName) {
             $entitySet = $::.GraphManager |=> GetGraph $targetContext |=> GetEntityTypeToEntitySetMapping $entityTypeName
-            [Uri] "/$entitySet"
+            if ( $entitySet ) {
+                [Uri] "/$entitySet"
+            }
         }
 
         function TypeFromUri([Uri] $uri) {
@@ -26,6 +28,7 @@ ScriptClass TypeUriHelper {
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
+                UriInfo = $uriInfo
             }
         }
 
@@ -34,9 +37,21 @@ ScriptClass TypeUriHelper {
         }
 
         function GetUriFromDecoratedResponseObject($targetContext, $responseObject, $resourceId) {
+            # This method handles two cases:
+            #
+            #   * Objects returned by Get-GraphResource which are decorated with the __ItemContext scriptmethod
+            #   * Oboject returned by Get-GraphResourceWithMetadata which are PSCustomObjects of GraphSgementDisplayType
+            #
+            # The latter has a Path member with exactly the uri needed to resolve the object, the other requires
+            # a workaround since it may only have a partial URI originally used as the target of a POST that created it.
+
             if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
+
+                $id = if ( $responseObject | gm id -erroraction ignore ) {
+                    $responseObject.id
+                }
 
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
@@ -48,10 +63,12 @@ ScriptClass TypeUriHelper {
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
                 if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                    $objectUri = $objectUri, $id -join '/'
+                    $objectUri = $objectUri.tostring(), $id -join '/'
                 }
 
-                $objectUri
+                $objectUri.tostring()
+            } elseif ( ( $responseObject -is [PSCustomObject] ) -and ( $responseObject.psobject.typenames -contains 'GraphSegmentDisplayType' ) ) {
+                $responseObject.GraphUri.tostring()
             }
         }
 
@@ -94,7 +111,7 @@ ScriptClass TypeUriHelper {
 
                 [PSCustomObject] @{
                     FullTypeName = $resolvedType.typeId
-                    IsCollection = $false
+                    IsCollection = $true
                 }
             } elseif ( $uri )  {
                 TypeFromUri $uri

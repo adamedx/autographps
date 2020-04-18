@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,19 +24,19 @@ ScriptClass EntityGraph {
     $rootVertices = $null
     $typeVertices = $null
     $typeToSetMapping = $null
-    $namespace = $null
-    $namespaceAlias = $null
+    $defaultNamespace = $null
+    $dataModel = $null
     $builder = $null
 
-    function __initialize( $namespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel ) {
+    function __initialize($defaultNamespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel) {
+        $this.defaultNamespace = $defaultNamespace
         $this.vertices = @{}
         $this.rootVertices = @{}
         $this.typeVertices = @{}
         $this.typeToSetMapping = @{}
         $this.ApiVersion = $apiVersion
         $this.Endpoint = $endpoint
-        $this.namespace = $namespace
-        $this.namespaceAlias = $dataModel.namespaceAlias
+        $this.dataModel = $dataModel
         $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
     }
 
@@ -58,7 +58,7 @@ ScriptClass EntityGraph {
     }
 
     function TypeVertexFromTypeName($typeName) {
-        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $this.namespace $this.namespaceAlias $typeName
+        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $typeName
 
         $this.typeVertices[$typeData.EntityTypeName]
     }
@@ -89,6 +89,26 @@ ScriptClass EntityGraph {
         $this.typeToSetMapping[$entityTypeName]
     }
 
+    function GetDefaultNamespace {
+        $this.defaultNamespace
+    }
+
+    function UnaliasQualifiedName($typeName) {
+        $this.dataModel |=> UnaliasQualifiedName $typeName
+    }
+
+    function GetEnumTypes {
+        $this.dataModel |=> GetEnumTypes
+    }
+
+    function GetEntityTypes {
+        $this.dataModel |=> GetEntityTypes
+    }
+
+    function GetComplexTypes {
+        $this.dataModel |=> GetComplexTypes
+    }
+
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
@@ -107,8 +127,7 @@ ScriptClass EntityGraph {
     function __AddTypeVertex($qualifiedTypeName) {
         $vertex = TypeVertexFromTypeName $qualifiedTypeName
         if ( ! $vertex ) {
-            $unqualifiedName = $qualifiedTypeName.substring($this.namespace.length + 1, $qualifiedTypeName.length - $this.namespace.length - 1)
-            $this.builder |=> AddEntityTypeVertices $this $unqualifiedName
+            $this.builder |=> AddEntityTypeVertices $this $qualifiedTypeName
         }
     }
 
@@ -132,7 +151,7 @@ ScriptClass EntityGraph {
 
         function NewGraph($endpoint, $version, $schemadata) {
             $dataModel = new-so GraphDataModel $schemadata
-            $graph = new-so EntityGraph ($dataModel |=> GetNamespace) $version $Endpoint $dataModel
+            $graph = new-so EntityGraph ($dataModel |=> GetDefaultNamespace) $version $Endpoint $dataModel
 
             $graph.builder |=> InitializeGraph $graph
 

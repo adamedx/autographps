@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ ScriptClass GraphBuilder {
     $graphEndpoint = $null
     $version = $null
     $dataModel = $null
-    $namespace = $null
-    $namespaceAlias = $null
 
     static {
         $AllBuildFlags = ([BuildFlags]::NavigationsProcessed) -bOR
@@ -40,8 +38,6 @@ ScriptClass GraphBuilder {
         $this.graphEndpoint = $graphEndpoint
         $this.version = $version
         $this.dataModel = $dataModel
-        $this.namespace = $this.dataModel |=> GetNamespace
-        $this.namespaceAlias = $this.dataModel.namespaceAlias
     }
 
     function InitializeGraph($graph) {
@@ -65,23 +61,27 @@ ScriptClass GraphBuilder {
 
     function __AddVerticesFromSchemas($graph, $schemas, $vertexType) {
         $schemas | foreach {
-            __AddVertex $graph $_ $vertexType
+            if ( ! $_.namespace ) {
+                throw "No namespace specified for schema '$($_.QualifiedName)' of vertex type '$vertexType'"
+            }
+
+            __AddVertex $graph $_.Schema $vertexType $_.namespace
         }
     }
 
-    function __AddVertex($graph, $schema, $vertexType) {
-        $entity = new-so Entity $schema $this.namespace $this.namespaceAlias
+    function __AddVertex($graph, $schema, $vertexType, $namespace, $namespaceAlias) {
+        $entity = new-so Entity $schema $namespace
         $graph |=> AddVertex $entity
     }
 
-    function AddEntityTypeVertices($graph, $unqualifiedTypeName) {
-        $qualifiedTypeName = $graph.namespace, $unqualifiedTypeName -join '.'
+    function AddEntityTypeVertices($graph, $qualifiedTypeName) {
         $entityType = $this.dataModel |=> GetEntityTypeByName $qualifiedTypeName
-        if ( $unqualifiedTypeName -and $entityType -eq $null ) {
-            throw "Type '$unqualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
+        $nameInfo = __GetNamespaceInfoFromQualifiedTypeName $qualifiedTypeName
+        if ( $qualifiedTypeName -and $entityType -eq $null ) {
+            throw "Type '$qualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
         }
 
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding type '$unqualifiedTypeName'"
+        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding type '$qualifiedTypeName'"
 
         __AddVerticesFromSchemas $graph $entityType EntityType
     }
@@ -98,15 +98,16 @@ ScriptClass GraphBuilder {
         }
 
         foreach ( $transition in $transitions ) {
-            $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
-
+            # Look for the existing type in the graph itself
+            $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $transition.typedata.entitytypename
+            $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
             if ( ! $sink ) {
-                $name = $transition.typedata.entitytypename
-                $unqualifiedName = $this.dataModel |=> UnqualifyTypeName $name
-                $sinkSchema = $this.dataModel |=> GetEntityTypeByName $name
+                # If we don't find the existing type, try to get it from the model instead
+                $sinkSchema = $this.dataModel |=> GetEntityTypeByName $unAliasedName
                 if ( $sinkSchema ) {
-                    __AddEntityTypeVertex $graph $unqualifiedName
-                    $sink = $graph |=> TypeVertexFromTypeName $transition.typedata.entitytypename
+                    # We've found the type, now add it to the graph
+                    __AddEntityTypeVertex $graph $unaliasedName
+                    $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
                 } else {
                     write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.entitytypename)"
                 }
@@ -116,7 +117,7 @@ ScriptClass GraphBuilder {
                 $edge = new-so EntityEdge $sourceVertex $sink $transition
                 $sourceVertex |=> AddEdge $edge
             } else {
-                write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.entitytypename), skipping"
+                write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.entitytypename) = '$unaliasedName', skipping"
             }
         }
 
@@ -196,17 +197,11 @@ ScriptClass GraphBuilder {
                 $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
 
                 if ( $typeVertex -eq $null ) {
-                    $name = $typeName
-                    $unqualifiedName = $this.dataModel |=> UnqualifyTypeName $name $true
-                    if ( $unqualifiedName ) {
-                        try {
-                            __AddEntityTypeVertex $graph $unqualifiedName
-                            $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-                        } catch {
+                    try {
+                        __AddEntityTypeVertex $graph $typeName
+                        $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+                    } catch {
                             # Possibly an enumeration type, this will just be considered a scalar
-                        }
-                    } else {
-                        write-verbose "Unable to find schema for method '$($method.name)' with type '$typeName'"
                     }
                 }
 
@@ -220,17 +215,26 @@ ScriptClass GraphBuilder {
                 $::.Entityvertex.NullVertex
             }
             __AddMethod $sourceVertex $method $sink
-            }
-            $sourceVertex.SetFlags([BuildFlags]::MethodsProcessed)
+        }
+        $sourceVertex.SetFlags([BuildFlags]::MethodsProcessed)
     }
 
     function __AddMethod($targetVertex, $methodSchema, $returnTypeVertex) {
         if ( ! ($targetVertex |=> EdgeExists($methodSchema.name)) ) {
-            $methodEntity = new-so Entity $methodSchema $this.namespace $this.namespaceAlias
+            $nameInfo = __GetNamespaceInfoFromQualifiedTypeName $targetVertex.typeName
+            $methodEntity = new-so Entity $methodSchema $nameInfo.Namespace
             $edge = new-so EntityEdge $targetVertex $returnTypeVertex $methodEntity
             $targetVertex |=> AddEdge $edge
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
+        }
+    }
+
+    function __GetNamespaceInfoFromQualifiedTypeName($qualifiedTypeName) {
+        $nameInfo = $this.dataModel |=> ParseTypeName $qualifiedTypeName $true
+        [PSCustomObject] @{
+            Namespace = $nameInfo.Namespace
+            NamespaceAlias = $this.dataModel |=> GetNamespaceAlias $nameInfo.namespace
         }
     }
 }

@@ -17,7 +17,7 @@
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
-. (import-script common/WriteOperationParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
 function Add-GraphItemReference {
@@ -28,8 +28,8 @@ function Add-GraphItemReference {
         [Alias('FromType')]
         $TypeName,
 
-        [parameter(parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertytotargetobject', mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromId')]
         $Id,
 
@@ -38,13 +38,14 @@ function Add-GraphItemReference {
         [Alias('FromObject')]
         [object] $GraphObject,
 
-        [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [parameter(position=1, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=1, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
         [parameter(position=1, parametersetname='uriandpropertytotargetid')]
         [parameter(position=1, parametersetname='uriandpropertytotargetobject')]
         [parameter(position=1, parametersetname='uriandpropertytotargeturi')]
+        [Alias('ByProperty')]
         [string] $Property,
 
         [parameter(parametersetname='typeandpropertytotargetid')]
@@ -61,13 +62,13 @@ function Add-GraphItemReference {
         [ValidateSet('Auto', 'SeparateRequest', 'SharedRequest')]
         [string] $RequestOptimizationMode = 'SeparateRequest',
 
-        [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
+        [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='uriandpropertytotargetid', mandatory=$true)]
         [Alias('ToId')]
         [object[]] $TargetId,
 
-        [parameter(parametersetname='typeandpropertytotargetbject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='uriandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [Alias('ToObject')]
@@ -181,9 +182,9 @@ function Add-GraphItemReference {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TypeName (new-so WriteOperationParameterCompleter TypeName TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Property (new-so WriteOperationParameterCompleter Property TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference OverrideTargetTypeName (new-so WriteOperationParameterCompleter TypeName OverrideTargetTypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Uri (new-so GraphUriParameterCompleter LocationUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TargetUri (new-so GraphUriParameterCompleter LocationUri)

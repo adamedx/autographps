@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script TypeSchema)
 . (import-script TypeProvider)
 . (import-script ScalarTypeProvider)
 . (import-script CompositeTypeProvider)
@@ -22,18 +23,22 @@
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
 
+    $graphContext = $null
     $graph = $null
     $definitions = $null
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
+    $typeProviders = $null
 
-    function __initialize($graph) {
-        $this.graph = $graph
+    function __initialize($graphContext) {
+        $this.graphContext = $graphContext
+        $this.graph = $::.GraphManager |=> GetGraph $this.graphContext
         $this.definitions = @{}
         $this.prototypes = @{
             $false = @{}
             $true = @{}
         }
+        $this.typeProviders = @{}
     }
 
     function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck) {
@@ -105,14 +110,17 @@ ScriptClass TypeManager {
                 InitializeRequiredTypes
             }
 
-            $type = $::.TypeDefinition |=> Get $this.graph $typeClass $typeId
+            $typeProvider = __GetTypeProvider $typeClass $this.graph
+            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId
 
             $requiredTypes = @($type)
 
             $baseTypeId = $type.BaseType
 
             while ( $baseTypeId ) {
-                $baseType = $::.TypeDefinition |=> Get $this.graph Unknown $baseTypeId
+                $baseTypeProvider = __GetTypeProvider $typeClass $this.graph
+                $baseType = $baseTypeProvider |=> GetTypeDefinition Unknown $baseTypeId
+
                 $requiredTypes += $baseType
 
                 $baseTypeId = if ( $baseType | gm BaseType -erroraction ignore ) {
@@ -132,6 +140,43 @@ ScriptClass TypeManager {
         }
 
         $definition
+    }
+
+    enum PropertyType {
+        Property
+        NavigationProperty
+    }
+
+    function GetTypeDefinitionTransitiveProperties($typeDefinition, $propertyType = 'Property') {
+        $properties = @()
+
+        $validatedPropertyType = [PropertyType] $propertyType
+
+        $propertyMember = if ( $validatedPropertyType -eq 'NavigationProperty' ) {
+            'NavigationProperties'
+        } else {
+            'Properties'
+        }
+
+        if ( $typeDefinition.Properties ) {
+            $properties += $typeDefinition.$propertyMember
+        }
+
+        $visitedBaseTypes = @{}
+        $baseTypeId = $typeDefinition.BaseType
+
+        while ( $baseTypeId -and ! $visitedBaseTypes[$baseTypeId] ) {
+            $visitedBaseTypes[$baseTypeId] = $true
+            $baseTypeDefinition = FindTypeDefinition $typeDefinition.Class $baseTypeId $true
+            if ( $baseTypeDefinition ) {
+                $properties += $baseTypeDefinition.$PropertyMember
+                $baseTypeId = $baseTypeDefinition.BaseType
+            } else {
+                $baseTypeId = $null
+            }
+        }
+
+        $properties
     }
 
     function GetPrototypeId($typeId, $setDefaults, $recursive) {
@@ -166,7 +211,7 @@ ScriptClass TypeManager {
             $requiredTypeInfo = $::.TypeProvider |=> GetRequiredTypeInfo
 
             $requiredTypeInfo | foreach {
-                GetTypeDefinition $requiredTypeInfo.typeClass $requiredTypeInfo.typeId $true | out-null
+                GetTypeDefinition $_.typeClass $_.typeId $true | out-null
             }
 
             $this.hasRequiredTypeDefinitions = $true
@@ -179,26 +224,44 @@ ScriptClass TypeManager {
 
     function GetOptionallyQualifiedName($typeClass, $typeName, $isFullyQualified) {
         if ( $isFullyQualified ) {
-            $typeName
+            $this.graph |=> UnaliasQualifiedName $typeName
         } else {
             $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
             $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
         }
     }
 
-    static {
-        $managerByGraph = @{}
+    function __GetTypeProvider([GraphTypeClass] $typeClass) {
+        $providerObjectClass = $::.TypeProvider |=> GetProviderForClass $typeClass
+        __GetTypeProviderByObjectClass $providerObjectClass
+    }
 
-        function Get($graph) {
-            $graphId = $graph |=> GetScriptObjectHashCode
-            $manager = $managerByGraph[$graphId]
+    function __GetTypeProviderByObjectClass($providerObjectClass) {
+        $provider = $this.typeProviders[$providerObjectClass]
+        if ( ! $provider ) {
+            $provider = new-so $providerObjectClass $this.graph
+            $this.typeProviders[$providerObjectClass] = $provider
+        }
+        $provider
+    }
+
+    static {
+        function Get($graphContext) {
+            $manager = $graphContext |=> GetState $::.GraphManager.TypeStateKey
 
             if ( ! $manager ) {
-                $manager = new-so TypeManager $graph
-                $managerByGraph[$graphId] = $manager
+                $graph = $::.GraphManager |=> GetGraph $graphContext
+                $manager = new-so TypeManager $graphContext
+                $graphContext |=> AddState $::.GraphManager.TypeStateKey $manager
             }
 
             $manager
+        }
+
+        function GetSortedTypeNames($typeClass, $graphContext) {
+            $manager = Get $graphContext
+            $typeProvider = $manager |=> __GetTypeProvider $typeClass
+            $typeProvider |=> GetSortedTypeNames $typeClass
         }
     }
 }

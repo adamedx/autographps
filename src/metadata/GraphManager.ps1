@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@ ScriptClass GraphManager {
     static {
         $cache = $null
 
+        const TimeStateKey TimeData
+        const UriCacheStateKey UriCache
+        const TypeStateKey TypeManager
+        const MetadataSourceStateKey MetadataSource
+
         function __initialize {
             $this.cache = new-so GraphCache
             # Start an asynchronous load of the metadata unless this is disabled
@@ -32,13 +37,52 @@ ScriptClass GraphManager {
             }
         }
 
-        function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false) {
-            __GetGraph ($context |=> GetEndpoint) $context.version $metadata $wait $force $true | out-null
+        function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false, $metadataSourceOverridePath) {
+            $graphEndpoint = $context |=> GetEndpoint
 
-            $uriCache = $context |=> GetState uriCache
+            # Trigger a graph update -- we purposefully ignore the result as it may not be a graph
+            # but instead an incomplete retrieval. The goal here is simply to trigger the update, not
+            # to get the results.
+            __GetGraph $graphEndpoint $context.version $metadata $wait $force $true | out-null
+
+            # Clear any existing cache as it is no longer valid given that the graph is being updated.
+            $uriCache = $context |=> GetState $this.UriCacheStateKey
             if ( $uriCache ) {
-                $uriCache.Clear() # Need to change this to handle async retrieval of new graph
+                $uriCache.Clear() # TODO: Need to change this to handle async retrieval of new graph
             }
+
+            # Also remove any state for the TypeManager as the updated graph will invalidate it as well.
+            $typeManager = $context |=> GetState $this.TypeStateKey
+
+            if ( $typeManager ) {
+                $context |=> RemoveState $this.TypeStateKey
+            }
+
+            # Set the time of creation if this context is new and otherwise
+            # change the last updated time to reflect the time of this update
+            $updateTime = [DateTimeOffset]::Now
+            $timeData = $context |=> GetState $this.TimeStateKey
+
+            if ( $timeData ) {
+                $timeData.UpdatedTime = $updateTime
+            } else {
+                $timeData = [PSCustomObject] @{
+                    CreatedTime = $updateTime
+                    UpdatedTime = $updateTime
+                }
+            }
+
+            $context |=> SetState $this.TimeStateKey $timeData
+
+            # Finally set the location from which the graph's metadata is retrieved
+            # to reflect what is being used in this update.
+            $updateSource = if ( $metadataSourceOverridePath ) {
+                $metadataSourceOverridePath
+            } else {
+                $graphEndpoint.tostring().trimend('/'), $context.version, '$metadata' -join '/'
+            }
+
+            $context |=> SetState $this.MetadataSourceStateKey $updateSource
         }
 
         function GetMetadataStatus($context) {

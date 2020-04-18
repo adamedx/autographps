@@ -28,10 +28,10 @@ Install-Module AutoGraphPS -scope currentuser
 ```
 
 ## Usage
-Once you've installed, you can use an AutoGraphPS cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once you've installed, you can use an AutoGraphPS cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
-PS> get-graphitem me
+PS> Get-GraphResource me
 ```
 
 After you've responded to the authentication prompt, you should see output that represents your user object similar to the following:
@@ -62,14 +62,14 @@ https://graph.microsoft.com/v1.0/users
 With AutoGraphPS cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
 
 ```powershell
-Get-GraphItem me/calendars
-Get-GraphItem me/people
-Get-GraphItem users
+Get-GraphResource me/calendars
+Get-GraphResource me/people
+Get-GraphResource users
 ```
 
-These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
+These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphResource` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphItem`.
+As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
 
 To more details or reference material describing the resources available in the Graph API and how to make valid requests, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
 
@@ -186,7 +186,7 @@ Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
 **1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
-**2. Use tab-completion to learn and save time:** Many AutoGraphPS commands, including `Get-GraphITem`, `gls`, and `gcd` will tab-complete command parameters just like many other popular PowerShell commands do. URIs, resource names, and permission names are just some of the kinds of parameters that AutoGraphPS will tab-complete for you to reduce the time needed to issue a command and also clue you in on when you're potentially providing invalid input.
+**2. Use tab-completion to learn and save time:** Many AutoGraphPS commands, including `Get-GraphResource`, `gls`, and `gcd` will tab-complete command parameters just like many other popular PowerShell commands do. URIs, resource names, and permission names are just some of the kinds of parameters that AutoGraphPS will tab-complete for you to reduce the time needed to issue a command and also clue you in on when you're potentially providing invalid input.
 
 **3. Use commands like `gcd` and `gls` to explore the Graph!** In addition to browsing Graph documentation to find out how to use Graph APIs, you can use AutoGraphPS to browse the Graph itself. Try executing the command `gls`, and then performing a `gcd` to one of the items of the output. Invoking another `gls` may show you additional destinations to which you can `gcd`. And auto-complete is there to auto-complete URIs and minimize user input labor. By using AutoGraphPS commands in this way, you can explore the API surface of the Graph in the way you'd explore your local file system with commands like `cd` and `ls`.
 
@@ -228,15 +228,16 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
 | Format-GraphLog (fgl)       | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
-| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
 | Get-GraphApplication              | Gets a list of Azure AD applications in the tenant                                              |
 | Get-GraphApplicationCertificate   | Gets the certificates with public keys configured on the application                            |
 | Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
-| Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
+| Get-GraphChildItem (gls)  | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
+| Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
-| Get-GraphItem (ggi)       | Given a relative (to the Graph or current location) Uri gets information about the entity               |
-| Get-GraphItemWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
+| Get-GraphItem (gls)       | Retrieves an entity specified by type and ID or URI |
+| Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
+| Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
@@ -249,14 +250,17 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
+| New-GraphItem             | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
 | Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
 | Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
 | Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
-| Remove-GraphItem                  | Makes generic ``DELETE`` requests to a specified Graph URI to delete items                      |
+| Remove-GraphItem          | Removes an entity specified by type and ID or URI |
+| Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
+| Set-GraphItemProperty     | Sets properties of a given Graph entity with the specified values |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
 | Set-GraphLogOption        | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
@@ -270,7 +274,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 Some AutoGraphPS cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
 
 ```powershell
-Get-GraphItem me -aadgraph
+Get-GraphResource me -aadgraph
 ```
 
 Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS.

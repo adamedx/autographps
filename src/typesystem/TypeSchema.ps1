@@ -46,8 +46,8 @@ ScriptClass TypeSchema {
             }
         }
 
-        function GetNormalizedPropertyTypeInfo($namespace, $namespaceAlias, $typeSpec) {
-            $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $namespace $namespaceAlias $typeSpec
+        function GetNormalizedPropertyTypeInfo($namespace, $typeSpec) {
+            $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $namespace $typeSpec
 
             [PSCustomObject] @{
                 TypeFullName = $typeData.EntityTypeName

@@ -15,21 +15,24 @@
 . (import-script ../metadata/GraphManager)
 . (import-script Get-GraphUri)
 . (import-script ../common/GraphAccessDeniedException)
+. (import-script common/TypeUriParameterCompleter)
 
-function Get-GraphItemWithMetadata {
+function Get-GraphResourceWithMetadata {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0)]
-        [Uri[]] $ItemRelativeUri = @('.'),
+        [Uri[]] $Uri = @('.'),
 
         [parameter(position=1)]
+        [Alias('Property')]
+        [String[]] $Select = $null,
+
+        [parameter(position=2)]
+        [String] $Filter = $null,
+
         [String] $Query = $null,
 
-        [String] $ODataFilter = $null,
-
         [String] $Search = $null,
-
-        [String[]] $Select = $null,
 
         [String[]] $Expand = $null,
 
@@ -37,8 +40,6 @@ function Get-GraphItemWithMetadata {
         $OrderBy = $null,
 
         [Switch] $Descending,
-
-        [Object] $ContentColumns = $null,
 
         [switch] $RawContent,
 
@@ -48,7 +49,11 @@ function Get-GraphItemWithMetadata {
 
         [switch] $Recurse,
 
+        [switch] $ChildrenOnly,
+
         [switch] $DetailedChildren,
+
+        [switch] $ContentOnly,
 
         [switch] $DataOnly,
 
@@ -60,7 +65,9 @@ function Get-GraphItemWithMetadata {
 
         [Guid] $ClientRequestId,
 
-        [string] $ResultVariable = $null
+        [string] $ResultVariable = $null,
+
+        [string] $GraphName
     )
 
     Enable-ScriptClassVerbosePreference
@@ -70,9 +77,20 @@ function Get-GraphItemWithMetadata {
     $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
     $assumeRoot = $false
 
-    $resolvedUri = if ( $ItemRelativeUri[0] -ne '.' ) {
+    $resolvedUri = if ( $Uri[0] -ne '.' ) {
+        $GraphArgument = @{}
+
+        if ( $GraphName ) {
+            $graphContext = $::.logicalgraphmanager.Get().contexts[$GraphName]
+            if ( ! $graphContext ) {
+                throw "The specified graph '$GraphName' does not exist"
+            }
+            $context = $graphContext.context
+            $GraphArgument['GraphScope'] = $GraphName
+        }
+
         $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-        Get-GraphUri $ItemRelativeUri[0] @metadataArgument
+        Get-GraphUri $Uri[0] @metadataArgument @GraphArgument -erroraction stop
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
@@ -90,7 +108,10 @@ function Get-GraphItemWithMetadata {
     if ( ! $context ) {
         $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
         $context = if ( $parsedPath.ContextName ) {
-            $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName].Context
+            $graphContext = $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName]
+            if ( $graphContext ) {
+                $graphContext.context
+            }
         }
         if ( ! $context ) {
             throw "'$($resolvedUri.Path)' is not a valid graph location uri"
@@ -100,9 +121,9 @@ function Get-GraphItemWithMetadata {
     $results = @()
 
     $requestArguments = @{
-        RelativeUri=$ItemRelativeUri[0]
+        Uri = $Uri[0]
         Query = $Query
-        ODataFilter = $ODataFilter
+        Filter = $Filter
         Search = $Search
         Select = $Select
         Expand = $Expand
@@ -114,6 +135,7 @@ function Get-GraphItemWithMetadata {
         First=$pscmdlet.pagingparameters.first
         Skip=$pscmdlet.pagingparameters.skip
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+        Connection = $context.connection
         # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
         # for the current module and not the module we are calling into, we explicitly set
         # verbose for a command from outside this module
@@ -128,7 +150,7 @@ function Get-GraphItemWithMetadata {
 
     $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-    $noUri = ! $ItemRelativeUri -or $ItemRelativeUri -eq '.'
+    $noUri = ! $Uri -or $Uri -eq '.'
 
     $emitTarget = $null
     $emitChildren = $null
@@ -138,9 +160,9 @@ function Get-GraphItemWithMetadata {
         $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
         $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
     } else {
-        $emitTarget = ( ! $noUri -or $ignoreMetadata ) -or $resolvedUri.Collection
+        $emitTarget = ( ( ! $noUri -or $ignoreMetadata ) -and ! $ChildrenOnly.IsPresent ) -or $resolvedUri.Collection
         $emitRoot = ! $noUri -or $ignoreMetadata
-        $emitChildren = $noUri -or ! $emitTarget -or $Recurse.IsPresent
+        $emitChildren = ( $noUri -or ! $emitTarget -or $Recurse.IsPresent ) -or $ChildrenOnly.IsPresent
     }
 
     write-verbose "Uri unspecified: $noUri, Emit Root: $emitRoot, Emit target: $emitTarget, EmitChildren: $emitChildren"
@@ -153,39 +175,16 @@ function Get-GraphItemWithMetadata {
         try {
             Invoke-GraphRequest @requestArguments | foreach {
                 $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
-                    $_ | Get-GraphUri
+                    if ( ! $ContentOnly.IsPresent ) {
+                        $_ | Get-GraphUri
+                    } else {
+                        $_
+                    }
                 } else {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
-                }
-
-                $translatedResult = if ( ! $RawContent.IsPresent -and $ContentColumns ) {
-                    $ContentColumns | foreach {
-                        $specificOutputColumn = $false
-                        $outputColumnName = $_
-                        $contentColumnName = if ( $_ -is [String] ) {
-                            $_
-                        } elseif ( $_ -is [HashTable] ) {
-                            if ( $_.count -ne 1 ) {
-                                throw "Argument '$($_)' must have exactly one key, specify '@{source1=dest1}, @{source2=dest2}' instead"
-                            }
-                            $specificOutputColumn = $true
-                            $outputColumnName = $_.values[0]
-                            $_.keys[0]
-                        } else {
-                            throw "Invalid Content column '$($_.tostring())' of type '$($_.gettype())' specified -- only types [String] and [HashTable] are permitted"
-                        }
-
-                        $propertyName = if ( $specificOutputColumn ) {
-                            $outputColumnName
-                        } else {
-                            if ( $result | g $outputColumnName -erroraction ignore ) {
-                                "_$outputColumnName"
-                            } else {
-                                $outputColumnName
-                            }
-                        }
-
-                        $result | add-member -membertype noteproperty -name $propertyName -value ($result.content | select -erroraction ignore -expandproperty $contentColumnName)
+                    if ( ! $ContentOnly.IsPresent ) {
+                        $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
+                    } else {
+                        $_
                     }
                 }
 
@@ -217,7 +216,7 @@ function Get-GraphItemWithMetadata {
 
     if ( ! $DataOnly.ispresent ) {
         if ( ! $ignoreMetadata -and ( $graphException -or $emitChildren ) ) {
-            Get-GraphUri $ItemRelativeUri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
+            Get-GraphUri $Uri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
                 $results += $_
             }
         }
@@ -230,5 +229,5 @@ function Get-GraphItemWithMetadata {
     $results
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemWithMetadata ItemRelativeUri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)

@@ -15,20 +15,21 @@
 . (import-script TypeUriHelper)
 . (import-script TypeParameterCompleter)
 
-ScriptClass WriteOperationParameterCompleter {
+ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
 
-    function __initialize( $parameterType, $unqualified = $false, $typeParameterName = $null ) {
+    function __initialize( $parameterType, $unqualified = $false, $propertyType = 'Property') {
         $this.typeParameterName = if ( $typeParameterName ) {
             $typeParameterName
         } else {
             'TypeName'
         }
+
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
         } elseif ( $parameterType -eq 'Property' ) {
-            new-so TypePropertyParameterCompleter
+            new-so TypePropertyParameterCompleter $propertyType
         } else {
             throw [ArgumentException]::new("The specified parameter type '$parameterType' must be one of 'TypeName' or 'Property'")
         }
