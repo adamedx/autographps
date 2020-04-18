@@ -3,6 +3,7 @@
 ## To-do items -- prioritized
 
 * Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Make Get-GraphResource Property alias for Select
 * Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
