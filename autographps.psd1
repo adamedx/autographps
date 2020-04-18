@@ -252,16 +252,7 @@ This release includes major breaking changes in command names, fixes significant
   * `LastTypeMetadataSource`: The source of the type metadata used to define the graph when it was first mounted or last updated, which ever is ost recent. The source is either a URI to an http metadata source like https://graph.microsoft.com/v1.0/$metadata or the path to a local file containing the same format of data as that hosted at the http URI.
 * The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been replaced by the `ContentOnly` parameter which has the following behavior: Instead of returning a uniform `PSCustomObject` with standard members including a `Content` member to access the actual content returned by Graph, the command just returns the actual content, just like the `Get-GraphResource` command.
 * The `Get-GraphChildItem` command now also returns children of a type's entityset if applicable
-* The `Get-GraphChildItem`, `Get-GraphItem`, and `Get-GraphResourceWithMetadata` commands now support the following parameters (with parameter-completion where applicable):
-  * Paging parameter support: `First`, `Skip`, `IncludeTotalCount` parameters are now supported (as they are for the `Invoke-GraphRequest` and `Get-GraphResource` commands of `AutoGraphPS-SDK`).
-  * `Expand`: Navigation properties may now be expanded (with parameter completion)
-  * `Search`: For supported entities, an API-defined search query may be specified
-  * `Sort`, `Descending`: Sorting by specified property (with parameter completion) may be specified
-* The `Get-GraphChildItem` and `Get-GraphItem` commands support the `SimpleMatch` parameter that uses a heuristic approach for "casual" graph queries without the need for OData syntax
-* Parameter completion is also supported for the `Expand` and `Sort` commands of `Invoke-GraphRequest` and `Get-GraphResource` when this module is installed.
-* `Show-GraphHelp` supports complex types
-* `Get-GraphType` supports the `TransitiveMembers` parameter and `MemberFilter` parameters
-* Various pipeline improvements have been made to most commands to ensure consistency across commands and enable useful scenarios. In general, pipelines should be easy for the typical PowerShell user to exploit and should adhere to the *Principle of Least Astonishment*.
+* Metadata download and initial processing now uses a thread in the same process hosting AutoGraphPS, rather than a separate process. This offers a dramatic performance improvement in obtaining the API metadata that the commands rely upon. The implementation was simply to move from using `Start-Job` to `Start-ThreadJob`.
 
 ### Fixed defects
 
