@@ -2,7 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Add Search support
+* Add Sort, including descending
+* Add First and skip
 * Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Make Get-GraphResource Property alias for Select
 * Add Set-GraphItem command that takes in object, hash table or json
@@ -278,6 +280,7 @@
 * Let get-graphchilditem take a type without an id
 * Rename writeoperationparametercompleter to something generic unrelated to writes
 * Fix parametersets for add-graphitemreference and set-graphitemproperty
+* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 
 ### Postponed
 

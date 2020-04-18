@@ -53,6 +53,8 @@ function Get-GraphItem {
         [parameter(parametersetname='byuriandfilter', mandatory=$true)]
         $Filter,
 
+        [string[]] $Expand,
+
         [switch] $ContentOnly,
 
         [switch] $ChildrenOnly,
@@ -86,7 +88,12 @@ function Get-GraphItem {
         if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent)
+            $expandArgument = @{}
+            if ( $Expand ) {
+                $expandArgument['Expand'] = $Expand
+            }
+
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand
         }
     }
 
@@ -95,5 +102,6 @@ function Get-GraphItem {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

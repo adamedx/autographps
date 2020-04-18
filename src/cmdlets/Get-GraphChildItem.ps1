@@ -52,6 +52,8 @@ function Get-GraphChildItem {
         [parameter(parametersetname='bytypecollectionpropertyfilter')]
         $Filter,
 
+        [string[]] $Expand,
+
         [switch] $ContentOnly,
 
         [switch] $FullyQualifiedTypeName,
@@ -77,5 +79,6 @@ function Get-GraphChildItem {
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $true)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
 
