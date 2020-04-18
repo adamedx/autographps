@@ -230,7 +230,7 @@ This release includes major breaking changes in command names, fixes significant
   * `LastTypeMetadataSource`: The source of the type metadata used to define the graph when it was first mounted or last updated, which ever is ost recent. The source is either a URI to an http metadata source like https://graph.microsoft.com/v1.0/$metadata or the path to a local file containing the same format of data as that hosted at the http URI.
 * The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been replaced by the `ContentOnly` parameter which has the following behavior: Instead of returning a uniform `PSCustomObject` with standard members including a `Content` member to access the actual content returned by Graph, the command just returns the actual content, just like the `Get-GraphResource` command.
 * The `Get-GraphChildItem` command now also returns children of a type's entityset if applicable
-* Metadata download and initial processing now uses a thread in the same process hosting AutoGraphPS, rather than a separate process. This offers a dramatic performance improvement in obtaining the API metadata that the commands rely upon. The implementation was simply to move from using `Start-Job` to `Start-ThreadJob`.
+* Metadata download and initial processing now uses a thread in the same process hosting AutoGraphPS, rather than a separate process. This offers a dramatic performance improvement in obtaining the API metadata that the commands rely upon. The new implementation uses `Start-ThreadJob` instead of `Start-Job` to process metadata asynchronously.
 
 ### Fixed defects
 
