@@ -94,14 +94,14 @@ jobs:
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Run tests'
-    condition: true # eq(variables.OS_PLATFORM, 'windows') # Only on Windows because this hangs on Linux
+    condition: eq(variables.OS_PLATFORM, 'windows') # Only on Windows because this hangs on Linux
     inputs:
       targetType: inline
-      script: si env:TEST_OUTPUT_PATH "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)"; ./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester -OutputFile $env:TEST_OUTPUT_PATH -OutputFormat NUnitXml' -Wait -ReuseConsole:$($PSVersionTable.platform -ne 'unix')
+      script: si env:TEST_OUTPUT_PATH "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)"; ./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester -OutputFile $env:TEST_OUTPUT_PATH -OutputFormat NUnitXml' -Wait -ReuseConsole
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Run tests directly'
-    condition: false # eq(variables.OS_PLATFORM, 'ubuntu') # Only needed on Linux to avoid hangs
+    condition: eq(variables.OS_PLATFORM, 'ubuntu') # Only needed on Linux to avoid hangs
     inputs:
       targetType: inline
       script: './build/Init-DirectTestRun.ps1 -verbose; Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)" -OutputFormat NUnitXml'
