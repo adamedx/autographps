@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Add Search support
-* Add Sort, including descending
 * Make Get-GraphResource Property alias for Select
 * Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
@@ -280,6 +279,7 @@
 * Fix parametersets for add-graphitemreference and set-graphitemproperty
 * Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Add First and skip
+* Add Sort, including descending
 
 ### Postponed
 
