@@ -21,7 +21,7 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
@@ -95,7 +95,13 @@ function Get-GraphItem {
                 $expandArgument['Expand'] = $Expand
             }
 
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand -RawContent:$($RawContent.IsPresent)
+            $pagingParameters = @{}
+
+            if ( $pscmdlet.pagingparameters.First -ne $null ) { $pagingParameters['First'] = $pscmdlet.pagingparameters.First }
+            if ( $pscmdlet.pagingparameters.Skip -ne $null ) { $pagingParameters['Skip'] = $pscmdlet.pagingparameters.Skip }
+            if ( $pscmdlet.pagingparameters.IncludeTotalCount -ne $null ) { $pagingParameters['IncludeTotalCount'] = $pscmdlet.pagingparameters.IncludeTotalCount }
+
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand -RawContent:$($RawContent.IsPresent) @pagingParameters
         }
     }
 

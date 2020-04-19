@@ -20,7 +20,7 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri', mandatory=$true)]
         [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
