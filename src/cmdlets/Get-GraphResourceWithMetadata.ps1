@@ -37,7 +37,7 @@ function Get-GraphResourceWithMetadata {
         [String[]] $Expand = $null,
 
         [Alias('Sort')]
-        $OrderBy = $null,
+        [object[]] $OrderBy = $null,
 
         [Switch] $Descending,
 
