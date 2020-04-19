@@ -52,6 +52,8 @@ function Get-GraphChildItem {
         [parameter(parametersetname='bytypecollectionpropertyfilter')]
         $Filter,
 
+        [String] $Search,
+
         [string[]] $Expand,
 
         [Alias('Sort')]
