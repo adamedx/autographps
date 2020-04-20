@@ -158,7 +158,7 @@ ScriptClass TypeManager {
             'Properties'
         }
 
-        if ( $typeDefinition.Properties ) {
+        if ( $typeDefinition.$propertyMember ) {
             $properties += $typeDefinition.$propertyMember
         }
 

@@ -136,7 +136,7 @@ ScriptClass GraphObjectBuilder {
         try {
             $this.currentLevel += 1
 
-            if ( $this.PropertyFilter ) {
+            if ( $this.PropertyFilter -and ( $this.currentLevel -eq 1 ) ) {
                 foreach ( $referencedProperty in $this.PropertyFilter.keys ) {
                     $usedProperties.Add($referencedProperty, $false)
                     $unusedPropertyCount++
@@ -146,7 +146,7 @@ ScriptClass GraphObjectBuilder {
             $typeProperties = $this.typeManager |=> GetTypeDefinitionTransitiveProperties $typeDefinition
 
             foreach ( $property in $typeProperties ) {
-                $propertyInfo = if ( $this.propertyFilter ) {
+                $propertyInfo = if ( ( $this.currentLevel -eq 1 ) -and $this.propertyFilter ) {
                     if ( $usedProperties.ContainsKey($property.name) ) {
                         $usedProperties[$property.name] = $true
                         $unusedPropertyCount--
@@ -154,7 +154,11 @@ ScriptClass GraphObjectBuilder {
                     $this.propertyFilter[$property.name]
                 }
 
-                if ( ! $this.propertyFilter -or $propertyInfo ) {
+                if ( ! ( ( $this.currentLevel -eq 1 ) -and $this.propertyFilter ) -or $propertyInfo ) {
+                    if ( ( $this.currentLevel -eq 1 ) -and $typeDefinition.Class -eq 'Entity' -and $property.name -eq 'id' ) {
+                        continue
+                    }
+
                     $propertyTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $property.typeId $true
 
                     if ( ! $propertyTypeDefinition ) {

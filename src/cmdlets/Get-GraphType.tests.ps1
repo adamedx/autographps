@@ -125,6 +125,8 @@ Describe 'The Get-GraphType command' {
         It "Should return expected type data for an entity type" {
             $targetProperties = '["activityGroupName","assignedTo","azureSubscriptionId","azureTenantId","category","closedDateTime","cloudAppStates","comments","confidence","createdDateTime","description","detectionIds","eventDateTime","feedback","fileStates","historyStates","hostStates","lastModifiedDateTime","malwareStates","networkConnections","processes","recommendedActions","registryKeyStates","severity","sourceMaterials","status","tags","title","triggers","userStates","vendorInformation","vulnerabilityStates"]' | convertfrom-json
 
+            $targetPropertyTypeIdsSortedByPropertyName = '["Edm.String", "Edm.String", "Edm.String", "Edm.String", "Edm.String", "Edm.DateTimeOffset", "microsoft.graph.cloudAppSecurityState", "Edm.String", "Edm.Int32", "Edm.DateTimeOffset", "Edm.String", "Edm.String", "Edm.DateTimeOffset", "microsoft.graph.alertFeedback", "microsoft.graph.fileSecurityState", "microsoft.graph.alertHistoryState", "microsoft.graph.hostSecurityState", "Edm.DateTimeOffset", "microsoft.graph.malwareState", "microsoft.graph.networkConnection", "microsoft.graph.process", "Edm.String", "microsoft.graph.registryKeyState", "microsoft.graph.alertSeverity", "Edm.String", "microsoft.graph.alertStatus", "Edm.String", "Edm.String", "microsoft.graph.alertTrigger", "microsoft.graph.userSecurityState", "microsoft.graph.securityVendorInformation", "microsoft.graph.vulnerabilityState"]' | convertfrom-json
+
             $type = Get-GraphType -TypeClass Entity alert
 
             $type.typeclass | Should Be Entity
@@ -132,9 +134,16 @@ Describe 'The Get-GraphType command' {
             $type.TypeId | Should Be microsoft.graph.alert
             $type.BaseType | Should Be microsoft.graph.entity
             $type.Properties.length | Should Be 32
+
             $type.IsComposite | Should Be $true
             $type.NativeSchema | Should Not Be $null
+
             CompareCustomObject $type.properties.name $targetProperties | Should Be $true
+
+            $actualPropertyTypeIdsSortedByPropertyName = $type.properties | sort-object name | select -ExpandProperty typeid
+
+            $actualPropertyTypeIdsSortedByPropertyName | convertto-json -depth 4
+            CompareCustomObject $actualPropertyTypeIdsSortedByPropertyName $targetPropertyTypeIdsSortedByPropertyName | Should Be $true
         }
 
         It "Should return expected type data for a primitive type" {

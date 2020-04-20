@@ -97,21 +97,14 @@ givenName            : Cosmo
 ...
 ```
 
-#### Easier content through `-ContentColumns`
+And if you're really just interested in the content, you can just specify `ContentOnly`. This makes `gls` behave like `Get-GraphResource (ggr)`:
 
-An alternative to explicitly `select`ing content is to simply add the desired properties from content into returned objects. You can do just that with the `-ContentColumns` option of `Get-GraphResourceWithMetadata`. Note that while this changes the fields available in the object, the default display output will still only show the four default columns. You can use PowerShell's `select` alias when the display of the value is what matters.
-
-For example, the following two commands are equivalent:
 ```powershell
 # Retrieves contacts and the last time they were modified
 # Preview and info columns are already there by default
-gls me/contacts -ContentColumns LastModifiedDateTime, emailaddresses | select Info, Preview, LastModifiedDateTime, emailaddresses
-
-# This more convoluted command does the same thing
-gls me/contacts | foreach { [PSCustomObject] @{Info=$_.Info; Preview=$_.Preview;LastModifiedDateTime=$_.content.LastModifiedDateTime; EmailAddresses=$_.content.EmailAddresses} }
+gls me/contacts -ContentOnly
+ggr me/contacts
 ```
-
-If one of the fields in `Content` has the same name as a field in the containing object, it will be prepended with a `_` character when added to it in order to resolve the conflict.
 
 #### The `$LASTGRAPHITEMS` variable
 
@@ -273,7 +266,7 @@ You can also skip ahead -- perhaps you want the last elements of a sorted collec
 gls me/contacts -skip 3 -first 3
 ```
 
-### Projecting fields with `-Select`
+### Projecting fields with `-Project`
 
 By default, Graph does not return all properties of an object -- it returns those deemed most likely to be useful without retrieving every field to avoid excessive network traffic. For example, the query below for a given user is missing the `department` property in the response:
 
@@ -292,10 +285,10 @@ businessPhones    : +1 (313) 360 3141
 displayName       : Starchild Okorafor
 ```
 
-To fix this, use `-select` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
+To fix this, use `-Project` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
 
 ```
-ggr me -select displayName, department, mail, officeLocation
+ggr me -project displayName, department, mail, officeLocation
 
 @odata.context : https://graph.microsoft.com/v1.0/$metadata#users(displayName,department,mail,officeLocation)
                  /$entity
@@ -307,28 +300,27 @@ mail           : starchild@mothership.io
 
 For a better understanding of how and when OData services like Graph can project properties, see the [Microsoft Graph documentation for `$select`](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters#select-parameter).
 
-### Sorting with `-OrderBy` and `-Descending`
+### Sorting with `-Sort` and `-Descending`
 
 Particularly when retrieving large result sets, it is important to be able to specify the order in which items are returned. For an e-mail inbox with 1000 messages for instance, you may only want to retreive the first 50 or so after sorting by descending date (the most recent messages). In other cases you may want to sort on multiple fields.
 
-The following example uses the `-OrderBy` option to retrieve the 10 oldest messages -- note that we use PowerShell's client-side select cmdlet to limit the displayed fields:
+The following example uses the `-Sort` option to retrieve the 10 oldest messages -- note that we use PowerShell's client-side select cmdlet to limit the displayed fields:
 
 ```
-ggr /me/messages -first 10 -OrderBy receivedDateTime | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -Sort receivedDateTime | select ReceivedDateTime, Importance, Subject
 ```
 
 However, to retrieve the 10 newest high-importance items, you should specify the `-Descending` option, which means that all fields specified through `OrderBy` will have a descending order by default:
 
 ```
-ggr /me/messages -first 10 -OrderBy receivedDateTime, importance -Descending | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -Sort receivedDateTime, importance -Descending | select ReceivedDateTime, Importance, Subject
 ```
 
 What if you want to sort using ascending order for one field, and descending for another? You can specify a PowerShell `HashTable` to identify sort directions for specific fields. This lets you find the oldest high-importance items:
 
 ```
-ggr /me/messages -first 10 -OrderBy @{receivedDateTime=$false;importance=$true} | select ReceivedDateTime, Importance, Subject
+ggr /me/messages -first 10 -Sort @{receivedDateTime=$false;importance=$true} | select ReceivedDateTime, Importance, Subject
 ```
-
 
 The `$false` assignment in the hash table means that the field will use *ascending* sort order, and `$true` means *descending* order.
 

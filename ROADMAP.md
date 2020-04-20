@@ -2,6 +2,12 @@
 
 ## To-do items -- prioritized
 
+* For entity types, do not include id unless it is specified on command line
+* Add autocomplete from last items
+* Make setdefaultvalues in new-graphobject take effect
+* Make New-GraphDataObject for Complex types -- make a new-graphresource?
+* Get better behavior for gls, et. al. when id or other properties are not returned
+* Unalias type names in typemember
 * Add Set-GraphItem command that takes in object, hash table or json
 * Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
