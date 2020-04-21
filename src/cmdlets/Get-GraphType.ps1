@@ -38,6 +38,10 @@ function Get-GraphType {
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
+        [parameter(parametersetname='optionallyqualified')]
+        [parameter(parametersetname='fullyqualified')]
+        [switch] $Members,
+
         [parameter(parametersetname='list', mandatory=$true)]
         [switch] $List
     )
@@ -57,7 +61,14 @@ function Get-GraphType {
             throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
         }
 
-        $::.TypeHelper |=> ToPublic $type
+        $result = $::.TypeHelper |=> ToPublic $type
+
+        if ( ! $Members.IsPresent ) {
+            $result
+        } else {
+            $result.Properties
+            $result.NavigationProperties
+        }
     } else {
         $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
     }

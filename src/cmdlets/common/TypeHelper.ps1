@@ -40,8 +40,8 @@ ScriptClass TypeHelper {
                 Namespace = $privateObject.($this.displayProperties.Namespace)
                 TypeClass = $privateObject.($this.displayProperties.TypeClass)
                 BaseType = $privateObject.($this.displayProperties.BaseType)
-                Properties = [PSCustomObject] ($privateObject.($this.displayProperties.Properties))
-                NavigationProperties = [PSCustomObject] ($privateObject.($this.displayProperties.NavigationProperties))
+                Properties = $privateObject.($this.displayProperties.Properties)
+                NavigationProperties = $privateObject.($this.displayProperties.NavigationProperties)
                 IsComposite = $privateObject.($this.displayProperties.IsComposite)
                 NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
             }

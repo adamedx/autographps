@@ -286,6 +286,7 @@
 * Add Sort, including descending
 * Add Search support
 * Make Get-GraphResource Property alias for Select
+* Add Members get-graphtype
 
 ### Postponed
 

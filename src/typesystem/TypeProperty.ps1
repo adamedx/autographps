@@ -16,10 +16,38 @@ ScriptClass TypeProperty {
     $Name = $null
     $TypeId = $null
     $IsCollection = $null
+    $MemberType = $null
 
-    function __initialize($name, $typeId, $isCollection) {
+    function __initialize($name, $typeId, $isCollection, $memberType) {
         $this.Name = $name
         $this.TypeId = $typeId
         $this.IsCollection = $isCollection
+        $this.MemberType = if ( $memberType -eq $null -or $MemberType -eq 'Property' ) {
+            'Property'
+        } elseif ( $memberType -eq 'NavigationProperty' ) {
+            'NavigationProperty'
+        } else {
+            throw [ArgumentException]::new("Invalid member type '$memberType' specified: member type must be one of 'Property' or 'NavigationProperty'")
+        }
+    }
+
+    static {
+        function __RegisterDisplayType {
+            $displayTypeName = $this.ClassName
+
+            $displayProperties = @('Name', 'MemberType', 'TypeId', 'IsCollection')
+
+            remove-typedata -typename $displayTypeName -erroraction ignore
+
+            $displayTypeArguments = @{
+                TypeName = $displayTypeName
+                DefaultDisplayPropertySet = $displayProperties
+            }
+
+            Update-TypeData -force @displayTypeArguments
+        }
     }
 }
+
+
+$::.TypeProperty |=> __RegisterDisplayType
