@@ -324,6 +324,66 @@ ggr /me/messages -first 10 -Sort @{receivedDateTime=$false;importance=$true} | s
 
 The `$false` assignment in the hash table means that the field will use *ascending* sort order, and `$true` means *descending* order.
 
+### Beyond read-only -- writing the Graph
+
+AutoGraphPS isn't just an excellent browsing experience, it features commands for modifying the Graph as well:
+
+* `New-GraphItem`
+* `Set-GraphItemProperty`
+* `New-GraphObject`
+* `Add-GraphItemReference`
+* `Remove-GraphItem`
+
+The following examples demonstrate common usage of these this commands in writing and editing Graph resources. Unlike the read-only cases we've explored so far, you're likely to need some light research before jumping in with these command, i.e. you might want to read the actual Graph API documentation first. In particular, you'll need to have some basic answers in mind for the following questions before using write-operation commands:
+
+* When creating a resource
+  * What is the name of the resource you want to create / modify? E.g. `user`, `group`, `message`, etc.
+  * Alternatively do you know the resource's parent URI, e.g. `users` for `user`, `me/contacts` for `contact`, etc.
+  * What properties of the resource are **required** and must be set at creation time? You can find this information in the searchable / browseable Graph API reference; you can use the `Show-GraphHelp` command to quickly access the documentation for a resource if you know its name (e.g. `Show-GraphHelp contact`).
+  * What are the other (non-required) properties you'd like to configure? The commands will automatically complete the property name parameters if you've already specified the resource name or URI to help you find them. You can also use `Get-GraphType <resourcename> -Members` to get a list of the property names and their data types.
+* When modifying an existing resource
+  * As in create, what is the name of the resource you want to modify
+  * And alternatively, what is resource's URI, e.g. `users/user@domain.com` for a user, `me/contacts/<contactid>` for a contact
+  * What are the names of the properties you want to modify and what are their types? Just like the create use case, parameter completion, `Get-GraphType -Members` and `Show-GraphHElp` to find out.
+
+With this information, you can use a single command to create or update the resource -- just supply it with
+
+* For create: resource name and required property values OR parent URI and required property values
+* For modify: resource name and ID and the property values to update OR resource URI and the property values
+
+Lastly, while in many cases the property values are simple "primitive" types like strings and integers that can be easily expressed as command parameters, they may also themselves be nested "complex" data structures that contain their own properties. If you've obtained the type name of that property from the documentation (remember `Show-GraphHelp`) or `Get-GraphType`, you can specify that name to the `New-GraphObject` command with the `TypeClass Complex` parameter, i.e.:
+
+```powershell
+# This command also lets you specify properties -- if you don't, it creates
+# an object with empty values for all top-level properties
+$complexProperty = New-GraphObject -TypeClass Complex ipv6Range
+```
+
+You can then set the properties of the `$complexProperty` variable as desired, and specify that variable as one of the property values to `New-GraphItem` or `Set-GraphItemProperty`.
+
+Now that preamble may seem rather lengthy compared to our near zero-knowledge approach of read-only use cases, but all of this really boils down to the need to know what you're going to change before you make an update, which isn't reasonable for more "dangerous" write use-cases. Fortuantely, the answers to all of those questions are a few tab-completions or `Get-GraphType` / `Show-GraphHelp` invocations away.
+
+Now let's see concrete examples of these commands in action.
+
+#### Create a simple resource: group
+
+#### Create a resource with nested data: contact and user
+
+#### Update an existing resource: group and user
+
+#### Link resources: add a user to a group
+
+#### Delete resources
+
+#### Write operation tips and tricks
+
+* Use `Show-GraphHelp` to get the documentation for the Graph resource in which you're interested.
+* Use `Get-GraphType -Members` to view the properties of the type or structure you're updating
+* Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItemProperty`, etc. to ease your workflow and avoid the need to refer to documentation
+* Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
+
+### Use the pipeline
+
 ### Advanced queries with `-Query`
 
 The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
