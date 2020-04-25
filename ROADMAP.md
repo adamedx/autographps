@@ -2,7 +2,10 @@
 
 ## To-do items -- prioritized
 
-* For entity types, do not include id unless it is specified on command line
+* get-graphitem, get-graphchilditem should take an object from the pipeline
+* For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
+* Get-GraphToken should show current token scopes
+* Experiment with Format-GraphItem and color
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
 * Make New-GraphDataObject for Complex types -- make a new-graphresource?
@@ -287,6 +290,7 @@
 * Add Search support
 * Make Get-GraphResource Property alias for Select
 * Add Members get-graphtype
+* For entity types, do not include id unless it is specified on command line
 
 ### Postponed
 

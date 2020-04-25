@@ -38,17 +38,36 @@ ScriptClass TypeUriParameterCompleter {
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $uriParam = $fakeBoundParameters['Uri']
+        $graphNameParam = $fakeBoundParameters['GraphName']
+        $graphObjectParam = $fakeBoundParameters['GraphObject']
         $typeNameParam = $fakeBoundParameters[$this.typeParameterName]
 
         $typeName = if ( $typeNameParam ) {
             $typeNameParam
         } else {
-            $::.TypeUriHelper |=> TypeFromUri $UriParam | select -expandproperty FullTypeName
+            $targetUri = if ( $uriParam ) {
+                $uriParam
+            } elseif ( $graphObjectParam ) {
+                $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
+                if ( $targetContext ) {
+                    $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $graphObjectParam
+                }
+            }
+
+            if ( $targetUri ) {
+                $global:typefromuri = $targetUri
+                $::.TypeUriHelper |=> TypeFromUri $targetUri | select -expandproperty FullTypeName
+            }
         }
 
+        if ( ! $typeName ) {
+            return
+        }
+
+        $global:foundtypename = $typeName
         $forwardedBoundParams = @{
             TypeName = $typeName
-            GraphName = $fakeBoundParameters['GraphName']
+            GraphName = $graphNameParam
             TypeClass = 'Entity'
         }
 

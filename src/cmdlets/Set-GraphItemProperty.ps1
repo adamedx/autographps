@@ -24,36 +24,36 @@ function Set-GraphItemProperty {
     param(
         [parameter(position=0, parametersetname='typeandpropertylist', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertymap', mandatory=$true)]
-        $TypeName,
-
-        [parameter(parametersetname='typeandpropertylist', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertymap', mandatory=$true)]
-        $Id,
+        [string] $TypeName,
 
         [parameter(position=1, parametersetname='typeandpropertylist', mandatory=$true)]
-        [parameter(position=0, parametersetname='typedobjectandpropertylist', mandatory=$true)]
-        [parameter(position=1, parametersetname='uriandpropertylist', mandatory=$true)]
-        [string[]] $Property,
+        [parameter(position=1, parametersetname='typeandpropertymap', mandatory=$true)]
+        [string] $Id,
 
         [parameter(position=2, parametersetname='typeandpropertylist', mandatory=$true)]
-        [parameter(position=1, parametersetname='typedobjectandpropertylist', mandatory=$true)]
-        [parameter(position=2, parametersetname='uriandpropertylist', mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertylist', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertylist', mandatory=$true)]
+        [string[]] $Property,
+
+        [parameter(position=3, parametersetname='typeandpropertylist', mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertylist', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertylist', mandatory=$true)]
         [object[]] $Value,
 
         [parameter(parametersetname='typedobjectandpropertylist', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', valuefrompipeline=$true, mandatory=$true)]
-        [object] $GraphObject,
+        [PSCustomObject] $GraphObject,
 
         [parameter(parametersetname='uriandpropertylist', mandatory=$true)]
         [parameter(parametersetname='uriandpropertymap', mandatory=$true)]
         [Uri] $Uri,
 
-        $GraphName,
+        [string] $GraphName,
 
-        [parameter(parametersetname='typeandpropertymap', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertymap', mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', mandatory=$true)]
-        [parameter(parametersetname='uriandpropertymap', mandatory=$true)]
-        $PropertyMap,
+        [parameter(position=0, parametersetname='uriandpropertymap', mandatory=$true)]
+        [HashTable] $PropertyMap,
 
         [switch] $FullyQualifiedTypeName,
 
