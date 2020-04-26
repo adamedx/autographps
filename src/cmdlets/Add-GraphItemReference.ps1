@@ -21,22 +21,22 @@
 . (import-script common/GraphUriParameterCompleter)
 
 function Add-GraphItemReference {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetid')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetobject')]
     param(
         [parameter(position=0, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromType')]
-        $TypeName,
+        [string] $TypeName,
 
         [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromId')]
-        $Id,
+        [string] $Id,
 
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
         [Alias('FromObject')]
-        [object] $GraphObject,
+        [PSCustomObject] $GraphObject,
 
         [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]

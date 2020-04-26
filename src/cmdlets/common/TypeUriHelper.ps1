@@ -106,7 +106,7 @@ ScriptClass TypeUriHelper {
                 if ( $typeUri ) {
                     $targetUri = $typeUri, $id -join '/'
                 } else {
-                    throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI and retry."
+                    throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI or an existing item and retry."
                 }
 
                 [PSCustomObject] @{

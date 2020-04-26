@@ -25,9 +25,9 @@ function Get-GraphType {
         [Alias('Name')]
         $TypeName,
 
-        [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
+        [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         [Alias('Class')]
-        $TypeClass = 'Entity',
+        $TypeClass = 'Any',
 
         [parameter(parametersetname='optionallyqualified')]
         [parameter(parametersetname='fullyqualified')]
@@ -51,14 +51,20 @@ function Get-GraphType {
     $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
     if ( ! $List.IsPresent ) {
+        $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
+            $TypeClass
+        } else {
+            'Unknown'
+        }
+
         $typeManager = $::.TypeManager |=> Get $targetContext
 
-        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-        $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
+        $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $TypeName $isFullyQualified ( $TypeClass -ne 'Any' )
 
         if ( ! $type ) {
-            throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+            throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
         }
 
         $result = $::.TypeHelper |=> ToPublic $type
@@ -70,7 +76,12 @@ function Get-GraphType {
             $result.NavigationProperties
         }
     } else {
-        $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
+        $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
+            $TypeClass
+        } else {
+            'Entity'
+        }
+        $::.TypeManager |=> GetSortedTypeNames $sortTypeClass $targetContext
     }
 }
 

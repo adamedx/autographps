@@ -2,6 +2,15 @@
 
 ## To-do items -- prioritized
 
+* Add actual object pipeline to Remove-GraphItem
+* Add Get-GraphItemUri?
+* Add Get-GraphItemReference
+* Rename GraphObject to GraphItem
+* Add New-GraphRelatedItem
+* Add member filter to `Get-GraphType -member`
+* Change Add-GraphItemReference to New-GraphItemRelationship
+* Add Remove-GraphItemRelationship
+* Use relationship terminology rather than navigationproperty
 * get-graphitem, get-graphchilditem should take an object from the pipeline
 * For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
 * Get-GraphToken should show current token scopes

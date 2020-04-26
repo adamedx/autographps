@@ -35,8 +35,11 @@ ScriptClass TypeParameterCompleter {
             }
         }
 
-        if ( ! $typeClass ) {
-            $typeClass = 'Entity'
+
+        $targetTypeClass = if ( ! $typeClass -or $typeClass -eq 'Any' ) {
+            'Unknown'
+        } else {
+            $typeClass
         }
 
         $targetWord = if ( $this.unqualified -or $fullyQualified -or ( $typeClass -eq 'Primitive' ) -or $wordToComplete.Contains('.') ) {
@@ -48,12 +51,13 @@ ScriptClass TypeParameterCompleter {
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
         if ( $targetContext ) {
-            $typeNames = $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
+            $typeNames = $::.TypeManager |=> GetSortedTypeNames $targetTypeClass $targetContext
             $candidates = if ( $this.unqualified ) {
                 $typeNames | foreach { $_ -split '\.' | select -last 1 }
             } else {
                 $typeNames
             }
+
             $::.ParameterCompleter |=> FindMatchesStartingWith $targetWord $candidates
         }
     }
