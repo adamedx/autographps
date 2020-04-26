@@ -43,14 +43,21 @@ function Get-GraphItem {
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphObject,
+
         $GraphName,
 
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
         [String] $Search,
@@ -88,7 +95,7 @@ function Get-GraphItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphObject
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property

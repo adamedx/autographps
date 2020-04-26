@@ -26,6 +26,10 @@ function Get-GraphChildItem {
         [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphObject,
+
         [parameter(parametersetname='bytypecollection', mandatory=$true)]
         [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='bytypeandid', mandatory=$true)]
@@ -46,6 +50,7 @@ function Get-GraphChildItem {
         [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
         [parameter(parametersetname='bytypecollection')]

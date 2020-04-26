@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0
 * Add actual object pipeline to Remove-GraphItem
 * Add Get-GraphItemUri?
 * Add Get-GraphItemReference
@@ -11,7 +12,6 @@
 * Change Add-GraphItemReference to New-GraphItemRelationship
 * Add Remove-GraphItemRelationship
 * Use relationship terminology rather than navigationproperty
-* get-graphitem, get-graphchilditem should take an object from the pipeline
 * For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
@@ -300,6 +300,7 @@
 * Make Get-GraphResource Property alias for Select
 * Add Members get-graphtype
 * For entity types, do not include id unless it is specified on command line
+* get-graphitem, get-graphchilditem should take an object from the pipeline
 
 ### Postponed
 

@@ -18,9 +18,9 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphResourceWithMetadata {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0)]
+        [parameter(position=0, parametersetname='byuri')]
         [Uri[]] $Uri = @('.'),
 
         [parameter(position=1)]
@@ -29,6 +29,9 @@ function Get-GraphResourceWithMetadata {
 
         [parameter(position=2)]
         [String] $Filter = $null,
+
+        [parameter(parametersetname='GraphItem', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphObject,
 
         [String] $Query = $null,
 
@@ -79,7 +82,7 @@ function Get-GraphResourceWithMetadata {
 
     $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
 
-    $resolvedUri = if ( $Uri[0] -ne '.' ) {
+    $resolvedUri = if ( $Uri[0] -ne '.' -or $GraphObject ) {
         $GraphArgument = @{}
 
         if ( $GraphName ) {
@@ -91,8 +94,18 @@ function Get-GraphResourceWithMetadata {
             $GraphArgument['GraphScope'] = $GraphName
         }
 
+        $targetUri = if ( $GraphObject ) {
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphObject
+            if ( ! $requestInfo.Uri ) {
+                throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+            }
+            $requestInfo.Uri
+        } else {
+            $Uri[0]
+        }
+
         $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-        Get-GraphUri $Uri[0] @metadataArgument @GraphArgument -erroraction stop
+        Get-GraphUri $targetUri @metadataArgument @GraphArgument -erroraction stop
     } else {
         $context = $::.GraphContext |=> GetCurrent
         $parser = new-so SegmentParser $context $null $true
@@ -123,7 +136,7 @@ function Get-GraphResourceWithMetadata {
     $results = @()
 
     $requestArguments = @{
-        Uri = $Uri[0]
+        Uri = $resolvedUri.GraphUri
         Query = $Query
         Filter = $Filter
         Search = $Search
@@ -152,7 +165,7 @@ function Get-GraphResourceWithMetadata {
 
     $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-    $noUri = ! $Uri -or $Uri -eq '.'
+    $noUri = ! $GraphObject -and ( ! $Uri -or $Uri -eq '.' )
 
     $emitTarget = $null
     $emitChildren = $null
@@ -218,7 +231,7 @@ function Get-GraphResourceWithMetadata {
 
     if ( ! $DataOnly.ispresent ) {
         if ( ! $ignoreMetadata -and ( $graphException -or $emitChildren ) ) {
-            Get-GraphUri $Uri[0] -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
+            Get-GraphUri $resolvedUri.GraphUri -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
                 $results += $_
             }
         }

@@ -551,10 +551,13 @@ Lastly, the resources we've created can all be deleted using the `Remove-GraphIt
 Remove-GraphItem group c436312c-4f6e-4963-ac05-bf68b98d7475
 ```
 
-The command also takes a URI, which is useful for deleting resources accessible only through a relationship with another resource, such as `contact`:
+The command also takes an object returned by `Get-GraphItem` or `Get-GraphResource`, etc., which is useful for deleting resources accessible only through a relationship with another resource, such as `contact`:
 
 ```powershell
-Remove-GraphItem -Uri /me/contacts/$($oldContact.id)
+# If you have a variable containing the contact retrieved by an AutoGraphPS
+# command such as Get-GraphResource, New-GraphItem, gls, etc., you can easily
+# delete it by passing it to Remove-GraphItem
+$oldContact | Remove-GraphItem
 ```
 
 #### Write operation tips and tricks
