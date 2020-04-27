@@ -19,7 +19,7 @@ ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
 
-    function __initialize( $parameterType, $unqualified = $false, $propertyType = 'Property') {
+    function __initialize($parameterType, $unqualified = $false, $propertyType = 'Property', $typeParameterName) {
         $this.typeParameterName = if ( $typeParameterName ) {
             $typeParameterName
         } else {

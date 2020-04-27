@@ -44,7 +44,7 @@ ScriptClass QueryTranslationHelper {
 
                 $propertyTypes = if ( ! $propertyTypeToValidate ) {
                     $allowedPropertyTypes
-                } elseif ( $allowedPropertyTyeps -contains $propertyTypeToValidate ) {
+                } elseif ( $allowedPropertyTypes -contains $propertyTypeToValidate ) {
                     $propertyTypeToValidate
                 } else {
                     throw "Invalid property type '$propertyTypeToValidate'"

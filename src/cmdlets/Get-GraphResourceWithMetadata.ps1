@@ -203,7 +203,19 @@ function Get-GraphResourceWithMetadata {
                     }
                 }
 
-                $results += $result
+                $noResults = $false
+
+                # TODO: Investigate scenarios where empty collection results sometimes return
+                # a non-empty result containing and empty 'value' field in the content
+                if ( $resolvedUri.Collection -and ! $RawContent.IsPresent ) {
+                    if ( $_ -and ( $_ | gm value -erroraction ignore ) -and ! $_.value ) {
+                        $noResults = $true
+                    }
+                }
+
+                if ( ! $noResults ) {
+                    $results += $result
+                }
             }
         } catch [GraphAccessDeniedException] {
             # In some cases, we want to allow the user to make a mistake that results in an error from Graph
@@ -241,7 +253,10 @@ function Get-GraphResourceWithMetadata {
 
     $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
     $targetResultVariable.value = $results
-    $results
+
+    if ( $results ) {
+        $results
+    }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

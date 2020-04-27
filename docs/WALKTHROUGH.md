@@ -502,10 +502,12 @@ To modify a relationship, the `Add-GraphItemReference` command may be used:
 Add-GraphItemReference -FromObject $newGroup -ToObject $newUser -ByProperty members
 ```
 
-To see the new relationship, use `gls`:
+This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
+
+To see the new relationship, use the `Get-GraphItemRelationship` command:
 
 ```powershell
-PS> gls groups/$($newgroup.id)/members
+PS> Get-GraphItemRelationship group $newgroup.id -Relationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -514,7 +516,7 @@ Info Type            Preview             Id
 t +> directoryObject Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
 ```
 
-Another useful syntax is to supply the new items to reference via the pipeline -- this exploits PowerShell pipeline idioms to simplify operating on sets of objects:
+Another useful syntax for `Add-GraphItemReference` is to supply the items on the "to" side of the relatinoship via the pipeline -- this exploits PowerShell pipeline idioms to simplify operating on sets of objects:
 
 ```powershell
 # Create passwords for some new users
@@ -522,7 +524,7 @@ $passwordProfile1 = New-GraphObject passwordprofile -Property forceChangePasswor
 $passwordProfile2 = New-GraphObject passwordprofile -Property forceChangePasswordNextSignIn, password -Value $true, (Get-Credential user).GetNetworkCredential().Password
 
 # Create the actual users
-$newUser1 = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value vashford, vashford@newnoir.rg, 'Val Ashford', $true, $passwordProfile1
+$newUser1 = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value vashford, vashford@newnoir.org, 'Val Ashford', $true, $passwordProfile1
 $newUser2 = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value nsimpson, nsimpson@newnoir.org, 'Nick Simpson', $true, $passwordProfile2
 
 # Create a new group for the users
@@ -533,7 +535,7 @@ $newUser1, $newUser2 | Add-GraphItemReference $teamGroup members
 
 # Display the group's updated membership with the new users
 
-gls groups/$($teamGroup.id)/members
+$teamGroup | Get-GraphItemRelationship -Relationship members
 
    Graph Location: /v1.0:/groups/c436312c-4f6e-4963-ac05-bf68b98d7475/members
 

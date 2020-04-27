@@ -19,6 +19,7 @@ $functions = @(
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphItem',
+    'Get-GraphItemRelationship',
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',

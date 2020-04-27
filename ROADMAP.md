@@ -2,10 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0
-* Add actual object pipeline to Remove-GraphItem
+* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
 * Add Get-GraphItemUri?
-* Add Get-GraphItemReference
 * Rename GraphObject to GraphItem
 * Add New-GraphRelatedItem
 * Add member filter to `Get-GraphType -member`
@@ -301,6 +299,7 @@
 * Add Members get-graphtype
 * For entity types, do not include id unless it is specified on command line
 * get-graphitem, get-graphchilditem should take an object from the pipeline
+* Add Get-GraphItemReference
 
 ### Postponed
 
