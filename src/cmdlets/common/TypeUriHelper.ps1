@@ -146,5 +146,76 @@ ScriptClass TypeUriHelper {
             $uriString = $targetContext.connection.graphendpoint.graph.tostring(), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
             [Uri] $uriString
         }
+
+        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty)  {
+            $fromId = if ( $Id ) {
+                $Id
+            } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
+                $GraphObject.Id # This is needed when an object is supplied without an id parameter
+            }
+
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $GraphObject
+
+            if ( $graphObject -and ! $requestInfo.Uri ) {
+                return
+            }
+
+            $segments = @()
+            $segments += $requestInfo.uri.tostring()
+            if ( $navigationProperty -and $requestInfo.uri ) {
+                $segments += $navigationProperty
+            }
+
+            $sourceUri = $segments -join '/'
+
+            [PSCustomObject] @{
+                Uri = $sourceUri
+                RequestInfo = $requestInfo
+            }
+        }
+
+        function GetReferenceTargetTypeInfo($graphName, $requestInfo, $navigationProperty, $overrideTargetTypeName, $allowCollectionTarget) {
+            $targetTypeName = $OverrideTargetTypeName
+
+            if ( $navigationProperty ) {
+                $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $allowCollectionTarget ) {
+                    $targetType = Get-GraphType -GraphName $graphName $requestInfo.TypeName
+                    $targetTypeInfo = $targetType.NavigationProperties | where name -eq $navigationProperty
+
+                    if ( ! $targetTypeInfo ) {
+                        return $null
+                    }
+
+                    $targetTypeInfo
+                }
+
+                if ( ! $targetTypeName ) {
+                    $targetTypeName = $targetPropertyInfo.TypeId
+                }
+            }
+
+            [PSCustomObject] @{
+                TypeId = $targetTypeName
+                IsCollectionTarget = $targetPropertyInfo.IsCollection
+            }
+        }
+
+        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false) {
+            if ( $TargetUri ) {
+                foreach ( $destinationUri in $TargetUri ) {
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
+                }
+            } elseif ( $TargetObject ) {
+                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $targetUri $targetId $TargetObject
+                if ( ! $requestInfo.Uri ) {
+                    throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
+                }
+                $requestInfo
+            } else {
+                foreach ( $destinationId in $targetId ) {
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null
+                }
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
-function Add-GraphItemReference {
+function Remove-GraphItemRelationship {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetobject')]
     param(
         [parameter(position=0, parametersetname='typeandpropertytotargetid', mandatory=$true)]
@@ -88,103 +88,53 @@ function Add-GraphItemReference {
 
         $GraphName,
 
-        [switch] $FullyQualifiedTypeName
-    )
+        [switch] $FullyQualifiedTypeName,
 
+        [switch] $SkipRelationshipCheck
+    )
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $fromId = if ( $Id ) {
-            $Id
-        } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-            $GraphObject.Id # This is needed when an object is supplied without an id parameter
-        }
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphObject $Property
 
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $fromId $GraphObject
-
-        if ( $GraphObject -and ! $writeRequestInfo.Uri ) {
+        if ( ! $sourceInfo ) {
             throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
-        $targetAsCollection = $RequestOptimizationMode -eq 'SharedRequest'
-        $targetTypeName = $OverrideTargetTypeName
-
-        if ( $Property ) {
-            $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $RequestOptimizationMode -eq 'Auto' ) {
-                $targetType = Get-GraphType $writeRequestInfo.TypeName
-                $targetTypeInfo = $targetType.NavigationProperties | where name -eq $Property
-
-                if ( ! $targetTypeInfo ) {
-                    throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and set the RequestOptimizationMode to a value other than 'Auto' and retry the command"
-                }
-                $targetTypeInfo
-            }
-
-            if ( $RequestOptimizationMode -eq 'Auto' ) {
-                $targetAsCollection = $targetPropertyInfo.IsCollection
-            }
-
-            if ( ! $targetTypeName ) {
-                $targetTypeName = $targetPropertyInfo.TypeId
-            }
+        if ( ! $SkipRelationshipCheck.IsPresent ) {
+            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Property NavigationProperty
         }
 
-        $segments = @()
-        $segments += $writeRequestInfo.uri.tostring()
-        if ( $Property -and $writeRequestInfo.uri ) {
-            $segments += $Property
+        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Property $OverrideTargetTypeName ($RequestOptimizationMode -eq 'Auto')
+
+        if ( ! $targetTypeInfo ) {
+            throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
         }
-        $segments += '$ref'
 
-        $fromUri = $segments -join '/'
-
-        # Note that if the array has only one element, it will be treated like a single
-        # element, rather than an array. Normally, this automatic behavior is quite undesirable,
-        # but in this case it makes it slightly easier by letting us accumulate results in an array
-        # in both the case where we are posting to a collection and also when we are not.
-        $references = @()
+        $targetTypeName = $targetTypeInfo.TypeId
     }
 
     process {
-        $targetInfo = if ( $TargetUri ) {
-            foreach ( $destinationUri in $TargetUri ) {
-                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
-            }
-        } elseif ( $TargetObject ) {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $TargetObject
+        $targetInfo = $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $targetId $TargetUri $TargetObject
 
-            if ( ! $requestInfo.Uri ) {
-                throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
-            }
-            $requestInfo
-        } else {
-            foreach ( $destinationId in $TargetId ) {
-                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $null $destinationId $null
-            }
+        $graphNameParameter = @{}
+
+        if ( $graphName ) {
+            $graphNameParameter = @{GraphName=$GraphName}
         }
 
-        foreach ( $target in $targetInfo ) {
-            $absoluteUri = $::.TypeUriHelper |=> ToGraphAbsoluteUri $target.Context $target.Uri
-            $references += @{'@odata.id' = $absoluteUri}
-        }
+        $referenceId = $targetInfo.Uri.tostring().trimend('/') -split '/' | select -last 1
+
+        $referenceUri = $sourceInfo.Uri, $referenceId, '$ref' -join '/'
+
+        Invoke-GraphRequest $referenceUri -Method DELETE -connection $sourceInfo.RequestInfo.Context.connection -erroraction 'stop' | out-null
     }
 
     end {
-        $referenceRequests = $references
-
-        if ( $targetAsCollection ) {
-            $referenceRequests = , $references
-        }
-
-        foreach ( $referenceRequest in $referenceRequests ) {
-            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $writeRequestInfo.Context.connection -erroraction 'stop' | out-null
-        }
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Uri (new-so GraphUriParameterCompleter LocationUri)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TargetUri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)

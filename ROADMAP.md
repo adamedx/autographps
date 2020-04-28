@@ -2,13 +2,19 @@
 
 ## To-do items -- prioritized
 
+* Use odata context
+* New command names
+  * Get-GraphItemRelationship
+  * RemoveGraphItemRelationship -IgnoreExisting
+  * New-GraphItemRelationship
+* New command features:
+  * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
+* Rename Set-GraphItemProperty to Set-GraphItem
 * Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
 * Add Get-GraphItemUri?
 * Rename GraphObject to GraphItem
-* Add New-GraphRelatedItem
 * Add member filter to `Get-GraphType -member`
 * Change Add-GraphItemReference to New-GraphItemRelationship
-* Add Remove-GraphItemRelationship
 * Use relationship terminology rather than navigationproperty
 * For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
 * Get-GraphToken should show current token scopes
@@ -300,6 +306,7 @@
 * For entity types, do not include id unless it is specified on command line
 * get-graphitem, get-graphchilditem should take an object from the pipeline
 * Add Get-GraphItemReference
+* Add Remove-GraphItemRelationship
 
 ### Postponed
 

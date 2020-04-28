@@ -36,6 +36,7 @@ function Get-GraphItemRelationship {
         [PSCustomObject] $GraphObject,
 
         [Alias('ByRelationshipProperty')]
+        [parameter(mandatory=$true)]
         [string] $Relationship,
 
         [parameter(parametersetname='uriandproperty', mandatory=$true)]
