@@ -138,12 +138,12 @@ ScriptClass TypeUriHelper {
                 TypeName = $targetTypeInfo.FullTypeName
                 IsCollection = $targetTypeInfo.IsCollection
                 TypeInfo = $targetTypeInfo
-                Uri = $targetUri
+                Uri = $targetUri.tostring().trimend('/')
             }
         }
 
         function ToGraphAbsoluteUri($targetContext, [Uri] $graphRelativeUri) {
-            $uriString = $targetContext.connection.graphendpoint.graph.tostring(), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
+            $uriString = $targetContext.connection.graphendpoint.graph.tostring().trimend('/'), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
             [Uri] $uriString
         }
 
@@ -177,6 +177,8 @@ ScriptClass TypeUriHelper {
         function GetReferenceTargetTypeInfo($graphName, $requestInfo, $navigationProperty, $overrideTargetTypeName, $allowCollectionTarget) {
             $targetTypeName = $OverrideTargetTypeName
 
+            $isCollection = $false
+
             if ( $navigationProperty ) {
                 $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $allowCollectionTarget ) {
                     $targetType = Get-GraphType -GraphName $graphName $requestInfo.TypeName
@@ -186,6 +188,7 @@ ScriptClass TypeUriHelper {
                         return $null
                     }
 
+                    $isCollection = $targetTypeInfo.IsCollection
                     $targetTypeInfo
                 }
 
@@ -196,7 +199,7 @@ ScriptClass TypeUriHelper {
 
             [PSCustomObject] @{
                 TypeId = $targetTypeName
-                IsCollectionTarget = $targetPropertyInfo.IsCollection
+                IsCollectionTarget = $isCollection
             }
         }
 

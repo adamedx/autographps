@@ -16,7 +16,6 @@
 . (import-script common/TypeUriHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
-. (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 

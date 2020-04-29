@@ -14,6 +14,7 @@
 
 . (import-script TypeUriHelper)
 . (import-script TypeParameterCompleter)
+. (import-script TypePropertyParameterCompleter)
 
 ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null

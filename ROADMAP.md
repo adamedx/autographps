@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
 * New command names
   * Get-GraphItemRelationship
@@ -11,7 +12,7 @@
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
 * Rename Set-GraphItemProperty to Set-GraphItem
 * Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
-* Add Get-GraphItemUri?
+* Rename Get-GraphUri?
 * Rename GraphObject to GraphItem
 * Add member filter to `Get-GraphType -member`
 * Change Add-GraphItemReference to New-GraphItemRelationship
@@ -307,6 +308,7 @@
 * get-graphitem, get-graphchilditem should take an object from the pipeline
 * Add Get-GraphItemReference
 * Add Remove-GraphItemRelationship
+* Add Get-GraphItemUri
 
 ### Postponed
 
