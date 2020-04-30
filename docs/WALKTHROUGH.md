@@ -545,6 +545,26 @@ t +> directoryObject Val Ashford  d126df35-b441-472e-a3d1-2de370cbbbb7
 t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 ```
 
+#### Removing a relationship
+
+The inverse of the `Add-GraphItemReference` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
+
+```powershell
+Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -ByProperty members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+```
+
+A syntax that supports an object rather than identifier for the subject or object of the relationship or both is also available:
+
+```powershell
+Remove-GraphItemRelationship -FromObject $existingGroup -ByProperty members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+```
+
+And the pipeline is also supported -- this example removes all members from the group `$teamGroup`:
+
+```powershell
+$teamGroup | Get-GraphItemRelationship -Relationship members | Remove-GraphItemRelationship -FromObject $teamgroup -ByProperty members
+```
+
 #### Delete resources
 
 Lastly, the resources we've created can all be deleted using the `Remove-GraphItem` command. This example deletes the group with the id `c436312c-4f6e-4963-ac05-bf68b98d7475`:
@@ -568,6 +588,7 @@ $oldContact | Remove-GraphItem
 * Use `Get-GraphType -Members` to view the properties of the type or structure you're updating
 * Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItemProperty`, etc. to ease your workflow and avoid the need to refer to documentation
 * Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
+* Look for opportunities to use the PowerShell pipeline with AutoGraphPS command for concise, efficient, and scalable automation of Graph resource management.
 
 ### Advanced queries with `-Query`
 

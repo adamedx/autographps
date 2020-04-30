@@ -20,8 +20,8 @@
 function Get-GraphResourceWithMetadata {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='byuri')]
-        [Uri[]] $Uri = @('.'),
+        [parameter(position=0, parametersetname='byuri', valuefrompipeline=$true)]
+        [Uri] $Uri = $null,
 
         [parameter(position=1)]
         [Alias('Property')]
@@ -30,7 +30,7 @@ function Get-GraphResourceWithMetadata {
         [parameter(position=2)]
         [String] $Filter = $null,
 
-        [parameter(parametersetname='GraphItem', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='GraphItem', mandatory=$true)]
         [PSCustomObject] $GraphObject,
 
         [String] $Query = $null,
@@ -73,189 +73,206 @@ function Get-GraphResourceWithMetadata {
         [string] $GraphName
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    $context = $null
+        $context = $null
 
-    $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
-    $assumeRoot = $false
+        $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+        $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
 
-    $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
-
-    $resolvedUri = if ( $Uri[0] -ne '.' -or $GraphObject ) {
-        $GraphArgument = @{}
-
-        if ( $GraphName ) {
-            $graphContext = $::.logicalgraphmanager.Get().contexts[$GraphName]
-            if ( ! $graphContext ) {
-                throw "The specified graph '$GraphName' does not exist"
-            }
-            $context = $graphContext.context
-            $GraphArgument['GraphScope'] = $GraphName
-        }
-
-        $targetUri = if ( $GraphObject ) {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphObject
-            if ( ! $requestInfo.Uri ) {
-                throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
-            }
-            $requestInfo.Uri
-        } else {
-            $Uri[0]
-        }
-
-        $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-        Get-GraphUri $targetUri @metadataArgument @GraphArgument -erroraction stop
-    } else {
-        $context = $::.GraphContext |=> GetCurrent
-        $parser = new-so SegmentParser $context $null $true
-
-        $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
-
-        if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
-            $assumeRoot = $true
-            $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.RootSegment
-        } else {
-            $::.SegmentHelper |=> ToPublicSegment $parser $context.location
-        }
+        $results = @()
+        $intermediateResults = @()
     }
 
-    if ( ! $context ) {
-        $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
-        $context = if ( $parsedPath.ContextName ) {
-            $graphContext = $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName]
-            if ( $graphContext ) {
-                $graphContext.context
+    process {
+        $assumeRoot = $false
+
+        $resolvedUri = if ( $Uri -and $Uri -ne '.' -or $GraphObject ) {
+            $GraphArgument = @{}
+
+            if ( $GraphName ) {
+                $graphContext = $::.logicalgraphmanager.Get().contexts[$GraphName]
+                if ( ! $graphContext ) {
+                    throw "The specified graph '$GraphName' does not exist"
+                }
+                $context = $graphContext.context
+                $GraphArgument['GraphScope'] = $GraphName
+            }
+
+            $targetUri = if ( $GraphObject ) {
+                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphObject
+                if ( ! $requestInfo.Uri ) {
+                    throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+                }
+                $requestInfo.Uri
+            } else {
+                $Uri
+            }
+
+            $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
+            Get-GraphUri $targetUri @metadataArgument @GraphArgument -erroraction stop
+        } else {
+            $context = $::.GraphContext |=> GetCurrent
+            $parser = new-so SegmentParser $context $null $true
+
+            $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
+
+            if ( ! $contextReady -and ! $mustWaitForMissingMetadata ) {
+                $assumeRoot = $true
+                $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.RootSegment
+            } else {
+                $::.SegmentHelper |=> ToPublicSegment $parser $context.location
             }
         }
+
         if ( ! $context ) {
-            throw "'$($resolvedUri.Path)' is not a valid graph location uri"
+            $parsedPath = $::.GraphUtilities |=> ParseLocationUriPath $resolvedUri.Path
+            $context = if ( $parsedPath.ContextName ) {
+                $graphContext = $::.logicalgraphmanager.Get().contexts[$parsedPath.ContextName]
+                if ( $graphContext ) {
+                    $graphContext.context
+                }
+            }
+            if ( ! $context ) {
+                throw "'$($resolvedUri.Path)' is not a valid graph location uri"
+            }
+        }
+
+        $requestArguments = @{
+            Uri = $resolvedUri.GraphUri
+            Query = $Query
+            Filter = $Filter
+            Search = $Search
+            Select = $Select
+            Expand = $Expand
+            OrderBy = $OrderBy
+            Descending = $Descending
+            RawContent=$RawContent
+            AbsoluteUri=$AbsoluteUri
+            Headers=$Headers
+            First=$pscmdlet.pagingparameters.first
+            Skip=$pscmdlet.pagingparameters.skip
+            IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+            Connection = $context.connection
+            # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
+            # for the current module and not the module we are calling into, we explicitly set
+            # verbose for a command from outside this module
+            Verbose=([System.Management.Automation.SwitchParameter]::new($VerbosePreference -eq 'Continue'))
+        }
+
+        if ( $ClientRequestId ) {
+            $requestArguments['ClientRequestId'] = $ClientRequestId
+        }
+
+        $graphException = $false
+
+        $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
+
+        $noUri = ! $GraphObject -and ( ! $Uri -or $Uri -eq '.' )
+
+        $emitTarget = $null
+        $emitChildren = $null
+        $emitRoot = $true
+
+        if ( $StrictOutput.IsPresent ) {
+            $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
+            $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
+        } else {
+            $emitTarget = ( ( ! $noUri -or $ignoreMetadata ) -and ! $ChildrenOnly.IsPresent ) -or $resolvedUri.Collection
+            $emitRoot = ! $noUri -or $ignoreMetadata
+            $emitChildren = ( $noUri -or ! $emitTarget -or $Recurse.IsPresent ) -or $ChildrenOnly.IsPresent
+        }
+
+        write-verbose "Uri unspecified: $noUri, Emit Root: $emitRoot, Emit target: $emitTarget, EmitChildren: $emitChildren"
+
+        if ( $resolvedUri.Class -eq '__Root' ) {
+            if ( $emitRoot ) {
+                $results += $resolvedUri
+            }
+        } elseif ( $emitTarget ) {
+            try {
+                $graphResult = Invoke-GraphRequest @requestArguments
+                $intermediateResults += $graphResult
+            } catch [GraphAccessDeniedException] {
+                # In some cases, we want to allow the user to make a mistake that results in an error from Graph
+                # but allows the cmdlet to continue to enumerate child segments known from local metadata. For
+                # example, the application may not have the scopes to perform a GET on some URI which means Graph
+                # has to return a 4xx, but its still valid to enumerate children since the question of what
+                # segments may follow a given segment is not affected by scope. Without this accommodation,
+                # exploration of the Graph with this cmdlet would be tricky as you'd need to have every possible
+                # scope to avoid hitting blocking errors. It's quite possible that you *can't* get all the scopes
+                # anyway (you may need admin approval), but you should still be able to see what's possible, especially
+                # since that question is one this cmdlet can answer. :)
+                $graphException = $true
+                $_.exception | write-verbose
+                write-warning $_.exception.message
+                $lastError = get-grapherror
+                if ($lastError -and ($lastError | get-member ResponseStream -erroraction ignore)) {
+                    $lastError.ResponseStream | write-warning
+                }
+            }
+        }
+
+        if ( $ignoreMetadata ) {
+            write-warning "Metadata processing for Graph is in progress -- responses from Graph will be returned but no metadata will be added. You can retry this cmdlet later or retry it now with the '-RequireMetadata' option to force a wait until processing is complete in order to obtain the complete response."
+        }
+
+        if ( ! $DataOnly.ispresent ) {
+            if ( ! $ignoreMetadata -and ( $graphException -or $emitChildren ) ) {
+                Get-GraphUri $resolvedUri.GraphUri -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
+                    $results += $_
+                }
+            }
         }
     }
 
-    $results = @()
+    end {
+        foreach ( $intermediateResult in $intermediateResults ) {
+            if ( 'GraphSegmentDisplayType' -in $intermediateResult.pstypenames ) {
+                $resuts += $intermediateResult
+                continue
+            }
 
-    $requestArguments = @{
-        Uri = $resolvedUri.GraphUri
-        Query = $Query
-        Filter = $Filter
-        Search = $Search
-        Select = $Select
-        Expand = $Expand
-        OrderBy = $OrderBy
-        Descending = $Descending
-        RawContent=$RawContent
-        AbsoluteUri=$AbsoluteUri
-        Headers=$Headers
-        First=$pscmdlet.pagingparameters.first
-        Skip=$pscmdlet.pagingparameters.skip
-        IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
-        Connection = $context.connection
-        # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
-        # for the current module and not the module we are calling into, we explicitly set
-        # verbose for a command from outside this module
-        Verbose=([System.Management.Automation.SwitchParameter]::new($VerbosePreference -eq 'Continue'))
-    }
+            $restResult = $intermediateResult
 
-    if ( $ClientRequestId ) {
-        $requestArguments['ClientRequestId'] = $ClientRequestId
-    }
-
-    $graphException = $false
-
-    $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
-
-    $noUri = ! $GraphObject -and ( ! $Uri -or $Uri -eq '.' )
-
-    $emitTarget = $null
-    $emitChildren = $null
-    $emitRoot = $true
-
-    if ( $StrictOutput.IsPresent ) {
-        $emitTarget = $::.SegmentHelper.IsValidLocationClass($resolvedUri.Class) -or $ignoreMetadata
-        $emitChildren = ! $resolvedUri.Collection -or $Recurse.IsPresent
-    } else {
-        $emitTarget = ( ( ! $noUri -or $ignoreMetadata ) -and ! $ChildrenOnly.IsPresent ) -or $resolvedUri.Collection
-        $emitRoot = ! $noUri -or $ignoreMetadata
-        $emitChildren = ( $noUri -or ! $emitTarget -or $Recurse.IsPresent ) -or $ChildrenOnly.IsPresent
-    }
-
-    write-verbose "Uri unspecified: $noUri, Emit Root: $emitRoot, Emit target: $emitTarget, EmitChildren: $emitChildren"
-
-    if ( $resolvedUri.Class -eq '__Root' ) {
-        if ( $emitRoot ) {
-            $results += $resolvedUri
-        }
-    } elseif ( $emitTarget ) {
-        try {
-            Invoke-GraphRequest @requestArguments | foreach {
-                $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
-                    if ( ! $responseContentOnly ) {
-                        $_ | Get-GraphUri
-                    } else {
-                        $_
-                    }
+            $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
+                if ( ! $responseContentOnly ) {
+                    $restResult | Get-GraphUri
                 } else {
-                    if ( ! $responseContentOnly ) {
-                        $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $_)
-                    } else {
-                        $_
-                    }
+                    $restResult
                 }
-
-                $noResults = $false
-
-                # TODO: Investigate scenarios where empty collection results sometimes return
-                # a non-empty result containing and empty 'value' field in the content
-                if ( $resolvedUri.Collection -and ! $RawContent.IsPresent ) {
-                    if ( $_ -and ( $_ | gm value -erroraction ignore ) -and ! $_.value ) {
-                        $noResults = $true
-                    }
-                }
-
-                if ( ! $noResults ) {
-                    $results += $result
+            } else {
+                if ( ! $responseContentOnly ) {
+                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $restResult)
+                } else {
+                    $restResult
                 }
             }
-        } catch [GraphAccessDeniedException] {
-            # In some cases, we want to allow the user to make a mistake that results in an error from Graph
-            # but allows the cmdlet to continue to enumerate child segments known from local metadata. For
-            # example, the application may not have the scopes to perform a GET on some URI which means Graph
-            # has to return a 4xx, but its still valid to enumerate children since the question of what
-            # segments may follow a given segment is not affected by scope. Without this accommodation,
-            # exploration of the Graph with this cmdlet would be tricky as you'd need to have every possible
-            # scope to avoid hitting blocking errors. It's quite possible that you *can't* get all the scopes
-            # anyway (you may need admin approval), but you should still be able to see what's possible, especially
-            # since that question is one this cmdlet can answer. :)
-            $graphException = $true
-            $_.exception | write-verbose
-            write-warning $_.exception.message
-            $lastError = get-grapherror
-            if ($lastError -and ($lastError | get-member ResponseStream -erroraction ignore)) {
-                $lastError.ResponseStream | write-warning
+
+            $noResults = $false
+
+            # TODO: Investigate scenarios where empty collection results sometimes return
+            # a non-empty result containing and empty 'value' field in the content
+            if ( $resolvedUri.Collection -and ! $RawContent.IsPresent ) {
+                if ( $restResult -and ( $restResult | gm value -erroraction ignore ) -and ! $restResult.value ) {
+                    $noResults = $true
+                }
+            }
+
+            if ( ! $noResults ) {
+                $results += $result
             }
         }
-    }
 
-    if ( $ignoreMetadata ) {
-        write-warning "Metadata processing for Graph is in progress -- responses from Graph will be returned but no metadata will be added. You can retry this cmdlet later or retry it now with the '-RequireMetadata' option to force a wait until processing is complete in order to obtain the complete response."
-    }
+        __AutoConfigurePrompt $context
 
-    if ( ! $DataOnly.ispresent ) {
-        if ( ! $ignoreMetadata -and ( $graphException -or $emitChildren ) ) {
-            Get-GraphUri $resolvedUri.GraphUri -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
-                $results += $_
-            }
+        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+        $targetResultVariable.value = $results
+
+        if ( $results ) {
+            $results
         }
-    }
-
-    __AutoConfigurePrompt $context
-
-    $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
-    $targetResultVariable.value = $results
-
-    if ( $results ) {
-        $results
     }
 }
 

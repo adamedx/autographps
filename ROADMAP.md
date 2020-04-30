@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Get-GraphMember?
+* Add specific type to pstypenames for reach entity type?
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
 * New command names
@@ -11,7 +13,6 @@
 * New command features:
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
 * Rename Set-GraphItemProperty to Set-GraphItem
-* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
 * Rename Get-GraphUri?
 * Rename GraphObject to GraphItem
 * Add member filter to `Get-GraphType -member`
@@ -309,6 +310,9 @@
 * Add Get-GraphItemReference
 * Add Remove-GraphItemRelationship
 * Add Get-GraphItemUri
+* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
+* Get better behavior for gls, et. al. when id or other properties are not returned
+* Unalias type names in typemember
 
 ### Postponed
 

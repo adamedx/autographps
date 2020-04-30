@@ -134,6 +134,6 @@ function Remove-GraphItemRelationship {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
