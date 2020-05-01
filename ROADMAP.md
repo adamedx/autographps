@@ -2,10 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Make Get-GraphItem, Get-GraphChildItem both default to typename
+* Should Get-GraphItem, etc., return child uris? Maybe not.
+* Make Get-GraphChildItem support relationships -- actually make Get-GraphItemRelationship be Get-GraphChildItem
 * Invoke-GraphMethod
-* Make show-graphhelp support complex types?
-* Refactor add-graphitemreference
-* Get-GraphMember?
+* Format-GraphItem
 * Add specific type to pstypenames for reach entity type?
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
@@ -18,10 +19,8 @@
 * Rename Set-GraphItemProperty to Set-GraphItem
 * Rename Get-GraphUri?
 * Rename GraphObject to GraphItem
-* Add member filter to `Get-GraphType -member`
 * Change Add-GraphItemReference to New-GraphItemRelationship
 * Use relationship terminology rather than navigationproperty
-* For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
@@ -314,6 +313,11 @@
 * Get better behavior for gls, et. al. when id or other properties are not returned
 * Unalias type names in typemember
 * Use begin / process / end in key commands to correctly support pipeline
+* Make show-graphhelp support complex types?
+* Refactor add-graphitemreference
+* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Add member filter to `Get-GraphType -member`
+* For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
 
 ### Postponed
 
@@ -328,7 +332,6 @@
 * Get a fix from sdk for scope helper in find-graphpermissions
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
-* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 
 ### Abandoned
 

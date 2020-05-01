@@ -21,7 +21,9 @@ function Get-GraphType {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [Alias('Name')]
         $TypeName,
 
@@ -30,27 +32,32 @@ function Get-GraphType {
         $TypeClass = 'Any',
 
         [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='fullyqualified')]
+        [parameter(parametersetname='optionallyqualifiedmembersonly')]
         $Namespace,
 
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
-        [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='fullyqualified')]
-        [switch] $Members,
+        [parameter(parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
+        [switch] $TransitiveMembers,
+
+        [parameter(position=1, parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(position=1, parametersetname='fullyqualifiedmembersonly')]
+        [string] $MemberFilter,
 
         [parameter(parametersetname='list', mandatory=$true)]
-        [switch] $List
+        [switch] $ListNames
     )
 
     Enable-ScriptClassVerbosePreference
 
     $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
-    if ( ! $List.IsPresent ) {
+    if ( ! $ListNames.IsPresent ) {
         $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
             $TypeClass
         } else {
@@ -69,11 +76,16 @@ function Get-GraphType {
 
         $result = $::.TypeHelper |=> ToPublic $type
 
-        if ( ! $Members.IsPresent ) {
+        if ( ! $TransitiveMembers.IsPresent ) {
             $result
         } else {
-            $result.Properties
-            $result.NavigationProperties
+            if ( ! $MemberFilter ) {
+                $result.Properties
+                $result.NavigationProperties
+            } else {
+                $result.Properties | where { $_.Name -like "*$($MemberFilter)*" }
+                $result.NavigationProperties | where { $_.Name -like "*$($MemberFilter)*" }
+            }
         }
     } else {
         $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
