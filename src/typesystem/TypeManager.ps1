@@ -283,11 +283,11 @@ ScriptClass TypeManager {
             $manager
         }
 
-        function GetSortedTypeNames($typeClass, $graphContext) {
-            $typeClasses = if ( $typeClass -eq 'Unknown' ) {
+        function GetSortedTypeNames($allowedTypeClasses, $graphContext) {
+            $typeClasses = if ( $allowedTypeClasses -eq 'Unknown' ) {
                 'Entity', 'Complex', 'Primitive', 'Enumeration'
             } else {
-                , $typeClass
+                , $allowedTypeClasses
             }
 
             $manager = Get $graphContext
@@ -297,7 +297,7 @@ ScriptClass TypeManager {
                 $typeProvider |=> GetSortedTypeNames $targetTypeClass
             }
 
-            $result = if ( $typeClass -ne 'Unknown' ) {
+            $result = if ( $typeClasses.length -ne 1 ) {
                 $typeNames
             } else {
                 $typeNames | sort-object

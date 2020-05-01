@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Invoke-GraphMethod
+* Make show-graphhelp support complex types?
+* Refactor add-graphitemreference
 * Get-GraphMember?
 * Add specific type to pstypenames for reach entity type?
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
@@ -24,10 +27,7 @@
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
 * Make New-GraphDataObject for Complex types -- make a new-graphresource?
-* Get better behavior for gls, et. al. when id or other properties are not returned
-* Unalias type names in typemember
 * Add Set-GraphItem command that takes in object, hash table or json
-* Use begin / process / end in key commands to correctly support pipeline
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
@@ -313,6 +313,7 @@
 * Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
 * Get better behavior for gls, et. al. when id or other properties are not returned
 * Unalias type names in typemember
+* Use begin / process / end in key commands to correctly support pipeline
 
 ### Postponed
 

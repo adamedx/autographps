@@ -72,5 +72,5 @@ function Show-GraphHelp {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Show-GraphHelp ResourceName (new-so TypeParameterCompleter Entity $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Show-GraphHelp ResourceName (new-so TypeParameterCompleter Entity, Complex $true)
 $::.ParameterCompleter |=> RegisterParameterCompleter Show-GraphHelp GraphName (new-so GraphParameterCompleter)

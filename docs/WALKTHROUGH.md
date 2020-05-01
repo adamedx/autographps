@@ -266,7 +266,7 @@ You can also skip ahead -- perhaps you want the last elements of a sorted collec
 gls me/contacts -skip 3 -first 3
 ```
 
-### Projecting fields with `-Project`
+### Projecting fields with `-Property`
 
 By default, Graph does not return all properties of an object -- it returns those deemed most likely to be useful without retrieving every field to avoid excessive network traffic. For example, the query below for a given user is missing the `department` property in the response:
 
@@ -285,10 +285,10 @@ businessPhones    : +1 (313) 360 3141
 displayName       : Starchild Okorafor
 ```
 
-To fix this, use `-Project` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
+To fix this, use `-Property` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
 
 ```
-ggr me -project displayName, department, mail, officeLocation
+ggr me -property displayName, department, mail, officeLocation
 
 @odata.context : https://graph.microsoft.com/v1.0/$metadata#users(displayName,department,mail,officeLocation)
                  /$entity

@@ -13,11 +13,11 @@
 # limitations under the License.
 
 ScriptClass TypeParameterCompleter {
-    $explicitTypeClass = $null
+    $explicitTypeClasses = $null
     $unqualified = $false
 
     function __initialize( $explicitTypeClass = $null, $unqualified = $false ) {
-        $this.explicitTypeClass = $explicitTypeClass
+        $this.explicitTypeClasses = $explicitTypeClasses
         $this.unqualified = $unqualified
     }
 
@@ -26,18 +26,17 @@ ScriptClass TypeParameterCompleter {
         $graphName = $fakeBoundParameters['GraphName']
         $fullyQualified = $null
 
-        $typeClass = if ( $this.explicitTypeClass ) {
-            $this.explicitTypeClass
+        $typeClass = if ( $this.explicitTypeClasses ) {
+            $this.explicitTypeClasses
         } else {
-            $fakeBoundParameters['TypeClass']
+            , $fakeBoundParameters['TypeClass']
             $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
                 $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
             }
         }
 
-
-        $targetTypeClass = if ( ! $typeClass -or $typeClass -eq 'Any' ) {
-            'Unknown'
+        $targetTypeClasses = if ( ! $typeClass -or $typeClass -eq 'Any' ) {
+            , 'Unknown'
         } else {
             $typeClass
         }
@@ -51,7 +50,8 @@ ScriptClass TypeParameterCompleter {
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
         if ( $targetContext ) {
-            $typeNames = $::.TypeManager |=> GetSortedTypeNames $targetTypeClass $targetContext
+            $typeNames = $::.TypeManager |=> GetSortedTypeNames $targetTypeClasses $targetContext
+
             $candidates = if ( $this.unqualified ) {
                 $typeNames | foreach { $_ -split '\.' | select -last 1 }
             } else {
