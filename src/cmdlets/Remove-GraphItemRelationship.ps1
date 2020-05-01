@@ -53,14 +53,6 @@ function Remove-GraphItemRelationship {
         [parameter(parametersetname='typedobjectandpropertytotargetobject')]
         [string] $OverrideTargetTypeName,
 
-        [parameter(parametersetname='typeandpropertytotargetid')]
-        [parameter(parametersetname='typedobjectandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargeturi')]
-        [parameter(parametersetname='typedobjectandpropertytotargetobject')]
-        [ValidateSet('Auto', 'SeparateRequest', 'SharedRequest')]
-        [string] $RequestOptimizationMode = 'SeparateRequest',
-
         [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='uriandpropertytotargetid', mandatory=$true)]
@@ -104,7 +96,7 @@ function Remove-GraphItemRelationship {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Property NavigationProperty
         }
 
-        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Property $OverrideTargetTypeName ($RequestOptimizationMode -eq 'Auto')
+        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Property $OverrideTargetTypeName $false
 
         if ( ! $targetTypeInfo ) {
             throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"

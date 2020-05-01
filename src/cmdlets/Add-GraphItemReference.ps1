@@ -53,14 +53,6 @@ function Add-GraphItemReference {
         [parameter(parametersetname='typedobjectandpropertytotargetobject')]
         [string] $OverrideTargetTypeName,
 
-        [parameter(parametersetname='typeandpropertytotargetid')]
-        [parameter(parametersetname='typedobjectandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargeturi')]
-        [parameter(parametersetname='typedobjectandpropertytotargetobject')]
-        [ValidateSet('Auto', 'SeparateRequest', 'SharedRequest')]
-        [string] $RequestOptimizationMode = 'SeparateRequest',
-
         [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='uriandpropertytotargetid', mandatory=$true)]
@@ -87,55 +79,33 @@ function Add-GraphItemReference {
 
         $GraphName,
 
-        [switch] $FullyQualifiedTypeName
+        [switch] $FullyQualifiedTypeName,
+
+        [switch] $SkipRelationshipCheck
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $fromId = if ( $Id ) {
-            $Id
-        } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-            $GraphObject.Id # This is needed when an object is supplied without an id parameter
-        }
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphObject $Property $false
 
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $fromId $GraphObject
-
-        if ( $GraphObject -and ! $writeRequestInfo.Uri ) {
+        if ( ! $sourceInfo ) {
             throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
-        $targetAsCollection = $RequestOptimizationMode -eq 'SharedRequest'
-        $targetTypeName = $OverrideTargetTypeName
-
-        if ( $Property ) {
-            $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $RequestOptimizationMode -eq 'Auto' ) {
-                $targetType = Get-GraphType $writeRequestInfo.TypeName
-                $targetTypeInfo = $targetType.NavigationProperties | where name -eq $Property
-
-                if ( ! $targetTypeInfo ) {
-                    throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and set the RequestOptimizationMode to a value other than 'Auto' and retry the command"
-                }
-                $targetTypeInfo
-            }
-
-            if ( $RequestOptimizationMode -eq 'Auto' ) {
-                $targetAsCollection = $targetPropertyInfo.IsCollection
-            }
-
-            if ( ! $targetTypeName ) {
-                $targetTypeName = $targetPropertyInfo.TypeId
-            }
+        if ( ! $SkipRelationshipCheck.IsPresent ) {
+            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Property NavigationProperty
         }
 
-        $segments = @()
-        $segments += $writeRequestInfo.uri.tostring()
-        if ( $Property -and $writeRequestInfo.uri ) {
-            $segments += $Property
-        }
-        $segments += '$ref'
+        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Property $OverrideTargetTypeName $false
 
-        $fromUri = $segments -join '/'
+        if ( ! $targetTypeInfo ) {
+            throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
+        }
+
+        $targetTypeName = $targetTypeInfo.TypeId
+
+        $fromUri = $sourceInfo.uri.tostring().trimend('/'), '$ref' -join '/'
 
         # Note that if the array has only one element, it will be treated like a single
         # element, rather than an array. Normally, this automatic behavior is quite undesirable,
@@ -147,13 +117,12 @@ function Add-GraphItemReference {
     process {
         $targetInfo = if ( $TargetUri ) {
             foreach ( $destinationUri in $TargetUri ) {
-                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
+                $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $TargetId $destinationUri $null
             }
         } elseif ( $TargetObject ) {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $TargetObject
-
+            $requestInfo = $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $TargetId $TargetUri $TargetObject
             if ( ! $requestInfo.Uri ) {
-                throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
+                throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the OverrideTargetTypeName and TargetId parameters and retry the command"
             }
             $requestInfo
         } else {
@@ -169,14 +138,8 @@ function Add-GraphItemReference {
     }
 
     end {
-        $referenceRequests = $references
-
-        if ( $targetAsCollection ) {
-            $referenceRequests = , $references
-        }
-
-        foreach ( $referenceRequest in $referenceRequests ) {
-            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $writeRequestInfo.Context.connection -erroraction 'stop' | out-null
+        foreach ( $referenceRequest in $references ) {
+            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop' | out-null
         }
     }
 }
