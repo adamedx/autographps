@@ -64,6 +64,8 @@ function Get-GraphResourceWithMetadata {
 
         [Switch] $StrictOutput,
 
+        [Switch] $IgnoreUnauthorized,
+
         [HashTable] $Headers = $null,
 
         [Guid] $ClientRequestId,
@@ -83,6 +85,7 @@ function Get-GraphResourceWithMetadata {
 
         $results = @()
         $intermediateResults = @()
+        $contexts = @()
     }
 
     process {
@@ -140,7 +143,9 @@ function Get-GraphResourceWithMetadata {
         }
 
         $requestArguments = @{
-            Uri = $resolvedUri.GraphUri
+            # Handle the case of resolvedUri being incomplete because of missing data -- just
+            # try to use the original URI
+            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $Uri }
             Query = $Query
             Filter = $Filter
             Search = $Search
@@ -194,6 +199,11 @@ function Get-GraphResourceWithMetadata {
             try {
                 $graphResult = Invoke-GraphRequest @requestArguments
                 $intermediateResults += $graphResult
+                # We need the context with each result, because in theory each result came from a different
+                # Graph since we allow arbitrary URI's to be supplied to the pipeline
+                $graphResult | foreach {
+                    $contexts += $context
+                }
             } catch [GraphAccessDeniedException] {
                 # In some cases, we want to allow the user to make a mistake that results in an error from Graph
                 # but allows the cmdlet to continue to enumerate child segments known from local metadata. For
@@ -228,9 +238,13 @@ function Get-GraphResourceWithMetadata {
     }
 
     end {
+        $contextIndex = 0
+
         foreach ( $intermediateResult in $intermediateResults ) {
+            $currentContext = $contexts[$contextIndex] # The context associated with this result
+            $contextIndex++
             if ( 'GraphSegmentDisplayType' -in $intermediateResult.pstypenames ) {
-                $resuts += $intermediateResult
+                $results += $intermediateResult
                 continue
             }
 
@@ -238,13 +252,13 @@ function Get-GraphResourceWithMetadata {
 
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
-                    $restResult | Get-GraphUri
+                    $restResult | Get-GraphUri -GraphScope $context.name
                 } else {
                     $restResult
                 }
             } else {
                 if ( ! $responseContentOnly ) {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($resolvedUri, $restResult)
+                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($currentContext, $restResult)
                 } else {
                     $restResult
                 }
@@ -276,7 +290,7 @@ function Get-GraphResourceWithMetadata {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)

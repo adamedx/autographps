@@ -132,8 +132,12 @@ ScriptClass SegmentHelper {
             $result
         }
 
-        function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
-            $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.namespace $parentPublicSegment.Type).EntityTypeName
+        function ToPublicSegmentFromGraphItem( $graphContext, $graphItem ) {
+            $itemUri = $::.TypeUriHelper |=> GetUriFromDecoratedObject $graphContext $graphItem $true
+
+            $typeInfo = $::.TypeUriHelper |=> TypeFromUri $itemUri $graphContext
+            $fullTypeName = $typeInfo.FullTypeName
+
             $typeComponents = $fullTypeName -split '\.'
 
             # Objects may actually be raw json, or even binary, depending
@@ -147,27 +151,29 @@ ScriptClass SegmentHelper {
                 '[{0}]' -f $graphItem.Gettype().name
             }
 
+            $segment = $typeInfo.UriInfo
+
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
             [PSCustomObject] @{
-                PSTypeName = $parentPublicSegment.pstypename.tostring()
-                ParentPath = $parentPublicSegment.Path
+                PSTypeName = $segment.pstypename.tostring()
+                ParentPath = $segment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
                 Relation = 'Direct'
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
                 Id = $itemId
-                Namespace = $parentPublicSegment.Namespace
-                Uri = new-object Uri $parentPublicSegment.Uri, $itemId
-                GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $itemId)
-                Path = $::.GraphUtilities.JoinFragmentUri($parentPublicSegment.path, $itemId)
+                Namespace = $segment.Namespace
+                Uri = $segment.Uri
+                GraphUri = $segment.GraphUri
+                Path = $segment.Path
                 FullTypeName = $fullTypeName
-                Version = $parentPublicSegment.Version
-                Endpoint = $parentPublicSegment.Endpoint
+                Version = $segment.Version
+                Endpoint = $segment.Endpoint
                 IsDynamic = $true
-                Parent = $ParentPublicSegment
-                Details = $null
+                Parent = $null
+                Details = $segment
                 Content = $graphItem
                 Preview = $this.__GetPreview($graphItem, $itemId)
             }

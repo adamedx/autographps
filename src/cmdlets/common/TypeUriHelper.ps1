@@ -23,8 +23,8 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function TypeFromUri([Uri] $uri) {
-            $uriInfo = Get-GraphUri $Uri -erroraction stop
+        function TypeFromUri([Uri] $uri, $targetContext) {
+            $uriInfo = Get-GraphUri $Uri -GraphScope $targetContext.name -erroraction stop
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
@@ -49,10 +49,6 @@ ScriptClass TypeUriHelper {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
 
-                $id = if ( $responseObject | gm id -erroraction ignore ) {
-                    $responseObject.id
-                }
-
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
                 # URI that was used to request the object from Graph, not necessarily the object's actual
@@ -62,8 +58,8 @@ ScriptClass TypeUriHelper {
                 # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
-                if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                    $objectUri = $objectUri.tostring(), $id -join '/'
+                if ( $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
+                    $objectUri = $objectUri.tostring(), $resourceId -join '/'
                 }
 
                 $objectUri.tostring()
@@ -78,9 +74,12 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function GetUriFromDecoratedObject($targetContext, $graphObject) {
-            $objectUri = GetUriFromDecoratedResponseObject $targetContext $graphObject
+        function GetUriFromDecoratedObject($targetContext, $graphObject, $noInterpolation = $false) {
+            $idHint = if ( ! $noInterpolation -and ( $graphObject | gm id -erroraction ignore ) ) {
+                $graphObject.id
+            }
 
+            $objectUri = GetUriFromDecoratedResponseObject $targetContext $graphObject $idHint
             if ( ! $objectUri ) {
                 $type = GetTypeFromDecoratedObject $graphObject
 
@@ -114,7 +113,7 @@ ScriptClass TypeUriHelper {
                     IsCollection = $true
                 }
             } elseif ( $uri )  {
-                TypeFromUri $uri
+                TypeFromUri $uri $targetContext
             } elseif ( $typedGraphObject ) {
                 $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
                 if ( $objectUri ) {
@@ -125,7 +124,7 @@ ScriptClass TypeUriHelper {
                     if ( $id -and ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
                         $targetUri = $targetUri, $id -join '/'
                     }
-                    TypeFromUri $targetUri
+                    TypeFromUri $targetUri $targetContext
                 }
             }
 

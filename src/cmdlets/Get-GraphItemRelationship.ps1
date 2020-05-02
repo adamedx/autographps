@@ -36,8 +36,7 @@ function Get-GraphItemRelationship {
         [PSCustomObject] $GraphObject,
 
         [Alias('ByRelationshipProperty')]
-        [parameter(mandatory=$true)]
-        [string] $Relationship,
+        [string[]] $Relationship,
 
         [parameter(parametersetname='uriandproperty', mandatory=$true)]
         [Alias('FromUri')]
@@ -62,16 +61,40 @@ function Get-GraphItemRelationship {
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphObject
 
-        if ( ! $SkipRelationshipCheck.IsPresent ) {
-            $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Relationship NavigationProperty
+        $requestErrorAction = $ErrorActionPreference
+
+        $targetRelationships = if ( $Relationship -and ! ( $Relationship -is [string] -and $Relationship.Contains('*') ) ) {
+            $Relationship
+        } else {
+            if ( ! $PSBoundParameters['ErrorActionPreference'] ) {
+                $requestErrorAction = 'SilentlyContinue'
+            }
+            $typeManager = $::.TypeManager |=> Get $requestInfo.Context
+            $typeDefinition = $typeManager |=> GetTypeDefinition Entity $requestInfo.TypeName
+            $relationships = $typeManager |=> GetTypeDefinitionTransitiveProperties $typeDefinition NavigationProperty
+
+            $relationshipProperties = if ( $Relationship ) {
+                $relationships | where { $_ -like $relationship }
+            } else {
+                $relationships
+            }
+
+            if ( $relationshipProperties ) {
+                $relationshipProperties | select -expandproperty Name
+            }
         }
 
-        $relationShipUri = $requestInfo.Uri.ToString(), $Relationship -join '/'
+        $relationShipUris = foreach ( $currentRelationship in $targetRelationships ) {
+            if ( ! $SkipRelationshipCheck.IsPresent ) {
+                $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $currentRelationship NavigationProperty
+            }
 
-        Get-GraphResourceWithMetadata -Uri $relationShipUri -GraphName $GraphName -ContentOnly:$($ContentOnly.IsPresent)
+            $requestInfo.Uri.ToString(), $currentRelationship -join '/'
+        }
     }
 
     end {
+        $relationshipUris | Get-GraphResourceWithMetadata -GraphName $GraphName -ContentOnly:$($ContentOnly.IsPresent) -ErrorAction $requestErrorAction
     }
 }
 

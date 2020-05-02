@@ -173,7 +173,7 @@ function Get-GraphUri {
         $childSegments = $null
 
         if ( $instanceId ) {
-            $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId $validLocationClasses
+            $idSegment = $lastSegment |=> NewNextSegments ($::.GraphManager |=> GetGraph $context) $instanceId $validLocationClasses
 
             $additionalSegments = if ( $Children.IsPresent ) {
                 $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort-object Name
