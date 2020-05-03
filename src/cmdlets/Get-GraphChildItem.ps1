@@ -20,24 +20,28 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypecollection')]
     param(
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
-        [parameter(position=0, parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuri',  mandatory=$true)]
+        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [Alias('OfUri')]
         [Uri] $Uri,
 
-        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobject', mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
+        [Alias('OfObject')]
         [PSCustomObject] $GraphObject,
 
-        [parameter(parametersetname='bytypecollection', mandatory=$true)]
-        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='bytypeandid', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
-        $TypeName,
+        [parameter(position=0, parametersetname='bytypecollection', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [Alias('OfTypeName')]
+        [string] $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
-        $Id,
+        [Alias('OfId')]
+        [string] $Id,
 
         [parameter(position=2, parametersetname='byuri')]
         [parameter(position=2, parametersetname='bytypeandid')]
@@ -45,17 +49,20 @@ function Get-GraphChildItem {
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [string[]] $Property,
 
-        $GraphName,
+        [Alias('WithRelationship')]
+        [string[]] $Relationship,
+
+        [string] $GraphName,
 
         [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
-        $PropertyFilter,
+        [string] $PropertyFilter,
 
         [parameter(parametersetname='bytypecollection')]
         [parameter(parametersetname='bytypecollectionpropertyfilter')]
-        $Filter,
+        [string]$Filter,
 
         [String] $Search,
 
@@ -74,25 +81,48 @@ function Get-GraphChildItem {
 
         [switch] $SkipPropertyCheck
     )
-    $remappedParameters = $PSBoundParameters
-
-    $remappedUri = if ( $TypeName -and ! $Id -and ! $Filter ) {
+    begin {
+        Enable-ScriptClassVerbosePreference
         $remappedParameters = @{}
-        foreach ( $parameterName in $remappedParameters.Keys ) {
-            if ( $parameterName -ne 'TypeName' ) {
-                $remappedParameter.Add($parameterName, $PSBoundParameters[$parameterName])
+        foreach ( $parameterName in $PSBoundParameters.Keys ) {
+            if ( $parameterName -ne 'TypeName' -and $parameterName -ne 'Uri' -and $parameterName -ne 'Relationship' -and $parameterName -ne 'Id' -and $parameterName -ne 'SkipPropertyCheck' ) {
+                $remappedParameters.Add($parameterName, $PSBoundParameters[$parameterName])
             }
         }
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $null $null $null
-        $remappedParameters['Uri'] = $requestInfo.Uri
+
+        $remappedUris = @()
     }
 
-    Get-GraphItem @remappedParameters -ChildrenOnly:$true
+    process {
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $null
+
+        $baseUri = if ( $Uri ) {
+            $Uri # RequestInfo may generate a base URI unsuited for our purposes, so don't use it if we have an explicit URI
+        } else {
+            $requestInfo.Uri
+        }
+
+        if ( ! $Relationship ) {
+            $remappedUris += $baseUri
+        } else {
+            foreach ( $relationshipProperty in $RelationShip ) {
+                $remappedUris += ( $baseUri.tostring().trimend('/'), $relationshipProperty -join '/' )
+            }
+        }
+    }
+
+    end {
+        $ignoreProperty = $SkipPropertyCheck.IsPresent -or ( $Relationship -ne $null )
+        foreach ( $remappedUri in $remappedUris ) {
+            Get-GraphItem -Uri $remappedUri @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty
+        }
+    }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $true)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)

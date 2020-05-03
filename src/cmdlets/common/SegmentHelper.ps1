@@ -109,6 +109,7 @@ ScriptClass SegmentHelper {
                 PSTypeName = ($this.SegmentDisplayTypeName.tostring())
                 ParentPath = $parentPath
                 Info = $info
+                Name = $segment.name
                 Relation = $relationship
                 Collection = $isCollection
                 Class = $entityClass
@@ -145,10 +146,16 @@ ScriptClass SegmentHelper {
             # raw content value from the Graph web response
             $Id = $graphItem | select -expandproperty id -erroraction ignore
 
-            $itemId = if ( $Id ) {
+            $itemName = if ( $Id ) {
                 $Id
             } else {
                 '[{0}]' -f $graphItem.Gettype().name
+            }
+
+            $itemId = if ( $graphItem -is [PSCustomObject] -and $graphItem.pstypenames.contains('GraphSegmentDisplayType') -and ($graphItem.Content) ) {
+                $graphItem.Content.Id
+            } else {
+                $itemName
             }
 
             $segment = $typeInfo.UriInfo
@@ -159,6 +166,7 @@ ScriptClass SegmentHelper {
                 PSTypeName = $segment.pstypename.tostring()
                 ParentPath = $segment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
+                Name = $itemName
                 Relation = 'Direct'
                 Collection = $false
                 Class = 'EntityType'
@@ -188,8 +196,12 @@ ScriptClass SegmentHelper {
                 throw "Segment $($publicSegment.id) already has a Preview"
             }
 
+            if ( $content | gm id -erroraction ignore ) {
+                $publicSegment.Id = $content.id
+            }
+
             $publicSegment.content = $content
-            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.id)
+            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.name)
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
         }
 

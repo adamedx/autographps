@@ -150,7 +150,7 @@ function Get-GraphUri {
         $instanceId = if ( $GraphItem ) {
             $typeData = ($lastSegment.graphElement |=> GetEntity).typedata
             if ( $typeData.IsCollection ) {
-                if ( $graphItem | gm -membertype noteproperty id ) {
+                if ( $graphItem | gm -membertype noteproperty id -erroraction ignore) {
                     $graphItem.id
                 } else {
                     $null

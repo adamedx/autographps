@@ -2,6 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
+* Wrapper for ggci to only support "global" types
+* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
+* Use https://github.com/PowerShell/platyPS to generate markdown help
+* Should 'type' be 'resource' or 'resourcetype'?
+* Should Get-GraphResourceWithMetadata override id if there's content? Should id become SegmentName?
+* Should Get-GraphResource be Get-GraphContent?
 * Make Get-GraphItem, Get-GraphChildItem both default to typename
 * Should Get-GraphItem, etc., return child uris? Maybe not.
 * Make Get-GraphChildItem support relationships -- actually make Get-GraphItemRelationship be Get-GraphChildItem
