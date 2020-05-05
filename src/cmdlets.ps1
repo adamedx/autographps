@@ -29,7 +29,7 @@
 . (import-script cmdlets\Remove-Graph)
 . (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Remove-GraphItemRelationship)
-. (import-script cmdlets\Set-GraphItemProperty)
+. (import-script cmdlets\Set-GraphItem)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Show-GraphHelp)

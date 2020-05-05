@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
 * Wrapper for ggci to only support "global" types
 * Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)

@@ -19,7 +19,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function Set-GraphItemProperty {
+function Set-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='typedobjectandpropertylist')]
     param(
         [parameter(position=0, parametersetname='typeandpropertylist', mandatory=$true)]
@@ -112,6 +112,6 @@ function Set-GraphItemProperty {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItemProperty TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItemProperty Property (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItemProperty GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem GraphName (new-so GraphParameterCompleter)
