@@ -504,10 +504,10 @@ Add-GraphItemReference -FromObject $newGroup -ToObject $newUser -ByProperty memb
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
 
-To see the new relationship, use the `Get-GraphItemRelationship` command:
+To see the new relationship, use the `Get-GraphRelatedItem` command:
 
 ```powershell
-PS> Get-GraphItemRelationship group $newgroup.id -Relationship members
+PS> Get-GraphRelatedItem group $newgroup.id -Relationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -535,7 +535,7 @@ $newUser1, $newUser2 | Add-GraphItemReference $teamGroup members
 
 # Display the group's updated membership with the new users
 
-$teamGroup | Get-GraphItemRelationship -Relationship members
+$teamGroup | Get-GraphRelatedItem -Relationship members
 
    Graph Location: /v1.0:/groups/c436312c-4f6e-4963-ac05-bf68b98d7475/members
 
@@ -562,7 +562,7 @@ Remove-GraphItemRelationship -FromObject $existingGroup -ByProperty members 36d3
 And the pipeline is also supported -- this example removes all members from the group `$teamGroup`:
 
 ```powershell
-$teamGroup | Get-GraphItemRelationship -Relationship members | Remove-GraphItemRelationship -FromObject $teamgroup -ByProperty members
+$teamGroup | Get-GraphRelatedItem -Relationship members | Remove-GraphItemRelationship -FromObject $teamgroup -ByProperty members
 ```
 
 #### Delete resources

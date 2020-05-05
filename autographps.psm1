@@ -15,11 +15,10 @@
 . (join-path $psscriptroot src/graph.ps1)
 
 $functions = @(
-    'Add-GraphItemReference',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphItem',
-    'Get-GraphItemRelationship',
+    'Get-GraphRelatedItem',
     'Get-GraphItemUri',
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
@@ -29,6 +28,7 @@ $functions = @(
     'New-Graph',
     'New-GraphObject',
     'New-GraphItem',
+    'New-GraphItemRelationship',
     'Remove-Graph',
     'Remove-GraphItem',
     'Remove-GraphItemRelationship',

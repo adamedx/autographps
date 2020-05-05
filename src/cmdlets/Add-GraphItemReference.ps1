@@ -19,7 +19,7 @@
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
-function Add-GraphItemReference {
+function New-GraphItemRelationship {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetobject')]
     param(
         [parameter(position=0, parametersetname='typeandpropertytotargetid', mandatory=$true)]
@@ -144,9 +144,9 @@ function Add-GraphItemReference {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Uri (new-so GraphUriParameterCompleter LocationUri)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TargetUri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TargetUri (new-so GraphUriParameterCompleter LocationUri)

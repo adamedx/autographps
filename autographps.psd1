@@ -73,12 +73,11 @@ NestedModules = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
-    'Add-GraphItemReference',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItem',
-    'Get-GraphItemRelationship',
+    'Get-GraphRelatedItem',
     'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
@@ -86,6 +85,7 @@ NestedModules = @(
     'Get-GraphUri',
     'New-Graph',
     'New-GraphItem',
+    'New-GraphItemRelationship',
     'New-GraphObject',
     'Remove-Graph',
     'Remove-GraphItem',

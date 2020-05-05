@@ -29,7 +29,6 @@ Describe "Autographps application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'Add-GraphItemReference'
                 'Find-GraphPermission'
                 'Get-Graph'
                 'Get-GraphChildItem'
@@ -42,6 +41,7 @@ Describe "Autographps application" {
                 'Get-GraphUri'
                 'New-Graph'
                 'New-GraphItem'
+                'New-GraphItemRelationship'
                 'New-GraphObject'
                 'Remove-Graph'
                 'Remove-GraphItem'

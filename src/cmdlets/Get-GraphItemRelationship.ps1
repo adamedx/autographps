@@ -20,7 +20,7 @@
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
-function Get-GraphItemRelationship {
+function Get-GraphRelatedItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='typedobjectandproperty')]
     param(
         [parameter(position=0, parametersetname='typeandproperty', mandatory=$true)]
@@ -98,7 +98,7 @@ function Get-GraphItemRelationship {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Uri (new-so GraphUriParameterCompleter LocationUri)
