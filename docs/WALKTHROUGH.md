@@ -329,9 +329,9 @@ The `$false` assignment in the hash table means that the field will use *ascendi
 AutoGraphPS isn't just an excellent browsing experience, it features commands for modifying the Graph as well:
 
 * `New-GraphItem`
-* `Set-GraphItemProperty`
+* `Set-GraphItem`
 * `New-GraphObject`
-* `Add-GraphItemReference`
+* `New-GraphItemRelationship`
 * `Remove-GraphItem`
 
 The following examples demonstrate common usage of these commands in creating and editing Graph resources. Unlike the read-only cases we've explored so far, you're likely to need some light research before jumping in with these command, i.e. you might want to read the actual Graph API documentation first. In particular, you'll need to have some basic answers in mind for the following questions before using write-operation commands:
@@ -359,7 +359,7 @@ Lastly, while in many cases the property values are simple "primitive" types lik
 $ipRange = New-GraphObject ipv6Range
 ```
 
-You can then set the properties of the `$ipRange` variable as desired, and specify that variable as one of the property values to `New-GraphItem` or `Set-GraphItemProperty`.
+You can then set the properties of the `$ipRange` variable as desired, and specify that variable as one of the property values to `New-GraphItem` or `Set-GraphItem`.
 
 Now this preamble may seem rather lengthy compared to our near zero-knowledge approach of read-only use cases, but all of this really boils down to the need to know what you're going to change before you make an update, which isn't unreasonable for these more "dangerous" write use-cases. Fortunately, the answers to all of those questions are a few tab-completions or `Get-GraphType` / `Show-GraphHelp` invocations away.
 
@@ -416,7 +416,7 @@ Additionally, following the invocation of `New-GraphItem` that creates the new s
 
 Creating a group was easy. Let's create a user. Before doing so, a quick consultation of the user resource's documentation via `Show-GraphHelp user` indicates that we need to specify the following properties at creation time: `mailNickName`, `userPrincipalName`, `displayName`, `accountEnabled`, and `passwordProfile`. The first four are simple types (`string`, `string`, `string`, and `bool` respectively) that we know how to specify via command line arguments, but according to the documentation (and also `Get-GraphType user`), the last is of type `passswordProfile`, how do we specify that?
 
-We can use the `New-GraphObject` command to create the data structures as PowerShell objects (or optionally as `JSON` text). `New-GraphObject` does not issue requests or otherwise interact with Graph, but the local objects it creates can be can be specified to commands like `New-GraphItem`, `Set-GraphItemProperty`, etc., that must submit such objects in requests. The parameters of `New-GraphObject` have similar naming and semantics to thsoe of `New-GraphItem` when it comes to types and properties, so after consulting the documentation for `passwordProfile` we see that we can create the `passwordProfile` object with this command:
+We can use the `New-GraphObject` command to create the data structures as PowerShell objects (or optionally as `JSON` text). `New-GraphObject` does not issue requests or otherwise interact with Graph, but the local objects it creates can be can be specified to commands like `New-GraphItem`, `Set-GraphItem`, etc., that must submit such objects in requests. The parameters of `New-GraphObject` have similar naming and semantics to thsoe of `New-GraphItem` when it comes to types and properties, so after consulting the documentation for `passwordProfile` we see that we can create the `passwordProfile` object with this command:
 
 ```powershell
 $passwordProfile = New-GraphObject passwordprofile -Property forceChangePasswordNextSignIn, password -value $true, (Get-Credential user).GetNetworkCredential().Password
@@ -480,26 +480,26 @@ which will issue a request to Graph to retrieve all contacts, and then filter th
 
 #### Update an existing resource: contacts, group, and user
 
-To modify an existing Graph resource, use the `Set-GraphItemProperty` command. You can pipe in the result of a previous `Get-GraphItem`, `Get-GraphResource`, `New-GraphItem`, etc., invocation as the object to modify:
+To modify an existing Graph resource, use the `Set-GraphItem` command. You can pipe in the result of a previous `Get-GraphItem`, `Get-GraphResource`, `New-GraphItem`, etc., invocation as the object to modify:
 
 ```powershell
-$newGroup | Set-GraphItemProperty -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
+$newGroup | Set-GraphItem -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
 This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphItem` and `New-GraphObject`, you can also specify commands using the following syntax:
 
 ```powershell
-Set-GraphItemProperty group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
+Set-GraphItem group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
 #### Link resources: add a user to a group (AAD accounts only)
 
 The Graph is not just about individual resources, its power comes from the relationships between those resources. With groups and users for example, the fact that users are members of a group is modeled by a relationship property called `members`. This means that by modifying the `members` relationship property, we can modify which users are members of a group.
 
-To modify a relationship, the `Add-GraphItemReference` command may be used:
+To modify a relationship, the `New-GraphItemRelationship` command may be used:
 
 ```powershell
-Add-GraphItemReference -FromObject $newGroup -ToObject $newUser -ByProperty members
+New-GraphItemRelationship -FromObject $newGroup -ToObject $newUser -ByProperty members
 ```
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
@@ -516,7 +516,7 @@ Info Type            Preview             Id
 t +> directoryObject Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
 ```
 
-Another useful syntax for `Add-GraphItemReference` is to supply the items on the "to" side of the relatinoship via the pipeline -- this exploits PowerShell pipeline idioms to simplify operating on sets of objects:
+Another useful syntax for `New-GraphItemRelationship` is to supply the items on the "to" side of the relatinoship via the pipeline -- this exploits PowerShell pipeline idioms to simplify operating on sets of objects:
 
 ```powershell
 # Create passwords for some new users
@@ -531,7 +531,7 @@ $newUser2 = New-GraphItem user -Property mailNickname, userPrincipalName, displa
 $teamGroup = new-graphitem group mailNickName, displayName, mailEnabled, securityEnabled Group7AccessT1, 'Group 7 Access 2', $false, $true
 
 # Add the users to the group
-$newUser1, $newUser2 | Add-GraphItemReference $teamGroup members
+$newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members
 
 # Display the group's updated membership with the new users
 
@@ -547,7 +547,7 @@ t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 
 #### Removing a relationship
 
-The inverse of the `Add-GraphItemReference` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
+The inverse of the `New-GraphItemRelationship` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
 
 ```powershell
 Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -ByProperty members 36d3e3d4-55f2-405f-a601-fd522b7998f4
@@ -586,7 +586,7 @@ $oldContact | Remove-GraphItem
 
 * Use `Show-GraphHelp` to get the documentation for the Graph resource in which you're interested.
 * Use `Get-GraphType -Members` to view the properties of the type or structure you're updating
-* Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItemProperty`, etc. to ease your workflow and avoid the need to refer to documentation
+* Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItem`, etc. to ease your workflow and avoid the need to refer to documentation
 * Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
 * Look for opportunities to use the PowerShell pipeline with AutoGraphPS command for concise, efficient, and scalable automation of Graph resource management.
 

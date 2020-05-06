@@ -2,39 +2,28 @@
 
 ## To-do items -- prioritized
 
+* Set-GraphItem should take an object, not just a hashtable
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
 * Wrapper for ggci to only support "global" types
 * Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
 * Use https://github.com/PowerShell/platyPS to generate markdown help
 * Should 'type' be 'resource' or 'resourcetype'?
-* Should Get-GraphResourceWithMetadata override id if there's content? Should id become SegmentName?
 * Should Get-GraphResource be Get-GraphContent?
-* Make Get-GraphItem, Get-GraphChildItem both default to typename
 * Should Get-GraphItem, etc., return child uris? Maybe not.
-* Make Get-GraphChildItem support relationships -- actually make Get-GraphItemRelationship be Get-GraphChildItem
 * Invoke-GraphMethod
 * Format-GraphItem
-* Add specific type to pstypenames for reach entity type?
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
-* New command names
-  * Get-GraphItemRelationship
-  * RemoveGraphItemRelationship -IgnoreExisting
-  * New-GraphItemRelationship
 * New command features:
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
-* Rename Set-GraphItemProperty to Set-GraphItem
 * Rename Get-GraphUri?
 * Rename GraphObject to GraphItem
-* Change Add-GraphItemReference to New-GraphItemRelationship
 * Use relationship terminology rather than navigationproperty
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
-* Make New-GraphDataObject for Complex types -- make a new-graphresource?
-* Add Set-GraphItem command that takes in object, hash table or json
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
@@ -167,6 +156,10 @@
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
+
+### Ideas
+
+* Add specific type to pstypenames for each entity type?
 
 ### Done
 
@@ -326,6 +319,16 @@
 * Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Add member filter to `Get-GraphType -member`
 * For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
+* Make Get-GraphItem, Get-GraphChildItem both default to typename
+* MakeGet-GraphResourceWithMetadata override id if there's content. Make another field for 'SegmentName'
+* Make Get-GraphChildItem support relationships
+* Change Add-GraphItemReference to New-GraphItemRelationship
+* Rename Set-GraphItemProperty to Set-GraphItem
+* Change Add-GraphItemReference to New-GraphItemRelationship
+* New command names
+  * Get-GraphRelatedItem
+  * RemoveGraphItemRelationship -IgnoreExisting
+  * New-GraphItemRelationship
 
 ### Postponed
 
