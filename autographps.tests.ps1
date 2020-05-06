@@ -38,7 +38,7 @@ Describe "Autographps application" {
                 'Get-GraphResourceWithMetadata'
                 'Get-GraphLocation'
                 'Get-GraphType'
-                'Get-GraphUri'
+                'Get-GraphUriInfo'
                 'New-Graph'
                 'New-GraphItem'
                 'New-GraphItemRelationship'

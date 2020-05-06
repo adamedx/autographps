@@ -24,7 +24,7 @@ ScriptClass TypeUriHelper {
         }
 
         function TypeFromUri([Uri] $uri, $targetContext) {
-            $uriInfo = Get-GraphUri $Uri -GraphScope $targetContext.name -erroraction stop
+            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $targetContext.name -erroraction stop
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection

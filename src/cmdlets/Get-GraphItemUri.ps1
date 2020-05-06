@@ -85,7 +85,7 @@ function Get-GraphItemUri {
     }
 
     try {
-        Get-GraphUri $referenceInfo.RequestInfo.Uri.tostring() @graphScopeParameter | out-null
+        Get-GraphUriInfo $referenceInfo.RequestInfo.Uri.tostring() @graphScopeParameter | out-null
     } catch {
         throw 'Unable to resolve specified parameters to a valid URI for the graph'
     }

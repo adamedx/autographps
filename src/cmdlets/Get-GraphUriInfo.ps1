@@ -16,7 +16,7 @@
 . (import-script common/SegmentHelper)
 . (import-script common/GraphUriParameterCompleter)
 
-function Get-GraphUri {
+function Get-GraphUriInfo {
     [cmdletbinding()]
     param(
         [parameter(parametersetname='FromUriParents', position=0, mandatory=$true)]
@@ -239,4 +239,4 @@ function Get-GraphUri {
     $results
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::AnyUri))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUriInfo Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::AnyUri))

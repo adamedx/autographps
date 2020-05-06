@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ../metadata/GraphManager)
-. (import-script Get-GraphUri)
+. (import-script Get-GraphUriInfo)
 . (import-script ../common/GraphAccessDeniedException)
 . (import-script common/TypeUriParameterCompleter)
 
@@ -114,7 +114,7 @@ function Get-GraphResourceWithMetadata {
             }
 
             $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-            Get-GraphUri $targetUri @metadataArgument @GraphArgument -erroraction stop
+            Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
         } else {
             $context = $::.GraphContext |=> GetCurrent
             $parser = new-so SegmentParser $context $null $true
@@ -230,7 +230,7 @@ function Get-GraphResourceWithMetadata {
 
         if ( ! $DataOnly.ispresent ) {
             if ( ! $ignoreMetadata -and ( $graphException -or $emitChildren ) ) {
-                Get-GraphUri $resolvedUri.GraphUri -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
+                Get-GraphUriInfo $resolvedUri.GraphUri -children -locatablechildren:(!$IncludeAll.IsPresent) | foreach {
                     $results += $_
                 }
             }
@@ -252,7 +252,7 @@ function Get-GraphResourceWithMetadata {
 
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
-                    $restResult | Get-GraphUri -GraphScope $context.name
+                    $restResult | Get-GraphUriInfo -GraphScope $context.name
                 } else {
                     $restResult
                 }

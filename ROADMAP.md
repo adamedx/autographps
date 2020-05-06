@@ -17,7 +17,7 @@
 * Use odata context
 * New command features:
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
-* Rename Get-GraphUri?
+* Rename Get-GraphUriInfo?
 * Rename GraphObject to GraphItem
 * Use relationship terminology rather than navigationproperty
 * Get-GraphToken should show current token scopes
@@ -185,7 +185,7 @@
 * Refactor GraphBuilder
 * Genericize GraphContext
 * Update-GraphMetadata
-* Get-GraphUri -- an offline api, with -parents flag,
+* Get-GraphUriInfo -- an offline api, with -parents flag,
 * Add --children flag to get-graphuri
 * Add full uri support to get-graphitem
 * Set-Graphlocation
@@ -204,7 +204,7 @@
   * gls Get-GraphChildItem
   * gcd Set-GraphLocation
   * gwd Get-GraphLocation
-  * ggu Get-GraphUri
+  * ggu Get-GraphUriInfo
   * gg  Get-Graph
 * Add 'mode'-like column with compressed information in list view
 * Add offline connection
@@ -920,7 +920,7 @@ clarification of their purposes:
 * The existing `Get-GraphItem` and `Remove-GraphItem` commands will be renamed `Get-GraphResource` and `Remove-GraphResource`. They will remain in the `autographps-sdk` module as their purpose and dependencies aligns with that of the module: enable access to the Graph solely via REST without any dependency on metadata. The noun *Resource*" is actually appropriate here as the interface for these commands is URI-based, i.e. *Uniform Resource Identifier*-based.
 * New versions of `Get-GraphItem` and `Remove-GraphItem` will be implemented in `autographps` rather than `autographps-sdk`. These commands will conform to the selection facilities used by `Set-GraphItemProperty` and the other new commands to specify a specific object.
   * `Get-GraphItem` will use `Property` rather than select to specify properties, other search / filter capabilities will probably be removed.
-  * `Get-GraphItem` will output fully resolved type URIs via `Get-GraphUri`.
+  * `Get-GraphItem` will output fully resolved type URIs via `Get-GraphUriInfo`.
   * The default parameterset for `Get-GraphItem` may actually be URI-based -- URI's work for all cases, where type + id only works for entity types and does not return collections.
     * We could make a single element parameter set assume a singleton, a two-element parameter set a type + id, and `Uri` would have to be explicit.
 * `Get-GraphChildItem` will be re-implemented using the same selection capability as `Get-GraphItem`.

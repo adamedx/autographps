@@ -778,22 +778,22 @@ Invoke-GraphRequest me/contacts -Method POST -Body $contactData
 
 This approach, while certainly using more lines than the others, is even more readable and easier to express correctly than the parallel lists.
 
-### Get-GraphUri -- understanding the Graph's structure
+### Get-GraphUriInfo -- understanding the Graph's structure
 
-You can use `Get-GraphUri` to get information about whether a given Uri is valid, what entity type it represents, and what Uri segments may follow it. Its functionality is based on data retrieved from the Graph endpoint's `$metadata` response.
+You can use `Get-GraphUriInfo` to get information about whether a given Uri is valid, what entity type it represents, and what Uri segments may follow it. Its functionality is based on data retrieved from the Graph endpoint's `$metadata` response.
 
 Here are some examples:
 
 ```
 # Get basic type information about the uri '/me/drive/root'
-Get-GraphUri /me/drive/root
+Get-GraphUriInfo /me/drive/root
 
 Info Type      Preview Name
 ---- ----      ------- ----
 n  > driveItem         root
 
 # Use format-list to see all fields
-Get-GraphUri /me/drive/root
+Get-GraphUriInfo /me/drive/root
 
 ParentPath   : /me/drive
 Info         : n  >
@@ -819,13 +819,13 @@ Preview      :
 PSTypeName   : GraphSegmentDisplayType
 
 # View information about the full uri
-Get-GraphUri /me/drive/root | select -expandproperty uri
+Get-GraphUriInfo /me/drive/root | select -expandproperty uri
 ```
 
-In the above example, `Get-GraphUri` parsed the Uri in order to generate the returned information. If you were to give a Uri that is not valid for the current graph, you'd receive an error like the one below:
+In the above example, `Get-GraphUriInfo` parsed the Uri in order to generate the returned information. If you were to give a Uri that is not valid for the current graph, you'd receive an error like the one below:
 
 ```
-Get-GraphUri /me/idontexist
+Get-GraphUriInfo /me/idontexist
 Uri '/me/idontexist' not found: no matching child segment 'idontexist' under segment 'me'
 At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps\0.14.0\src\metadata\segmentparser.ps1:140 char:21
 + ...             throw "Uri '$($Uri.tostring())' not found: no matching ch ...
@@ -838,11 +838,11 @@ At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps\0.14.0\src\me
 
 #### Finding the parents and children
 
-The `Get-GraphUri` cmdlet also allows you to determine the set of parent (predecessor) segments of the Uri, as well as all segments immediately following the Uri, that is the children (successors):
+The `Get-GraphUriInfo` cmdlet also allows you to determine the set of parent (predecessor) segments of the Uri, as well as all segments immediately following the Uri, that is the children (successors):
 
 ```
 # These are all the segments that precede /me/drive/root
-Get-GraphUri /me/drive/root -Parents
+Get-GraphUriInfo /me/drive/root -Parents
 
 Info Type      Preview Name
 ---- ----      ------- ----
@@ -852,7 +852,7 @@ n  > drive             drive
 n  > driveItem         root
 
 # And these are all the children
-Get-GraphUri /me/drive/root -Children
+Get-GraphUriInfo /me/drive/root -Children
 
 Info Type             Preview Name
 ---- ----             ------- ----
@@ -888,11 +888,11 @@ As for what it does, the "Type" column indicates that a `GET` for that Uri shoul
 * **Column 2:** The **data** column -- it contains a `+` if the item is one or more entities returned from Graph, is empty otherwise
 * **Column 3:** The **locatable** column: this column has a `>` character if it can be followed by an entity and is empty otherwise
 
-**Tip:** Use the command `Get-GraphUri /` to see all of the segments that may legally start a Uri.
+**Tip:** Use the command `Get-GraphUriInfo /` to see all of the segments that may legally start a Uri.
 
 #### Don't forget about "virtual" segments
 
-`Get-GraphUri` doesn't just parse static Uris, but any that are syntactically valid, i.e.
+`Get-GraphUriInfo` doesn't just parse static Uris, but any that are syntactically valid, i.e.
 
 ```
 Get-GraphResource /me/drive/root/children/myfile.txt | fl *

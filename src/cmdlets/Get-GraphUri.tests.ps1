@@ -14,7 +14,7 @@
 
 set-strictmode -version 2
 
-Describe 'The Get-GraphUri command' -tag testnow {
+Describe 'The Get-GraphUriInfo command' -tag testnow {
     Context 'When invoked using v1 metadata with namespace aliases' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
@@ -26,11 +26,11 @@ Describe 'The Get-GraphUri command' -tag testnow {
 
             $propertiesToValidate = 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version'
 
-            $children = get-graphuri /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, Uri, Version
+            $children = Get-GraphUriInfo /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, Uri, Version
 
 
             # Use this command to generate the file:
-            # get-graphuri /me -Children | sort Id | select 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version' | convertto-json -Depth 1
+            # Get-GraphUriInfo /me -Children | sort Id | select 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version' | convertto-json -Depth 1
             $GetGraphUriMeResult = get-content $psscriptroot/../../test/assets/GetGraphUriMe.json
 
             $expectedChildren = $GetGraphUriMeResult | ConvertFrom-Json
