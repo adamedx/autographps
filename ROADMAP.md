@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add searchstring to Get-GraphItem, Get-GraphChildItem, Remove-GraphItem
 * Set-GraphItem should take an object, not just a hashtable
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
@@ -10,14 +11,12 @@
 * Use https://github.com/PowerShell/platyPS to generate markdown help
 * Should 'type' be 'resource' or 'resourcetype'?
 * Should Get-GraphResource be Get-GraphContent?
-* Should Get-GraphItem, etc., return child uris? Maybe not.
 * Invoke-GraphMethod
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
 * New command features:
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
-* Rename Get-GraphUriInfo?
 * Rename GraphObject to GraphItem
 * Use relationship terminology rather than navigationproperty
 * Get-GraphToken should show current token scopes
@@ -185,7 +184,7 @@
 * Refactor GraphBuilder
 * Genericize GraphContext
 * Update-GraphMetadata
-* Get-GraphUriInfo -- an offline api, with -parents flag,
+* Get-GraphUri -- an offline api, with -parents flag,
 * Add --children flag to get-graphuri
 * Add full uri support to get-graphitem
 * Set-Graphlocation
@@ -204,7 +203,7 @@
   * gls Get-GraphChildItem
   * gcd Set-GraphLocation
   * gwd Get-GraphLocation
-  * ggu Get-GraphUriInfo
+  * ggu Get-GraphUri
   * gg  Get-Graph
 * Add 'mode'-like column with compressed information in list view
 * Add offline connection
@@ -329,6 +328,8 @@
   * Get-GraphRelatedItem
   * RemoveGraphItemRelationship -IgnoreExisting
   * New-GraphItemRelationship
+* Should Get-GraphItem, etc., return child uris? Maybe not.
+* Rename Get-GraphUri to Get-GraphUriInfo
 
 ### Postponed
 
@@ -920,7 +921,7 @@ clarification of their purposes:
 * The existing `Get-GraphItem` and `Remove-GraphItem` commands will be renamed `Get-GraphResource` and `Remove-GraphResource`. They will remain in the `autographps-sdk` module as their purpose and dependencies aligns with that of the module: enable access to the Graph solely via REST without any dependency on metadata. The noun *Resource*" is actually appropriate here as the interface for these commands is URI-based, i.e. *Uniform Resource Identifier*-based.
 * New versions of `Get-GraphItem` and `Remove-GraphItem` will be implemented in `autographps` rather than `autographps-sdk`. These commands will conform to the selection facilities used by `Set-GraphItemProperty` and the other new commands to specify a specific object.
   * `Get-GraphItem` will use `Property` rather than select to specify properties, other search / filter capabilities will probably be removed.
-  * `Get-GraphItem` will output fully resolved type URIs via `Get-GraphUriInfo`.
+  * `Get-GraphItem` will output fully resolved type URIs via `Get-GraphUri`.
   * The default parameterset for `Get-GraphItem` may actually be URI-based -- URI's work for all cases, where type + id only works for entity types and does not return collections.
     * We could make a single element parameter set assume a singleton, a two-element parameter set a type + id, and `Uri` would have to be explicit.
 * `Get-GraphChildItem` will be re-implemented using the same selection capability as `Get-GraphItem`.

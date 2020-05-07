@@ -61,7 +61,8 @@ function Get-GraphChildItem {
         [string] $PropertyFilter,
 
         [parameter(parametersetname='bytypecollection')]
-        [parameter(parametersetname='bytypecollectionpropertyfilter')]
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byobject')]
         [string]$Filter,
 
         [String] $Search,
