@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Add searchstring to Get-GraphItem, Get-GraphChildItem, Remove-GraphItem
+* Remove default of not waiting for metadata
 * Set-GraphItem should take an object, not just a hashtable
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
@@ -330,6 +330,7 @@
   * New-GraphItemRelationship
 * Should Get-GraphItem, etc., return child uris? Maybe not.
 * Rename Get-GraphUri to Get-GraphUriInfo
+* Add searchstring to Get-GraphItem, Get-GraphChildItem
 
 ### Postponed
 

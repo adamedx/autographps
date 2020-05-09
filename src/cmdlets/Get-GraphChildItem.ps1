@@ -65,6 +65,12 @@ function Get-GraphChildItem {
         [parameter(parametersetname='byobject')]
         [string]$Filter,
 
+        [parameter(parametersetname='bytypecollection')]
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byobject')]
+        [Alias('SearchString')]
+        $SimpleMatch,
+
         [String] $Search,
 
         [string[]] $Expand,

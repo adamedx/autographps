@@ -26,6 +26,8 @@ function Get-GraphItem {
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandsearch', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandsimplematch', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -34,17 +36,22 @@ function Get-GraphItem {
         [parameter(position=2, parametersetname='bytypeandid')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [parameter(position=2, parametersetname='bytypeandfilter')]
+        [parameter(position=2, parametersetname='bytypeandsimplematch')]
         [parameter(position=2, parametersetname='byuri')]
         [parameter(position=2, parametersetname='byuriandfilter')]
+        [parameter(position=2, parametersetname='byobjectandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphObject,
 
@@ -60,6 +67,15 @@ function Get-GraphItem {
         [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
+        [parameter(parametersetname='bytypeandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byobjectandsimplematch', mandatory=$true)]
+        [Alias('SearchString')]
+        $SimpleMatch,
+
+        [parameter(parametersetname='bytypeandsearch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsearch', mandatory=$true)]
+        [parameter(parametersetname='byobjectandsearch', mandatory=$true)]
         [String] $Search,
 
         [string[]] $Expand,
@@ -82,6 +98,10 @@ function Get-GraphItem {
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        if ( $Filter -and $SimpleMatch ) {
+            throw 'Only one of Filter and SimpleMatch arguments may be specified'
+        }
 
         $filterParameter = @{}
         $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
@@ -107,6 +127,10 @@ function Get-GraphItem {
             $expandArgument = @{}
             if ( $Expand ) {
                 $expandArgument['Expand'] = $Expand
+            }
+
+            if ( $SimpleMatch ) {
+                $filterParameter['Filter'] = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $requestInfo.Context $requestInfo.TypeName $SimpleMatch
             }
 
             $pagingParameters = @{}

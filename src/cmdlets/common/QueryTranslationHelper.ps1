@@ -52,11 +52,7 @@ ScriptClass QueryTranslationHelper {
 
                 $typeManager = $::.TypeManager |=> Get $graphContext
 
-                $typeData = $typeManager |=> GetTypeDefinition Entity $typeInfo.FullTypeName
-
-                $properties = foreach ( $propertyType in $propertyTypes ) {
-                    $typeManager |=> GetTypeDefinitionTransitiveProperties $typeData $propertyType
-                }
+                $properties = GetTypeProperties $graphContext $typeInfo.FullTypeName $propertyTypes
 
                 $propertyMap = @{}
 
@@ -70,6 +66,45 @@ ScriptClass QueryTranslationHelper {
                     }
                 }
             }
+        }
+
+        function GetTypeProperties($graphContext, $typeName, $propertyTypes) {
+            $typeManager = $::.TypeManager |=> Get $graphContext
+
+            $typeData = $typeManager |=> GetTypeDefinition Entity $typeName
+
+            foreach ( $propertyType in $propertyTypes ) {
+                $typeManager |=> GetTypeDefinitionTransitiveProperties $typeData $propertyType
+            }
+        }
+
+        function GetSimpleMatchFilter($graphContext, $typeName, $simpleMatch) {
+            $properties = GetTypeProperties $graphContext $typeName Property
+
+            $orderedMatchProperties = 'displayName', 'name', 'givenName', 'userPrincipalName', 'mail', 'mailNickName', 'title', 'fileName', 'subject'
+
+            $validMatchProperties = @()
+            $maxPropertiesToFilter = 2 # Limit this to avoid possibility of the property being unsupported for filtering on a given API
+
+            foreach ( $property in $orderedMatchProperties ) {
+                if ( $property -in $properties.name ) {
+                    $validMatchProperties += $property
+                    if ( $validMatchProperties.length -eq $maxPropertiesToFilter ) {
+                        break
+                    }
+                }
+            }
+
+            if ( ! $validMatchProperties ) {
+                throw [ArgumentException]::new("Unable to perform a simple match for type '$typeName' because it does not contain one of the following properties: {0}" -f (
+                                                   $orderedMatchProperties -join ', '))
+            }
+
+            $matchClauses = $validMatchProperties | foreach {
+                "startsWith($_, '$simpleMatch')"
+            }
+
+            $matchClauses -join ' or '
         }
     }
 }
