@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
 * Remove default of not waiting for metadata
 * Set-GraphItem should take an object, not just a hashtable
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks

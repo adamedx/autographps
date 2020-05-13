@@ -33,21 +33,44 @@ function New-GraphItem {
         [parameter(position=1, parametersetname='bytypeoptionallyqualified')]
         [parameter(position=1, parametersetname='bytypefullyqualified')]
         [parameter(position=1, parametersetname='byuri')]
+        [parameter(position=1, parametersetname='addtoexistingobject')]
+        [parameter(position=1, parametersetname='addtoexistinguri')]
         [string[]] $Property,
 
         [parameter(position=2, parametersetname='bytypeoptionallyqualified')]
         [parameter(position=2, parametersetname='bytypefullyqualified')]
         [parameter(position=2, parametersetname='byuri')]
+        [parameter(position=2, parametersetname='addtoexistingobject')]
+        [parameter(position=2, parametersetname='addtoexistinguri')]
         [object[]] $Value,
 
-        [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuripropmap')]
-        [parameter(parametersetname='byurifromobject')]
+        [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobjectpropmap', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
+        [PSCustomObject] $FromObject,
+
+        [parameter(parametersetname='addtoexistinguri', mandatory=$true)]
+        [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobjectpropmap', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
+        [Alias('WithRelationship')]
+        [string] $Relationship,
+
+        [parameter(parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuripropmap', mandatory=$true)]
+        [parameter(parametersetname='byurifromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistinguri', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
         [Uri] $Uri,
 
         [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
         [object] $GraphObject,
 
         [ValidateSet('POST', 'PUT')]
@@ -58,11 +81,15 @@ function New-GraphItem {
         [parameter(parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
         [parameter(parametersetname='byuripropmap', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingidpropmap', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingidfullyqualifiedpropmap', mandatory=$true)]
         $PropertyMap,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingidfullyqualified', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingidfullyqualifiedpropmap', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
         [switch] $Recurse,
@@ -74,10 +101,34 @@ function New-GraphItem {
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $existingSourceInfo = $null
+
+        if ( $Relationship ){
+            $existingSourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $null $false $null $Uri $FromObject $Relationship $false
+
+            if ( ! $existingSourceInfo ) {
+                throw "Unable to determine Uri for specified type '$TypeName' parameter -- specify an existing item with the Uri parameter and retry the command"
+            }
+        }
     }
 
     process {
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphObject
+        $graphContext = $null
+        $targetTypeName = $null
+        $sourceUri = $null
+
+        if ( $existingSourceInfo ) {
+            $graphContext = $existingSourceInfo.RequestInfo.Context
+            $sourceUri = $existingSourceInfo.Uri
+            $targetType = $::.TypeUriHelper |=> TypeFromUri $sourceUri $graphContext
+            $targetTypeName = $targetType.FullTypeName
+        } else {
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphObject
+            $graphContext = $requestInfo.context
+            $sourceUri = $requestInfo.Uri
+            $targetTypeName = $requestInfo.TypeName
+        }
 
         $newGraphObjectParameters = @{}
 
@@ -99,7 +150,7 @@ function New-GraphItem {
         $newObject = if ( $GraphObject ) {
             $GraphObject
         } else {
-            New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
+            New-GraphObject -TypeName $targetTypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
         $createMethod = if ( $Method ) {
@@ -112,7 +163,7 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphRequest $writeRequestInfo.Uri -Method $createMethod -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
+        Invoke-GraphRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
     }
 
     end {}

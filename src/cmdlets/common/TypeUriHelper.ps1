@@ -113,18 +113,21 @@ ScriptClass TypeUriHelper {
                     IsCollection = $true
                 }
             } elseif ( $uri )  {
-                TypeFromUri $uri $targetContext
+                TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
                 $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
                 if ( $objectUri ) {
-                    $targetUri = $objectUri
+                    $objectUriInfo = TypeFromUri $objectUri $targetContext
 
                     # TODO: When an object is supplied, it had better end with whatever id was supplied.
                     # This will not always be true of the uri retrieved from the object
-                    if ( $id -and ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                        $targetUri = $targetUri, $id -join '/'
+                    if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ( ! $targetUri -or ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) ) {
+                        $correctedUri = $objectUri, $id -join '/'
+                        $objectUriInfo = TypeFromUri $correctedUri $targetContext
                     }
-                    TypeFromUri $targetUri $targetContext
+
+                    $targetUri = $objectUriInfo.UriInfo.graphUri
+                    $objectUriInfo
                 }
             }
 
@@ -154,10 +157,6 @@ ScriptClass TypeUriHelper {
             }
 
             $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $GraphObject
-
-            if ( $graphObject -and ! $requestInfo.Uri ) {
-                return
-            }
 
             $segments = @()
             $segments += $requestInfo.uri.tostring()
@@ -208,11 +207,14 @@ ScriptClass TypeUriHelper {
                     $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
                 }
             } elseif ( $TargetObject ) {
-                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $targetUri $targetId $TargetObject
-                if ( ! $requestInfo.Uri ) {
+                $targetObjectId = if ( $TargetObject | gm id -erroraction ignore ) {
+                    $TargetObject.id
+                } else {
                     throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
                 }
-                $requestInfo
+                # The assumption here is that anything that can be a target must be able to be referenced as part of an entityset.
+                # This generally seems to be true.
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $graphName $targetTypeName $isFullyQualifiedTypeName $null $targetObjectId $null
             } else {
                 foreach ( $destinationId in $targetId ) {
                     $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null

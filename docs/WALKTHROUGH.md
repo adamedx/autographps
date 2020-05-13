@@ -383,7 +383,7 @@ A few notes are in order:
 This example uses the `New-GraphItem` command to creates a new AAD security group:
 
 ```powershell
-PS> $newGroup = New-GraphItem group Property mailNickName, displayName, mailEnabled, securityEnabled -Value Group7Access, 'Group 7 Access', $false, $true
+PS> $newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value Group7Access, 'Group 7 Access', $false, $true
 ```
 
 The example specifies the following parameters for `New-GraphItem`:
