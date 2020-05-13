@@ -56,8 +56,8 @@ ScriptClass TypeUriParameterCompleter {
             }
 
             if ( $targetUri ) {
-                $global:typefromuri = $targetUri
-                $::.TypeUriHelper |=> TypeFromUri $targetUri | select -expandproperty FullTypeName
+                $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
+                $::.TypeUriHelper |=> TypeFromUri $targetUri $targetContext | select -expandproperty FullTypeName
             }
         }
 
@@ -65,7 +65,6 @@ ScriptClass TypeUriParameterCompleter {
             return
         }
 
-        $global:foundtypename = $typeName
         $forwardedBoundParams = @{
             TypeName = $typeName
             GraphName = $graphNameParam
