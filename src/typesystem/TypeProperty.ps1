@@ -25,7 +25,7 @@ ScriptClass TypeProperty {
         $this.MemberType = if ( $memberType -eq $null -or $MemberType -eq 'Property' ) {
             'Property'
         } elseif ( $memberType -eq 'NavigationProperty' ) {
-            'NavigationProperty'
+            'Relationship'
         } else {
             throw [ArgumentException]::new("Invalid member type '$memberType' specified: member type must be one of 'Property' or 'NavigationProperty'")
         }

@@ -81,10 +81,10 @@ function Get-GraphType {
         } else {
             if ( ! $MemberFilter ) {
                 $result.Properties
-                $result.NavigationProperties
+                $result.Relationships
             } else {
                 $result.Properties | where { $_.Name -like "*$($MemberFilter)*" }
-                $result.NavigationProperties | where { $_.Name -like "*$($MemberFilter)*" }
+                $result.Relationships | where { $_.Name -like "*$($MemberFilter)*" }
             }
         }
     } else {
