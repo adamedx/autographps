@@ -35,7 +35,6 @@
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
-* Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
 * Move app to new tenant (or create a new one)
 
@@ -347,6 +346,7 @@
 * Get a fix from sdk for scope helper in find-graphpermissions
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
+* Fix qualified / vs. unqualified names in metadata classes
 
 ### Abandoned
 

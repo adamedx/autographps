@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass TypeProperty {
+ScriptClass TypeMember {
     $Name = $null
     $TypeId = $null
     $IsCollection = $null
@@ -50,4 +50,4 @@ ScriptClass TypeProperty {
 }
 
 
-$::.TypeProperty |=> __RegisterDisplayType
+$::.TypeMember |=> __RegisterDisplayType

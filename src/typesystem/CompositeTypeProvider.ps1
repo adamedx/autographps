@@ -45,7 +45,7 @@ ScriptClass CompositeTypeProvider {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
                 $unaliasedPropertyTypeName = $this.base.graph |=> UnAliasQualifiedName $typeInfo.TypeFullName
-                new-so TypeProperty $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property
+                new-so TypeMember $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property
             }
         }
 
@@ -53,7 +53,7 @@ ScriptClass CompositeTypeProvider {
             foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
                 $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $navigationproperty.Type
                 $unaliasedNavigationPropertyTypeName = $this.base.graph |=> UnAliasQualifiedName $navigationInfo.TypeFullName
-                new-so TypeProperty $navigationproperty.Name $unaliasedNavigationPropertyTypeName $navigationInfo.IsCollection NavigationProperty
+                new-so TypeMember $navigationproperty.Name $unaliasedNavigationPropertyTypeName $navigationInfo.IsCollection NavigationProperty
             }
         }
 

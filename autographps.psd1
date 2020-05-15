@@ -178,10 +178,11 @@ VariablesToExport = @(
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\QualifiedSchema.ps1',
         '.\src\metadata\UriCache.ps1'
-        '.\src\typesystem\TypeProperty.ps1',
+        '.\src\typesystem\TypeMember.ps1',
         '.\src\typesystem\TypeSchema.ps1',
         '.\src\typesystem\TypeDefinition.ps1',
         '.\src\typesystem\TypeProvider.ps1',
+        '.\src\typesystem\typesystem.ps1',
         '.\src\typesystem\ScalarTypeProvider.ps1',
         '.\src\typesystem\CompositeTypeProvider.ps1',
         '.\src\typesystem\TypeManager.ps1',
