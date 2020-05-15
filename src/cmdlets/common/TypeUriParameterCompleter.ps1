@@ -19,17 +19,26 @@
 ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
+    $relationshipParameterName = $null
+    $fullyQualified = $false
+    $propertyTarget = $false
 
-    function __initialize($parameterType, $unqualified = $false, $propertyType = 'Property', $typeParameterName) {
+    function __initialize($parameterType, $unqualified = $false, $propertyType = 'Property', $typeParameterName, $relationshipParameterName) {
+
         $this.typeParameterName = if ( $typeParameterName ) {
             $typeParameterName
         } else {
             'TypeName'
         }
 
+        $this.fullyQualified = ! $unqualified
+
+        $this.relationshipParameterName = $relationshipParameterName
+
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
         } elseif ( $parameterType -eq 'Property' ) {
+            $this.propertyTarget = $true
             new-so TypePropertyParameterCompleter $propertyType
         } else {
             throw [ArgumentException]::new("The specified parameter type '$parameterType' must be one of 'TypeName' or 'Property'")
@@ -38,25 +47,48 @@ ScriptClass TypeUriParameterCompleter {
 
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+
         $uriParam = $fakeBoundParameters['Uri']
         $graphNameParam = $fakeBoundParameters['GraphName']
         $graphObjectParam = $fakeBoundParameters['GraphObject']
         $typeNameParam = $fakeBoundParameters[$this.typeParameterName]
 
+        $relationshipParam = if ( $this.relationshipParameterName ) {
+            $fakeBoundParameters[$this.relationshipParameterName]
+        }
+
+        $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
+
         $typeName = if ( $typeNameParam ) {
-            $typeNameParam
+            if ( $this.propertyTarget ) {
+                if ( ! ( $::.TypeUriHelper |=> IsValidEntityType $typeNameParam $targetContext $this.fullyQualified ) ) {
+                    return
+                }
+            }
+
+            if ( $relationshipParam ) {
+                $typeUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $typeNameParam
+                if ( $typeUri ) {
+                    $targetUri = $typeUri.tostring().trimend('/'), '{id}', $relationshipParam -join '/'
+                    $::.TypeUriHelper |=> TypeFromUri $targetUri $targetContext | select -expandproperty FullTypeName
+                }
+            } else {
+                $typeNameParam
+            }
         } else {
             $targetUri = if ( $uriParam ) {
                 $uriParam
             } elseif ( $graphObjectParam ) {
-                $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
                 if ( $targetContext ) {
                     $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $graphObjectParam
                 }
             }
 
             if ( $targetUri ) {
-                $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
+                if ( $relationshipParam ) {
+                    $targetUri = $targetUri.tostring().trimend('/'), $relationshipParam -join '/'
+                }
+
                 $::.TypeUriHelper |=> TypeFromUri $targetUri $targetContext | select -expandproperty FullTypeName
             }
         }

@@ -36,6 +36,7 @@
 . (import-script cmdlets\Update-GraphMetadata)
 . (import-script cmdlets\New-GraphObject)
 . (import-script cmdlets\New-GraphItem)
+. (import-script cmdlets\Add-GraphRelatedItem)
 
 # Add parameter completion to commands exported by a different module as a UX enhancement
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

@@ -73,6 +73,7 @@ NestedModules = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
+    'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphChildItem',
@@ -126,6 +127,7 @@ VariablesToExport = @(
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
+        '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',

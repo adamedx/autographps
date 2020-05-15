@@ -91,6 +91,11 @@ ScriptClass TypeUriHelper {
             $objectUri
         }
 
+        function IsValidEntityType($typeName, $graphContext, $isFullyQualified) {
+            $typeManager = $::.TypeManager |=> Get $graphContext
+            ( $typeManager |=> FindTypeDefinition Entity $typeName $isFullyQualified ) -ne $null
+        }
+
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
