@@ -126,7 +126,7 @@ ScriptClass TypeUriHelper {
 
                     # TODO: When an object is supplied, it had better end with whatever id was supplied.
                     # This will not always be true of the uri retrieved from the object
-                    if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ( ! $targetUri -or ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) ) {
+                    if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
                         $correctedUri = $objectUri, $id -join '/'
                         $objectUriInfo = TypeFromUri $correctedUri $targetContext
                     }

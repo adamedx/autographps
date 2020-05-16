@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../typesystem/TypeManager)
+. (import-script common/RequestHelper)
 . (import-script common/TypeUriHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
@@ -24,10 +25,12 @@ function Set-GraphItem {
     param(
         [parameter(position=0, parametersetname='typeandpropertylist', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertymap', mandatory=$true)]
+        [parameter(position=0, parametersetname='typeandoject', mandatory=$true)]
         [string] $TypeName,
 
         [parameter(position=1, parametersetname='typeandpropertylist', mandatory=$true)]
         [parameter(position=1, parametersetname='typeandpropertymap', mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandobject', mandatory=$true)]
         [string] $Id,
 
         [parameter(position=2, parametersetname='typeandpropertylist', mandatory=$true)]
@@ -42,10 +45,14 @@ function Set-GraphItem {
 
         [parameter(parametersetname='typedobjectandpropertylist', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typedobjectandobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='objectselfupdate', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='objectselfupdateoverride', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
         [parameter(parametersetname='uriandpropertylist', mandatory=$true)]
         [parameter(parametersetname='uriandpropertymap', mandatory=$true)]
+        [parameter(parametersetname='uriandobject', mandatory=$true)]
         [Uri] $Uri,
 
         [string] $GraphName,
@@ -53,7 +60,26 @@ function Set-GraphItem {
         [parameter(position=2, parametersetname='typeandpropertymap', mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', mandatory=$true)]
         [parameter(position=0, parametersetname='uriandpropertymap', mandatory=$true)]
+        [parameter(parametersetname='typeandobject')]
+        [parameter(parametersetname='typedobjectandobject')]
+        [parameter(parametersetname='uriandobject')]
+        [parameter(parametersetname='objectselfupdateoverride', mandatory=$true)]
         [HashTable] $PropertyMap,
+
+        [parameter(parametersetname='typeandobject', mandatory=$true)]
+        [parameter(parametersetname='typedobjectandobject', mandatory=$true)]
+        [parameter(parametersetname='uriandobject', mandatory=$true)]
+        [PSCustomObject] $GraphObject,
+
+        [parameter(parametersetname='typeandobject')]
+        [parameter(parametersetname='typedobjectandobject')]
+        [parameter(parametersetname='uriandobject')]
+        [parameter(parametersetname='objectselfupdate')]
+        [parameter(parametersetname='objectselfupdateoverride')]
+        [string[]] $ExcludeObjectProperty,
+
+        [parameter(parametersetname='objectselfupdateoverride', mandatory=$true)]
+        [switch] $MergeGraphItemWithPropertyMap,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -77,6 +103,14 @@ function Set-GraphItem {
 
         $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
+        if ( $GraphItem -and ! $writeRequestInfo.Uri ) {
+            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+        }
+
+        if ( ! $PropertyMap -and ! $GraphObject -and ! $writeRequestInfo.TypeName ) {
+            throw "Unable to determine the type of object to create -- specify the PropertyMap or GraphObject parameter and retry the command"
+        }
+
         $newGraphObjectParameters = @{}
 
         @(
@@ -94,16 +128,18 @@ function Set-GraphItem {
             }
         }
 
-        if ( $GraphItem -and ! $writeRequestInfo.Uri ) {
-            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+        $templateObject = $GraphObject
+
+        if ( ! $TypeName -and ! $Uri -and ! $property -and ! $GraphObject -and ( ! $PropertyMap -or $MergeGraphItemWithPropertyMap.IsPresent ) ) {
+            $templateObject = $GraphItem
         }
 
-        $newObject = if ( $writeRequestInfo.TypeName ) {
-            New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
-        } elseif ( $propertyMap ) {
-            $propertyMap
+        $newObject = if ( $templateObject ) {
+            $::.RequestHelper |=> GraphObjectToWriteRequestObject $templateObject $ExcludeObjectProperty $PropertyMap
+        } elseif ( $PropertyMap ) {
+            $PropertyMap
         } else {
-            throw "Object type is ambiguous -- specify the PropertyMap parameter and try again"
+            New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
         Invoke-GraphRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
@@ -113,5 +149,6 @@ function Set-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem ExcludeObjectProperty (new-so TypeUriParameterCompleter Property $false Property $null $null GraphObject)
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem GraphName (new-so GraphParameterCompleter)

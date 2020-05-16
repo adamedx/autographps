@@ -41,7 +41,6 @@ ScriptClass TypeUriParameterCompleter {
 
         $this.relationshipParameterName = $relationshipParameterName
 
-
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
         } elseif ( $parameterType -eq 'Property' ) {

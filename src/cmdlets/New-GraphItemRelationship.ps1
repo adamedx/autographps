@@ -144,8 +144,8 @@ function New-GraphItemRelationship {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $true OverrideTargetTypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TargetUri (new-so GraphUriParameterCompleter LocationUri)

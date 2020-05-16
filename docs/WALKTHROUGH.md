@@ -492,6 +492,64 @@ This changes the group's display name to *Group 7 Access Level* and updates the 
 Set-GraphItem group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
+And there are still more equivalent syntaxes, using the `PropertyMap` or `GraphObject` parameters. `PropertyMap` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
+
+```powershell
+$newGroup | Set-GraphItem -PropertyMap @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
+```
+
+The `GraphObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
+
+```powershell
+$modifiedGroup = New-GraphObject group description 'Just the description'
+$newGroup | Set-GraphItem -GraphObject $modifiedGroup
+
+gls -GraphItem $newGroup -ContentOnly | select displayname, description
+
+displayName          description
+-----------          -----------
+Group 7 Access Level Just the description
+```
+
+Both the `GraphObject` and `PropertyMap` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
+
+```powershell
+gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+
+mailNickname displayName description
+------------ ----------- -----------
+             Unused      Unassinged group
+
+$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+
+$existingGroup | Set-GraphItem -GraphObject $templateGroup -PropertyMap @{mailNickName='dorateam'}
+
+gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+
+mailNickname displayName description
+------------ ----------- -----------
+dorateam     Team group  Standard team collaboration group
+```
+
+Finally, an object returned from the Graph may be "edited" locally and then resubmitted so that the local changes are reflected in the Graph. In this case,
+the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
+
+```powershell
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup.displayName += ' - ' + [DateTime]::now
+
+$existingGroup | Set-GraphItem
+
+gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+
+description                       displayName
+-----------                       -----------
+Standard team collaboration group Team group - 05/16/2019 15:14:41
+```
+
+Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `GraphObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
+
 #### Link resources: add a user to a group (AAD accounts only)
 
 The Graph is not just about individual resources, its power comes from the relationships between those resources. With groups and users for example, the fact that users are members of a group is modeled by a relationship property called `members`. This means that by modifying the `members` relationship property, we can modify which users are members of a group.

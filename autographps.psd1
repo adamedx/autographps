@@ -157,6 +157,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\QueryTranslationHelper.ps1',
+        '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
         '.\src\cmdlets\common\TypeParameterCompleter.ps1',

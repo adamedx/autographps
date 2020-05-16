@@ -125,6 +125,6 @@ function Get-GraphItemUri {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri Uri (new-so GraphUriParameterCompleter LocationUri)

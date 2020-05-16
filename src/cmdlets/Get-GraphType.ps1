@@ -76,7 +76,7 @@ function Get-GraphType {
 
         $result = $::.TypeHelper |=> ToPublic $type
 
-        if ( ! $TransitiveMembers.IsPresent ) {
+        $unsortedResult = if ( ! $TransitiveMembers.IsPresent ) {
             $result
         } else {
             if ( ! $MemberFilter ) {
@@ -87,6 +87,8 @@ function Get-GraphType {
                 $result.Relationships | where { $_.Name -like "*$($MemberFilter)*" }
             }
         }
+
+        $unsortedResult | sort-object Name
     } else {
         $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
             $TypeClass

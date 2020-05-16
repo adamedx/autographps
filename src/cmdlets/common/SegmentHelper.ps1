@@ -59,6 +59,10 @@ ScriptClass SegmentHelper {
             $parser |=> SegmentsFromUri $graphUri
         }
 
+        function IsGraphSegmentType($object) {
+            $object -is [PSCustomObject] -and $object.pstypenames.contains($SegmentDisplayTypeName)
+        }
+
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
 
             if ( $segment.decoration ) {
