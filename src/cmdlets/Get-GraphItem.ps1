@@ -53,7 +53,7 @@ function Get-GraphItem {
         [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $GraphItem,
 
         $GraphName,
 
@@ -115,7 +115,7 @@ function Get-GraphItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphObject
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property

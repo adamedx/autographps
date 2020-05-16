@@ -20,20 +20,27 @@ ScriptClass TypeUriParameterCompleter {
     $typeCompleter = $null
     $typeParameterName = $null
     $relationshipParameterName = $null
+    $graphObjectParameterName = $null
     $fullyQualified = $false
     $propertyTarget = $false
 
-    function __initialize($parameterType, $unqualified = $false, $propertyType = 'Property', $typeParameterName, $relationshipParameterName) {
-
+    function __initialize($parameterType, $unqualified = $false, $propertyType = 'Property', $typeParameterName, $relationshipParameterName, $graphObjectParameterName) {
         $this.typeParameterName = if ( $typeParameterName ) {
             $typeParameterName
         } else {
             'TypeName'
         }
 
+        $this.graphObjectParameterName = if ( $graphObjectParameterName ) {
+            $graphObjectParameterName
+        } else {
+            'GraphItem'
+        }
+
         $this.fullyQualified = ! $unqualified
 
         $this.relationshipParameterName = $relationshipParameterName
+
 
         $this.typeCompleter = if ( $parameterType -eq 'TypeName' ) {
             new-so TypeParameterCompleter Entity $unqualified
@@ -50,8 +57,8 @@ ScriptClass TypeUriParameterCompleter {
 
         $uriParam = $fakeBoundParameters['Uri']
         $graphNameParam = $fakeBoundParameters['GraphName']
-        $graphObjectParam = $fakeBoundParameters['GraphObject']
         $typeNameParam = $fakeBoundParameters[$this.typeParameterName]
+        $graphObjectParam = $fakeBoundParameters[$this.graphObjectParameterName]
 
         $relationshipParam = if ( $this.relationshipParameterName ) {
             $fakeBoundParameters[$this.relationshipParameterName]

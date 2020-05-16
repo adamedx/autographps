@@ -499,7 +499,7 @@ The Graph is not just about individual resources, its power comes from the relat
 To modify a relationship, the `New-GraphItemRelationship` command may be used:
 
 ```powershell
-New-GraphItemRelationship -FromObject $newGroup -ToObject $newUser -ByProperty members
+New-GraphItemRelationship -FromItem $newGroup -ToItem $newUser -Relationship members
 ```
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
@@ -507,7 +507,7 @@ This adds a directional relationship between the group and the user "group is re
 To see the new relationship, use the `Get-GraphRelatedItem` command:
 
 ```powershell
-PS> Get-GraphRelatedItem group $newgroup.id -Relationship members
+PS> Get-GraphRelatedItem group $newgroup.id -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -535,7 +535,7 @@ $newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members
 
 # Display the group's updated membership with the new users
 
-$teamGroup | Get-GraphRelatedItem -Relationship members
+$teamGroup | Get-GraphRelatedItem -WithRelationship members
 
    Graph Location: /v1.0:/groups/c436312c-4f6e-4963-ac05-bf68b98d7475/members
 
@@ -550,19 +550,19 @@ t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 The inverse of the `New-GraphItemRelationship` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
 
 ```powershell
-Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -ByProperty members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
 A syntax that supports an object rather than identifier for the subject or object of the relationship or both is also available:
 
 ```powershell
-Remove-GraphItemRelationship -FromObject $existingGroup -ByProperty members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
 And the pipeline is also supported -- this example removes all members from the group `$teamGroup`:
 
 ```powershell
-$teamGroup | Get-GraphRelatedItem -Relationship members | Remove-GraphItemRelationship -FromObject $teamgroup -ByProperty members
+$teamGroup | Get-GraphRelatedItem -WithRelationship members | Remove-GraphItemRelationship -FromItem $teamgroup -Relationship members
 ```
 
 #### Delete resources

@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Fix gls of the result of gls to return the same thing, not the entityset
+* Change GraphObject to NewObject in New-GraphItem
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
 * Remove default of not waiting for metadata
@@ -16,10 +18,7 @@
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
-* New command features:
-  * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
 * Rename GraphObject to GraphItem
-* Use relationship terminology rather than navigationproperty
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
@@ -332,6 +331,11 @@
 * Rename Get-GraphUri to Get-GraphUriInfo
 * Add searchstring to Get-GraphItem, Get-GraphChildItem
 * Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
+* Use relationship terminology rather than navigationproperty
+* New command features:
+  * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
+* Change FromObject to FromItem
+* Change ToObject to ToItemm
 
 ### Postponed
 

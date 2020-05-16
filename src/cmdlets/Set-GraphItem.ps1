@@ -42,7 +42,7 @@ function Set-GraphItem {
 
         [parameter(parametersetname='typedobjectandpropertylist', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertymap', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $GraphItem,
 
         [parameter(parametersetname='uriandpropertylist', mandatory=$true)]
         [parameter(parametersetname='uriandpropertymap', mandatory=$true)]
@@ -71,11 +71,11 @@ function Set-GraphItem {
     process {
         $targetId = if ( $Id ) {
             $Id
-        } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-            $GraphObject.Id # This is needed when an object is supplied without an id parameter
+        } elseif ( $GraphItem -and ( $GraphItem | gm -membertype noteproperty id -erroraction ignore ) ) {
+            $GraphItem.Id # This is needed when an object is supplied without an id parameter
         }
 
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphObject
+        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         $newGraphObjectParameters = @{}
 
@@ -94,8 +94,8 @@ function Set-GraphItem {
             }
         }
 
-        if ( $GraphObject -and ! $writeRequestInfo.Uri ) {
-            throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+        if ( $GraphItem -and ! $writeRequestInfo.Uri ) {
+            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
         $newObject = if ( $writeRequestInfo.TypeName ) {

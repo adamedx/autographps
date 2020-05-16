@@ -32,10 +32,10 @@ function Get-GraphRelatedItem {
         [string] $Id,
 
         [parameter(parametersetname='typedobjectandproperty', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('FromObject')]
-        [PSCustomObject] $GraphObject,
+        [Alias('FromItem')]
+        [PSCustomObject] $GraphItem,
 
-        [Alias('ByRelationshipProperty')]
+        [Alias('WithRelationship')]
         [string[]] $Relationship,
 
         [parameter(parametersetname='uriandproperty', mandatory=$true)]
@@ -59,7 +59,7 @@ function Get-GraphRelatedItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphObject
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         $requestErrorAction = $ErrorActionPreference
 

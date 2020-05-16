@@ -71,6 +71,7 @@ function New-GraphItem {
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
+        [Alias('NewGraphObject')]
         [object] $GraphObject,
 
         [ValidateSet('POST', 'PUT')]

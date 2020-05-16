@@ -72,7 +72,7 @@ function Add-GraphRelatedItem {
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
-        [object] $GraphObject,
+        [object] $GraphItem,
 
         [ValidateSet('POST', 'PUT')]
         [String] $Method = $null,
@@ -102,7 +102,7 @@ function Add-GraphRelatedItem {
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphObject $Relationship
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
 
         $remappedParameters = @{}
         foreach ( $parameterName in $PSBoundParameters.Keys ) {
@@ -116,8 +116,8 @@ function Add-GraphRelatedItem {
 
     process {
 
-        if ( $GraphObject ) {
-            $newObjects += $graphObject
+        if ( $GraphItem ) {
+            $newObjects += $GraphItem
         }
     }
 

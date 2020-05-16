@@ -30,7 +30,7 @@ function Get-GraphChildItem {
         [parameter(parametersetname='byobject', mandatory=$true)]
         [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         [Alias('OfObject')]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $GraphItem,
 
         [parameter(position=0, parametersetname='bytypecollection', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
@@ -101,7 +101,7 @@ function Get-GraphChildItem {
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $null
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $GraphItem
 
         $baseUri = if ( $Uri ) {
             $Uri # RequestInfo may generate a base URI unsuited for our purposes, so don't use it if we have an explicit URI

@@ -34,8 +34,8 @@ function New-GraphItemRelationship {
 
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
-        [Alias('FromObject')]
-        [PSCustomObject] $GraphObject,
+        [Alias('FromItem')]
+        [PSCustomObject] $GraphItem,
 
         [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
@@ -44,8 +44,7 @@ function New-GraphItemRelationship {
         [parameter(position=1, parametersetname='uriandpropertytotargetid')]
         [parameter(position=1, parametersetname='uriandpropertytotargetobject')]
         [parameter(position=1, parametersetname='uriandpropertytotargeturi')]
-        [Alias('ByProperty')]
-        [string] $Property,
+        [string] $Relationship,
 
         [parameter(parametersetname='typeandpropertytotargetid')]
         [parameter(parametersetname='typedobjectandpropertytotargetid')]
@@ -62,7 +61,7 @@ function New-GraphItemRelationship {
         [parameter(parametersetname='typeandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='uriandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('ToObject')]
+        [Alias('ToItem')]
         [object] $TargetObject,
 
         [parameter(parametersetname='uriandpropertytotargeturi', mandatory=$true)]
@@ -87,20 +86,20 @@ function New-GraphItemRelationship {
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphObject $Property $false
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship $false
 
         if ( ! $sourceInfo ) {
-            throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
         if ( ! $SkipRelationshipCheck.IsPresent ) {
-            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Property NavigationProperty
+            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Relationship NavigationProperty
         }
 
-        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Property $OverrideTargetTypeName $false
+        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Relationship $OverrideTargetTypeName $false
 
         if ( ! $targetTypeInfo ) {
-            throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
+            throw "Unable to find specified property '$Relationship' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
         }
 
         $targetTypeName = $targetTypeInfo.TypeId

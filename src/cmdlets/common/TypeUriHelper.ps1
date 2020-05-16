@@ -185,7 +185,7 @@ ScriptClass TypeUriHelper {
             if ( $navigationProperty ) {
                 $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $allowCollectionTarget ) {
                     $targetType = Get-GraphType -GraphName $graphName $requestInfo.TypeName
-                    $targetTypeInfo = $targetType.NavigationProperties | where name -eq $navigationProperty
+                    $targetTypeInfo = $targetType.Relationships | where name -eq $navigationProperty
 
                     if ( ! $targetTypeInfo ) {
                         return $null

@@ -31,7 +31,7 @@ function Get-GraphResourceWithMetadata {
         [String] $Filter = $null,
 
         [parameter(parametersetname='GraphItem', mandatory=$true)]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $GraphItem,
 
         [String] $Query = $null,
 
@@ -91,7 +91,7 @@ function Get-GraphResourceWithMetadata {
     process {
         $assumeRoot = $false
 
-        $resolvedUri = if ( $Uri -and $Uri -ne '.' -or $GraphObject ) {
+        $resolvedUri = if ( $Uri -and $Uri -ne '.' -or $GraphItem ) {
             $GraphArgument = @{}
 
             if ( $GraphName ) {
@@ -103,10 +103,10 @@ function Get-GraphResourceWithMetadata {
                 $GraphArgument['GraphScope'] = $GraphName
             }
 
-            $targetUri = if ( $GraphObject ) {
-                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphObject
+            $targetUri = if ( $GraphItem ) {
+                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphItem
                 if ( ! $requestInfo.Uri ) {
-                    throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+                    throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
                 }
                 $requestInfo.Uri
             } else {
@@ -174,7 +174,7 @@ function Get-GraphResourceWithMetadata {
 
         $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-        $noUri = ! $GraphObject -and ( ! $Uri -or $Uri -eq '.' )
+        $noUri = ! $GraphItem -and ( ! $Uri -or $Uri -eq '.' )
 
         $emitTarget = $null
         $emitChildren = $null
