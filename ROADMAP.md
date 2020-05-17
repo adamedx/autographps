@@ -2,10 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Get-GraphUri should be Get-GraphUriInfo
+* Implement new Get-GraphUri command
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Fix gls of the result of gls to return the same thing, not the entityset
-* Change GraphObject to NewObject in New-GraphItem
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
 * Remove default of not waiting for metadata

@@ -225,10 +225,18 @@ This release includes major breaking changes in command names, fixes significant
 
 * Includes breaking changes from [AutoGraphPS-SDK 0.19.0](https://github.com/adamedx/autographps-sdk/releases/tag/v0.19.0) -- `Get-GraphItem` and `Remove-GraphItem` from `AutoGraphPS-SDK` have been renamed to `Get-GraphResource` and `Remove-GraphResource`
 * `Get-GraphItemWithMetadata` has been renamed to `Get-GraphResourceWithMetadata`
+* `Get-GraphUri` has been renamed to `Get-GraphUriInfo`
 * New implementations of `Get-GraphItem` and `Remove-GraphItem` are introduced in this module -- previously they were part of `AutoGraphPS-SDK` and had different functionality than the new version in this module
 
 ### New features
-
+* New commands for write operations!
+  * `Add-GraphRelatedItem`: creates a new entity in the graph that is associated with an existing entity through a relationship (i.e. an *OData navigation property*)
+  * `Get-GraphRelatedItem`: returns the items related from one entity to a second entity through a relationship property (*OData navigation property*)
+  * `New-GraphItem`: creates a new item in the graph
+  * `New-GraphItemRelationship`: creates an association from one entity in the graph to a second entity through a relationship property (*OData navigation property*) of the first entity
+  * `New-GraphObject`: creates a deserialized reprsentation of an item in the graph or of data structures referenced in the graph. The representation can be converted to the same JSON format used to serialize data in requests to the graph
+  * `Remove-GraphItemRelatonship`: removes the association from one entity to a second entity
+  * `Set-GraphItem`: updates an existing entity in the graph
 * `Get-GraphType` now supports tab-completion for output, so commands like select can be used interactively when building commands in the shell
 * New `Get-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware access of objects by `id` and other type-related facilities.
 * New `Remove-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware removal of objects by `id` and other type-related facilities.
@@ -244,7 +252,11 @@ This release includes major breaking changes in command names, fixes significant
   * `Expand`: Navigation properties may now be expanded (with parameter completion)
   * `Search`: For supported entities, an API-defined search query may be specified
   * `Sort`, `Descending`: Sorting by specified property (with parameter completion) may be specified
+* The `Get-GraphChildItem` and `Get-GraphItem` commands support the `SimpleMatch` parameter that uses a heuristic approach for "casual" graph queries without the need for OData syntax
 * Parameter completion is also supported for the `Expand` and `Sort` commands of `Invoke-GraphRequest` and `Get-GraphResource` when this module is installed.
+* `Show-GraphHelp` supports complex types
+* `Get-GraphType` supports the `TransitiveMembers` parameter and `MemberFilter` parameters
+* Various pipeline improvements have been made to most commands to ensure consistency across commands and enable useful scenarios. In general, pipelines should be easy for the typical PowerShell user to exploit and should adhere to the *Principle of Least Astonishment*.
 
 ### Fixed defects
 
