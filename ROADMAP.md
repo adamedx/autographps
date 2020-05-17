@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Implement new Get-GraphUri command
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Show-GraphHelp should take a uri
@@ -336,7 +335,8 @@
 * New command features:
   * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
 * Change FromObject to FromItem
-* Change ToObject to ToItemm
+* Change ToObject to ToItem
+* Implement new Get-GraphUri command
 
 ### Postponed
 
