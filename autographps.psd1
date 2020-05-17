@@ -83,6 +83,7 @@ NestedModules = @(
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
+    'Get-GraphUri',
     'Get-GraphUriInfo',
     'New-Graph',
     'New-GraphItem',
@@ -137,6 +138,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
+        '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\New-GraphItem.ps1',
@@ -229,9 +231,10 @@ This release includes major breaking changes in command names, fixes significant
 * New implementations of `Get-GraphItem` and `Remove-GraphItem` are introduced in this module -- previously they were part of `AutoGraphPS-SDK` and had different functionality than the new version in this module
 
 ### New features
-* New commands for write operations!
+* New commands for write operations, and other commands as well!
   * `Add-GraphRelatedItem`: creates a new entity in the graph that is associated with an existing entity through a relationship (i.e. an *OData navigation property*)
   * `Get-GraphRelatedItem`: returns the items related from one entity to a second entity through a relationship property (*OData navigation property*)
+  * `Get-GraphUri`: returns the URI of an entity given the type and id, or for a URI with a relationship
   * `New-GraphItem`: creates a new item in the graph
   * `New-GraphItemRelationship`: creates an association from one entity in the graph to a second entity through a relationship property (*OData navigation property*) of the first entity
   * `New-GraphObject`: creates a deserialized reprsentation of an item in the graph or of data structures referenced in the graph. The representation can be converted to the same JSON format used to serialize data in requests to the graph
