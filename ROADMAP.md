@@ -2,11 +2,27 @@
 
 ## To-do items -- prioritized
 
-* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
-* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
-* Make Get-GraphResource Property alias for Select
-* Add Set-GraphItem command that takes in object, hash table or json
-* Use begin / process / end in key commands to correctly support pipeline
+* gls and co. should use TypeName instead of FullTypeName, something else other than type
+* Fix gls of the result of gls to return the same thing, not the entityset
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
+* Remove default of not waiting for metadata
+* Set-GraphItem should take an object, not just a hashtable
+* Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
+* Wrapper for ggci to only support "global" types
+* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
+* Use https://github.com/PowerShell/platyPS to generate markdown help
+* Should 'type' be 'resource' or 'resourcetype'?
+* Should Get-GraphResource be Get-GraphContent?
+* Invoke-GraphMethod
+* Format-GraphItem
+* Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
+* Use odata context
+* Rename GraphObject to GraphItem
+* Get-GraphToken should show current token scopes
+* Experiment with Format-GraphItem and color
+* Add autocomplete from last items
+* Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
 * Add method invocation via Invoke-GraphMethod
@@ -18,7 +34,6 @@
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
-* Fix qualified / vs. unqualified names in metadata classes
 * Add `$value` support.
 * Move app to new tenant (or create a new one)
 
@@ -139,6 +154,10 @@
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
+
+### Ideas
+
+* Add specific type to pstypenames for each entity type?
 
 ### Done
 
@@ -278,6 +297,46 @@
 * Let get-graphchilditem take a type without an id
 * Rename writeoperationparametercompleter to something generic unrelated to writes
 * Fix parametersets for add-graphitemreference and set-graphitemproperty
+* Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Add First and skip
+* Add Sort, including descending
+* Add Search support
+* Make Get-GraphResource Property alias for Select
+* Add Members get-graphtype
+* For entity types, do not include id unless it is specified on command line
+* get-graphitem, get-graphchilditem should take an object from the pipeline
+* Add Get-GraphItemReference
+* Add Remove-GraphItemRelationship
+* Add Get-GraphItemUri
+* Fix uri array parameter in Get-GraphResourceWithMetadata that seems to only evaluate index 0 / add pipeline support
+* Get better behavior for gls, et. al. when id or other properties are not returned
+* Unalias type names in typemember
+* Use begin / process / end in key commands to correctly support pipeline
+* Make show-graphhelp support complex types?
+* Refactor add-graphitemreference
+* Add `RawContent` support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
+* Add member filter to `Get-GraphType -member`
+* For Get-GraphType Members, make this TransitiveMembers and make it return transitive members
+* Make Get-GraphItem, Get-GraphChildItem both default to typename
+* MakeGet-GraphResourceWithMetadata override id if there's content. Make another field for 'SegmentName'
+* Make Get-GraphChildItem support relationships
+* Change Add-GraphItemReference to New-GraphItemRelationship
+* Rename Set-GraphItemProperty to Set-GraphItem
+* Change Add-GraphItemReference to New-GraphItemRelationship
+* New command names
+  * Get-GraphRelatedItem
+  * RemoveGraphItemRelationship -IgnoreExisting
+  * New-GraphItemRelationship
+* Should Get-GraphItem, etc., return child uris? Maybe not.
+* Rename Get-GraphUri to Get-GraphUriInfo
+* Add searchstring to Get-GraphItem, Get-GraphChildItem
+* Add Add-GraphItem as wrapper for new-graphitem -- appropriate use according to https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7
+* Use relationship terminology rather than navigationproperty
+* New command features:
+  * New-GraphItem, Get-GraphItem, Get-GraphChildItem, Set-GraphItem, Remove-GraphItem WithRelationshipFrom
+* Change FromObject to FromItem
+* Change ToObject to ToItem
+* Implement new Get-GraphUri command
 
 ### Postponed
 
@@ -292,6 +351,7 @@
 * Get a fix from sdk for scope helper in find-graphpermissions
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
+* Fix qualified / vs. unqualified names in metadata classes
 
 ### Abandoned
 

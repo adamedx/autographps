@@ -24,7 +24,7 @@ ScriptClass TypeHelper {
             TypeClass = 'Class'
             BaseType = 'BaseType'
             Properties = 'Properties'
-            NavigationProperties = 'NavigationProperties'
+            Relationships = 'NavigationProperties'
             IsComposite = 'IsComposite'
             NativeSchema = 'NativeSchema'
         }
@@ -40,8 +40,8 @@ ScriptClass TypeHelper {
                 Namespace = $privateObject.($this.displayProperties.Namespace)
                 TypeClass = $privateObject.($this.displayProperties.TypeClass)
                 BaseType = $privateObject.($this.displayProperties.BaseType)
-                Properties = [PSCustomObject] ($privateObject.($this.displayProperties.Properties))
-                NavigationProperties = [PSCustomObject] ($privateObject.($this.displayProperties.NavigationProperties))
+                Properties = $privateObject.($this.displayProperties.Properties)
+                Relationships = $privateObject.($this.displayProperties.Relationships)
                 IsComposite = $privateObject.($this.displayProperties.IsComposite)
                 NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
             }
@@ -53,7 +53,7 @@ ScriptClass TypeHelper {
         function __RegisterDisplayType {
             remove-typedata -typename $this.DisplayTypeName -erroraction ignore
 
-            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'NavigationProperties')
+            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'Relationships')
 
             $displayTypeArguments = @{
                 TypeName = $this.DisplayTypeName

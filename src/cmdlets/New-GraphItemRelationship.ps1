@@ -16,27 +16,26 @@
 . (import-script common/TypeUriHelper)
 . (import-script common/GraphParameterCompleter)
 . (import-script common/TypeParameterCompleter)
-. (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
-function Add-GraphItemReference {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetid')]
+function New-GraphItemRelationship {
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetobject')]
     param(
         [parameter(position=0, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromType')]
-        $TypeName,
+        [string] $TypeName,
 
         [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
         [Alias('FromId')]
-        $Id,
+        [string] $Id,
 
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
-        [Alias('FromObject')]
-        [object] $GraphObject,
+        [Alias('FromItem')]
+        [PSCustomObject] $GraphItem,
 
         [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
@@ -45,22 +44,13 @@ function Add-GraphItemReference {
         [parameter(position=1, parametersetname='uriandpropertytotargetid')]
         [parameter(position=1, parametersetname='uriandpropertytotargetobject')]
         [parameter(position=1, parametersetname='uriandpropertytotargeturi')]
-        [Alias('ByProperty')]
-        [string] $Property,
+        [string] $Relationship,
 
         [parameter(parametersetname='typeandpropertytotargetid')]
         [parameter(parametersetname='typedobjectandpropertytotargetid')]
         [parameter(parametersetname='uriandpropertytotargetid')]
         [parameter(parametersetname='typedobjectandpropertytotargetobject')]
         [string] $OverrideTargetTypeName,
-
-        [parameter(parametersetname='typeandpropertytotargetid')]
-        [parameter(parametersetname='typedobjectandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargeturi')]
-        [parameter(parametersetname='typedobjectandpropertytotargetobject')]
-        [ValidateSet('Auto', 'SeparateRequest', 'SharedRequest')]
-        [string] $RequestOptimizationMode = 'SeparateRequest',
 
         [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
@@ -71,7 +61,7 @@ function Add-GraphItemReference {
         [parameter(parametersetname='typeandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='typedobjectandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='uriandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('ToObject')]
+        [Alias('ToItem')]
         [object] $TargetObject,
 
         [parameter(parametersetname='uriandpropertytotargeturi', mandatory=$true)]
@@ -88,55 +78,33 @@ function Add-GraphItemReference {
 
         $GraphName,
 
-        [switch] $FullyQualifiedTypeName
+        [switch] $FullyQualifiedTypeName,
+
+        [switch] $SkipRelationshipCheck
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $fromId = if ( $Id ) {
-            $Id
-        } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-            $GraphObject.Id # This is needed when an object is supplied without an id parameter
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship $false
+
+        if ( ! $sourceInfo ) {
+            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
-        $writeRequestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $fromId $GraphObject
-
-        if ( $GraphObject -and ! $writeRequestInfo.Uri ) {
-            throw "Unable to determine Uri for specified GraphObject parameter -- specify the TypeName or Uri parameter and retry the command"
+        if ( ! $SkipRelationshipCheck.IsPresent ) {
+            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Relationship NavigationProperty
         }
 
-        $targetAsCollection = $RequestOptimizationMode -eq 'SharedRequest'
-        $targetTypeName = $OverrideTargetTypeName
+        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Relationship $OverrideTargetTypeName $false
 
-        if ( $Property ) {
-            $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $RequestOptimizationMode -eq 'Auto' ) {
-                $targetType = Get-GraphType $writeRequestInfo.TypeName
-                $targetTypeInfo = $targetType.NavigationProperties | where name -eq $Property
-
-                if ( ! $targetTypeInfo ) {
-                    throw "Unable to find specified property '$Property' on the specified source -- specify the property's type with the OverrideTargetTypeName and set the RequestOptimizationMode to a value other than 'Auto' and retry the command"
-                }
-                $targetTypeInfo
-            }
-
-            if ( $RequestOptimizationMode -eq 'Auto' ) {
-                $targetAsCollection = $targetPropertyInfo.IsCollection
-            }
-
-            if ( ! $targetTypeName ) {
-                $targetTypeName = $targetPropertyInfo.TypeId
-            }
+        if ( ! $targetTypeInfo ) {
+            throw "Unable to find specified property '$Relationship' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
         }
 
-        $segments = @()
-        $segments += $writeRequestInfo.uri.tostring()
-        if ( $Property -and $writeRequestInfo.uri ) {
-            $segments += $Property
-        }
-        $segments += '$ref'
+        $targetTypeName = $targetTypeInfo.TypeId
 
-        $fromUri = $segments -join '/'
+        $fromUri = $sourceInfo.uri.tostring().trimend('/'), '$ref' -join '/'
 
         # Note that if the array has only one element, it will be treated like a single
         # element, rather than an array. Normally, this automatic behavior is quite undesirable,
@@ -148,13 +116,12 @@ function Add-GraphItemReference {
     process {
         $targetInfo = if ( $TargetUri ) {
             foreach ( $destinationUri in $TargetUri ) {
-                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
+                $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $TargetId $destinationUri $null
             }
         } elseif ( $TargetObject ) {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $TargetObject
-
+            $requestInfo = $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $TargetId $TargetUri $TargetObject
             if ( ! $requestInfo.Uri ) {
-                throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
+                throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the OverrideTargetTypeName and TargetId parameters and retry the command"
             }
             $requestInfo
         } else {
@@ -170,21 +137,15 @@ function Add-GraphItemReference {
     }
 
     end {
-        $referenceRequests = $references
-
-        if ( $targetAsCollection ) {
-            $referenceRequests = , $references
-        }
-
-        foreach ( $referenceRequest in $referenceRequests ) {
-            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $writeRequestInfo.Context.connection -erroraction 'stop'
+        foreach ( $referenceRequest in $references ) {
+            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop' | out-null
         }
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $false OverrideTargetTypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference Uri (new-so GraphUriParameterCompleter LocationUri)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphItemReference TargetUri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship OverrideTargetTypeName (new-so TypeUriParameterCompleter TypeName $true OverrideTargetTypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TargetUri (new-so GraphUriParameterCompleter LocationUri)

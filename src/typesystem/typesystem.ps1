@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script TypeMember.ps1)
-. (import-script TypeSchema.ps1)
-. (import-script TypeDefinition.ps1)
-. (import-script TypeProvider.ps1)
-. (import-script ScalarTypeProvider.ps1)
-. (import-script CompositeTypeProvider.ps1)
-. (import-script TypeManager.ps1)
-. (import-script GraphObjectBuilder.ps1)
+. (import-script TypeMember)
+. (import-script TypeSchema)
+. (import-script TypeDefinition)
+. (import-script TypeProvider)
+. (import-script ScalarTypeProvider)
+. (import-script CompositeTypeProvider)
+. (import-script TypeManager)
+. (import-script GraphObjectBuilder)
 

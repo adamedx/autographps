@@ -59,6 +59,10 @@ ScriptClass SegmentHelper {
             $parser |=> SegmentsFromUri $graphUri
         }
 
+        function IsGraphSegmentType($object) {
+            $object -is [PSCustomObject] -and $object.pstypenames.contains($SegmentDisplayTypeName)
+        }
+
         function ToPublicSegment($parser, $segment, $parentPublicSegment) {
 
             if ( $segment.decoration ) {
@@ -109,6 +113,7 @@ ScriptClass SegmentHelper {
                 PSTypeName = ($this.SegmentDisplayTypeName.tostring())
                 ParentPath = $parentPath
                 Info = $info
+                Name = $segment.name
                 Relation = $relationship
                 Collection = $isCollection
                 Class = $entityClass
@@ -132,8 +137,12 @@ ScriptClass SegmentHelper {
             $result
         }
 
-        function ToPublicSegmentFromGraphItem( $parentPublicSegment, $graphItem ) {
-            $fullTypeName = ($::.Entity |=> GetEntityTypeDataFromTypeName $parentPublicSegment.namespace $parentPublicSegment.Type).EntityTypeName
+        function ToPublicSegmentFromGraphItem( $graphContext, $graphItem ) {
+            $itemUri = $::.TypeUriHelper |=> GetUriFromDecoratedObject $graphContext $graphItem $true
+
+            $typeInfo = $::.TypeUriHelper |=> TypeFromUri $itemUri $graphContext
+            $fullTypeName = $typeInfo.FullTypeName
+
             $typeComponents = $fullTypeName -split '\.'
 
             # Objects may actually be raw json, or even binary, depending
@@ -141,33 +150,42 @@ ScriptClass SegmentHelper {
             # raw content value from the Graph web response
             $Id = $graphItem | select -expandproperty id -erroraction ignore
 
-            $itemId = if ( $Id ) {
+            $itemName = if ( $Id ) {
                 $Id
             } else {
                 '[{0}]' -f $graphItem.Gettype().name
             }
 
+            $itemId = if ( $graphItem -is [PSCustomObject] -and $graphItem.pstypenames.contains('GraphSegmentDisplayType') -and ($graphItem.Content) ) {
+                $graphItem.Content.Id
+            } else {
+                $itemName
+            }
+
+            $segment = $typeInfo.UriInfo
+
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
             [PSCustomObject] @{
-                PSTypeName = $parentPublicSegment.pstypename.tostring()
-                ParentPath = $parentPublicSegment.Path
+                PSTypeName = $segment.pstypename.tostring()
+                ParentPath = $segment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
+                Name = $itemName
                 Relation = 'Direct'
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
                 Id = $itemId
-                Namespace = $parentPublicSegment.Namespace
-                Uri = new-object Uri $parentPublicSegment.Uri, $itemId
-                GraphUri = $::.GraphUtilities.JoinGraphUri($parentPublicSegment.GraphUri, $itemId)
-                Path = $::.GraphUtilities.JoinFragmentUri($parentPublicSegment.path, $itemId)
+                Namespace = $segment.Namespace
+                Uri = $segment.Uri
+                GraphUri = $segment.GraphUri
+                Path = $segment.Path
                 FullTypeName = $fullTypeName
-                Version = $parentPublicSegment.Version
-                Endpoint = $parentPublicSegment.Endpoint
+                Version = $segment.Version
+                Endpoint = $segment.Endpoint
                 IsDynamic = $true
-                Parent = $ParentPublicSegment
-                Details = $null
+                Parent = $null
+                Details = $segment
                 Content = $graphItem
                 Preview = $this.__GetPreview($graphItem, $itemId)
             }
@@ -182,8 +200,12 @@ ScriptClass SegmentHelper {
                 throw "Segment $($publicSegment.id) already has a Preview"
             }
 
+            if ( $content | gm id -erroraction ignore ) {
+                $publicSegment.Id = $content.id
+            }
+
             $publicSegment.content = $content
-            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.id)
+            $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.name)
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
         }
 

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,21 +15,26 @@
 . (join-path $psscriptroot src/graph.ps1)
 
 $functions = @(
-    'Add-GraphItemReference',
+    'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphItem',
+    'Get-GraphRelatedItem',
+    'Get-GraphItemUri',
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
     'Get-GraphUri',
+    'Get-GraphUriInfo',
     'New-Graph',
     'New-GraphObject',
     'New-GraphItem',
+    'New-GraphItemRelationship',
     'Remove-Graph',
     'Remove-GraphItem',
-    'Set-GraphItemProperty',
+    'Remove-GraphItemRelationship',
+    'Set-GraphItem',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',

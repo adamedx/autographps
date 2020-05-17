@@ -23,8 +23,8 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function TypeFromUri([Uri] $uri) {
-            $uriInfo = Get-GraphUri $Uri -erroraction stop
+        function TypeFromUri([Uri] $uri, $targetContext) {
+            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $targetContext.name -erroraction stop
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
@@ -49,10 +49,6 @@ ScriptClass TypeUriHelper {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
 
-                $id = if ( $responseObject | gm id -erroraction ignore ) {
-                    $responseObject.id
-                }
-
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
                 # URI that was used to request the object from Graph, not necessarily the object's actual
@@ -62,8 +58,8 @@ ScriptClass TypeUriHelper {
                 # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
-                if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                    $objectUri = $objectUri.tostring(), $id -join '/'
+                if ( $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
+                    $objectUri = $objectUri.tostring(), $resourceId -join '/'
                 }
 
                 $objectUri.tostring()
@@ -78,9 +74,12 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function GetUriFromDecoratedObject($targetContext, $graphObject) {
-            $objectUri = GetUriFromDecoratedResponseObject $targetContext $graphObject
+        function GetUriFromDecoratedObject($targetContext, $graphObject, $noInterpolation = $false) {
+            $idHint = if ( ! $noInterpolation -and ( $graphObject | gm id -erroraction ignore ) ) {
+                $graphObject.id
+            }
 
+            $objectUri = GetUriFromDecoratedResponseObject $targetContext $graphObject $idHint
             if ( ! $objectUri ) {
                 $type = GetTypeFromDecoratedObject $graphObject
 
@@ -90,6 +89,11 @@ ScriptClass TypeUriHelper {
             }
 
             $objectUri
+        }
+
+        function IsValidEntityType($typeName, $graphContext, $isFullyQualified) {
+            $typeManager = $::.TypeManager |=> Get $graphContext
+            ( $typeManager |=> FindTypeDefinition Entity $typeName $isFullyQualified ) -ne $null
         }
 
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
@@ -106,7 +110,7 @@ ScriptClass TypeUriHelper {
                 if ( $typeUri ) {
                     $targetUri = $typeUri, $id -join '/'
                 } else {
-                    throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI and retry."
+                    throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI or an existing item and retry."
                 }
 
                 [PSCustomObject] @{
@@ -114,18 +118,21 @@ ScriptClass TypeUriHelper {
                     IsCollection = $true
                 }
             } elseif ( $uri )  {
-                TypeFromUri $uri
+                TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
                 $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
                 if ( $objectUri ) {
-                    $targetUri = $objectUri
+                    $objectUriInfo = TypeFromUri $objectUri $targetContext
 
                     # TODO: When an object is supplied, it had better end with whatever id was supplied.
                     # This will not always be true of the uri retrieved from the object
-                    if ( $id -and ! $targetUri.tostring().tolower().EndsWith("/$($id.tolower())") ) {
-                        $targetUri = $targetUri, $id -join '/'
+                    if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                        $correctedUri = $objectUri, $id -join '/'
+                        $objectUriInfo = TypeFromUri $correctedUri $targetContext
                     }
-                    TypeFromUri $targetUri
+
+                    $targetUri = $objectUriInfo.UriInfo.graphUri
+                    $objectUriInfo
                 }
             }
 
@@ -138,13 +145,86 @@ ScriptClass TypeUriHelper {
                 TypeName = $targetTypeInfo.FullTypeName
                 IsCollection = $targetTypeInfo.IsCollection
                 TypeInfo = $targetTypeInfo
-                Uri = $targetUri
+                Uri = $targetUri.tostring().trimend('/')
             }
         }
 
         function ToGraphAbsoluteUri($targetContext, [Uri] $graphRelativeUri) {
-            $uriString = $targetContext.connection.graphendpoint.graph.tostring(), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
+            $uriString = $targetContext.connection.graphendpoint.graph.tostring().trimend('/'), $targetContext.version, $graphRelativeUri.tostring().trimstart('/') -join '/'
             [Uri] $uriString
+        }
+
+        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty)  {
+            $fromId = if ( $Id ) {
+                $Id
+            } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
+                $GraphObject.Id # This is needed when an object is supplied without an id parameter
+            }
+
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $GraphObject
+
+            $segments = @()
+            $segments += $requestInfo.uri.tostring()
+            if ( $navigationProperty -and $requestInfo.uri ) {
+                $segments += $navigationProperty
+            }
+
+            $sourceUri = $segments -join '/'
+
+            [PSCustomObject] @{
+                Uri = $sourceUri
+                RequestInfo = $requestInfo
+            }
+        }
+
+        function GetReferenceTargetTypeInfo($graphName, $requestInfo, $navigationProperty, $overrideTargetTypeName, $allowCollectionTarget) {
+            $targetTypeName = $OverrideTargetTypeName
+
+            $isCollection = $false
+
+            if ( $navigationProperty ) {
+                $targetPropertyInfo = if ( ! $OverrideTargetTypeName -or $allowCollectionTarget ) {
+                    $targetType = Get-GraphType -GraphName $graphName $requestInfo.TypeName
+                    $targetTypeInfo = $targetType.Relationships | where name -eq $navigationProperty
+
+                    if ( ! $targetTypeInfo ) {
+                        return $null
+                    }
+
+                    $isCollection = $targetTypeInfo.IsCollection
+                    $targetTypeInfo
+                }
+
+                if ( ! $targetTypeName ) {
+                    $targetTypeName = $targetPropertyInfo.TypeId
+                }
+            }
+
+            [PSCustomObject] @{
+                TypeId = $targetTypeName
+                IsCollectionTarget = $isCollection
+            }
+        }
+
+        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false) {
+            if ( $TargetUri ) {
+                foreach ( $destinationUri in $TargetUri ) {
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
+                }
+            } elseif ( $TargetObject ) {
+                $targetObjectId = if ( $TargetObject | gm id -erroraction ignore ) {
+                    $TargetObject.id
+                } else {
+                    throw "An object specified for the 'TargetObject' parameter does not have an Id field; specify the object's URI or the TypeName and Id parameters and retry the command"
+                }
+                # The assumption here is that anything that can be a target must be able to be referenced as part of an entityset.
+                # This generally seems to be true.
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $graphName $targetTypeName $isFullyQualifiedTypeName $null $targetObjectId $null
+            } else {
+                foreach ( $destinationId in $targetId ) {
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null
+                }
+            }
         }
     }
 }

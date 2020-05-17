@@ -46,18 +46,21 @@ ScriptClass TypeManager {
         $hasProperties = $propertyFilter -ne $null -or $propertyList -ne $null
 
         $prototype = if ( ! $hasProperties ) {
-            GetPrototypeFromCache $typeId $setDefaultValues $recursive
+            GetPrototypeFromCache $typeId $typeClass $setDefaultValues $recursive
         }
 
         if ( $hasProperties -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             if ( ! $prototype ) {
                 $type = FindTypeDefinition $typeClass $typeId $true $true
+                if ( ! $type ) {
+                    throw 'anger'
+                }
                 $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
                 $prototype = $builder |=> ToObject
             }
 
             if ( ! $hasProperties ) {
-                AddPrototypeToCache $typeId $setDefaultValues $recursive $prototype
+                AddPrototypeToCache $typeId $type.Class $setDefaultValues $recursive $prototype
             }
         }
         [PSCustomObject] @{
@@ -69,13 +72,19 @@ ScriptClass TypeManager {
     function FindTypeDefinition($typeClass, $typeName, $fullyQualified, $errorIfNotFound = $false) {
         $definition = $null
 
+        $classesLeftToTry = 1
+
         $classes = if ( $typeClass -eq 'Unknown' ) {
-            GetTypeClassPrecedence
+            $orderedClasses = GetTypeClassPrecedence
+            $classesLeftToTry = $orderedClasses.length
+            $orderedClasses
         } else {
             [GraphTypeClass] $typeClass
         }
 
         foreach ( $class in $classes ) {
+            $classesLeftToTry--
+
             $typeId = GetOptionallyQualifiedName $class $typeName $fullyQualified
 
             $definition = $this.definitions[$typeId]
@@ -85,7 +94,13 @@ ScriptClass TypeManager {
                     $definition = GetTypeDefinition $class $typeId
                 } catch {
                     if ( $errorIfNotFound ) {
-                        throw
+                        if ( $typeClass -eq 'Unknown' ) {
+                            if ( $classesLeftToTry -eq 0 ) {
+                                throw "Type '$typeId' could not be found for any type class in Graph '$($this.graph.ApiVersion)'"
+                            }
+                        } else {
+                            throw
+                        }
                     }
                 }
             }
@@ -158,7 +173,7 @@ ScriptClass TypeManager {
             'Properties'
         }
 
-        if ( $typeDefinition.Properties ) {
+        if ( $typeDefinition.$propertyMember ) {
             $properties += $typeDefinition.$propertyMember
         }
 
@@ -183,14 +198,24 @@ ScriptClass TypeManager {
         '{0}:{1}:{2}' -f $typeId, ([int32] $setDefaults), ([int32] $recursive)
     }
 
-    function GetPrototypeFromCache($typeId, $setDefaults, $recursive) {
+    function GetPrototypeFromCache($typeId, $typeClass, $setDefaults, $recursive) {
         $id = GetPrototypeId $typeId $setDefaults $recursive
-        $this.prototypes[$id]
+        $cachedPrototype = $this.prototypes[$id]
+
+        if ( $cachedPrototype ) {
+            $foundTypeClass = $cachedPrototype['TypeClass']
+            if ( $foundTypeClass -ne $typeClass ) {
+                if ( $typeClass -ne 'Unknown' ) {
+                    throw "Type '$typeId' was found with type class '$foundTypeClass' instead of required type class '$typeClass'"
+                }
+            }
+            $cachedPrototype['Prototype']
+        }
     }
 
-    function AddPrototypeToCache($typeId, $setDefaults, $recursive, $prototype) {
+    function AddPrototypeToCache($typeId, $typeClass, $setDefaults, $recursive, $prototype) {
         $id = GetPrototypeId $typeId $setDefaults $recursive
-        $this.prototypes.add($id, $prototype)
+        $this.prototypes.add($id, @{Prototype=$prototype;TypeClass=$typeClass})
     }
 
     function HasCacheKey($typeId, $setDefaults, $recursive) {
@@ -258,10 +283,27 @@ ScriptClass TypeManager {
             $manager
         }
 
-        function GetSortedTypeNames($typeClass, $graphContext) {
+        function GetSortedTypeNames($allowedTypeClasses, $graphContext) {
+            $typeClasses = if ( $allowedTypeClasses -eq 'Unknown' ) {
+                'Entity', 'Complex', 'Primitive', 'Enumeration'
+            } else {
+                , $allowedTypeClasses
+            }
+
             $manager = Get $graphContext
-            $typeProvider = $manager |=> __GetTypeProvider $typeClass
-            $typeProvider |=> GetSortedTypeNames $typeClass
+
+            $typeNames = foreach ( $targetTypeClass in $typeClasses ) {
+                $typeProvider = $manager |=> __GetTypeProvider $targetTypeClass
+                $typeProvider |=> GetSortedTypeNames $targetTypeClass
+            }
+
+            $result = if ( $typeClasses.length -ne 1 ) {
+                $typeNames
+            } else {
+                $typeNames | sort-object
+            }
+
+            $result
         }
     }
 }

@@ -22,8 +22,8 @@ function New-GraphObject {
         [parameter(position=0, mandatory=$true)]
         $TypeName,
 
-        [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
-        $TypeClass = 'Entity',
+        [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
+        $TypeClass = 'Any',
 
         [parameter(position=1, parametersetname='optionallyqualified')]
         [parameter(position=1, parametersetname='fullyqualified')]
@@ -60,7 +60,13 @@ function New-GraphObject {
 
     $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-    $prototype = $typeManager |=> GetPrototype $typeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyMap $SkipPropertyCheck.IsPresent
+    $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
+        $TypeClass
+    } else {
+        'Unknown'
+    }
+
+    $prototype = $typeManager |=> GetPrototype $remappedTypeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyMap $SkipPropertyCheck.IsPresent
 
     $prototypeJson = $prototype.ObjectPrototype | convertto-json -depth 24
 

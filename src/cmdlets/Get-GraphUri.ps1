@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,231 +12,76 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../metadata/GraphManager)
-. (import-script common/SegmentHelper)
-. (import-script common/GraphUriParameterCompleter)
+. (import-script ../typesystem/TypeManager)
+. (import-script common/TypeUriHelper)
+. (import-script common/GraphParameterCompleter)
+. (import-script common/TypeParameterCompleter)
+. (import-script common/TypePropertyParameterCompleter)
+. (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphUri {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
     param(
-        [parameter(parametersetname='FromUriParents', position=0, mandatory=$true)]
-        [parameter(parametersetname='FromUriChildren', position=0, mandatory=$true)]
-        [parameter(parametersetname='FromUri', position=0, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        $TypeName,
+
+        [parameter(position=1, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        $Id,
+
+        [parameter(position=2)]
+        [Alias('WithRelationship')]
+        [string] $Relationship,
+
+        [parameter(parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byurifromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
         [Uri] $Uri,
 
-        [parameter(parametersetname='FromUriChildren', mandatory=$true)]
-        [parameter(parametersetname='FromObjectChildren', mandatory=$true)]
-        [Switch] $Children,
+        [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
+        [object] $GraphItem,
 
-        [parameter(parametersetname='FromUriChildren')]
-        [parameter(parametersetname='FromObjectChildren')]
-        [Switch] $LocatableChildren,
+        $GraphName,
 
-        [parameter(parametersetname='FromUriChildren')]
-        [parameter(parametersetname='FromObjectChildren')]
-        [uint16] $RecursionDepth = 1,
+        [switch] $AbsoluteUri,
 
-        [parameter(parametersetname='FromUriChildren')]
-        [parameter(parametersetname='FromObjectChildren')]
-        [Switch] $IncludeVirtualChildren,
+        [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        [parameter(parametersetname='addtoexistingidfullyqualified', mandatory=$true)]
+        [switch] $FullyQualifiedTypeName,
 
-        [parameter(parametersetname='FromUriParents', mandatory=$true)]
-        [parameter(parametersetname='FromObjectParents', mandatory=$true)]
-        [Switch] $Parents,
-
-        [parameter(parametersetname='FromUriChildren')]
-        [parameter(parametersetname='FromObjectChildren')]
-        [Switch] $NoCycles,
-
-        [Switch] $IgnoreMissingMetadata,
-
-        [String] $GraphScope = $null,
-
-        [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject[]]$GraphItems
+        [switch] $SkipPropertyCheck
     )
-
-    Enable-ScriptClassVerbosePreference
-
-    # This is not very honest -- we're using valuefrompipeline, but
-    # only to signal the presence of input -- we use $input because
-    # unless you use BEGIN, END, PROCESS blocks, you can't actually
-    # iterate the parameter -- $input is a way around that
-    $inputs = if ( $graphItems ) {
-        $input
-    } else {
-        $Uri
+    begin {
+        Enable-ScriptClassVerbosePreference
     }
 
-    $results = @()
+    process {
 
-    $nextUris = new-object System.Collections.Generic.Queue[object[]]
-    $inputs | foreach { $nextUris.Enqueue(@(0, $_)) }
-
-    $DisallowedLocationClasses = if ( ! $IncludeVirtualChildren.IsPresent ) {
-        @('EntityType')
-    } else {
-        @()
-    }
-
-    $validLocationClasses = if ( $LocatableChildren.ispresent ) {
-        $allLocationClasses = $::.SegmentHelper.GetValidLocationClasses()
-        $allLocationClasses | where { $_ -notin $DisallowedLocationClasses }
-    } else {
-        $null
-    }
-
-    $disallowVirtualChildren = $Children.ispresent -and ! $IncludeVirtualChildren.ispresent
-
-    $context = if ( $GraphScope ) {
-        $::.Logicalgraphmanager.Get().contexts[$GraphScope].Context
-    }
-
-    while ( $nextUris.Count -gt 0 ) {
-        $currentItem = $nextUris.Dequeue()
-        $currentDepth = $currentItem[0] + 1
-        $currentUri = $currentItem[1]
-
-        $graphItem = if ($GraphItems) {
-            $currentUri
-        }
-
-        $uriSource = $currentUri
-        $inputUri = if ( $graphItem ) {
-            $unparsedUri = if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
-                [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
-            } elseif ( $graphItem | gm uri ) {
-                $uriSource = $graphItem.uri
-                [Uri] $uriSource
-            } else{
-                throw "Object type does not support Graph URI source"
-            }
-
-            $parsedUri = $::.GraphUtilities |=> ParseGraphRelativeLocation $unparsedUri
-            $context = $parsedUri.Context
-            $parsedUri.GraphRelativeUri
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
+        $resultUri = if ( ! $AbsoluteUri.IsPresent ) {
+            $sourceInfo.Uri
         } else {
-            $parsedLocation = $::.GraphUtilities |=> ParseGraphRelativeLocation $currentUri
-            $context = $parsedLocation.Context
-            $parsedLocation.GraphRelativeUri
+            $::.TypeUriHelper |=> ToGraphAbsoluteUri $sourceInfo.RequestInfo.Context $sourceInfo.Uri
         }
 
-        $parser = new-so SegmentParser $context $null ($graphItems -ne $null)
-
-        write-verbose "Uri '$uriSource' translated to '$inputUri'"
-
-        $mustIgnoreMissingMetadata = $IgnoreMissingMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
-
-        $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
-
-        if ( $mustIgnoreMissingMetadata -and ! $contextReady ) {
-            if ( ! $Children.IsPresent ) {
-                return $::.SegmentHelper |=> ToPublicSegment $parser $::.GraphSegment.NullSegment
-            }
-            return @()
-        }
-
-        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
-        $lastSegment = $segments | select -last 1
-
-        $segmentTable = $null
-        if ( $NoCycles.IsPresent ) {
-            $segmentTable = @{}
-            $segments | foreach { $segmentTable.Add($_.graphElement, $_) }
-        }
-
-        $instanceId = if ( $GraphItem ) {
-            $typeData = ($lastSegment.graphElement |=> GetEntity).typedata
-            if ( $typeData.IsCollection ) {
-                if ( $graphItem | gm -membertype noteproperty id ) {
-                    $graphItem.id
-                } else {
-                    $null
-                }
-            }
-        }
-
-        $lastPublicSegment = $::.SegmentHelper |=> ToPublicSegment $parser $lastSegment
-
-        $count = if ( $Parents.ispresent ) {
-            if ( $segments -is [Object[]] ) { $segments.length } else { 1 }
-        } else {
-            if ( $instanceId -or $Children.ispresent ) { 0 } else { 1 }
-        }
-
-        $segments | select -last $count | foreach {
-            $results += ($::.SegmentHelper |=> ToPublicSegment $parser $_)
-        }
-
-        $childSegments = $null
-
-        if ( $instanceId ) {
-            $idSegment = $lastSegment |=> NewNextSegments ($context |=> GetGraph) $instanceId $validLocationClasses
-
-            $additionalSegments = if ( $Children.IsPresent ) {
-                $childSegments = $parser |=> GetChildren $idSegment $validLocationClasses | sort-object Name
-            } else {
-                # Create a new public segment since we are going to modify it
-                $instanceSegment = ($::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment).psobject.copy()
-                if ( $graphItem ) {
-                    $::.SegmentHelper.AddContent($instanceSegment, $graphItem)
-                }
-                $instanceSegment
-            }
-
-            $additionalSegments | foreach {
-                if ( ! $segmentTable -or $segmentTable[$_.graphElement] ) {
-                    if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'EntityType' ) ) {
-                        $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
-                    }
-                } else {
-                    write-verbose "$($_.id) already exists in hierarchy $($_.GraphUri)"
-                }
-            }
-
-            $results += $additionalSegments
-        } elseif ( $Children.ispresent ) {
-            $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort-object Name
-        } else {
-            if ( $GraphItem ) {
-                # Create a new public segment since we are going to modify it
-                $lastOutputSegment = ($results | select -last 1).psobject.copy()
-                $::.SegmentHelper.AddContent($lastOutputSegment, $graphItem)
-                # Replace the segment in the collection with a new one
-                # This is a rather convoluted approach :( -- needs a rewrite
-                $results[$results.length - 1] = $lastOutputSegment
-            }
-        }
-
-        if ( $childSegments ) {
-            $publicChildSegments = @()
-            $childSegments | foreach {
-                $meetsLocationRequirement = ! $LocatableChildren.IsPresent -or $::.SegmentHelper.IsValidLocationClass(($_.graphElement |=> GetEntity).Type)
-                $meetsNonvirtualRequirement = ! $disallowVirtualChildren -or ! $_.isVirtual
-                $skipSegment = ! $meetsLocationRequirement -or ! $meetsNonvirtualRequirement
-                if ( ! $skipSegment ) {
-                    $publicChildSegments += ($::.SegmentHelper |=> ToPublicSegment $parser $_ $lastPublicSegment)
-                }
-            }
-
-            if ( $currentDepth -lt $RecursionDepth ) {
-                $publicChildSegments | foreach {
-                    if ( ! $segmentTable -or ( ! $segmentTable[$_.details.graphElement] ) ) {
-                        if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'entitytype') ) {
-                            $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
-                        }
-                    } else {
-                        write-verbose "$($_.id) already exists in hierarchy $($_.GraphUri)"
-                    }
-                }
-            }
-
-            $results += $publicChildSegments
-        }
+        $resultUri.tostring()
     }
-    $results
+
+    end {
+    }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::AnyUri))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri GraphName (new-so GraphParameterCompleter)
+

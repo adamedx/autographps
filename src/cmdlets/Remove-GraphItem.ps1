@@ -34,10 +34,15 @@ function Remove-GraphItem {
         [parameter(parametersetname='byuri', mandatory=$true)]
         [Uri] $Uri,
 
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphItem,
+
         $GraphName,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
         [switch] $FullyQualifiedTypeName
@@ -58,7 +63,7 @@ function Remove-GraphItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         $objects = Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
 

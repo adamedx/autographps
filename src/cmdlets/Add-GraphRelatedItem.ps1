@@ -19,7 +19,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function New-GraphItem {
+function Add-GraphRelatedItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
     param(
         [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
@@ -30,18 +30,29 @@ function New-GraphItem {
         [parameter(position=0, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
         $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeoptionallyqualified')]
-        [parameter(position=1, parametersetname='bytypefullyqualified')]
-        [parameter(position=1, parametersetname='byuri')]
-        [parameter(position=1, parametersetname='addtoexistingobject')]
-        [parameter(position=1, parametersetname='addtoexistinguri')]
+        [parameter(position=1, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        $Id,
+
+        [parameter(position=2, mandatory=$true)]
+        [Alias('WithRelationship')]
+        [string] $Relationship,
+
+        [parameter(position=3, parametersetname='bytypeoptionallyqualified')]
+        [parameter(position=3, parametersetname='bytypefullyqualified')]
+        [parameter(position=3, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=3, parametersetname='addtoexistingobject')]
         [string[]] $Property,
 
-        [parameter(position=2, parametersetname='bytypeoptionallyqualified')]
-        [parameter(position=2, parametersetname='bytypefullyqualified')]
-        [parameter(position=2, parametersetname='byuri')]
-        [parameter(position=2, parametersetname='addtoexistingobject')]
-        [parameter(position=2, parametersetname='addtoexistinguri')]
+        [parameter(position=4, parametersetname='bytypeoptionallyqualified')]
+        [parameter(position=4, parametersetname='bytypefullyqualified')]
+        [parameter(position=4, parametersetname='byuri')]
+        [parameter(position=4, parametersetname='addtoexistingobject')]
+        [parameter(position=4, parametersetname='addtoexistinguri')]
         [object[]] $Value,
 
         [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
@@ -49,19 +60,9 @@ function New-GraphItem {
         [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
         [PSCustomObject] $FromObject,
 
-        [parameter(parametersetname='addtoexistinguri', mandatory=$true)]
-        [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
-        [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
-        [parameter(parametersetname='addtoexistingobjectpropmap', mandatory=$true)]
-        [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
-        [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
-        [Alias('WithRelationship')]
-        [string] $Relationship,
-
         [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuripropmap', mandatory=$true)]
         [parameter(parametersetname='byurifromobject', mandatory=$true)]
-        [parameter(parametersetname='addtoexistinguri', mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
         [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
         [Uri] $Uri,
@@ -71,8 +72,7 @@ function New-GraphItem {
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('NewGraphObject')]
-        [object] $GraphObject,
+        [object] $GraphItem,
 
         [ValidateSet('POST', 'PUT')]
         [String] $Method = $null,
@@ -99,79 +99,41 @@ function New-GraphItem {
 
         [switch] $SkipPropertyCheck
     )
-
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $existingSourceInfo = $null
+        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
 
-        if ( $Relationship ){
-            $existingSourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $null $false $null $Uri $FromObject $Relationship $false
-
-            if ( ! $existingSourceInfo ) {
-                throw "Unable to determine Uri for specified type '$TypeName' parameter -- specify an existing item with the Uri parameter and retry the command"
+        $remappedParameters = @{}
+        foreach ( $parameterName in $PSBoundParameters.Keys ) {
+            if ( $parameterName -ne 'TypeName' -and $parameterName -ne 'Uri' -and $parameterName -ne 'Relationship' -and $parameterName -ne 'Id' -and $parameterName ) {
+                $remappedParameters.Add($parameterName, $PSBoundParameters[$parameterName])
             }
         }
+
+        $newObjects = @()
     }
 
     process {
-        $graphContext = $null
-        $targetTypeName = $null
-        $sourceUri = $null
 
-        if ( $existingSourceInfo ) {
-            $graphContext = $existingSourceInfo.RequestInfo.Context
-            $sourceUri = $existingSourceInfo.Uri
-            $targetType = $::.TypeUriHelper |=> TypeFromUri $sourceUri $graphContext
-            $targetTypeName = $targetType.FullTypeName
-        } else {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphObject
-            $graphContext = $requestInfo.context
-            $sourceUri = $requestInfo.Uri
-            $targetTypeName = $requestInfo.TypeName
+        if ( $GraphItem ) {
+            $newObjects += $GraphItem
         }
-
-        $newGraphObjectParameters = @{}
-
-        @(
-            'Property'
-            'Value'
-            'GraphName'
-            'PropertyMap'
-            'FullyQualifiedTypeName'
-            'Recurse'
-            'SetDefaultValues'
-            'SkipPropertyCheck'
-        ) | foreach {
-            if ( $PSBoundParameters[$_] -ne $null ) {
-                $newGraphObjectParameters[$_] = $PSBoundParameters[$_]
-            }
-        }
-
-        $newObject = if ( $GraphObject ) {
-            $GraphObject
-        } else {
-            New-GraphObject -TypeName $targetTypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
-        }
-
-        $createMethod = if ( $Method ) {
-            $Method
-        } else {
-            if ( ( $newObject | gm Id -erroraction ignore ) -and $newObject.Id ) {
-                'PUT'
-            } else {
-                'POST'
-            }
-        }
-
-        Invoke-GraphRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
     }
 
-    end {}
+    end {
+
+        if ( $newObjects ) {
+            $newObjects | New-GraphItem -Uri $sourceInfo.Uri @remappedParameters
+        } else {
+            New-GraphItem -Uri $sourceInfo.Uri @remappedParameters
+        }
+    }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property $true Property TypeName Relationship)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Property (new-so TypeUriParameterCompleter Property $true Property TypeName Relationship)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
+
 

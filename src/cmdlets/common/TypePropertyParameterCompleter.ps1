@@ -37,8 +37,10 @@ ScriptClass TypePropertyParameterCompleter {
             return $null
         }
 
-        if ( ! $typeClass ) {
-            $typeClass = 'Entity'
+        $targetTypeClass = if ( ! $typeClass -or $typeClass -eq 'Any' ) {
+            'Unknown'
+        } else {
+            $typeClass
         }
 
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
@@ -47,7 +49,7 @@ ScriptClass TypePropertyParameterCompleter {
             $typeManager = $::.TypeManager |=> Get $targetContext
             $isFullyQualified = $fullyQualified -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
 
-            $type = $typeManager |=> FindTypeDefinition $typeClass $typeName $isFullyQualified $true
+            $type = $typeManager |=> FindTypeDefinition $targetTypeClass $typeName $isFullyQualified ($targetTypeClass -ne 'Unknown')
             $typeProperties = if ( $type ) {
                 $typeManager |=> GetTypeDefinitionTransitiveProperties $type $this.propertyType
             }

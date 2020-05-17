@@ -21,11 +21,13 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypeandid')]
     param(
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandsearch', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandsimplematch', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
@@ -34,26 +36,58 @@ function Get-GraphItem {
         [parameter(position=2, parametersetname='bytypeandid')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [parameter(position=2, parametersetname='bytypeandfilter')]
+        [parameter(position=2, parametersetname='bytypeandsimplematch')]
         [parameter(position=2, parametersetname='byuri')]
         [parameter(position=2, parametersetname='byuriandfilter')]
+        [parameter(position=2, parametersetname='byobjectandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
+
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandsearch', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphItem,
 
         $GraphName,
 
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         [parameter(parametersetname='byuriandfilter', mandatory=$true)]
+        [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
+        [parameter(parametersetname='bytypeandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
+        [parameter(parametersetname='byobjectandsimplematch', mandatory=$true)]
+        [Alias('SearchString')]
+        $SimpleMatch,
+
+        [parameter(parametersetname='bytypeandsearch', mandatory=$true)]
+        [parameter(parametersetname='byuriandsearch', mandatory=$true)]
+        [parameter(parametersetname='byobjectandsearch', mandatory=$true)]
+        [String] $Search,
+
+        [string[]] $Expand,
+
+        [Alias('Sort')]
+        [object[]] $OrderBy = $null,
+
+        [Switch] $Descending,
+
         [switch] $ContentOnly,
+
+        [switch] $RawContent,
 
         [switch] $ChildrenOnly,
 
@@ -64,6 +98,10 @@ function Get-GraphItem {
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        if ( $Filter -and $SimpleMatch ) {
+            throw 'Only one of Filter and SimpleMatch arguments may be specified'
+        }
 
         $filterParameter = @{}
         $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
@@ -77,7 +115,7 @@ function Get-GraphItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $null
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
@@ -86,7 +124,22 @@ function Get-GraphItem {
         if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {
             $requestInfo.TypeInfo.UriInfo
         } else {
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent)
+            $expandArgument = @{}
+            if ( $Expand ) {
+                $expandArgument['Expand'] = $Expand
+            }
+
+            if ( $SimpleMatch ) {
+                $filterParameter['Filter'] = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $requestInfo.Context $requestInfo.TypeName $SimpleMatch
+            }
+
+            $pagingParameters = @{}
+
+            if ( $pscmdlet.pagingparameters.First -ne $null ) { $pagingParameters['First'] = $pscmdlet.pagingparameters.First }
+            if ( $pscmdlet.pagingparameters.Skip -ne $null ) { $pagingParameters['Skip'] = $pscmdlet.pagingparameters.Skip }
+            if ( $pscmdlet.pagingparameters.IncludeTotalCount -ne $null ) { $pagingParameters['IncludeTotalCount'] = $pscmdlet.pagingparameters.IncludeTotalCount }
+
+            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand -RawContent:$($RawContent.IsPresent) @pagingParameters -OrderBy $OrderBy -Descending:$($Descending.IsPresent) -Search $Search
         }
     }
 
@@ -94,6 +147,8 @@ function Get-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem OrderBy (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))

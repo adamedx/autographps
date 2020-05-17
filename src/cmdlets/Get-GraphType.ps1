@@ -21,45 +21,81 @@ function Get-GraphType {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
+        [parameter(position=0, parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [Alias('Name')]
         $TypeName,
 
-        [ValidateSet('Primitive', 'Enumeration', 'Complex', 'Entity')]
+        [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         [Alias('Class')]
-        $TypeClass = 'Entity',
+        $TypeClass = 'Any',
 
         [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='fullyqualified')]
+        [parameter(parametersetname='optionallyqualifiedmembersonly')]
         $Namespace,
 
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
 
+        [parameter(parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
+        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
+        [switch] $TransitiveMembers,
+
+        [parameter(position=1, parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(position=1, parametersetname='fullyqualifiedmembersonly')]
+        [string] $MemberFilter,
+
         [parameter(parametersetname='list', mandatory=$true)]
-        [switch] $List
+        [switch] $ListNames
     )
 
     Enable-ScriptClassVerbosePreference
 
     $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
-    if ( ! $List.IsPresent ) {
-        $typeManager = $::.TypeManager |=> Get $targetContext
-
-        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
-
-        $type = $typeManager |=> FindTypeDefinition $typeClass $TypeName $isFullyQualified $true
-
-        if ( ! $type ) {
-            throw "The specified type '$TypeName' of type class '$typeClass' was not found in graph '$($targetContext.name)'"
+    if ( ! $ListNames.IsPresent ) {
+        $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
+            $TypeClass
+        } else {
+            'Unknown'
         }
 
-        $::.TypeHelper |=> ToPublic $type
+        $typeManager = $::.TypeManager |=> Get $targetContext
+
+        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+
+        $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $TypeName $isFullyQualified ( $TypeClass -ne 'Any' )
+
+        if ( ! $type ) {
+            throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
+        }
+
+        $result = $::.TypeHelper |=> ToPublic $type
+
+        $unsortedResult = if ( ! $TransitiveMembers.IsPresent ) {
+            $result
+        } else {
+            if ( ! $MemberFilter ) {
+                $result.Properties
+                $result.Relationships
+            } else {
+                $result.Properties | where { $_.Name -like "*$($MemberFilter)*" }
+                $result.Relationships | where { $_.Name -like "*$($MemberFilter)*" }
+            }
+        }
+
+        $unsortedResult | sort-object Name
     } else {
-        $::.TypeManager |=> GetSortedTypeNames $typeClass $targetContext
+        $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
+            $TypeClass
+        } else {
+            'Entity'
+        }
+        $::.TypeManager |=> GetSortedTypeNames $sortTypeClass $targetContext
     }
 }
 

@@ -94,19 +94,23 @@ Describe 'The New-GraphObject command' {
             $level0Type = Get-GraphType microsoft.graph.entity
             $level0Type.BaseType | Should Be $null
 
-            $expectedTotalPropertyCount = 21
+            $expectedTotalPropertyCount = 20 # Does not include id property, which is not emitted by default
 
             $level3ObjectProperties = new-graphobject microsoft.graph.windowsMobileMsi | gm -membertype noteproperty
             $level3ObjectProperties.length | Should Be $expectedTotalPropertyCount
 
-            $level3Type.properties.length + $level2Type.properties.length + $level1Type.properties.length + $level0Type.properties.length | Should Be $level3ObjectProperties.length
+            # Remove one for id -- id is not emitted by default by New-GraphObject
+            $level3Type.properties.length + $level2Type.properties.length + $level1Type.properties.length + $level0Type.properties.length - 1 | Should Be $level3ObjectProperties.length
 
             $allProperties = @{}
 
             $level3Type, $level2Type, $level1Type, $level0Type | foreach {
                 $_.properties | foreach {
-                    $allProperties[$_.name] | Should Be $null
-                    $allProperties.Add($_.name, $_)
+                    # Exclude Id as New-GraphObject does not emit id by default
+                    if ( $_.name -ne 'id' ) {
+                        $allProperties[$_.name] | Should Be $null
+                        $allProperties.Add($_.name, $_)
+                    }
                 }
             }
 

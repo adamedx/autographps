@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +44,41 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
         # Need to mock this or we end up trying to parse Uris with metadata
         Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {
             0 # ([MetadataStatus]::NotStarted)
+        }
+
+        Mock-ScriptClassMethod -static TypeUriHelper GetUriFromDecoratedObject {
+            '/me'
+        }
+
+        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {
+@'
+{
+    "FullTypeName":  "microsoft.graph.user",
+    "IsCollection":  false,
+    "UriInfo":  {
+                    "ParentPath":  "/",
+                    "Info":  "s  \u003e",
+                    "Relation":  "Data",
+                    "Collection":  false,
+                    "Class":  "Singleton",
+                    "Type":  "user",
+                    "Id":  "me",
+                    "Namespace":  "microsoft.graph",
+                    "Uri":  "https://graph.microsoft.com/v1.0/me",
+                    "GraphUri":  "/me",
+                    "Path":  "/v1.0:/me",
+                    "FullTypeName":  "microsoft.graph.user",
+                    "Version":  "v1.0",
+                    "Endpoint":  "https://graph.microsoft.com/",
+                    "IsDynamic":  false,
+                    "Parent":  null,
+                    "Details":  null,
+                    "Content": {"id":"12345678-1234-0000-1234-123456789abc","officeLocation":null,"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","surname":null,"mail":null,"jobTitle":"user","givenName":null,"userPrincipalName":"argon@svn.org","mobilePhone":null,"preferredLanguage":null,"businessPhones":null,"displayName":"Chris Attucks"},
+                    "Preview":  null,
+                    "PSTypeName":  "GraphSegmentDisplayType"
+                }
+}
+'@ | convertfrom-json
         }
 
         It 'Should return an object with the expected user principal when given the argument me' {
