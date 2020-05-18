@@ -18,7 +18,7 @@ $__GraphMetadataPreferenceValues = @(
     'SilentlyWait'
 )
 
-$GraphMetadataPreference = 'Ignore'
+$GraphMetadataPreference = 'Wait'
 
 function __Preference__ShowNotReadyMetadataWarning {
     if ( $GraphMetadataPreference -ne 'SilentlyWait' ) {
@@ -27,7 +27,7 @@ function __Preference__ShowNotReadyMetadataWarning {
 }
 
 function __Preference__MustWaitForMetadata {
-    $GraphMetadataPreference -eq 'Wait' -and $GraphMetadataPreference -eq 'SilentlyWait'
+    $GraphMetadataPreference -eq 'Wait' -or $GraphMetadataPreference -eq 'SilentlyWait'
 }
 
 $__GraphAutoPromptPreferenceValues = @(

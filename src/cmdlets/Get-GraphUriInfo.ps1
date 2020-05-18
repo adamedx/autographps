@@ -127,7 +127,7 @@ function Get-GraphUriInfo {
 
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
-        $mustIgnoreMissingMetadata = $IgnoreMissingMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+        $mustIgnoreMissingMetadata = $IgnoreMissingMetadata.IsPresent -or ! (__Preference__MustWaitForMetadata)
 
         $contextReady = ($::.GraphManager |=> GetMetadataStatus $context) -eq [MetadataStatus]::Ready
 
