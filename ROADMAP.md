@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Fix gls to use begin, end, process!
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Show-GraphHelp should take a uri
@@ -22,6 +23,7 @@
 * Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
+  * $edges = $graph.typevertices['microsoft.graph.user'].outgoingedges; $edges.keys |where { $edgeName = $_; $edge = $edges[$edgeName]; if ( $edge.transition.type -eq 'Action' -or $edge.transition.type -eq 'Function' ) { $true } } | foreach { $edges[$_] }
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes

@@ -105,9 +105,9 @@ function Get-GraphUriInfo {
 
         $uriSource = $currentUri
         $inputUri = if ( $graphItem ) {
-            $unparsedUri = if ( $graphItem | gm -membertype scriptmethod '__ItemContext' ) {
+            $unparsedUri = if ( $graphItem | gm -membertype scriptmethod '__ItemContext' -erroraction ignore ) {
                 [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
-            } elseif ( $graphItem | gm uri ) {
+            } elseif ( $graphItem | gm uri -erroraction ignore ) {
                 $uriSource = $graphItem.uri
                 [Uri] $uriSource
             } else{

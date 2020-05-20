@@ -16,17 +16,28 @@
 
 Describe 'The Get-GraphResourceWithMetadata cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
-    $global:meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
+    $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
 
     Context 'When making REST method calls to Graph' {
+        BeforeAll {
+            $progresspreference = 'silentlycontinue'
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
+        }
+
         ScriptClass MockToken {
             function CreateAuthorizationHeader {}
         }
 
-        Mock Invoke-GraphRequest { "{$($global:meResponseDataExpected)}" | convertfrom-json } -modulename autographps
+        Mock Invoke-GraphRequest {
+                                   $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"https://graph.microsoft.com/v1.0/me`"}")
+                                   $responseOBject = "{$($meResponseDataExpected)}" | convertfrom-json
+                                   $responseObject | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
+                                   $responseObject
+                                 } -modulename autographps
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
+            write-host igotcalled
             [PSCustomObject] @{
                 RawContent = $MockContext
                 RawContentLength = $MockContext.length
@@ -41,49 +52,9 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
             meResponseExpected = $meResponseExpected
         }
 
-        # Need to mock this or we end up trying to parse Uris with metadata
-        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {
-            0 # ([MetadataStatus]::NotStarted)
-        }
-
-        Mock-ScriptClassMethod -static TypeUriHelper GetUriFromDecoratedObject {
-            '/me'
-        }
-
-        Mock-ScriptClassMethod -static GraphManager GetMetadataStatus {
-@'
-{
-    "FullTypeName":  "microsoft.graph.user",
-    "IsCollection":  false,
-    "UriInfo":  {
-                    "ParentPath":  "/",
-                    "Info":  "s  \u003e",
-                    "Relation":  "Data",
-                    "Collection":  false,
-                    "Class":  "Singleton",
-                    "Type":  "user",
-                    "Id":  "me",
-                    "Namespace":  "microsoft.graph",
-                    "Uri":  "https://graph.microsoft.com/v1.0/me",
-                    "GraphUri":  "/me",
-                    "Path":  "/v1.0:/me",
-                    "FullTypeName":  "microsoft.graph.user",
-                    "Version":  "v1.0",
-                    "Endpoint":  "https://graph.microsoft.com/",
-                    "IsDynamic":  false,
-                    "Parent":  null,
-                    "Details":  null,
-                    "Content": {"id":"12345678-1234-0000-1234-123456789abc","officeLocation":null,"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","surname":null,"mail":null,"jobTitle":"user","givenName":null,"userPrincipalName":"argon@svn.org","mobilePhone":null,"preferredLanguage":null,"businessPhones":null,"displayName":"Chris Attucks"},
-                    "Preview":  null,
-                    "PSTypeName":  "GraphSegmentDisplayType"
-                }
-}
-'@ | convertfrom-json
-        }
-
         It 'Should return an object with the expected user principal when given the argument me' {
             $meResponse = Get-GraphResourceWithMetadata me 3> $null
-            $meResponse[0].content.userPrincipalName | Should Be $expectedUserPrincipalName
+            $meResponse.content.userPrincipalName | Should Be $expectedUserPrincipalName
             $meResponse.Preview | Should Be 'Search Man'
         }
     }
