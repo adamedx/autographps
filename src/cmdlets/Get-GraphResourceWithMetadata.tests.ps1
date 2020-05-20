@@ -14,27 +14,31 @@
 
 # This test assumes the module has been imported
 
-Describe 'The Get-GraphResourceWithMetadata cmdlet' {
-    $expectedUserPrincipalName = 'searchman@megarock.org'
-    $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
-    $meResponseExpected = "{$meResponseDataExpected}"
+$expectedUserPrincipalName = 'searchman@megarock.org'
+$meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
+$meResponseExpected = "{$meResponseDataExpected}"
 
+Describe 'The Get-GraphResourceWithMetadata cmdlet' {
     Context 'When making REST method calls to Graph' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
-            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
+#            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
         }
 
         ScriptClass MockToken {
             function CreateAuthorizationHeader {}
         }
 
-        Mock Invoke-GraphRequest {
-                                   $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"https://graph.microsoft.com/v1.0/me`"}")
-                                   $responseOBject = "{$($meResponseDataExpected)}" | convertfrom-json
-                                   $responseObject | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
-                                   $responseObject
-                                 } -modulename autographps
+        $mockScript = @"
+            `$ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=``"https://graph.microsoft.com/v1.0/me``"}")
+            `$responseOBject = '{$meResponseDataExpected}' | convertfrom-json
+            `$responseObject | add-member -membertype scriptmethod -name __ItemContext -value `$ItemContextScript
+            `$responseObject
+"@
+
+        # Variables from the script can't be used in the scriptblock if modulename is used. So we will dynamically
+        # create a script block -- sigh. :(
+        Mock Invoke-GraphRequest ([ScriptBlock]::Create($mockScript)) -modulename autographps
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
             write-host igotcalled
