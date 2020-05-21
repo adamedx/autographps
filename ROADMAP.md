@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix gls to use begin, end, process!
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Show-GraphHelp should take a uri

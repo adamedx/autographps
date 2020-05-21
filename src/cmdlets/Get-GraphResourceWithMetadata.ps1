@@ -28,7 +28,11 @@ function Get-GraphResourceWithMetadata {
         [String[]] $Select = $null,
 
         [parameter(position=2)]
+        [String] $SimpleMatch = $null,
+
         [String] $Filter = $null,
+
+        [HashTable] $PropertyFilter = $null,
 
         [parameter(parametersetname='GraphItem', mandatory=$true)]
         [PSCustomObject] $GraphItem,
@@ -77,6 +81,16 @@ function Get-GraphResourceWithMetadata {
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $filters = if ( $SimpleMatch ) { 1 } else { 0 }
+        $filters += if ( $Filter ) { 1 } else { 0 }
+        $filters += if ( $PropertyFilter ) { 1 } else { 0 }
+
+        if ( $filters -gt 1 ) {
+            throw "Only one of SimpleMatch, Filter, or PropertyFilter parameters may be specified -- specify no more than one of these paramters and retry the command."
+        }
+
+        $targetFilter = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
 
         $context = $null
 
@@ -143,12 +157,18 @@ function Get-GraphResourceWithMetadata {
             }
         }
 
+        # The filter for SimpleMatch can only be determined when the type, and thus the
+        # context, is known, so it is request specific and must be computed here.
+        if ( $SimpleMatch ) {
+            $targetFilter = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $context $resolvedUri.FullTypeName $SimpleMatch
+        }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
             Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $Uri }
             Query = $Query
-            Filter = $Filter
+            Filter = $targetFilter
             Search = $Search
             Select = $Select
             Expand = $Expand
