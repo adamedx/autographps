@@ -60,7 +60,7 @@ function Get-GraphResourceWithMetadata {
 
         [switch] $DataOnly,
 
-        [Switch] $RequireMetadata,
+        [Switch] $NoRequireMetadata,
 
         [Switch] $StrictOutput,
 
@@ -80,7 +80,7 @@ function Get-GraphResourceWithMetadata {
 
         $context = $null
 
-        $mustWaitForMissingMetadata = $RequireMetadata.IsPresent -or (__Preference__MustWaitForMetadata)
+        $mustWaitForMissingMetadata = (__Preference__MustWaitForMetadata) -and ! $NoRequireMetadata.IsPresent
         $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
 
         $results = @()
@@ -114,6 +114,7 @@ function Get-GraphResourceWithMetadata {
             }
 
             $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
+
             Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
         } else {
             $context = $::.GraphContext |=> GetCurrent
@@ -225,7 +226,7 @@ function Get-GraphResourceWithMetadata {
         }
 
         if ( $ignoreMetadata ) {
-            write-warning "Metadata processing for Graph is in progress -- responses from Graph will be returned but no metadata will be added. You can retry this cmdlet later or retry it now with the '-RequireMetadata' option to force a wait until processing is complete in order to obtain the complete response."
+            write-warning "Metadata processing for Graph is in progress -- responses from Graph will be returned but no metadata will be added. You can retry this cmdlet later or retry it now with the '-NoRequireMetadata' option unspecified or set to `$false to force a wait until processing is complete in order to obtain the complete response."
         }
 
         if ( ! $DataOnly.ispresent ) {
@@ -293,4 +294,4 @@ function Get-GraphResourceWithMetadata {
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata OrderBy (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)

@@ -2,18 +2,16 @@
 
 ## To-do items -- prioritized
 
+* Fix gls to use begin, end, process!
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
-* Remove default of not waiting for metadata
-* Set-GraphItem should take an object, not just a hashtable
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Wrapper for ggci to only support "global" types
 * Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
 * Use https://github.com/PowerShell/platyPS to generate markdown help
 * Should 'type' be 'resource' or 'resourcetype'?
-* Should Get-GraphResource be Get-GraphContent?
 * Invoke-GraphMethod
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
@@ -25,6 +23,7 @@
 * Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
 * Add methods to Get-GraphType
+  * $edges = $graph.typevertices['microsoft.graph.user'].outgoingedges; $edges.keys |where { $edgeName = $_; $edge = $edges[$edgeName]; if ( $edge.transition.type -eq 'Action' -or $edge.transition.type -eq 'Function' ) { $true } } | foreach { $edges[$_] }
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
@@ -337,6 +336,8 @@
 * Change FromObject to FromItem
 * Change ToObject to ToItem
 * Implement new Get-GraphUri command
+* Remove default of not waiting for metadata
+* Set-GraphItem should take an object, not just a hashtable
 
 ### Postponed
 
@@ -352,6 +353,7 @@
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
+* Fix parameter completion for multiple type classes
 
 ### Abandoned
 
@@ -363,6 +365,8 @@
 * Make public graph items have id instead of name
 * switch to 3 columns by default -- remove class
 * Move some data to info, possibly show rwx
+* Should Get-GraphResource be Get-GraphContent?
+  * No :) -- made a Get-GraphContent alias though
 
 #### Stdposh improvements
 

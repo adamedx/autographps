@@ -149,6 +149,6 @@ function Set-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property $false)
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem ExcludeObjectProperty (new-so TypeUriParameterCompleter Property $false Property $null $null GraphObject)
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem GraphName (new-so GraphParameterCompleter)

@@ -66,12 +66,6 @@ ScriptClass TypeUriParameterCompleter {
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
 
         $typeName = if ( $typeNameParam ) {
-            if ( $this.propertyTarget ) {
-                if ( ! ( $::.TypeUriHelper |=> IsValidEntityType $typeNameParam $targetContext $this.fullyQualified ) ) {
-                    return
-                }
-            }
-
             if ( $relationshipParam ) {
                 $typeUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $typeNameParam
                 if ( $typeUri ) {

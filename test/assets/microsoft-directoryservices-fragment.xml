@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:DataServices>
+        <Schema Namespace="microsoft.graph" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <EntityType Name="entity" Abstract="true" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Key>
+                    <PropertyRef Name="id" />
+                </Key>
+                <Property Name="id" Type="Edm.String" Nullable="false" />
+            </EntityType>
+            
+            <EntityType Name="directoryObject" BaseType="microsoft.graph.entity" OpenType="true" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Property Name="deletedDateTime" Type="Edm.DateTimeOffset" />
+            </EntityType>
+
+            <EntityType Name="user" BaseType="microsoft.graph.directoryObject" OpenType="true" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Property Name="accountEnabled" Type="Edm.Boolean" />
+                <Property Name="ageGroup" Type="Edm.String" />
+                <Property Name="assignedLicenses" Type="Collection(microsoft.graph.assignedLicense)" Nullable="false" />
+                <Property Name="assignedPlans" Type="Collection(microsoft.graph.assignedPlan)" Nullable="false" />
+                <Property Name="businessPhones" Type="Collection(Edm.String)" Nullable="false" />
+                <Property Name="city" Type="Edm.String" />
+                <Property Name="companyName" Type="Edm.String" />
+                <Property Name="consentProvidedForMinor" Type="Edm.String" />
+                <Property Name="country" Type="Edm.String" />
+                <Property Name="creationType" Type="Edm.String" />
+                <Property Name="department" Type="Edm.String" />
+                <Property Name="displayName" Type="Edm.String" />
+                <Property Name="employeeId" Type="Edm.String" />
+                <Property Name="faxNumber" Type="Edm.String" />
+                <Property Name="givenName" Type="Edm.String" />
+                <Property Name="imAddresses" Type="Collection(Edm.String)" />
+                <Property Name="isResourceAccount" Type="Edm.Boolean" />
+                <Property Name="jobTitle" Type="Edm.String" />
+                <Property Name="lastPasswordChangeDateTime" Type="Edm.DateTimeOffset" />
+                <Property Name="legalAgeGroupClassification" Type="Edm.String" />
+                <Property Name="licenseAssignmentStates" Type="Collection(microsoft.graph.licenseAssignmentState)" />
+                <Property Name="mail" Type="Edm.String" />
+                <Property Name="mailNickname" Type="Edm.String" />
+                <Property Name="mobilePhone" Type="Edm.String" />
+                <Property Name="onPremisesDistinguishedName" Type="Edm.String" />
+                <Property Name="onPremisesExtensionAttributes" Type="microsoft.graph.onPremisesExtensionAttributes" />
+                <Property Name="onPremisesImmutableId" Type="Edm.String" />
+                <Property Name="onPremisesLastSyncDateTime" Type="Edm.DateTimeOffset" />
+                <Property Name="onPremisesProvisioningErrors" Type="Collection(microsoft.graph.onPremisesProvisioningError)" />
+                <Property Name="onPremisesSecurityIdentifier" Type="Edm.String" />
+                <Property Name="onPremisesSyncEnabled" Type="Edm.Boolean" />
+                <Property Name="onPremisesDomainName" Type="Edm.String" />
+                <Property Name="onPremisesSamAccountName" Type="Edm.String" />
+                <Property Name="onPremisesUserPrincipalName" Type="Edm.String" />
+                <Property Name="otherMails" Type="Collection(Edm.String)" Nullable="false" />
+                <Property Name="passwordPolicies" Type="Edm.String" />
+                <Property Name="passwordProfile" Type="microsoft.graph.passwordProfile" />
+                <Property Name="officeLocation" Type="Edm.String" />
+                <Property Name="postalCode" Type="Edm.String" />
+                <Property Name="preferredLanguage" Type="Edm.String" />
+                <Property Name="provisionedPlans" Type="Collection(microsoft.graph.provisionedPlan)" Nullable="false" />
+                <Property Name="proxyAddresses" Type="Collection(Edm.String)" Nullable="false" />
+                <Property Name="showInAddressList" Type="Edm.Boolean" />
+                <Property Name="signInSessionsValidFromDateTime" Type="Edm.DateTimeOffset" />
+                <Property Name="state" Type="Edm.String" />
+                <Property Name="streetAddress" Type="Edm.String" />
+                <Property Name="surname" Type="Edm.String" />
+                <Property Name="usageLocation" Type="Edm.String" />
+                <Property Name="userPrincipalName" Type="Edm.String" />
+                <Property Name="userType" Type="Edm.String" />
+                <Property Name="mailboxSettings" Type="microsoft.graph.mailboxSettings" />
+                <Property Name="deviceEnrollmentLimit" Type="Edm.Int32" Nullable="false" />
+                <Property Name="aboutMe" Type="Edm.String" />
+                <Property Name="birthday" Type="Edm.DateTimeOffset" Nullable="false" />
+                <Property Name="hireDate" Type="Edm.DateTimeOffset" Nullable="false" />
+                <Property Name="interests" Type="Collection(Edm.String)" />
+                <Property Name="mySite" Type="Edm.String" />
+                <Property Name="pastProjects" Type="Collection(Edm.String)" />
+                <Property Name="preferredName" Type="Edm.String" />
+                <Property Name="responsibilities" Type="Collection(Edm.String)" />
+                <Property Name="schools" Type="Collection(Edm.String)" />
+                <Property Name="skills" Type="Collection(Edm.String)" />
+                <NavigationProperty Name="ownedDevices" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="registeredDevices" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="manager" Type="microsoft.graph.directoryObject" />
+                <NavigationProperty Name="directReports" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="memberOf" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="createdObjects" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="ownedObjects" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="licenseDetails" Type="Collection(microsoft.graph.licenseDetails)" ContainsTarget="true" />
+                <NavigationProperty Name="transitiveMemberOf" Type="Collection(microsoft.graph.directoryObject)" />
+                <NavigationProperty Name="outlook" Type="microsoft.graph.outlookUser" ContainsTarget="true" />
+                <NavigationProperty Name="messages" Type="Collection(microsoft.graph.message)" ContainsTarget="true" />
+                <NavigationProperty Name="mailFolders" Type="Collection(microsoft.graph.mailFolder)" ContainsTarget="true" />
+                <NavigationProperty Name="calendar" Type="microsoft.graph.calendar" ContainsTarget="true" />
+                <NavigationProperty Name="calendars" Type="Collection(microsoft.graph.calendar)" ContainsTarget="true" />
+                <NavigationProperty Name="calendarGroups" Type="Collection(microsoft.graph.calendarGroup)" ContainsTarget="true" />
+                <NavigationProperty Name="calendarView" Type="Collection(microsoft.graph.event)" ContainsTarget="true" />
+                <NavigationProperty Name="events" Type="Collection(microsoft.graph.event)" ContainsTarget="true" />
+                <NavigationProperty Name="people" Type="Collection(microsoft.graph.person)" ContainsTarget="true" />
+                <NavigationProperty Name="contacts" Type="Collection(microsoft.graph.contact)" ContainsTarget="true" />
+                <NavigationProperty Name="contactFolders" Type="Collection(microsoft.graph.contactFolder)" ContainsTarget="true" />
+                <NavigationProperty Name="inferenceClassification" Type="microsoft.graph.inferenceClassification" ContainsTarget="true" />
+                <NavigationProperty Name="photo" Type="microsoft.graph.profilePhoto" ContainsTarget="true" />
+                <NavigationProperty Name="photos" Type="Collection(microsoft.graph.profilePhoto)" ContainsTarget="true" />
+                <NavigationProperty Name="drive" Type="microsoft.graph.drive" ContainsTarget="true" />
+                <NavigationProperty Name="drives" Type="Collection(microsoft.graph.drive)" ContainsTarget="true" />
+                <NavigationProperty Name="extensions" Type="Collection(microsoft.graph.extension)" ContainsTarget="true" />
+                <NavigationProperty Name="managedDevices" Type="Collection(microsoft.graph.managedDevice)" ContainsTarget="true" />
+                <NavigationProperty Name="managedAppRegistrations" Type="Collection(microsoft.graph.managedAppRegistration)" />
+                <NavigationProperty Name="deviceManagementTroubleshootingEvents" Type="Collection(microsoft.graph.deviceManagementTroubleshootingEvent)" ContainsTarget="true" />
+                <NavigationProperty Name="planner" Type="microsoft.graph.plannerUser" ContainsTarget="true" />
+                <NavigationProperty Name="insights" Type="microsoft.graph.officeGraphInsights" ContainsTarget="true" />
+                <NavigationProperty Name="settings" Type="microsoft.graph.userSettings" ContainsTarget="true" />
+                <NavigationProperty Name="onenote" Type="microsoft.graph.onenote" ContainsTarget="true" />
+                <NavigationProperty Name="activities" Type="Collection(microsoft.graph.userActivity)" ContainsTarget="true" />
+                <NavigationProperty Name="onlineMeetings" Type="Collection(microsoft.graph.onlineMeeting)" ContainsTarget="true" />
+                <NavigationProperty Name="joinedTeams" Type="Collection(microsoft.graph.group)" ContainsTarget="true" />
+            </EntityType>
+
+            <EntityContainer Name="GraphService">
+                <EntitySet Name="users" EntityType="microsoft.graph.user" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                    <NavigationPropertyBinding Path="createdObjects" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="directReports" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="drive/items/createdByUser" Target="users" />
+                    <NavigationPropertyBinding Path="drive/items/lastModifiedByUser" Target="users" />
+                    <NavigationPropertyBinding Path="manager" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="memberOf" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="ownedDevices" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="ownedObjects" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="registeredDevices" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="transitiveMemberOf" Target="directoryObjects" />
+                </EntitySet>
+
+                <Singleton Name="me" Type="microsoft.graph.user" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                    <NavigationPropertyBinding Path="createdObjects" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="directReports" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="manager" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="memberOf" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="ownedDevices" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="ownedObjects" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="registeredDevices" Target="directoryObjects" />
+                    <NavigationPropertyBinding Path="transitiveMemberOf" Target="directoryObjects" />
+                </Singleton>
+            </EntityContainer>
+            <Annotations>
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

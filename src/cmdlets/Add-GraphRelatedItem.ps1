@@ -132,8 +132,8 @@ function Add-GraphRelatedItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Property (new-so TypeUriParameterCompleter Property $true Property TypeName Relationship)
-$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
+$::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
 
 

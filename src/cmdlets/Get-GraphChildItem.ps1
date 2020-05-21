@@ -60,14 +60,8 @@ function Get-GraphChildItem {
         [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         [string] $PropertyFilter,
 
-        [parameter(parametersetname='bytypecollection')]
-        [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byobject')]
         [string]$Filter,
 
-        [parameter(parametersetname='bytypecollection')]
-        [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byobject')]
         [Alias('SearchString')]
         $SimpleMatch,
 
@@ -90,6 +84,11 @@ function Get-GraphChildItem {
     )
     begin {
         Enable-ScriptClassVerbosePreference
+
+        if ( $SimpleMatch -and $Filter ) {
+            throw "The SimpleMatch and Filter parameters may not both be specified -- specify only one of these parameters and retry the command."
+        }
+
         $remappedParameters = @{}
         foreach ( $parameterName in $PSBoundParameters.Keys ) {
             if ( $parameterName -ne 'TypeName' -and $parameterName -ne 'Uri' -and $parameterName -ne 'Relationship' -and $parameterName -ne 'Id' -and $parameterName -ne 'SkipPropertyCheck' ) {
@@ -127,10 +126,10 @@ function Get-GraphChildItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $true)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $true)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $false)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $false)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem OrderBy (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
 
