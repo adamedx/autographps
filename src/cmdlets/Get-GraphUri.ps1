@@ -82,6 +82,6 @@ function Get-GraphUri {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphUri GraphName (new-so GraphParameterCompleter)
 

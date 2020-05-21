@@ -171,7 +171,7 @@ function New-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property $true Property TypeName Relationship)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Relationship (new-so TypeUriParameterCompleter Property $true NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)
 

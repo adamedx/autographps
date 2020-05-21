@@ -91,11 +91,6 @@ ScriptClass TypeUriHelper {
             $objectUri
         }
 
-        function IsValidEntityType($typeName, $graphContext, $isFullyQualified) {
-            $typeManager = $::.TypeManager |=> Get $graphContext
-            ( $typeManager |=> FindTypeDefinition Entity $typeName $isFullyQualified ) -ne $null
-        }
-
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
@@ -222,7 +217,7 @@ ScriptClass TypeUriHelper {
                 $::.TypeUriHelper |=> GetTypeAwareRequestInfo $graphName $targetTypeName $isFullyQualifiedTypeName $null $targetObjectId $null
             } else {
                 foreach ( $destinationId in $targetId ) {
-                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $destinationId $null $null
                 }
             }
         }

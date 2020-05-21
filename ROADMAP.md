@@ -353,6 +353,7 @@
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
+* Fix parameter completion for multiple type classes
 
 ### Abandoned
 

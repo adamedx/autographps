@@ -52,9 +52,6 @@ ScriptClass TypeManager {
         if ( $hasProperties -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             if ( ! $prototype ) {
                 $type = FindTypeDefinition $typeClass $typeId $true $true
-                if ( ! $type ) {
-                    throw 'anger'
-                }
                 $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
                 $prototype = $builder |=> ToObject
             }
@@ -292,14 +289,19 @@ ScriptClass TypeManager {
 
             $manager = Get $graphContext
 
+            # TODO: The provider's GetSortedTypeNames should take in existing names
+            # as a sorted list and add new items to avoid having to sort everything
+            # when more than one type class is involved.
             $typeNames = foreach ( $targetTypeClass in $typeClasses ) {
                 $typeProvider = $manager |=> __GetTypeProvider $targetTypeClass
                 $typeProvider |=> GetSortedTypeNames $targetTypeClass
             }
 
-            $result = if ( $typeClasses.length -ne 1 ) {
+            $result = if ( $typeClasses.length -eq 1 ) {
                 $typeNames
             } else {
+                # Individual type classes are sorted, but there is more than one
+                # type class here, so we'll just sort everything.
                 $typeNames | sort-object
             }
 
