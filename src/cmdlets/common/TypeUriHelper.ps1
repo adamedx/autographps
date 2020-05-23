@@ -48,7 +48,9 @@ ScriptClass TypeUriHelper {
             if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
-                $uriInfo = Get-GraphUriInfo $objectUri
+                $uriInfo = if ( $resourceId ) {
+                    Get-GraphUriInfo $objectUri
+                }
 
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
@@ -59,7 +61,7 @@ ScriptClass TypeUriHelper {
                 # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
-                if ( $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
+                if ( $uriInfo -and $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
                     $objectUri = $objectUri.tostring(), $resourceId -join '/'
                 }
 
@@ -72,6 +74,25 @@ ScriptClass TypeUriHelper {
         function GetTypeFromDecoratedObject($graphObject) {
             if ( $graphObject | gm -membertype scriptmethod $this.TYPE_METHOD_NAME -erroraction ignore ) {
                 $graphObject.($this.TYPE_METHOD_NAME)()
+            }
+        }
+
+        function InferTypeUriInfoFromRequestItem($requestItem, $responseObject) {
+            $absoluteUri = $requestItem.Uri
+            $fullPath = $requestItem.Path
+            $graphUri = $requestItem.GraphUri
+
+            if ( $requestItem.Collection ) {
+                $absoluteUri = $absoluteUri.trimend('/'), $responseObject.Id -join '/'
+                $fullPath = $fullPath.trimend('/'), $responseObject.Id -join '/'
+                $graphUri = [Uri] ($graphUri.tostring().trimend('/'), $responseObject.Id -join '/')
+            }
+
+            [PSCustomObject] @{
+                FullTypeName = $requestItem.FullTypeName
+                AbsoluteUri = $absoluteUri
+                FullPath = $fullPath
+                GraphUri = $graphUri
             }
         }
 

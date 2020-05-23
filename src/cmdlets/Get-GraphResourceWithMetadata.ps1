@@ -103,6 +103,7 @@ function Get-GraphResourceWithMetadata {
         $results = @()
         $intermediateResults = @()
         $contexts = @()
+        $requestInfoCache = @()
     }
 
     process {
@@ -232,10 +233,12 @@ function Get-GraphResourceWithMetadata {
             try {
                 $graphResult = Invoke-GraphRequest @requestArguments
                 $intermediateResults += $graphResult
+                $requestCacheEntry = @{ResolvedRequestUri=$resolvedUri}
                 # We need the context with each result, because in theory each result came from a different
-                # Graph since we allow arbitrary URI's to be supplied to the pipeline
+                # Graph since we allow arbitrary URI's and objects to be supplied to the pipeline
                 $graphResult | foreach {
                     $contexts += $context
+                    $requestInfoCache += $requestCacheEntry
                 }
             } catch [GraphAccessDeniedException] {
                 # In some cases, we want to allow the user to make a mistake that results in an error from Graph
@@ -273,6 +276,8 @@ function Get-GraphResourceWithMetadata {
     end {
         $contextIndex = 0
 
+        # TODO: Results are a flat list even across multiple requests -- this is really complicated because
+        # we need to know the context for each result
         foreach ( $intermediateResult in $intermediateResults ) {
             $currentContext = $contexts[$contextIndex] # The context associated with this result
             $contextIndex++
@@ -291,7 +296,16 @@ function Get-GraphResourceWithMetadata {
                 }
             } else {
                 if ( ! $responseContentOnly ) {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($currentContext, $restResult)
+                    # Getting uri info is expensive, so for a single request, get it only once and cache it
+                    $requestSegment = $requestInfoCache[$contextIndex - 1].ResolvedRequestUri
+                    if ( ! $requestSegment ) {
+                        $requestSegment = Get-GraphUriInfo -GraphScope $context.name $specifiedUri
+                        $requestInfoCache[$contextIndex].ResolvedRequestUri = $requestSegment
+                    }
+                    # The request segment information gives information about the uri used to make the request;
+                    # much of that is inherited by elements in the response, so it can be shared across
+                    # a large number of elements to improve performance
+                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($currentContext, $restResult, $requestSegment)
                 } else {
                     $restResult
                 }

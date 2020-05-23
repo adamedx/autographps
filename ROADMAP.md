@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Optimize performance for pipeline scenarios for get-graphitem, get-graphchilditem
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
