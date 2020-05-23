@@ -23,14 +23,15 @@
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypeandid')]
     param(
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandsearch', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandsearch', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandsimplematch', mandatory=$true)]
+        [Alias('FullTypeName')]
         $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $Id,
 
         [parameter(position=2, parametersetname='bytypeandid')]

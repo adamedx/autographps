@@ -48,6 +48,7 @@ ScriptClass TypeUriHelper {
             if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
                 $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
                 $objectUri = $requestUri.GraphRelativeUri
+                $uriInfo = Get-GraphUriInfo $objectUri
 
                 # When an object is supplied, its URI had better end with whatever id was supplied.
                 # This will not always be true of the uri retrieved from the object because this URI is the
@@ -58,7 +59,7 @@ ScriptClass TypeUriHelper {
                 # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
                 # TODO: Get an explicit object URI from the object itself rather than this workaround which
                 # will have problematic corner cases.
-                if ( $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
+                if ( $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
                     $objectUri = $objectUri.tostring(), $resourceId -join '/'
                 }
 
