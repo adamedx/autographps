@@ -34,8 +34,11 @@ function Get-GraphResourceWithMetadata {
 
         [HashTable] $PropertyFilter = $null,
 
-        [parameter(parametersetname='GraphItem', mandatory=$true)]
+        [parameter(parametersetname='GraphItem', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
+
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Uri] $GraphUri,
 
         [String] $Query = $null,
 
@@ -105,7 +108,13 @@ function Get-GraphResourceWithMetadata {
     process {
         $assumeRoot = $false
 
-        $resolvedUri = if ( $Uri -and $Uri -ne '.' -or $GraphItem ) {
+        $specifiedUri = if ( $uri ) {
+            $Uri
+        } else {
+            $GraphUri
+        }
+
+        $resolvedUri = if ( $specifiedUri -and $specifiedUri -ne '.' -or $GraphItem ) {
             $GraphArgument = @{}
 
             if ( $GraphName ) {
@@ -118,13 +127,16 @@ function Get-GraphResourceWithMetadata {
             }
 
             $targetUri = if ( $GraphItem ) {
-                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphItem
+                if ( ! ( $GraphItem | gm id -erroraction ignore ) ) {
+                    throw "The GraphItem parameter does not contain the required id property for an item returned by the Graph API"
+                }
+                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $GraphItem.id $GraphItem
                 if ( ! $requestInfo.Uri ) {
                     throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
                 }
                 $requestInfo.Uri
             } else {
-                $Uri
+                $specifiedUri
             }
 
             $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
@@ -166,7 +178,7 @@ function Get-GraphResourceWithMetadata {
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
-            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $Uri }
+            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
             Query = $Query
             Filter = $targetFilter
             Search = $Search
@@ -195,7 +207,7 @@ function Get-GraphResourceWithMetadata {
 
         $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-        $noUri = ! $GraphItem -and ( ! $Uri -or $Uri -eq '.' )
+        $noUri = ! $GraphItem -and ( ! $specifiedUri -or $specifiedUri -eq '.' )
 
         $emitTarget = $null
         $emitChildren = $null
