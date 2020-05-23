@@ -27,19 +27,20 @@ function Get-GraphChildItem {
         [Alias('OfUri')]
         [Uri] $Uri,
 
-        [parameter(parametersetname='byobject', mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
         [Alias('OfObject')]
         [PSCustomObject] $GraphItem,
 
         [parameter(position=0, parametersetname='bytypecollection', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [Alias('OfTypeName')]
+        [Alias('FullTypeName')]
         [string] $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('OfId')]
         [string] $Id,
 
@@ -49,6 +50,9 @@ function Get-GraphChildItem {
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [string[]] $Property,
 
+        [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byobjectandpropertyfilter')]
+        [parameter(parametersetname='bytypeandid')]
         [Alias('WithRelationship')]
         [string[]] $Relationship,
 
@@ -91,7 +95,7 @@ function Get-GraphChildItem {
 
         $remappedParameters = @{}
         foreach ( $parameterName in $PSBoundParameters.Keys ) {
-            if ( $parameterName -ne 'TypeName' -and $parameterName -ne 'Uri' -and $parameterName -ne 'Relationship' -and $parameterName -ne 'Id' -and $parameterName -ne 'SkipPropertyCheck' ) {
+            if ( $parameterName -notin 'TypeName', 'Uri', 'Relationship', 'Id', 'SkipPropertyCheck', 'GraphItem' ) {
                 $remappedParameters.Add($parameterName, $PSBoundParameters[$parameterName])
             }
         }

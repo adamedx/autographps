@@ -21,13 +21,10 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypeandid')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
     param(
         [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandsearch', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandsimplematch', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
@@ -36,23 +33,14 @@ function Get-GraphItem {
 
         [parameter(position=2, parametersetname='bytypeandid')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
-        [parameter(position=2, parametersetname='bytypeandfilter')]
-        [parameter(position=2, parametersetname='bytypeandsimplematch')]
         [parameter(position=2, parametersetname='byuri')]
-        [parameter(position=2, parametersetname='byuriandfilter')]
-        [parameter(position=2, parametersetname='byobjectandfilter')]
         [string[]] $Property,
 
         [parameter(parametersetname='byuri', mandatory=$true)]
-        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
-        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
-        [parameter(parametersetname='byuriandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
         [Uri] $Uri,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='byobjectandsearch', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
@@ -63,20 +51,11 @@ function Get-GraphItem {
         [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
         $PropertyFilter,
 
-        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
-        [parameter(parametersetname='byuriandfilter', mandatory=$true)]
-        [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
-        [parameter(parametersetname='bytypeandsimplematch', mandatory=$true)]
-        [parameter(parametersetname='byuriandsimplematch', mandatory=$true)]
-        [parameter(parametersetname='byobjectandsimplematch', mandatory=$true)]
         [Alias('SearchString')]
         $SimpleMatch,
 
-        [parameter(parametersetname='bytypeandsearch', mandatory=$true)]
-        [parameter(parametersetname='byuriandsearch', mandatory=$true)]
-        [parameter(parametersetname='byobjectandsearch', mandatory=$true)]
         [String] $Search,
 
         [string[]] $Expand,
