@@ -21,6 +21,7 @@
 
 function Get-GraphUri {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
+    [OutputType('System.Uri')]
     param(
         [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
         [parameter(position=0, parametersetname='bytypefullyqualified', mandatory=$true)]
@@ -43,16 +44,31 @@ function Get-GraphUri {
         [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
         [Uri] $Uri,
 
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Uri] $GraphUri,
+
         [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
-        [object] $GraphItem,
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true)]
+        [PSCustomObject] $GraphItem,
 
-        $GraphName,
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byurifromobject')]
+        [parameter(parametersetname='bytypeoptionallyqualifiedfromobject')]
+        [parameter(parametersetname='bytypefullyqualifiedfromobject')]
+        [parameter(parametersetname='addtoexistingurifromobject')]
+        [parameter(parametersetname='addtoexistingobjectfromobject')]
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true)]
+        [string] $GraphName,
 
         [switch] $AbsoluteUri,
+
+        [switch] $UnqualifiedUri,
+
+        [switch] $AsString,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
@@ -63,18 +79,30 @@ function Get-GraphUri {
     )
     begin {
         Enable-ScriptClassVerbosePreference
+
+        if ( $AbsoluteUri.IsPresent -and $UnqualifiedUri.IsPresent ) {
+            throw "Only one of the AbsoluteUri or UnqualifiedUri parameters may be specified -- omit these parameters or specify exactly one of them and retry the command"
+        }
     }
 
     process {
 
         $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
         $resultUri = if ( ! $AbsoluteUri.IsPresent ) {
-            $sourceInfo.Uri
+            if ( $UnqualifiedUri.IsPresent ) {
+                $sourceInfo.Uri
+            } else {
+                $::.GraphUtilities |=> ToLocationUriPath $sourceInfo.requestInfo.context $sourceInfo.Uri
+            }
         } else {
             $::.TypeUriHelper |=> ToGraphAbsoluteUri $sourceInfo.RequestInfo.Context $sourceInfo.Uri
         }
 
-        $resultUri.tostring()
+        if ( $AsString.IsPresent ) {
+            $resultUri.tostring()
+        } else {
+            [Uri] $resultUri
+        }
     }
 
     end {

@@ -21,17 +21,20 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byobject')]
     param(
+        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
+        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $Id,
 
         [parameter(position=2, parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='bytypeandidpipe')]
         [parameter(position=2, parametersetname='typeandpropertyfilter')]
         [parameter(position=2, parametersetname='byuri')]
         [string[]] $Property,
@@ -44,6 +47,13 @@ function Get-GraphItem {
         [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuriandpropertyfilter')]
+        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byobjectandpropertyfilter')]
+        [parameter(parametersetname='typeandpropertyfilter')]
         $GraphName,
 
         [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
@@ -79,6 +89,8 @@ function Get-GraphItem {
     begin {
         Enable-ScriptClassVerbosePreference
 
+        $coreParameters = $null
+
         if ( $Filter -and $SimpleMatch ) {
             throw 'Only one of Filter and SimpleMatch arguments may be specified'
         }
@@ -88,6 +100,8 @@ function Get-GraphItem {
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
         }
+
+        $accumulatedItems = @()
     }
 
     process {
@@ -119,11 +133,30 @@ function Get-GraphItem {
             if ( $pscmdlet.pagingparameters.Skip -ne $null ) { $pagingParameters['Skip'] = $pscmdlet.pagingparameters.Skip }
             if ( $pscmdlet.pagingparameters.IncludeTotalCount -ne $null ) { $pagingParameters['IncludeTotalCount'] = $pscmdlet.pagingparameters.IncludeTotalCount }
 
-            Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name -erroraction 'stop' -select $Property @filterParameter -ContentOnly:$($ContentOnly.IsPresent) -ChildrenOnly:$($ChildrenOnly.IsPresent) -Expand $Expand -RawContent:$($RawContent.IsPresent) @pagingParameters -OrderBy $OrderBy -Descending:$($Descending.IsPresent) -Search $Search
+            $coreParameters = @{
+                Select = $Property
+                ContentOnly = $ContentOnly
+                ChildrenOnly = $ChildrenOnly
+                Expand = $Expand
+                RawContent = $RawContent
+                OrderBy = $OrderBy
+                Descending = $Descending
+                Search = $Search
+            }
+
+            if ( ! $GraphItem ) {
+                Get-GraphResourceWithMetadata -Uri $requestInfo.Uri -GraphName $requestInfo.Context.name @coreParameters @filterParameter @pagingParameters -DataOnly -StrictOutput:$($ChildrenOnly.IsPresent) -erroraction stop
+            } else {
+                $accumulatedItems += $GraphItem
+            }
         }
     }
 
-    end {}
+    end {
+        if ( $accumulatedItems ) {
+            $accumulatedItems | Get-GraphResourceWithMetadata @coreParameters @filterParameter @pagingParameters -DataOnly -StrictOutput:$($ChildrenOnly.IsPresent) -erroraction stop
+        }
+    }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)

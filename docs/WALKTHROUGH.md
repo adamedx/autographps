@@ -514,6 +514,8 @@ Group 7 Access Level Just the description
 Both the `GraphObject` and `PropertyMap` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+
 gls -GraphItem $existingGroup -ContentOnly | select description, displayName
 
 mailNickname displayName description
@@ -521,7 +523,6 @@ mailNickname displayName description
              Unused      Unassinged group
 
 $templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
 $existingGroup | Set-GraphItem -GraphObject $templateGroup -PropertyMap @{mailNickName='dorateam'}
 
@@ -565,7 +566,7 @@ This adds a directional relationship between the group and the user "group is re
 To see the new relationship, use the `Get-GraphRelatedItem` command:
 
 ```powershell
-PS> Get-GraphRelatedItem group $newgroup.id -WithRelationship members
+Get-GraphRelatedItem group $newgroup.id -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 

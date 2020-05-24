@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ function Get-GraphResourceWithMetadata {
         [HashTable] $PropertyFilter = $null,
 
         [parameter(parametersetname='GraphItem', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSCustomObject] $GraphItem = $null,
 
         [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Uri] $GraphUri,
@@ -79,7 +79,10 @@ function Get-GraphResourceWithMetadata {
 
         [string] $ResultVariable = $null,
 
-        [string] $GraphName
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='GraphItem')]
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [string] $GraphName = $null
     )
 
     begin {
@@ -127,22 +130,29 @@ function Get-GraphResourceWithMetadata {
                 $GraphArgument['GraphScope'] = $GraphName
             }
 
-            $targetUri = if ( $GraphItem ) {
-                if ( ! ( $GraphItem | gm id -erroraction ignore ) ) {
-                    throw "The GraphItem parameter does not contain the required id property for an item returned by the Graph API"
-                }
-                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $GraphItem.id $GraphItem
-                if ( ! $requestInfo.Uri ) {
-                    throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
-                }
-                $requestInfo.Uri
+            if ( $GraphItem -and ( $::.SegmentHelper |=> IsGraphSegmentType $GraphItem ) ) {
+                $GraphItem
             } else {
-                $specifiedUri
+                $targetUri = if ( $GraphItem ) {
+                    if ( ! ( $GraphItem | gm id -erroraction ignore ) ) {
+                        throw "The GraphItem parameter does not contain the required id property for an item returned by the Graph API or the wrong type was specified to the pipeline -- try specifing the parameter using the parameter name instead of the pipeline, or ensure the type specified to the pipeline is of type [Uri] or a valid object returned by the Graph from a command invocation."
+                    }
+                    $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $GraphItem.id $GraphItem
+                    if ( ! $requestInfo.Uri ) {
+                        throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+                    }
+                    $requestInfo.Uri
+                } else {
+                    if ( $specifiedUri.IsAbsoluteUri -and ! $AbsoluteUri.IsPresent ) {
+                        throw "The absolute URI '$specifiedUri' was specified, but the AbsoluteUri parameter was not specified. Retry the command with the AbsoluteUri parameter or specify a URI without a hostname instead."
+                    }
+                    $specifiedUri
+                }
+
+                $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
+
+                Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
             }
-
-            $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-
-            Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
         } else {
             $context = $::.GraphContext |=> GetCurrent
             $parser = new-so SegmentParser $context $null $true
@@ -188,7 +198,6 @@ function Get-GraphResourceWithMetadata {
             OrderBy = $OrderBy
             Descending = $Descending
             RawContent=$RawContent
-            AbsoluteUri=$AbsoluteUri
             Headers=$Headers
             First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip

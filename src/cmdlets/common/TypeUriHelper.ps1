@@ -40,7 +40,7 @@ ScriptClass TypeUriHelper {
             # This method handles two cases:
             #
             #   * Objects returned by Get-GraphResource which are decorated with the __ItemContext scriptmethod
-            #   * Oboject returned by Get-GraphResourceWithMetadata which are PSCustomObjects of GraphSgementDisplayType
+            #   * Objects returned by Get-GraphResourceWithMetadata which are PSCustomObjects of GraphSgementDisplayType
             #
             # The latter has a Path member with exactly the uri needed to resolve the object, the other requires
             # a workaround since it may only have a partial URI originally used as the target of a POST that created it.
@@ -137,19 +137,35 @@ ScriptClass TypeUriHelper {
             } elseif ( $uri )  {
                 TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
-                $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
-                if ( $objectUri ) {
-                    $objectUriInfo = TypeFromUri $objectUri $targetContext
-
-                    # TODO: When an object is supplied, it had better end with whatever id was supplied.
-                    # This will not always be true of the uri retrieved from the object
-                    if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
-                        $correctedUri = $objectUri, $id -join '/'
-                        $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                if (  $::.SegmentHelper |=> IsGraphSegmentType $typedGraphObject ) {
+                    # This is already a fully described object -- no need to make expensive
+                    # calls to parse metadata and understand the object
+                    $objectUri = $typedGraphObject.GraphUri
+                    $targetUri = $objectUri
+                    [PSCustomObject] @{
+                        FullTypeName = $typedGraphObject.FullTypeName
+                        IsCollection = $typedGraphObject.Collection
+                        UriInfo = $typedGraphObject
                     }
+                } else {
+                    # We need to analyze information about the object using its uri since we
+                    # don't have existing information -- this is expensive, so hopefully
+                    # it doesn't occur to often
+                    $objectUri = GetUriFromDecoratedObject $targetContext $typedGraphObject $id
 
-                    $targetUri = $objectUriInfo.UriInfo.graphUri
-                    $objectUriInfo
+                    if ( $objectUri ) {
+                        $objectUriInfo = TypeFromUri $objectUri $targetContext
+
+                        # TODO: When an object is supplied, it had better end with whatever id was supplied.
+                        # This will not always be true of the uri retrieved from the object
+                        if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                            $correctedUri = $objectUri, $id -join '/'
+                            $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                        }
+
+                        $targetUri = $objectUriInfo.UriInfo.graphUri
+                        $objectUriInfo
+                    }
                 }
             }
 

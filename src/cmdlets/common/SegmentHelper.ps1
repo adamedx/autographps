@@ -121,6 +121,7 @@ ScriptClass SegmentHelper {
                 Id = $segment.name
                 Namespace = $namespace
                 Uri = $Uri
+                GraphName = $parser.context.name
                 GraphUri = $relativeUri
                 Path = $path
                 FullTypeName = $fullTypeName
@@ -175,6 +176,7 @@ ScriptClass SegmentHelper {
                 Id = $itemId
                 Namespace = $requestSegment.Namespace
                 Uri = $typeInfo.AbsoluteUri
+                GraphName = $graphContext.Name
                 GraphUri = $typeinfo.GraphUri
                 Path = $typeInfo.FullPath
                 FullTypeName = $fullTypeName
