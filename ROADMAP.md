@@ -2,9 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix gls to use begin, end, process!
-* gls and co. should use TypeName instead of FullTypeName, something else other than type
-* Fix gls of the result of gls to return the same thing, not the entityset
+* Add trace-graphrequest / measure-graphrequest commands
+* Add progress for pipeline operations
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
@@ -338,6 +337,8 @@
 * Implement new Get-GraphUri command
 * Remove default of not waiting for metadata
 * Set-GraphItem should take an object, not just a hashtable
+* gls and co. should use TypeName instead of FullTypeName, something else other than type
+* Optimize performance for pipeline scenarios for get-graphitem, get-graphchilditem
 
 ### Postponed
 
@@ -354,6 +355,7 @@
 * Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
+* Fix gls of the result of gls to return the same thing, not the entityset
 
 ### Abandoned
 

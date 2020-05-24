@@ -89,12 +89,13 @@ function Get-GraphRelatedItem {
                 $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $currentRelationship NavigationProperty
             }
 
-            $requestInfo.Uri.ToString(), $currentRelationship -join '/'
+            [Uri] ( $::.GraphUtilities |=> ToLocationUriPath $requestInfo.context ( $requestInfo.Uri.ToString(), $currentRelationship -join '/' ) )
         }
     }
 
     end {
-        $relationshipUris | Get-GraphResourceWithMetadata -GraphName $GraphName -ContentOnly:$($ContentOnly.IsPresent) -ErrorAction $requestErrorAction
+        $graphNameArgument = if ( $GraphName ) { @{GraphName=$GraphName} } else { @{} }
+        $relationshipUris | Get-GraphResourceWithMetadata @graphNameArgument -ContentOnly:$($ContentOnly.IsPresent) -ErrorAction $requestErrorAction
     }
 }
 

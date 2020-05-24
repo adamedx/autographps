@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,10 +28,17 @@ function Get-GraphResourceWithMetadata {
         [String[]] $Select = $null,
 
         [parameter(position=2)]
+        [String] $SimpleMatch = $null,
+
         [String] $Filter = $null,
 
-        [parameter(parametersetname='GraphItem', mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [HashTable] $PropertyFilter = $null,
+
+        [parameter(parametersetname='GraphItem', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $GraphItem = $null,
+
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Uri] $GraphUri,
 
         [String] $Query = $null,
 
@@ -72,11 +79,24 @@ function Get-GraphResourceWithMetadata {
 
         [string] $ResultVariable = $null,
 
-        [string] $GraphName
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='GraphItem')]
+        [parameter(parametersetname='GraphUri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [string] $GraphName = $null
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $filters = if ( $SimpleMatch ) { 1 } else { 0 }
+        $filters += if ( $Filter ) { 1 } else { 0 }
+        $filters += if ( $PropertyFilter ) { 1 } else { 0 }
+
+        if ( $filters -gt 1 ) {
+            throw "Only one of SimpleMatch, Filter, or PropertyFilter parameters may be specified -- specify no more than one of these paramters and retry the command."
+        }
+
+        $targetFilter = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
 
         $context = $null
 
@@ -86,12 +106,19 @@ function Get-GraphResourceWithMetadata {
         $results = @()
         $intermediateResults = @()
         $contexts = @()
+        $requestInfoCache = @()
     }
 
     process {
         $assumeRoot = $false
 
-        $resolvedUri = if ( $Uri -and $Uri -ne '.' -or $GraphItem ) {
+        $specifiedUri = if ( $uri ) {
+            $Uri
+        } else {
+            $GraphUri
+        }
+
+        $resolvedUri = if ( $specifiedUri -and $specifiedUri -ne '.' -or $GraphItem ) {
             $GraphArgument = @{}
 
             if ( $GraphName ) {
@@ -103,19 +130,29 @@ function Get-GraphResourceWithMetadata {
                 $GraphArgument['GraphScope'] = $GraphName
             }
 
-            $targetUri = if ( $GraphItem ) {
-                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $null $GraphItem
-                if ( ! $requestInfo.Uri ) {
-                    throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
-                }
-                $requestInfo.Uri
+            if ( $GraphItem -and ( $::.SegmentHelper |=> IsGraphSegmentType $GraphItem ) ) {
+                $GraphItem
             } else {
-                $Uri
+                $targetUri = if ( $GraphItem ) {
+                    if ( ! ( $GraphItem | gm id -erroraction ignore ) ) {
+                        throw "The GraphItem parameter does not contain the required id property for an item returned by the Graph API or the wrong type was specified to the pipeline -- try specifing the parameter using the parameter name instead of the pipeline, or ensure the type specified to the pipeline is of type [Uri] or a valid object returned by the Graph from a command invocation."
+                    }
+                    $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $null $GraphItem.id $GraphItem
+                    if ( ! $requestInfo.Uri ) {
+                        throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+                    }
+                    $requestInfo.Uri
+                } else {
+                    if ( $specifiedUri.IsAbsoluteUri -and ! $AbsoluteUri.IsPresent ) {
+                        throw "The absolute URI '$specifiedUri' was specified, but the AbsoluteUri parameter was not specified. Retry the command with the AbsoluteUri parameter or specify a URI without a hostname instead."
+                    }
+                    $specifiedUri
+                }
+
+                $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
+
+                Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
             }
-
-            $metadataArgument = @{IgnoreMissingMetadata=(new-object System.Management.Automation.SwitchParameter (! $mustWaitForMissingMetadata))}
-
-            Get-GraphUriInfo $targetUri @metadataArgument @GraphArgument -erroraction stop
         } else {
             $context = $::.GraphContext |=> GetCurrent
             $parser = new-so SegmentParser $context $null $true
@@ -143,19 +180,24 @@ function Get-GraphResourceWithMetadata {
             }
         }
 
+        # The filter for SimpleMatch can only be determined when the type, and thus the
+        # context, is known, so it is request specific and must be computed here.
+        if ( $SimpleMatch ) {
+            $targetFilter = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $context $resolvedUri.FullTypeName $SimpleMatch
+        }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
-            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $Uri }
+            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
             Query = $Query
-            Filter = $Filter
+            Filter = $targetFilter
             Search = $Search
             Select = $Select
             Expand = $Expand
             OrderBy = $OrderBy
             Descending = $Descending
             RawContent=$RawContent
-            AbsoluteUri=$AbsoluteUri
             Headers=$Headers
             First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip
@@ -175,7 +217,7 @@ function Get-GraphResourceWithMetadata {
 
         $ignoreMetadata = ! $mustWaitForMissingMetadata -and ( ($resolvedUri.Class -eq 'Null') -or $assumeRoot )
 
-        $noUri = ! $GraphItem -and ( ! $Uri -or $Uri -eq '.' )
+        $noUri = ! $GraphItem -and ( ! $specifiedUri -or $specifiedUri -eq '.' )
 
         $emitTarget = $null
         $emitChildren = $null
@@ -200,10 +242,12 @@ function Get-GraphResourceWithMetadata {
             try {
                 $graphResult = Invoke-GraphRequest @requestArguments
                 $intermediateResults += $graphResult
+                $requestCacheEntry = @{ResolvedRequestUri=$resolvedUri}
                 # We need the context with each result, because in theory each result came from a different
-                # Graph since we allow arbitrary URI's to be supplied to the pipeline
+                # Graph since we allow arbitrary URI's and objects to be supplied to the pipeline
                 $graphResult | foreach {
                     $contexts += $context
+                    $requestInfoCache += $requestCacheEntry
                 }
             } catch [GraphAccessDeniedException] {
                 # In some cases, we want to allow the user to make a mistake that results in an error from Graph
@@ -241,6 +285,8 @@ function Get-GraphResourceWithMetadata {
     end {
         $contextIndex = 0
 
+        # TODO: Results are a flat list even across multiple requests -- this is really complicated because
+        # we need to know the context for each result
         foreach ( $intermediateResult in $intermediateResults ) {
             $currentContext = $contexts[$contextIndex] # The context associated with this result
             $contextIndex++
@@ -259,7 +305,16 @@ function Get-GraphResourceWithMetadata {
                 }
             } else {
                 if ( ! $responseContentOnly ) {
-                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($currentContext, $restResult)
+                    # Getting uri info is expensive, so for a single request, get it only once and cache it
+                    $requestSegment = $requestInfoCache[$contextIndex - 1].ResolvedRequestUri
+                    if ( ! $requestSegment ) {
+                        $requestSegment = Get-GraphUriInfo -GraphScope $context.name $specifiedUri
+                        $requestInfoCache[$contextIndex].ResolvedRequestUri = $requestSegment
+                    }
+                    # The request segment information gives information about the uri used to make the request;
+                    # much of that is inherited by elements in the response, so it can be shared across
+                    # a large number of elements to improve performance
+                    $::.SegmentHelper.ToPublicSegmentFromGraphItem($currentContext, $restResult, $requestSegment)
                 } else {
                     $restResult
                 }

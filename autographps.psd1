@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.20.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.21.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -221,7 +221,9 @@ This release includes major breaking changes in command names, fixes significant
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.20.0
+* AutoGraphPS-SDK 0.21.0
+* Microsoft.Identity.Client (MSAL) 4.14.0
+* Microsoft.IdentityModel.Clients.ActiveDirectory (ADAL) 5.2.7
 
 ### Breaking changes
 
