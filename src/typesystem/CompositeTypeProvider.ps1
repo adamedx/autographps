@@ -58,7 +58,7 @@ ScriptClass CompositeTypeProvider {
             }
         }
 
-        $methodSchemas = GetMethodSchemasForType $foundTypeClass $typeId
+        $methodSchemas = GetMethodSchemasForType $typeId
 
         $methods = if ( $methodSchemas ) {
             foreach ( $methodSchema in $methodSchemas ) {
@@ -111,22 +111,28 @@ ScriptClass CompositeTypeProvider {
         $this.entityTypeTable
     }
 
-    function GetMethodSchemasForType($typeClass, $qualifiedTypeName) {
-        if ( $typeClass -ne 'Entity' ) {
-            return
-        }
-
-        $typeVertex = $this.base.graph |=> GetTypeVertex $qualifiedTypeName
+    function GetMethodSchemasForType($qualifiedTypeName) {
         $methodSchemas = $this.base.graph |=> GetMethodsForType $qualifiedTypeName
 
-        foreach ( $methodSchema in $methodSchemas ) {
-            $edge = $typeVertex.outgoingEdges[$methodSchema.name]
+        if ( $methodSchemas ) {
+            $typeVertex = try {
+                # We currently only do this because we don't have information about whether
+                # the method is an action or function -- othewise, we could skip this step altogether.
+                $this.base.graph |=> GetTypeVertex $qualifiedTypeName
+            } catch {
+                write-verbose "Methods found for type '$qualifiedTypeName', but no type exists -- discovery for non-entity types not yet implemented"
+                return
+            }
 
-            if ( $edge -and $edge.transition.type -in 'Action', 'Function' ) {
-                $methodType = $edge.transition.type
-                [PSCustomObject] @{
-                    MethodType = $methodType
-                    NativeSchema = $methodSchema
+            foreach ( $methodSchema in $methodSchemas ) {
+                $edge = $typeVertex.outgoingEdges[$methodSchema.name]
+
+                if ( $edge -and $edge.transition.type -in 'Action', 'Function' ) {
+                    $methodType = $edge.transition.type
+                    [PSCustomObject] @{
+                        MethodType = $methodType
+                        NativeSchema = $methodSchema
+                    }
                 }
             }
         }
