@@ -21,8 +21,6 @@
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
-* Add methods to Get-GraphType
-  * $edges = $graph.typevertices['microsoft.graph.user'].outgoingedges; $edges.keys |where { $edgeName = $_; $edge = $edges[$edgeName]; if ( $edge.transition.type -eq 'Action' -or $edge.transition.type -eq 'Function' ) { $true } } | foreach { $edges[$_] }
 * Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
@@ -136,7 +134,6 @@
 * set-graphconfig
 * invoke-graphaction
 * generate nuspec
-* Find a better name!
 * README
 * Extended Samples
 * More tests
@@ -339,6 +336,8 @@
 * Set-GraphItem should take an object, not just a hashtable
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Optimize performance for pipeline scenarios for get-graphitem, get-graphchilditem
+* Find a better name! -- We did -- AutoGraph!
+* Add methods to Get-GraphType
 
 ### Postponed
 

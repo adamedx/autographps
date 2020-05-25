@@ -49,6 +49,11 @@ function Get-GraphType {
         [parameter(position=1, parametersetname='fullyqualifiedmembersonly')]
         [string] $MemberFilter,
 
+        [parameter(position=2, parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(position=2, parametersetname='fullyqualifiedmembersonly')]
+        [ValidateSet('Property', 'Relationship', 'Method')]
+        [string] $MemberType,
+
         [parameter(parametersetname='list', mandatory=$true)]
         [switch] $ListNames
     )
@@ -76,19 +81,31 @@ function Get-GraphType {
 
         $result = $::.TypeHelper |=> ToPublic $type
 
-        $unsortedResult = if ( ! $TransitiveMembers.IsPresent ) {
-            $result
+        if ( ! $TransitiveMembers.IsPresent ) {
+            $result | sort-object name
         } else {
-            if ( ! $MemberFilter ) {
-                $result.Properties
-                $result.Relationships
+            $fieldMap = [ordered] @{
+                Property = 'Properties'
+                Relationship = 'Relationships'
+                Method = 'Methods'
+            }
+
+            $orderedMemberFields = if ( $MemberType ) {
+                , $fieldMap[$MemberType]
             } else {
-                $result.Properties | where { $_.Name -like "*$($MemberFilter)*" }
-                $result.Relationships | where { $_.Name -like "*$($MemberFilter)*" }
+                $fieldMap.values
+            }
+
+            foreach ( $memberField in $orderedMemberFields ) {
+                $members = if ( ! $MemberFilter ) {
+                    $result.$MemberField
+                } else {
+                    $result.$MemberField | where { $_.Name -like "*$($MemberFilter)*" }
+                }
+
+                $members | sort-object name
             }
         }
-
-        $unsortedResult | sort-object Name
     } else {
         $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
             $TypeClass

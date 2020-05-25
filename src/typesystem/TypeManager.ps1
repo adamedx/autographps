@@ -157,6 +157,7 @@ ScriptClass TypeManager {
     enum PropertyType {
         Property
         NavigationProperty
+        Method
     }
 
     function GetTypeDefinitionTransitiveProperties($typeDefinition, $propertyType = 'Property') {
@@ -166,8 +167,10 @@ ScriptClass TypeManager {
 
         $propertyMember = if ( $validatedPropertyType -eq 'NavigationProperty' ) {
             'NavigationProperties'
-        } else {
+        } elseif ( $validatedPropertyType -eq 'Property' ) {
             'Properties'
+        } else {
+            'Methods'
         }
 
         if ( $typeDefinition.$propertyMember ) {

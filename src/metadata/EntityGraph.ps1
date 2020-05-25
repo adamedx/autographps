@@ -109,6 +109,10 @@ ScriptClass EntityGraph {
         $this.dataModel |=> GetComplexTypes
     }
 
+    function GetMethodsForType($qualifiedTypeName) {
+        $this.dataModel |=> GetMethodBindingsForType $qualifiedTypeName
+    }
+
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
