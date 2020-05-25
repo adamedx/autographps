@@ -58,7 +58,7 @@ ScriptClass CompositeTypeProvider {
             }
         }
 
-        $methodSchemas = GetMethodSchemasForType $typeId
+        $methodSchemas = GetMethodSchemasForType $foundTypeClass $typeId
 
         $methods = if ( $methodSchemas ) {
             foreach ( $methodSchema in $methodSchemas ) {
@@ -111,7 +111,11 @@ ScriptClass CompositeTypeProvider {
         $this.entityTypeTable
     }
 
-    function GetMethodSchemasForType($qualifiedTypeName) {
+    function GetMethodSchemasForType($typeClass, $qualifiedTypeName) {
+        if ( $typeClass -ne 'Entity' ) {
+            return
+        }
+
         $typeVertex = $this.base.graph |=> GetTypeVertex $qualifiedTypeName
         $methodSchemas = $this.base.graph |=> GetMethodsForType $qualifiedTypeName
 
