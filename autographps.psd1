@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.32.1'
+ModuleVersion = '0.33.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -180,7 +180,8 @@ VariablesToExport = @(
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\QualifiedSchema.ps1',
-        '.\src\metadata\UriCache.ps1'
+        '.\src\metadata\UriCache.ps1',
+        '.\src\typesystem\MethodInfo.ps1',
         '.\src\typesystem\TypeMember.ps1',
         '.\src\typesystem\TypeSchema.ps1',
         '.\src\typesystem\TypeDefinition.ps1',
@@ -215,18 +216,26 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.32.1 Release Notes
+## AutoGraphPS 0.33.0 Release Notes
 
-Cosmetic update to address name change of default branch to 'main'. Functionality is identical to v0.32.0.
+This release adds functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
 
 ### New dependencies
 
+None.
+
 ### Breaking changes
+
+None.
 
 ### New features
 
+* `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
+* `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
+
 ### Fixed defects
 
+None.
 '@
     } # End of PSData hashtable
 

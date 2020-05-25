@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script MethodInfo)
 . (import-script TypeDefinition)
 
 ScriptClass CompositeTypeProvider {
@@ -44,7 +45,7 @@ ScriptClass CompositeTypeProvider {
         $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
-                $unaliasedPropertyTypeName = $this.base.graph |=> UnAliasQualifiedName $typeInfo.TypeFullName
+                $unaliasedPropertyTypeName = $this.base.graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
                 new-so TypeMember $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property
             }
         }
@@ -57,11 +58,20 @@ ScriptClass CompositeTypeProvider {
             }
         }
 
+        $methodSchemas = GetMethodSchemasForType $typeId
+
+        $methods = if ( $methodSchemas ) {
+            foreach ( $methodSchema in $methodSchemas ) {
+                $memberData = new-so MethodInfo $this.base.graph $methodSchema.NativeSchema $methodSchema.MethodType
+                new-so TypeMember $methodSchema.NativeSchema.Name $null $false Method $memberData
+            }
+        }
+
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
             $this.base.graph |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
         }
 
-        new-so TypeDefinition $typeId $foundTypeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties
+        new-so TypeDefinition $typeId $foundTypeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties $methods
     }
 
     function GetSortedTypeNames($typeClass) {
@@ -100,6 +110,23 @@ ScriptClass CompositeTypeProvider {
 
         $this.entityTypeTable
     }
+
+    function GetMethodSchemasForType($qualifiedTypeName) {
+        $typeVertex = $this.base.graph |=> GetTypeVertex $qualifiedTypeName
+        $methodSchemas = $this.base.graph |=> GetMethodsForType $qualifiedTypeName
+
+        foreach ( $methodSchema in $methodSchemas ) {
+            $edge = $typeVertex.outgoingEdges[$methodSchema.name]
+
+            if ( $edge -and $edge.transition.type -in 'Action', 'Function' ) {
+                $methodType = $edge.transition.type
+                [PSCustomObject] @{
+                    MethodType = $methodType
+                    NativeSchema = $methodSchema
+                }
+            }
+        }
+     }
 
     function UpdateTypeTable($typeTable, $typeSchemas) {
         foreach ( $schema in $typeSchemas ) {
