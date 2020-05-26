@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations
 * Show-GraphHelp should take a uri
