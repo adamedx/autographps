@@ -41,6 +41,7 @@ Describe "Autographps application" {
                 'Get-GraphType'
                 'Get-GraphUri'
                 'Get-GraphUriInfo'
+                'Invoke-GraphMethod'
                 'New-Graph'
                 'New-GraphItem'
                 'New-GraphItemRelationship'

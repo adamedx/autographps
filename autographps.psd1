@@ -85,6 +85,7 @@ NestedModules = @(
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
+    'Invoke-GraphMethod',
     'New-Graph',
     'New-GraphItem',
     'New-GraphItemRelationship',
@@ -140,6 +141,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
+        '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
@@ -230,9 +232,9 @@ None.
 
 ### New features
 
+* New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
 * `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
 * `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
-
 ### Fixed defects
 
 None.

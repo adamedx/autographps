@@ -27,6 +27,7 @@ $functions = @(
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
+    'Invoke-GraphMethod',
     'New-Graph',
     'New-GraphObject',
     'New-GraphItem',
