@@ -1,9 +1,9 @@
-# <img src="https://raw.githubusercontent.com/adamedx/autographps/master/assets/PoshGraphIcon.png" width="50"> AutoGraphPS
+# <img src="https://raw.githubusercontent.com/adamedx/autographps/main/assets/PoshGraphIcon.png" width="50"> AutoGraphPS
 
-| [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Usage](#usage) | [Reference](#reference) | [Contributing and development](#contributing-and-development) |
+| [Documentation](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Usage](#usage) | [Reference](#reference) | [Contributing and development](#contributing-and-development) |
 |-------------|-------------|-------------|-------------|-------------|
 
-[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=master)
+[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=main)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=main)
 
 **AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
@@ -304,7 +304,7 @@ See the [Build README](build/README.md) for instructions on building and testing
 ## Quickstart
 The Quickstart is a way to try out AutoGraphPS without installing the AutoGraphPS module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS**:
 
-* [Download](https://github.com/adamedx/autographps/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
+* [Download](https://github.com/adamedx/autographps/archive/main.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
   `git clone https://github.com/adamedx/autographps`
 

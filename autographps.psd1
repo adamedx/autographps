@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.32.0'
+ModuleVersion = '0.32.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,8 +67,8 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.21.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-    @{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.21.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -207,7 +207,7 @@ PrivateData = @{
         ProjectUri = 'https://github.com/adamedx/autographps'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/master/assets/PoshGraphIcon.png'
+        IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph/main/assets/PoshGraphIcon.png'
 
         # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
         # Requires PowerShellGet 1.6.0 or greater
@@ -215,64 +215,17 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.32.0 Release Notes
+## AutoGraphPS 0.32.1 Release Notes
 
-This release includes major breaking changes in command names, fixes significant defects in type-related functionality, and adds several features to existing commands. Some commands, such as `Get-GraphChildItem`, gain completely new behaviors.
+Cosmetic update to address name change of default branch to 'main'. Functionality is identical to v0.32.0.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.21.0
-* Microsoft.Identity.Client (MSAL) 4.14.0
-* Microsoft.IdentityModel.Clients.ActiveDirectory (ADAL) 5.2.7
-
 ### Breaking changes
 
-* Includes breaking changes from [AutoGraphPS-SDK 0.19.0](https://github.com/adamedx/autographps-sdk/releases/tag/v0.19.0) -- `Get-GraphItem` and `Remove-GraphItem` from `AutoGraphPS-SDK` have been renamed to `Get-GraphResource` and `Remove-GraphResource`
-* `Get-GraphItemWithMetadata` has been renamed to `Get-GraphResourceWithMetadata`
-* `Get-GraphUri` has been renamed to `Get-GraphUriInfo`
-* New implementations of `Get-GraphItem` and `Remove-GraphItem` are introduced in this module -- previously they were part of `AutoGraphPS-SDK` and had different functionality than the new version in this module
-
 ### New features
-* New commands for write operations, and other commands as well!
-  * `Add-GraphRelatedItem`: creates a new entity in the graph that is associated with an existing entity through a relationship (i.e. an *OData navigation property*)
-  * `Get-GraphRelatedItem`: returns the items related from one entity to a second entity through a relationship property (*OData navigation property*)
-  * `Get-GraphUri`: returns the URI of an entity given the type and id, or for a URI with a relationship
-  * `New-GraphItem`: creates a new item in the graph
-  * `New-GraphItemRelationship`: creates an association from one entity in the graph to a second entity through a relationship property (*OData navigation property*) of the first entity
-  * `New-GraphObject`: creates a deserialized reprsentation of an item in the graph or of data structures referenced in the graph. The representation can be converted to the same JSON format used to serialize data in requests to the graph
-  * `Remove-GraphItemRelatonship`: removes the association from one entity to a second entity
-  * `Set-GraphItem`: updates an existing entity in the graph
-* `Get-GraphType` now supports tab-completion for output, so commands like select can be used interactively when building commands in the shell
-* New `Get-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware access of objects by `id` and other type-related facilities.
-* New `Remove-GraphItem` command: a command with this name was in previous versions of the dependency module `AutoGraphPS-SDK`; this new command supports type-aware removal of objects by `id` and other type-related facilities.
-* `Get-Graph` now returns an object with additional fields providing more information about the context of the Graph:
-  * `Id`: The `Id` field is a guid that uniquely identifies the mounted Graph. If the same graph endpoint is mounted again, it will have a different `Id`. The property can be used for cases such as hashing.
-  * `CreationTime`: The time, in the local time zone, at which the graph was mounted
-  * `LastUpdateTime`: The time, in the local time zone, at which the graph was last updated by the `Update-GraphMetadata` command. If no such update occurred, the time is the same as the `CreationTime` property
-  * `LastTypeMetadataSource`: The source of the type metadata used to define the graph when it was first mounted or last updated, which ever is ost recent. The source is either a URI to an http metadata source like https://graph.microsoft.com/v1.0/$metadata or the path to a local file containing the same format of data as that hosted at the http URI.
-* The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been replaced by the `ContentOnly` parameter which has the following behavior: Instead of returning a uniform `PSCustomObject` with standard members including a `Content` member to access the actual content returned by Graph, the command just returns the actual content, just like the `Get-GraphResource` command.
-* The `Get-GraphChildItem` command now also returns children of a type's entityset if applicable
-* The `Get-GraphChildItem`, `Get-GraphItem`, and `Get-GraphResourceWithMetadata` commands now support the following parameters (with parameter-completion where applicable):
-  * Paging parameter support: `First`, `Skip`, `IncludeTotalCount` parameters are now supported (as they are for the `Invoke-GraphRequest` and `Get-GraphResource` commands of `AutoGraphPS-SDK`).
-  * `Expand`: Navigation properties may now be expanded (with parameter completion)
-  * `Search`: For supported entities, an API-defined search query may be specified
-  * `Sort`, `Descending`: Sorting by specified property (with parameter completion) may be specified
-* The `Get-GraphChildItem` and `Get-GraphItem` commands support the `SimpleMatch` parameter that uses a heuristic approach for "casual" graph queries without the need for OData syntax
-* Parameter completion is also supported for the `Expand` and `Sort` commands of `Invoke-GraphRequest` and `Get-GraphResource` when this module is installed.
-* `Show-GraphHelp` supports complex types
-* `Get-GraphType` supports the `TransitiveMembers` parameter and `MemberFilter` parameters
-* Various pipeline improvements have been made to most commands to ensure consistency across commands and enable useful scenarios. In general, pipelines should be easy for the typical PowerShell user to exploit and should adhere to the *Principle of Least Astonishment*.
 
 ### Fixed defects
-
-* Graph API versions including `v1.0` and `beta` included multiple namespaces for API metadata after March 2020. Types outside of the `graph.microsoft` namespace were invisible to AutoGraphPS commands -- this has been fixed with support for multiple namespaces.
-* Test execution in CI requires special module-specific logic to rename the AutoGraphPS-SDK modules installed for testing to lower case
-* The `ContentColumns` parameter of `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` has been regressed for several releases due to a syntax error which is now fixed.
-* Inherited properties were absent from objects generated by `New-GraphObject`
-* Inherited properties may be selected for the `Property` argument of `New-GraphObject`
-* Fixed race condition in `Update-GraphMetadata` where some commands like `New-GraphObject` and `Get-GraphType` would not reflect the update
-* Numerous parameter set fixes to `*-GraphItem*` commands including addressing consistency issues with the parameter sets
-* Numerous fixes from commands included from the `AutoGraphPS-SDK` module
 
 '@
     } # End of PSData hashtable
