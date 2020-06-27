@@ -27,6 +27,7 @@
 . (import-script cmdlets\Get-GraphUriInfo)
 . (import-script cmdlets\Invoke-GraphMethod)
 . (import-script cmdlets\New-Graph)
+. (import-script cmdlets\New-GraphMethodParameterObject)
 . (import-script cmdlets\Remove-Graph)
 . (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Remove-GraphItemRelationship)

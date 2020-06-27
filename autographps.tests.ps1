@@ -45,6 +45,7 @@ Describe "Autographps application" {
                 'New-Graph'
                 'New-GraphItem'
                 'New-GraphItemRelationship'
+                'New-GraphMethodParameterObject'
                 'New-GraphObject'
                 'Remove-Graph'
                 'Remove-GraphItem'
