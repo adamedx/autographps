@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Add request builder in sdk and in this module
+* Add Uri support to get-graphtype, new-graphmethodparameterobject
+* Fix memberdata aspect of member
 * Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations

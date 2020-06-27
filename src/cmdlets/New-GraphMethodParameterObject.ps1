@@ -15,6 +15,8 @@
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
+. (import-script common/MethodNameParameterCompleter)
+. (import-script common/MethodUriParameterCompleter)
 
 function New-GraphMethodParameterObject {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
@@ -25,10 +27,6 @@ function New-GraphMethodParameterObject {
         [parameter(position=1, parametersetname='optionallyqualified')]
         [parameter(position=1, parametersetname='fullyqualified')]
         [string] $MethodName,
-
-        [parameter(position=2, parametersetname='optionallyqualified')]
-        [parameter(position=2, parametersetname='fullyqualified')]
-        [string] $ParameterName,
 
         $GraphName,
 
@@ -59,19 +57,7 @@ function New-GraphMethodParameterObject {
         throw [ArgumentException]::new("The method '$MethodName' does not exist for the type '$($type.TypeId)'")
     }
 
-    $parameters = if ( $ParameterName ) {
-        $parameterMap = @{}
-        $ParameterName | foreach {
-            $parameterType = $method.memberdata.parameters[$_]
-            if ( ! $parameterType ) {
-                throw [ArgumentException]::new("The parameter '$_' could not be found for the method '$MethodName' for type '$($type.TypeId)'")
-            }
-            $parameterMap.Add($_, $parameterType)
-        }
-        $parameterMap
-    } else {
-        $method.memberdata.parameters
-    }
+    $parameters = $method.memberdata.parameters
 
     $parameterObject = @{}
 
@@ -86,11 +72,12 @@ function New-GraphMethodParameterObject {
     }
 
     if ( $Json.IsPresent ) {
-        $parameterObject | convertto-json -depth 20
+        $parameterObject | convertto-json -depth 24
     } else {
         [PSCustomObject] $parameterObject
     }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphMethodParameterObject TypeName (new-so TypeParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphMethodParameterObject MethodName (new-so MethodNameParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphMethodParameterObject GraphName (new-so GraphParameterCompleter)
