@@ -6,7 +6,6 @@
 * Rename graphscope to graphname on get-graphuriinfo
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
-* Fix TypeMember to be more like MemberDisplayType
 * Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations
@@ -363,6 +362,7 @@
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
 * Fix gls of the result of gls to return the same thing, not the entityset
+* Fix TypeMember to be more like MemberDisplayType
 
 ### Abandoned
 

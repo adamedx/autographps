@@ -28,7 +28,7 @@ ScriptClass TypeMember {
             'Property'
         } elseif ( $memberType -eq 'Method' ) {
             if ( $memberData.ReturnTypeInfo ) {
-                $this.TypeId = $memberData.ReturnTypeInfo.TypeFullName
+                $this.TypeId = $memberData.ReturnTypeInfo.TypeId
                 $this.IsCollection = $memberData.ReturnTypeInfo.IsCollection
             }
             'Method'

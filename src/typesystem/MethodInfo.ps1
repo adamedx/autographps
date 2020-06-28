@@ -38,24 +38,21 @@ ScriptClass MethodInfo {
                  $unaliasedReturnType = $graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
 
                  $this.ReturnTypeInfo = [PSCustomObject] @{
-                     TypeFullName = $unaliasedReturnType
+                     TypeId = $unaliasedReturnType
                      IsCollection = $typeInfo.IsCollection
                  }
              }
 
-        $this.Parameters = @{}
-
-        foreach ( $parameter in $methodBindingSchema.Parameter ) {
+        $this.Parameters = foreach ( $parameter in $methodBindingSchema.Parameter ) {
             if ( $parameter.name -ne 'bindingParameter' ) {
                 $parameterTypeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $parameter.type
                 $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameterTypeInfo.TypeFullName
 
-                $parameterType = [PSCustomObject] @{
-                    TypeFullName = $unaliasedParameterType
+                [PSCustomObject] @{
+                    Name = $parameter.name
+                    TypeId = $unaliasedParameterType
                     IsCollection = $parameterTypeInfo.IsCollection
                 }
-
-                $this.Parameters.Add($parameter.name, $parameterType)
             }
         }
     }

@@ -28,20 +28,10 @@ ScriptClass MemberDisplayType {
 
         if ( $typeMember.MemberData ) {
             $this.MethodType = $typeMember.MemberData.MethodType
-
-            $parameters = $typeMember.MemberData.Parameters
-            if ( $parameters ) {
-                $this.Parameters = foreach ( $parameterName in $parameters.keys ) {
-                    [PSCustomObject] @{
-                        Name = $parameterName
-                        TypeId = $parameters[$parameterName].TypeFullName
-                        IsCollection = $parameters[$parameterName].IsCollection
-                    }
-                }
-            }
+            $this.Parameters = $typeMember.MemberData.Parameters
 
             if ( $typeMember.MemberData.ReturnTypeInfo ) {
-                $this.TypeId = $typeMember.MemberData.ReturnTypeInfo.TypeFullName
+                $this.TypeId = $typeMember.MemberData.ReturnTypeInfo.TypeId
                 $this.IsCollection = $typeMember.MemberData.ReturnTypeInfo.IsCollection
             }
         }
