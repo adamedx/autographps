@@ -23,11 +23,11 @@
 . (import-script common/MethodUriParameterCompleter)
 
 function Invoke-GraphMethod {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byobject')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypeandid')]
     param(
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='typeandpropertyfilter', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
@@ -110,7 +110,9 @@ function Invoke-GraphMethod {
 
         [switch] $FullyQualifiedTypeName,
 
-        [switch] $SkipPropertyCheck
+        [switch] $SkipPropertyCheck,
+
+        [switch] $SkipParameterCheck
     )
 
     begin {
@@ -126,6 +128,16 @@ function Invoke-GraphMethod {
         $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $PropertyFilter $Filter
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
+        }
+
+        $valueLength = 0
+
+        if ( $Value ) {
+            $valueLength = $Value.length
+        }
+
+        if ( $Parameter -and $Parameter.length -ne $valueLength ) {
+            throw [ArgumentException]::new("$($Parameter.length) parameters were specified by the Parameter argument, but an unequal number of values, $valueLength, was specified through the Value argument.")
         }
     }
 
@@ -164,22 +176,46 @@ function Invoke-GraphMethod {
             Search = $Search
         }
 
+        $targetMethodName = $MethodName
+        $targetTypeName = $TypeName
+        $typeInfo = $null
+
         if ( $Uri ) {
-            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $requestInfo.Context.Name -erroraction stop
-            if ( $uriInfo.Class -notin 'Action', 'Function' -and ! $MethodName ) {
+            $typeInfo = Get-GraphUriInfo $Uri -GraphScope $requestInfo.Context.Name -erroraction stop
+            if ( ! $MethodName -and $typeInfo.Class -notin 'Action', 'Function' ) {
                 throw [ArgumentException]::new("The URI '$Uri' is not a method but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
             }
+            $targetTypeName = $typeInfo.FullTypeName
         }
 
         $methodUri = if ( $MethodName ) {
             $requestInfo.Uri.tostring().trimend('/'), $MethodName -join '/'
         } else {
+            $targetMethodName = $typeInfo.Name
+            $typeInfo = Get-GraphUriInfo $typeInfo.ParentPath -GraphScope $requestInfo.Context.Name -erroraction stop
+            $targetTypeName = $typeInfo.FullTypeName
             $requestInfo.Uri.tostring()
         }
 
+        $owningType = Get-GraphType $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
+
+        $method = $owningType.Methods | where Name -eq $targetMethodName
+
+        if ( ! $method ) {
+            if ( $Uri ) {
+                throw [ArgumentException]::new("The specified method URI '$Uri' could not be found in the graph '$($requestInfo.Context.Name)'")
+            } else {
+                throw [ArgumentException]::new("The specified method '$MethodName' could not be found for the '$TypeName' in the graph '$($requestInfo.Context.Name)'")
+            }
+        }
+
+        $parameterNames = @()
+
         $methodBody = if ( $ParameterObject ) {
+            $parameterNames = $ParameterObject | gm -membertype noteproperty | select -expandproperty name
             $ParameterObject
         } elseif ( $ParameterTable ) {
+            $parameterNames = $parameterTable.keys
             $ParameterTable
         } elseif ( $Parameter ) {
             $parameters = @{}
@@ -189,7 +225,33 @@ function Invoke-GraphMethod {
                 $parameterIndex++
             }
 
+            $parameterNames = $parameters.keys
             $parameters
+        }
+
+        if ( ! $SkipParameterCheck.IsPresent -and $method.parameters) {
+            $difference = compare-object $parameterNames $method.parameters.name
+            if ( $difference ) {
+                $invalidParameters = ( $difference | where sideindicator -eq '<=' | select -expandproperty inputobject ) -join ', '
+                $missingParameters = ( $difference | where sideindicator -eq '=>' | select -expandproperty inputobject ) -join ', '
+
+                $invalidParameterMessage = if ( $invalidParameters ) {
+                    "`n  - Invalid parameter names: '$invalidParameters'"
+                }
+
+                $missingParameterMessage = if ( $missingParameters ) {
+                    "`n  - Missing parameters: '$missingParameters'"
+                }
+
+                $errorMessage = @"
+Unable to invoke method '$targetMethodName' on type '$($owningType.TypeId)' with {0} parameters. This was due to:
+ 
+{1}{2}
+ 
+The complete set of valid parameters is '{3}'.
+"@  -f $method.parameters.name.count, $missingParameterMessage, $invalidParameterMessage, ( $method.parameters.name -join ', ' )
+                throw [ArgumentException]::new($errorMessage)
+            }
         }
 
         $bodyParam = if ( $methodBody ) {

@@ -94,8 +94,6 @@ function New-GraphMethodParameterObject {
         $parameterObject.Add($parameter.Name, $prototype.ObjectPrototype)
     }
 
-    $global:paramobj = $parameterObject
-
     $parametersAsJson = $parameterObject | convertto-json -depth 24
 
     if ( $Json.IsPresent ) {
