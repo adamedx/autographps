@@ -22,8 +22,9 @@ ScriptClass MethodParameterParameterCompleter {
         }
         $typeName = $fakeBoundParameters['TypeName']
         $methodName = $fakeBoundParameters['MethodName']
+        $uriParam = $fakeBoundParameters['Uri']
 
-        if ( ! $typeName -or ! $methodName ) {
+        if ( ( ! $typeName -and ! $methodName ) -and ! $uriParam ) {
             return $null
         }
 
@@ -31,13 +32,36 @@ ScriptClass MethodParameterParameterCompleter {
 
         if ( $targetContext ) {
             $typeManager = $::.TypeManager |=> Get $targetContext
-            $type = $typeManager |=> FindTypeDefinition Unknown $typeName $fullyQualified $false
-            if ( $type ) {
+            $targetTypeName = if ( $uriParam ) {
+                $fullyQualified = $true
+                $graphNameArgument = if ( $graphName ) { @{GraphScope=$graphName} } else { @{} }
+                $uriInfo = Get-GraphUriInfo $uriParam @graphNameArgument -erroraction stop
+                if ( $uriInfo ) {
+                    if ( $uriInfo.Class -in 'Action', 'Function' ) {
+                        $methodName = $uriInfo.Name
+                        $uriParentInfo = Get-GraphUriInfo $uriInfo.ParentPath @graphNameArgument -erroraction stop
+                        $uriParentInfo.FullTypeName
+                    } elseif ( $methodName ) {
+                        $uriInfo.FullTypeName
+                    }
+                }
+            } elseif ( $typeName ) {
+                $typeName
+            }
+
+            $type = if ( $targetTypeName ) {
+                $typeManager |=> FindTypeDefinition Unknown $targetTypeName $fullyQualified $false
+            }
+
+            $parameterNames = if ( $type ) {
                 $method = $type.methods | where name -eq $methodName
                 if ( $method ) {
-                    $parameterNames = $method.memberData.parameters.keys
-                    $parameterNames | where { $_.startswith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase) }
+                    $method.memberData.parameters.keys
                 }
+            }
+
+            if ( $parameterNames ) {
+                $parameterNames | where { $_.startswith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase) }
             }
         }
     }

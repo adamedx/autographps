@@ -38,22 +38,18 @@ ScriptClass MethodUriParameterCompleter {
         $methodNameParam = $fakeBoundParameters['MethodName']
         $typeNameParam = $fakeBoundParameters['TypeName']
         $graphObjectParam = $fakeBoundParameters['GraphItem']
-
-        $relationshipParam = $fakeBoundParameters['Relationship']
+        $isFullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
+            $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
+        } else {
+            $false
+        }
 
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphNameParam
 
         $typeName = if ( $typeNameParam ) {
-            if ( $relationshipParam ) {
-                $typeUri = $::.TypeUriHelper |=> DefaultUriForType $targetContext $typeNameParam
-                if ( $typeUri ) {
-                    $targetUri = $typeUri.tostring().trimend('/'), '{id}', $relationshipParam -join '/'
-                    $::.TypeUriHelper |=> TypeFromUri $targetUri $targetContext | select -expandproperty FullTypeName
-                }
-            } else {
-                $typeNameParam
-            }
+            $typeNameParam
         } else {
+            $isFullyQualified = $true
             $targetUri = if ( $uriParam ) {
                 $uriParam
             } elseif ( $graphObjectParam ) {
@@ -63,10 +59,6 @@ ScriptClass MethodUriParameterCompleter {
             }
 
             if ( $targetUri ) {
-                if ( $relationshipParam ) {
-                    $targetUri = $targetUri.tostring().trimend('/'), $relationshipParam -join '/'
-                }
-
                 $::.TypeUriHelper |=> TypeFromUri $targetUri $targetContext | select -expandproperty FullTypeName
             }
         }
@@ -79,7 +71,8 @@ ScriptClass MethodUriParameterCompleter {
             TypeName = $typeName
             MethodName = $methodNameParam
             GraphName = $graphNameParam
-            FullyQualifiedTypeName = ([System.Management.Automation.SwitchParameter]::new($true))
+            Uri = $uriParam
+            FullyQualifiedTypeName = ([System.Management.Automation.SwitchParameter]::new($isFullyQualified))
         }
 
         $this.completer |=> CompleteCommandParameter $commandName $parameterName $wordToComplete $commandAst $forwardedBoundParams

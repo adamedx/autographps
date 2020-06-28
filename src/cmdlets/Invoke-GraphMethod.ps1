@@ -27,33 +27,40 @@ function Invoke-GraphMethod {
     param(
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='typeandpropertyfilter', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=1, parametersetname='typeandpropertyfilter', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $Id,
 
-        [parameter(position=2, mandatory=$true)]
+        [parameter(position=2, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=2, parametersetname='bytypeandidpipe', mandatory=$true)]
+        [parameter(position=2, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(position=2, parametersetname='byuri')]
+        [parameter(position=2, parametersetname='byuriandpropertyfilter')]
         [string] $MethodName,
 
         [parameter(position=3, parametersetname='bytypeandid')]
         [parameter(position=3, parametersetname='bytypeandidpipe')]
         [parameter(position=3, parametersetname='typeandpropertyfilter')]
         [parameter(position=3, parametersetname='byuri')]
+        [parameter(position=3, parametersetname='byuriandpropertyfilter')]
         [string[]] $Parameter,
 
         [parameter(position=4, parametersetname='bytypeandid')]
         [parameter(position=4, parametersetname='bytypeandidpipe')]
         [parameter(position=4, parametersetname='typeandpropertyfilter')]
         [parameter(position=4, parametersetname='byuri')]
+        [parameter(position=4, parametersetname='byuriandpropertyfilter')]
         [object[]] $Value,
 
-        [parameter(position=5, parametersetname='bytypeandid')]
-        [parameter(position=5, parametersetname='bytypeandidpipe')]
-        [parameter(position=5, parametersetname='typeandpropertyfilter')]
-        [parameter(position=5, parametersetname='byuri')]
+        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandidpipe')]
+        [parameter(parametersetname='typeandpropertyfilter')]
+        [parameter(parametersetname='byuri')]
         [string[]] $Property,
 
         [HashTable] $ParameterTable,
@@ -133,57 +140,65 @@ function Invoke-GraphMethod {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
         }
 
-        if ( $requestInfo.IsCollection -and ! $ChildrenOnly.IsPresent -and ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) ) {
-            $requestInfo.TypeInfo.UriInfo
-        } else {
-            $expandArgument = @{}
-            if ( $Expand ) {
-                $expandArgument['Expand'] = $Expand
-            }
-
-            if ( $SimpleMatch ) {
-                $filterParameter['Filter'] = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $requestInfo.Context $requestInfo.TypeName $SimpleMatch
-            }
-
-            $pagingParameters = @{}
-
-            if ( $pscmdlet.pagingparameters.First -ne $null ) { $pagingParameters['First'] = $pscmdlet.pagingparameters.First }
-            if ( $pscmdlet.pagingparameters.Skip -ne $null ) { $pagingParameters['Skip'] = $pscmdlet.pagingparameters.Skip }
-            if ( $pscmdlet.pagingparameters.IncludeTotalCount -ne $null ) { $pagingParameters['IncludeTotalCount'] = $pscmdlet.pagingparameters.IncludeTotalCount }
-
-            $coreParameters = @{
-                Select = $Property
-                Expand = $Expand
-                RawContent = $RawContent
-                OrderBy = $OrderBy
-                Descending = $Descending
-                Search = $Search
-            }
-
-            $methodUri = $requestInfo.Uri.tostring().trimend('/'), $MethodName -join '/'
-            $methodBody = if ( $ParameterObject ) {
-                $ParameterObject
-            } elseif ( $ParameterTable ) {
-                $ParameterTable
-            } elseif ( $Parameter ) {
-                $parameters = @{}
-                $parameterIndex = 0
-                foreach ( $parameterName in $Parameter ) {
-                    $parameters.Add($parameterName, $Value[$parameterIndex])
-                    $parameterIndex++
-                }
-
-                $parameters
-            }
-
-            $bodyParam = if ( $methodBody ) {
-                @{Body=$methodBody}
-            } else {
-                @{}
-            }
-
-            Invoke-GraphRequest -Uri $methodUri -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop
+        $expandArgument = @{}
+        if ( $Expand ) {
+            $expandArgument['Expand'] = $Expand
         }
+
+        if ( $SimpleMatch ) {
+            $filterParameter['Filter'] = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $requestInfo.Context $requestInfo.TypeName $SimpleMatch
+        }
+
+        $pagingParameters = @{}
+
+        if ( $pscmdlet.pagingparameters.First -ne $null ) { $pagingParameters['First'] = $pscmdlet.pagingparameters.First }
+        if ( $pscmdlet.pagingparameters.Skip -ne $null ) { $pagingParameters['Skip'] = $pscmdlet.pagingparameters.Skip }
+        if ( $pscmdlet.pagingparameters.IncludeTotalCount -ne $null ) { $pagingParameters['IncludeTotalCount'] = $pscmdlet.pagingparameters.IncludeTotalCount }
+
+        $coreParameters = @{
+            Select = $Property
+            Expand = $Expand
+            RawContent = $RawContent
+            OrderBy = $OrderBy
+            Descending = $Descending
+            Search = $Search
+        }
+
+        if ( $Uri ) {
+            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $requestInfo.Context.Name -erroraction stop
+            if ( $uriInfo.Class -notin 'Action', 'Function' -and ! $MethodName ) {
+                throw [ArgumentException]::new("The URI '$Uri' is not a method but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
+            }
+        }
+
+        $methodUri = if ( $MethodName ) {
+            $requestInfo.Uri.tostring().trimend('/'), $MethodName -join '/'
+        } else {
+            $requestInfo.Uri.tostring()
+        }
+
+        $methodBody = if ( $ParameterObject ) {
+            $ParameterObject
+        } elseif ( $ParameterTable ) {
+            $ParameterTable
+        } elseif ( $Parameter ) {
+            $parameters = @{}
+            $parameterIndex = 0
+            foreach ( $parameterName in $Parameter ) {
+                $parameters.Add($parameterName, $Value[$parameterIndex])
+                $parameterIndex++
+            }
+
+            $parameters
+        }
+
+        $bodyParam = if ( $methodBody ) {
+            @{Body=$methodBody}
+        } else {
+            @{}
+        }
+
+        Invoke-GraphRequest -Uri $methodUri -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop
     }
 
     end {

@@ -18,7 +18,10 @@ ScriptClass MethodNameParameterCompleter {
         $graphName = $fakeBoundParameters['GraphName']
         $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
             $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
+        } else {
+            $false
         }
+
         $typeName = $fakeBoundParameters['TypeName']
 
         if ( ! $typeName ) {
@@ -29,7 +32,7 @@ ScriptClass MethodNameParameterCompleter {
 
         if ( $targetContext ) {
             $typeManager = $::.TypeManager |=> Get $targetContext
-            $isFullyQualified = $fullyQualified -or ( $typeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+            $isFullyQualified = $fullyQualified -or ( $typeName.Contains('.') )
 
             $type = $typeManager |=> FindTypeDefinition Unknown $typeName $isFullyQualified $false
             if ( $type ) {
