@@ -82,19 +82,19 @@ function New-GraphMethodParameterObject {
         throw [ArgumentException]::new("The method '$MethodName' does not exist for the type '$($type.TypeId)'")
     }
 
-    $parameters = $method.memberdata.parameters
-
     $parameterObject = @{}
 
-    foreach ( $parameterNameValue in $parameters.keys ) {
-        $parameterTypeName = $parameters[$parameterNameValue]
-        $value = if ( ! $NoValues.IsPresent ) {
-            $prototype = $typeManager |=> GetPrototype 'Unknown' $parameterTypeName $true $SetDefaultValues.IsPresent ( ! $NoRecurse.IsPresent ) $null $null $null $false
-            $prototype.ObjectPrototype
+    foreach ( $parameter in $method.parameters ) {
+        $parameterTypeName = $parameter.TypeId
+
+        $prototype = if ( ! $NoValues.IsPresent ) {
+            $typeManager |=> GetPrototype 'Unknown' $parameterTypeName $true $SetDefaultValues.IsPresent ( ! $NoRecurse.IsPresent ) $null $null $null $false $parameter.IsCollection
         }
 
-        $parameterObject.Add($parameterNameValue, $value)
+        $parameterObject.Add($parameter.Name, $prototype.ObjectPrototype)
     }
+
+    $global:paramobj = $parameterObject
 
     $parametersAsJson = $parameterObject | convertto-json -depth 24
 

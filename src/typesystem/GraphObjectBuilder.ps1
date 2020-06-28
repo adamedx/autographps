@@ -83,9 +83,20 @@ ScriptClass GraphObjectBuilder {
         }
     }
 
-    function ToObject {
+    # WARNING: We cannot directly return the result of GetPropertyValue from this method
+    # due to an apparent limitation of scriptclass methods. If the return value is a
+    # single element array, it will be returned as just the element, not the array. The workaround
+    # here is to instead return an object that contains the return value.
+    function ToObject([bool] $isCollection = $false) {
         $this.currentLevel = 0
-        GetPropertyValue $this.typeDefinition $false $false $null
+        $value = GetPropertyValue $this.typeDefinition $isCollection $false $null
+
+        # Returning the value inside this structure ensures that PowerShell
+        # does not turn it into a non-array if it is a single element array
+        [PSCustomObject] @{
+            Value = $value
+            IsCollection = $isCollection
+        }
     }
 
     function GetPropertyValue($typeDefinition, $isCollection, $useCustomValue, $customValue) {
@@ -98,26 +109,31 @@ ScriptClass GraphObjectBuilder {
         }
 
         # For any collection, we simply want to provide an empty array or
-        # other defaul representation of the collection
+        # other default representation of the collection.
+        # WARNING: We must set variables explicitly in if statements here
+        # because if can turn single element arrays into scalars.
+        $propertyValue = $null
         if ( $isCollection ) {
             if ( $this.setDefaultValues ) {
                 if ( $typeDefinition.DefaultCollectionValue ) {
-                    , ( . $typeDefinition.DefaultCollectionValue )
+                    $propertyValue = , ( . $typeDefinition.DefaultCollectionValue )
                 } else {
-                    @()
+                    $propertyValue = @()
                 }
             } else {
-                $null
+                $propertyValue = $null
             }
         } else {
             # For non-collections, we want to embed the value directly in
             # the parent object
             if ( $typeDefinition.IsComposite ) {
-                NewCompositeValue $typeDefinition
+                $propertyValue = NewCompositeValue $typeDefinition
             } else {
-                NewScalarValue $typeDefinition
+                $propertyValue = NewScalarValue $typeDefinition
             }
         }
+
+        $propertyValue
     }
 
     function NewCompositeValue($typeDefinition) {

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../../typesystem/TypeDefinition)
+. (import-script MemberDisplayType)
 
 ScriptClass TypeHelper {
     static {
@@ -35,16 +36,20 @@ ScriptClass TypeHelper {
         }
 
         function ToPublic( $privateObject ) {
+            $properties = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)
+            $relationships = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)
+            $methods = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)
+
             $result = [PSCustomObject] @{
                 TypeId = $privateObject.($this.displayProperties.TypeId)
                 Namespace = $privateObject.($this.displayProperties.Namespace)
                 TypeClass = $privateObject.($this.displayProperties.TypeClass)
                 BaseType = $privateObject.($this.displayProperties.BaseType)
-                Properties = $privateObject.($this.displayProperties.Properties)
-                Relationships = $privateObject.($this.displayProperties.Relationships)
                 IsComposite = $privateObject.($this.displayProperties.IsComposite)
-                Methods = $privateObject.($this.displayProperties.Methods)
                 NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
+                Relationships = $relationships
+                Properties = $properties
+                Methods = $methods
             }
 
             $result.psobject.typenames.add($this. DisplayTypeName)

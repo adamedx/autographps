@@ -56,7 +56,7 @@ ScriptClass MethodParameterParameterCompleter {
             $parameterNames = if ( $type ) {
                 $method = $type.methods | where name -eq $methodName
                 if ( $method ) {
-                    $method.memberData.parameters.keys
+                    $method.Parameters.Name
                 }
             }
 

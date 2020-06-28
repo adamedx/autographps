@@ -41,11 +41,11 @@ ScriptClass TypeManager {
         $this.typeProviders = @{}
     }
 
-    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck) {
+    function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck, [bool] $isCollection) {
         $typeId = GetOptionallyQualifiedName $typeClass $typeName $fullyQualified
         $hasProperties = $propertyFilter -ne $null -or $propertyList -ne $null
 
-        $prototype = if ( ! $hasProperties ) {
+        $prototype = if ( ! $hasProperties -and ! $isCollection ) {
             GetPrototypeFromCache $typeId $typeClass $setDefaultValues $recursive
         }
 
@@ -53,15 +53,18 @@ ScriptClass TypeManager {
             if ( ! $prototype ) {
                 $type = FindTypeDefinition $typeClass $typeId $true $true
                 $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
-                $prototype = $builder |=> ToObject
+                $result = $builder |=> ToObject $isCollection
+                $prototype = $result.Value
             }
 
-            if ( ! $hasProperties ) {
+            if ( ! $hasProperties -and ! $isCollection ) {
                 AddPrototypeToCache $typeId $type.Class $setDefaultValues $recursive $prototype
             }
         }
+
         [PSCustomObject] @{
             Type = $typeId
+            IsCollection = $isCollection
             ObjectProtoType = $prototype
         }
     }

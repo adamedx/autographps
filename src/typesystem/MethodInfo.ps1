@@ -47,8 +47,15 @@ ScriptClass MethodInfo {
 
         foreach ( $parameter in $methodBindingSchema.Parameter ) {
             if ( $parameter.name -ne 'bindingParameter' ) {
-                $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameter.type
-                $this.Parameters.Add($parameter.name, $unaliasedParameterType)
+                $parameterTypeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $parameter.type
+                $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameterTypeInfo.TypeFullName
+
+                $parameterType = [PSCustomObject] @{
+                    TypeFullName = $unaliasedParameterType
+                    IsCollection = $parameterTypeInfo.IsCollection
+                }
+
+                $this.Parameters.Add($parameter.name, $parameterType)
             }
         }
     }

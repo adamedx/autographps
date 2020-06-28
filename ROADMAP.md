@@ -2,10 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Add method parameter validation to invoke-graphmethod
 * Rename graphscope to graphname on get-graphuriinfo
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
-* Fix memberdata aspect of member
+* Fix TypeMember to be more like MemberDisplayType
 * Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations
@@ -344,6 +345,7 @@
 * Find a better name! -- We did -- AutoGraph!
 * Add methods to Get-GraphType
 * Add Uri support to get-graphtype, new-graphmethodparameterobject
+* Fix memberdata aspect of member
 
 ### Postponed
 

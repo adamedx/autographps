@@ -161,6 +161,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
+        '.\src\cmdlets\common\MemberDisplayType.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
