@@ -31,6 +31,7 @@ function Get-GraphType {
         [parameter(parametersetname='optionallyqualifiedmembersonly')]
         [parameter(parametersetname='fullyqualified')]
         [parameter(parametersetname='fullyqualifiedmembersonly')]
+        [parameter(parametersetname='list')]
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         [Alias('Class')]
         $TypeClass = 'Any',
