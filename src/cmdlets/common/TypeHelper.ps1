@@ -36,9 +36,9 @@ ScriptClass TypeHelper {
         }
 
         function ToPublic( $privateObject ) {
-            $properties = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)
-            $relationships = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)
-            $methods = $::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)
+            $properties = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)).Result
+            $relationships = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)).Result
+            $methods = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)).Result
 
             $result = [PSCustomObject] @{
                 TypeId = $privateObject.($this.displayProperties.TypeId)

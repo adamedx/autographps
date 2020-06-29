@@ -54,9 +54,15 @@ ScriptClass MemberDisplayType {
         }
 
         function ToDisplayableMemberList($memberList) {
-            foreach ( $member in $memberList ) {
+            $memberList = foreach ( $member in $memberList ) {
                 new-so $this.ClassName $member
             }
+
+            $memberListResult = $memberList
+            if ( $memberList -and ($memberList | measure-object).count -eq 1 ) {
+                $memberListResult = , $memberList
+            }
+            [PSCustomObject] @{Result = $memberListResult}
         }
     }
 }
