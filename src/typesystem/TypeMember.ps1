@@ -34,7 +34,7 @@ ScriptClass TypeMember {
             'Method'
         } elseif ( $memberType -eq 'NavigationProperty' ) {
             'Relationship'
-        } else {
+        } elseif ( $memberType -ne 'Enumeration' )  {
             throw [ArgumentException]::new("Invalid member type '$memberType' specified: member type must be one of 'Property' or 'NavigationProperty'")
         }
     }

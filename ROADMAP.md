@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Add method parameter validation to invoke-graphmethod
+* Relax parameterset binding for invoke-graphmethod
 * Rename graphscope to graphname on get-graphuriinfo
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
@@ -345,6 +345,7 @@
 * Add methods to Get-GraphType
 * Add Uri support to get-graphtype, new-graphmethodparameterobject
 * Fix memberdata aspect of member
+* Add method parameter validation to invoke-graphmethod
 
 ### Postponed
 

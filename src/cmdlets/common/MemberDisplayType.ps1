@@ -26,7 +26,7 @@ ScriptClass MemberDisplayType {
         $this.TypeId = $typeMember.TypeId
         $this.IsCollection = $typeMember.IsCollection
 
-        if ( $typeMember.MemberData ) {
+        if ( $typeMember.MemberType -eq 'Method' ) {
             $this.MethodType = $typeMember.MemberData.MethodType
             $this.Parameters = $typeMember.MemberData.Parameters
 
