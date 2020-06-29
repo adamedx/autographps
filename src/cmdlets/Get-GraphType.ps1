@@ -88,7 +88,7 @@ function Get-GraphType {
         $targetTypeName = if ( $TypeName ) {
             $TypeName
         } else {
-            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $targetContext.Name -erroraction stop
+            $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.Name -erroraction stop
             $isFullyQualified = $true
             if ( $uriInfo.FullTypeName -eq 'Null' ) {
                 return $null

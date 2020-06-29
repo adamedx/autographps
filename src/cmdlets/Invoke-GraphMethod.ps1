@@ -181,7 +181,7 @@ function Invoke-GraphMethod {
         $typeInfo = $null
 
         if ( $Uri ) {
-            $typeInfo = Get-GraphUriInfo $Uri -GraphScope $requestInfo.Context.Name -erroraction stop
+            $typeInfo = Get-GraphUriInfo $Uri -GraphName $requestInfo.Context.Name -erroraction stop
             if ( ! $MethodName -and $typeInfo.Class -notin 'Action', 'Function' ) {
                 throw [ArgumentException]::new("The URI '$Uri' is not a method but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
             }
@@ -192,7 +192,7 @@ function Invoke-GraphMethod {
             $requestInfo.Uri.tostring().trimend('/'), $MethodName -join '/'
         } else {
             $targetMethodName = $typeInfo.Name
-            $typeInfo = Get-GraphUriInfo $typeInfo.ParentPath -GraphScope $requestInfo.Context.Name -erroraction stop
+            $typeInfo = Get-GraphUriInfo $typeInfo.ParentPath -GraphName $requestInfo.Context.Name -erroraction stop
             $targetTypeName = $typeInfo.FullTypeName
             $requestInfo.Uri.tostring()
         }

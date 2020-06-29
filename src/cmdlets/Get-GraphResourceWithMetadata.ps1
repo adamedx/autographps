@@ -127,7 +127,7 @@ function Get-GraphResourceWithMetadata {
                     throw "The specified graph '$GraphName' does not exist"
                 }
                 $context = $graphContext.context
-                $GraphArgument['GraphScope'] = $GraphName
+                $GraphArgument['GraphName'] = $GraphName
             }
 
             if ( $GraphItem -and ( $::.SegmentHelper |=> IsGraphSegmentType $GraphItem ) ) {
@@ -299,7 +299,7 @@ function Get-GraphResourceWithMetadata {
 
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
-                    $restResult | Get-GraphUriInfo -GraphScope $context.name
+                    $restResult | Get-GraphUriInfo -GraphName $context.name
                 } else {
                     $restResult
                 }
@@ -308,7 +308,7 @@ function Get-GraphResourceWithMetadata {
                     # Getting uri info is expensive, so for a single request, get it only once and cache it
                     $requestSegment = $requestInfoCache[$contextIndex - 1].ResolvedRequestUri
                     if ( ! $requestSegment ) {
-                        $requestSegment = Get-GraphUriInfo -GraphScope $context.name $specifiedUri
+                        $requestSegment = Get-GraphUriInfo -GraphName $context.name $specifiedUri
                         $requestInfoCache[$contextIndex].ResolvedRequestUri = $requestSegment
                     }
                     # The request segment information gives information about the uri used to make the request;

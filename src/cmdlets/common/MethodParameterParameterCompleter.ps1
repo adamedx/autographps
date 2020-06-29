@@ -34,7 +34,7 @@ ScriptClass MethodParameterParameterCompleter {
             $typeManager = $::.TypeManager |=> Get $targetContext
             $targetTypeName = if ( $uriParam ) {
                 $fullyQualified = $true
-                $graphNameArgument = if ( $graphName ) { @{GraphScope=$graphName} } else { @{} }
+                $graphNameArgument = if ( $graphName ) { @{GraphName=$graphName} } else { @{} }
                 $uriInfo = Get-GraphUriInfo $uriParam @graphNameArgument -erroraction stop
                 if ( $uriInfo ) {
                     if ( $uriInfo.Class -in 'Action', 'Function' ) {

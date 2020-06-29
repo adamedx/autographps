@@ -2,20 +2,15 @@
 
 ## To-do items -- prioritized
 
-* Relax parameterset binding for invoke-graphmethod
-* Rename graphscope to graphname on get-graphuriinfo
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
 * Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations
-* Show-GraphHelp should take a uri
-* Get-GraphType should take a URI
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Wrapper for ggci to only support "global" types
 * Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
 * Use https://github.com/PowerShell/platyPS to generate markdown help
-* Should 'type' be 'resource' or 'resourcetype'?
 * Invoke-GraphMethod
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
@@ -364,6 +359,9 @@
 * Fix parameter completion for multiple type classes
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Fix TypeMember to be more like MemberDisplayType
+* Rename graphscope to graphname on get-graphuriinfo
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
 
 ### Abandoned
 
