@@ -28,7 +28,7 @@ function Show-GraphHelp {
         [Uri] $Uri,
 
         [parameter(parametersetname='bygraphobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $GraphItem,
 
         $GraphName,
 
@@ -62,8 +62,8 @@ function Show-GraphHelp {
 
     $targetTypeName = if ( $ResourceName ) {
         $ResourceName
-    } elseif ( $Uri -or $GraphObject ) {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $GraphObject
+    } elseif ( $Uri -or $GraphItem ) {
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $GraphItem
 
         $uriInfo = $requestInfo.TypeInfo.UriInfo
 

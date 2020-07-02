@@ -11,7 +11,6 @@
 * Wrapper for ggci to only support "global" types
 * Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
 * Use https://github.com/PowerShell/platyPS to generate markdown help
-* Invoke-GraphMethod
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
@@ -21,7 +20,6 @@
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
-* Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
@@ -340,6 +338,7 @@
 * Add methods to Get-GraphType
 * Add Uri support to get-graphtype, new-graphmethodparameterobject
 * Fix memberdata aspect of member
+* Add method invocation via Invoke-GraphMethod
 * Add method parameter validation to invoke-graphmethod
 
 ### Postponed
