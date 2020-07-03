@@ -190,11 +190,11 @@ ScriptClass TypeUriHelper {
         function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty)  {
             $fromId = if ( $Id ) {
                 $Id
-            } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-                $GraphObject.Id # This is needed when an object is supplied without an id parameter
+            } elseif ( $graphObject -and ( $graphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
+                $graphObject.Id # This is needed when an object is supplied without an id parameter
             }
 
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $GraphObject
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $graphObject
 
             $segments = @()
             $segments += $requestInfo.uri.tostring()

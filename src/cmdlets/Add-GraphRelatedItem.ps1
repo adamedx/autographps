@@ -84,7 +84,7 @@ function Add-GraphRelatedItem {
         [parameter(parametersetname='byuripropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingidpropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingidfullyqualifiedpropmap', mandatory=$true)]
-        $PropertyMap,
+        $PropertyTable,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]

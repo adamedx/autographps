@@ -14,7 +14,6 @@
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Use odata context
-* Rename GraphObject to GraphItem
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
@@ -340,6 +339,7 @@
 * Fix memberdata aspect of member
 * Add method invocation via Invoke-GraphMethod
 * Add method parameter validation to invoke-graphmethod
+* Rename GraphObject to GraphItem
 
 ### Postponed
 

@@ -37,7 +37,7 @@ function New-GraphObject {
 
         [parameter(parametersetname='optionallyqualifiedpropmap', mandatory=$true)]
         [parameter(parametersetname='fullyqualifiedpropmap', mandatory=$true)]
-        $PropertyMap,
+        $PropertyTable,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
         [parameter(parametersetname='fullyqualifiedpropmap', mandatory=$true)]
@@ -66,7 +66,7 @@ function New-GraphObject {
         'Unknown'
     }
 
-    $prototype = $typeManager |=> GetPrototype $remappedTypeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyMap $SkipPropertyCheck.IsPresent
+    $prototype = $typeManager |=> GetPrototype $remappedTypeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyTable $SkipPropertyCheck.IsPresent
 
     $prototypeJson = $prototype.ObjectPrototype | convertto-json -depth 24
 

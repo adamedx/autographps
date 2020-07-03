@@ -492,31 +492,31 @@ This changes the group's display name to *Group 7 Access Level* and updates the 
 Set-GraphItem group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
-And there are still more equivalent syntaxes, using the `PropertyMap` or `GraphObject` parameters. `PropertyMap` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
+And there are still more equivalent syntaxes, using the `PropertyTable` or `TemplateObject` parameters. `PropertyTable` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
 
 ```powershell
-$newGroup | Set-GraphItem -PropertyMap @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
+$newGroup | Set-GraphItem -PropertyTable @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
 ```
 
-The `GraphObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
+The `TeamplateObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
 
 ```powershell
 $modifiedGroup = New-GraphObject group description 'Just the description'
-$newGroup | Set-GraphItem -GraphObject $modifiedGroup
+$newGroup | Set-GraphItem -TemplateObject $modifiedGroup
 
-gls -GraphItem $newGroup -ContentOnly | select displayname, description
+$newGroup | gls -ContentOnly | select displayname, description
 
 displayName          description
 -----------          -----------
 Group 7 Access Level Just the description
 ```
 
-Both the `GraphObject` and `PropertyMap` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
+Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
 $existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
@@ -524,9 +524,9 @@ mailNickname displayName description
 
 $templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
 
-$existingGroup | Set-GraphItem -GraphObject $templateGroup -PropertyMap @{mailNickName='dorateam'}
+$existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
@@ -542,14 +542,14 @@ $existingGroup.displayName += ' - ' + [DateTime]::now
 
 $existingGroup | Set-GraphItem
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 description                       displayName
 -----------                       -----------
 Standard team collaboration group Team group - 05/16/2019 15:14:41
 ```
 
-Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `GraphObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
+Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `TemplateObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
 
 #### Link resources: add a user to a group (AAD accounts only)
 
@@ -818,16 +818,16 @@ Note that the `Value` parameter is not mandatory, and in fact does not require t
 
 One difficulty is that Graph defines to kinds of composite types, the `Entity` and `Complex` types of OData. To avoid the potentially incorrect asssumption that type names are unique across `Entity` and `Complex` types, you must specify the `TypeClass` parameter with the value `Complext` to override the default type class of `Entity` that `New-GraphObject` uses to build the object.
 
-##### The PropertyMap alternative
-The `PropertyMap` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
+##### The PropertyTable alternative
+The `PropertyTable` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
 
 ```powershell
-$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyMap @{
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyTable @{
     name = 'Work'
     address = 'cleo@soulsonic.org'
 }
 
-$contactData = New-GraphObject contact -PropertyMap @{
+$contactData = New-GraphObject contact -PropertyTable @{
     givenName = 'Cleopatra Jones'
     emailAddresses = @($emailAddress)
 }

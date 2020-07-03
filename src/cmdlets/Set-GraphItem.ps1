@@ -64,12 +64,12 @@ function Set-GraphItem {
         [parameter(parametersetname='typedobjectandobject')]
         [parameter(parametersetname='uriandobject')]
         [parameter(parametersetname='objectselfupdateoverride', mandatory=$true)]
-        [HashTable] $PropertyMap,
+        [HashTable] $PropertyTable,
 
         [parameter(parametersetname='typeandobject', mandatory=$true)]
         [parameter(parametersetname='typedobjectandobject', mandatory=$true)]
         [parameter(parametersetname='uriandobject', mandatory=$true)]
-        [PSCustomObject] $GraphObject,
+        [PSCustomObject] $TemplateObject,
 
         [parameter(parametersetname='typeandobject')]
         [parameter(parametersetname='typedobjectandobject')]
@@ -79,7 +79,7 @@ function Set-GraphItem {
         [string[]] $ExcludeObjectProperty,
 
         [parameter(parametersetname='objectselfupdateoverride', mandatory=$true)]
-        [switch] $MergeGraphItemWithPropertyMap,
+        [switch] $MergeGraphItemWithPropertyTable,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -107,8 +107,8 @@ function Set-GraphItem {
             throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
         }
 
-        if ( ! $PropertyMap -and ! $GraphObject -and ! $writeRequestInfo.TypeName ) {
-            throw "Unable to determine the type of object to create -- specify the PropertyMap or GraphObject parameter and retry the command"
+        if ( ! $PropertyTable -and ! $TemplateObject -and ! $writeRequestInfo.TypeName ) {
+            throw "Unable to determine the type of object to create -- specify the PropertyTable or TemplateObject parameter and retry the command"
         }
 
         $newGraphObjectParameters = @{}
@@ -117,7 +117,7 @@ function Set-GraphItem {
             'Property'
             'Value'
             'GraphName'
-            'PropertyMap'
+            'PropertyTable'
             'FullyQualifiedTypeName'
             'Recurse'
             'SetDefaultValues'
@@ -128,16 +128,16 @@ function Set-GraphItem {
             }
         }
 
-        $templateObject = $GraphObject
+        $template = $TemplateObject
 
-        if ( ! $TypeName -and ! $Uri -and ! $property -and ! $GraphObject -and ( ! $PropertyMap -or $MergeGraphItemWithPropertyMap.IsPresent ) ) {
-            $templateObject = $GraphItem
+        if ( ! $TypeName -and ! $Uri -and ! $property -and ! $TemplateObject -and ( ! $PropertyTable -or $MergeGraphItemWithPropertyTable.IsPresent ) ) {
+            $template = $GraphItem
         }
 
-        $newObject = if ( $templateObject ) {
-            $::.RequestHelper |=> GraphObjectToWriteRequestObject $templateObject $ExcludeObjectProperty $PropertyMap
-        } elseif ( $PropertyMap ) {
-            $PropertyMap
+        $newObject = if ( $template ) {
+            $::.RequestHelper |=> GraphObjectToWriteRequestObject $template $ExcludeObjectProperty $PropertyTable
+        } elseif ( $PropertyTable ) {
+            $PropertyTable
         } else {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }

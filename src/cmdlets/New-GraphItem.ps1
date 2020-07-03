@@ -47,7 +47,7 @@ function New-GraphItem {
         [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectpropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
-        [PSCustomObject] $FromObject,
+        [PSCustomObject] $FromItem,
 
         [parameter(parametersetname='addtoexistinguri', mandatory=$true)]
         [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
@@ -71,8 +71,7 @@ function New-GraphItem {
         [parameter(parametersetname='byurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingurifromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectfromobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('NewGraphObject')]
-        [object] $GraphObject,
+        [object] $TemplateObject,
 
         [ValidateSet('POST', 'PUT')]
         [String] $Method = $null,
@@ -84,7 +83,7 @@ function New-GraphItem {
         [parameter(parametersetname='byuripropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingidpropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingidfullyqualifiedpropmap', mandatory=$true)]
-        $PropertyMap,
+        $PropertyTable,
 
         [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
@@ -105,8 +104,8 @@ function New-GraphItem {
 
         $existingSourceInfo = $null
 
-        if ( $Relationship ){
-            $existingSourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $null $false $null $Uri $FromObject $Relationship $false
+        if ( $Relationship ) {
+            $existingSourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $null $false $null $Uri $FromItem $Relationship $false
 
             if ( ! $existingSourceInfo ) {
                 throw "Unable to determine Uri for specified type '$TypeName' parameter -- specify an existing item with the Uri parameter and retry the command"
@@ -125,7 +124,7 @@ function New-GraphItem {
             $targetType = $::.TypeUriHelper |=> TypeFromUri $sourceUri $graphContext
             $targetTypeName = $targetType.FullTypeName
         } else {
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphObject
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $TemplateObject
             $graphContext = $requestInfo.context
             $sourceUri = $requestInfo.Uri
             $targetTypeName = $requestInfo.TypeName
@@ -137,7 +136,7 @@ function New-GraphItem {
             'Property'
             'Value'
             'GraphName'
-            'PropertyMap'
+            'PropertyTable'
             'FullyQualifiedTypeName'
             'Recurse'
             'SetDefaultValues'
@@ -148,8 +147,8 @@ function New-GraphItem {
             }
         }
 
-        $newObject = if ( $GraphObject ) {
-            $GraphObject
+        $newObject = if ( $TemplateObject ) {
+            $TemplateObject
         } else {
             New-GraphObject -TypeName $targetTypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
