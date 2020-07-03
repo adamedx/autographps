@@ -226,7 +226,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* andd *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
 
 ### New dependencies
 
@@ -234,14 +234,24 @@ None.
 
 ### Breaking changes
 
-None.
+* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphItem` has been renamed `TemplateObject`.
+* The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
 
 ### New features
 
 * New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
+* New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
 * `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
 * `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
+* `Get-GraphType` now supports a `Uri` parameter to get type information about the type of any object in the graph given its Uri
+* `Get-GraphType` now supports pipeline input to take an object emitted by `Get-GraphItem` or `Get-GraphResource` and return the type information for that object's type
+* `ShowGraphHelp` has been updated to show help information based on a new `Uri` parameter
+* `ShowGraphHelp` can also take in pipeline input to give help information for an object returned by other commands in this module
+
 ### Fixed defects
+
+* In some cases, `New-GraphObject` would not correctly create arrays when an array was only of size 1, instead a scalar was emitted. This has been fixed to generate an array of size 1 in such cases. This issue caused Graph to reject requests with objects in this scenario due to an invlaid schema.
+* `Set-GraphItem` now works in more cases when an object is piped in as the object to update but the object came from a POST request or is only accessible via a navigation property (e.g. /me/contacts).
 
 None.
 '@

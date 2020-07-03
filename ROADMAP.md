@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module

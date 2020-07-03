@@ -52,6 +52,18 @@ Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Micro
 
 ### How do I use it?
 
+As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
+
+AutoGraphPS cmdlets support two equivalent paradigms for accessing Microsoft Graph:
+* The **type-based** paradigm: Entities modeled by the Graph are grouped into *"types"*, sets of objects with a common set of properties including a unique identifier field called `id`. A type might be the set of users or groups in a tenant, the set of drives, or any other concept you'd like to manage via the Graph API. *If you know the type of an object and its and `id`, and if needed its relationship to other objects, you can use AutoGraphPS commands to manage that object.*
+* The **resource-based** paradigm: Because Microsoft Graph is a REST-based API, all of these aforementioned type-based objects can be accessed via one or more *Uniform Resource Identifiers (URIs)*. AutoGraphPS commands allow you to specify these URIs.
+
+The latter approach is most useful for interoperation with other REST-based tools or in general if you're more familiar with the Graph REST API itself; generally the commands used in this scenario would be considered more "advanced" or low-level.
+
+The former type-based approach is most efficient when you know *what* you want to manage, i.e. *users*, *groups*, *messages*, etc. and is likely applicable to a broader set of users than the resource URI-based model.
+
+#### Access via URI
+
 If you're familiar with the Microsoft Graph REST API or you've used [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer), you know that Graph is accessed via [URI's that look like the following](https://developer.microsoft.com/en-us/graph/docs/concepts/overview#popular-requests):
 
 ```
@@ -70,9 +82,56 @@ Get-GraphResource users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphResource` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
+For more details or reference material describing the Graph API URIs, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
 
-To more details or reference material describing the resources available in the Graph API and how to make valid requests, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
+#### Access by type
+
+Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphItem`:
+
+```powershell
+Get-GraphItem user f7e9d7b6-f92f-4a78-8537-6b78d874936e
+
+   Graph Location: /users
+
+Info Type Preview      Id
+---- ---- -------      --
+t +> user Laquan Smith a57f301b-4fc2-4fac-865c-ee4e1af3084d
+
+Get-GraphIte group a57f301b-4fc2-4fac-865c-ee4e1af3084d
+
+   Graph Location: /groups
+
+Info Type   Preview        Id
+---- -----  -------        --
+t +> group  Mathmeticians  57f301b-4fc2-4fac-865c-ee4e1af3084d
+```
+
+Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
+
+```powershell
+Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
+
+id                : f7e9d7b6-f92f-4a78-8537-6b78d874936e
+officeLocation    : 3/1415
+@odata.context    : https://graph.microsoft.com/v1.0/$metadata#users/$entity
+surname           : Smith
+mail              : laquan@newgriot.edu
+jobTitle          : Researcher
+givenName         : Laquan
+userPrincipalName : laquan@newgriot.edu
+...
+```
+
+Note that the output of `Get-GraphItem` is an object that in addition to the protocol response from Graph contains metadata about the response data such as the name of its type, the URI used to access it, a heuristically generated `Preview` field intended for human browsing, etc. The actual API response data exists in the `Content` field and is identical to that returned by the `Get-GraphResource` command. The `-ContentOnly` parameter for `Get-GraphItem` removes the metadata and returns only the response just as with `Get-GraphResource`, eliminating the need to use `Select-Object` or otherwise filter the response to just the `Content`:
+
+```powershell
+# These all have the same output:
+Get-GraphItem -Uri -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphItem -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
+Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
+```
+
+There is also a related command, `Get-GraphChildItem` that enables the enumeration of multiple objects and relates to `Get-GraphItem` in a fashion similar to the relationship between the standard `Get-ChildItem` and `Get-Item` commands of PowerShell.
 
 ### More fun commands
 
