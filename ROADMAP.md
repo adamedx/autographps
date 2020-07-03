@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
 * Add New-GraphFilter

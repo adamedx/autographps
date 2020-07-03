@@ -131,31 +131,74 @@ t +> driveItem Pyramid.js    13J3KD2
 
 #### Don't forget write operations
 
-Yes, you can perform write-operations using the `Invoke-GraphRequet` command, as in this example which creates a new `contact`:
+Yes, you can perform write-operations! Commands like `New-GraphItem`, `Set-GraphItem`, and `Remove-GraphItem` allow you to make changes to data in the Graph.
+
+#### Create a new item with New-GraphItem
+
+The `New-GraphItem` command creates new entities in the Graph. The example below creates a new security group:
 
 ```powershell
-$contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value blackgold, 'Black Gold', $false, $true
+
+description                   :
+mailNickname                  : blackgold
+@odata.context                : https://graph.microsoft.com/v1.0/$metadata#groups/$entity
+createdDateTime               : 2020-07-03T07:00:16Z
+displayName                   : Black Gold
+...
 ```
 
-As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.*
+##### Update an item with Set-GraphItem
 
-Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
+The `Set-GraphItem` command lets you change the properties of an existing item:
+
+```powershell
+$newGroup | Set-GraphItem -Property displayName, description -Value 'Black Gold Team', 'Collaboration for the Black Gold Gala event'
+$newGroup | Get-GraphItem -ContentOnly | select displayName, description
+
+displayName     description
+-----------     -----------
+Black Gold Team Collaboration for the Black Gold Gala event
+```
+
+In this case, the `displayName` and `description` properties of the newly created group are updated to new values when `Set-GraphItem` is executed. A subsequent invocation of `Get-GraphItem` to request the current version of the object from Graph reflects the updates made to those properties.
 
 ##### New-GraphObject makes write operations easier
 
-In the example above we constructed a PowerShell `HashTable` to supply the argument; specifying this structure is fairly intuitive if you know the JSON format you need. Just make the keys of the JSON object keys of the `HashTable`, and the values of the JSON object values of the `HashTable`. AutoGraphPS can use PowerShell's JSON serialization to transform it into the JSON required by Graph. If you commonly deal with PowerShell `HashTable` objects and syntax, this is a natural and concise way to specify JSON parameters.
+In the example above the input required to create the new object, in this case a group, was easy to specify -- just a handful of strings. However for more complicated objects, e.g. nested structures, specifying them on the command-line can be rather convoluted. The `New-GraphObject` command makes it fairly simple to create objects of any type required by the Graph, and of course it provides parameter completion to save you time and the worry that you might have typed a non-existent parameter.
 
-The `New-GraphObject` command makes this even easier. If you know the name of the type of object, in this case `contact`, and you know the properties you need to set, you can specify that information explicitly. This would result in the more readable version of the previous example below:
+For example, if you know the name of the type of object, say `contact`, and you know the properties you need to set, you can specify that information explicitly. This would result in the straightforward usage below:
 
 ```powershell
-$emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Work, cleo@soulsonic.org
-$contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', $emailAddress
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
-
+$emailAddress = New-GraphObject emailAddress -Property name, address -value Work, cleo@soulsonic.org
+$contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', @($emailAddress)
+$newContact = $contactData | New-GraphItem -Uri me/contacts
 ```
 
-Note that support for a simpler command interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read-only commands. Key problems to solve here include discovering the kinds of object and types you need (including removing the need to know when to use the `TypeClass` parameter in the example above) and simplifying and standardizing the command and parameters used to issue the actual write operation.
+##### Clean up with Remove-GraphItem
+
+The `Remove-GraphItem` command deletes an entity from the Graph -- it is the inverse of `New-GraphItem`. It includes a set of parameters that allows for the specifiation of the type and the id of the entity to remove and also provides the option to specify the entity's URI. And if you already have an instance of the object available as we do from the above example, you can just pipe the instance to delete to `Remove-GraphItem`:
+
+```powershell
+$newContext | Remove-GraphItem
+```
+
+Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphItem`.
+
+##### Invoke-GraphRequest handles all the REST
+
+What if you can't find exactly the command you need to interact with the Graph? The `Invoke-GraphRequest` is a general-purpose command that, with the right parameters, can emulate any of the other commands that interact with Graph. It is a generic REST client capable of issuing any valid request to the Graph. You can use it if you run into a scenario that isn't covered by the other commmands. In general it may be useful if you're already using REST to interact with the Graph.
+
+Here's one example that issues the same request as in the earlier example for `New-GraphItem':
+
+```powershell
+$contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
+Invoke-GraphRequest -Method POST me/contacts -Body $contactData
+```
+
+As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphRequest`, even if it trades off simplicity.
+
+Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
 
 #### So how do I find all the URIs and JSON for Graph?
 

@@ -157,10 +157,24 @@ ScriptClass TypeUriHelper {
                         $objectUriInfo = TypeFromUri $objectUri $targetContext
 
                         # TODO: When an object is supplied, it had better end with whatever id was supplied.
-                        # This will not always be true of the uri retrieved from the object
-                        if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
-                            $correctedUri = $objectUri, $id -join '/'
-                            $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                        # This will not always be true of the uri retrieved from the object because of some
+                        # corner cases with the commands used to get objects from the graph, particularly
+                        # when an object is retrieved as part of a collection URI -- such URIs do not
+                        # contain an id, they end with the parent segment. Another case where this happens
+                        # is if the object was created through a POST, though that should definitely be
+                        # fixed in the command that creates objects.
+                        if ( $id ) {
+                            if ( ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                                $correctedUri = $objectUri, $id -join '/'
+                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                            } else {
+                                # TODO: Remove this duplicate else condition
+                                # It was probably obtained via POST or by enumerating an object collection, let's
+                                # just assume it's safe to concatenate, but once the corner cases are corrected,
+                                # we should remove this.
+                                $correctedUri = $objectUri, $id -join '/'
+                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                            }
                         }
 
                         $targetUri = $objectUriInfo.UriInfo.graphUri
