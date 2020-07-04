@@ -167,11 +167,11 @@ ScriptClass TypeUriHelper {
                             if ( ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
                                 $correctedUri = $objectUri, $id -join '/'
                                 $objectUriInfo = TypeFromUri $correctedUri $targetContext
-                            } else {
-                                # TODO: Remove this duplicate else condition
-                                # It was probably obtained via POST or by enumerating an object collection, let's
-                                # just assume it's safe to concatenate, but once the corner cases are corrected,
-                                # we should remove this.
+                            } elseif ( $objectUriInfo.UriInfo.class -ne 'Singleton' ) {
+                                # TODO: Refine this condition to avoid possibly invalid assumptions.
+                                # The object was probably obtained via POST or by enumerating an object collection,
+                                # so we'll just assume it's safe to concatenate the id. However, once the corner cases
+                                # are corrected in the object decoration, we should update to reliable logic.
                                 $correctedUri = $objectUri, $id -join '/'
                                 $objectUriInfo = TypeFromUri $correctedUri $targetContext
                             }
