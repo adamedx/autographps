@@ -21,64 +21,59 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byobject')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='typeandpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
         $Id,
 
-        [parameter(position=2, parametersetname='bytypeandid')]
-        [parameter(position=2, parametersetname='bytypeandidpipe')]
-        [parameter(position=2, parametersetname='typeandpropertyfilter')]
-        [parameter(position=2, parametersetname='byuri')]
         [string[]] $Property,
 
-        [parameter(parametersetname='byuri', mandatory=$true)]
-        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
-        [Uri] $Uri,
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=0, parametersetname='byurichildren', mandatory=$true)]
+        $Uri,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuriandpropertyfilter')]
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='byobjectandpropertyfilter')]
-        [parameter(parametersetname='typeandpropertyfilter')]
         $GraphName,
 
-        [parameter(parametersetname='typeandpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byurichildren')]
         $PropertyFilter,
 
+        [parameter(parametersetname='byurichildren')]
         $Filter,
 
+        [parameter(parametersetname='byurichildren')]
         [Alias('SearchString')]
         $SimpleMatch,
 
+        [parameter(parametersetname='byurichildren')]
         [String] $Search,
 
         [string[]] $Expand,
 
+        [parameter(parametersetname='byurichildren')]
         [Alias('Sort')]
         [object[]] $OrderBy = $null,
 
+        [parameter(parametersetname='byurichildren')]
         [Switch] $Descending,
 
         [switch] $ContentOnly,
 
         [switch] $RawContent,
 
+        [parameter(parametersetname='byurichildren', mandatory=$true)]
         [switch] $ChildrenOnly,
 
         [switch] $FullyQualifiedTypeName,
@@ -91,8 +86,11 @@ function Get-GraphItem {
 
         $coreParameters = $null
 
-        if ( $Filter -and $SimpleMatch ) {
-            throw 'Only one of Filter and SimpleMatch arguments may be specified'
+        $filterSpecs = 'PropertyFilter', 'Filter', 'SimpleMatch' |
+          where { $PSBoundParameters[$_] }
+
+        if ( ( $filterSpecs | measure-object ).count -gt 1 ) {
+            throw [ArgumentException]::new("Only one of the following specified parameters may be specified: {0}" -f ($filterSpecs -join ', '))
         }
 
         $filterParameter = @{}

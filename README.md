@@ -89,7 +89,7 @@ For more details or reference material describing the Graph API URIs, visit the 
 Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphItem`:
 
 ```powershell
-Get-GraphItem user f7e9d7b6-f92f-4a78-8537-6b78d874936e
+Get-GraphItem user -Id f7e9d7b6-f92f-4a78-8537-6b78d874936e
 
    Graph Location: /users
 
@@ -97,7 +97,7 @@ Info Type Preview      Id
 ---- ---- -------      --
 t +> user Laquan Smith a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
-Get-GraphIte group a57f301b-4fc2-4fac-865c-ee4e1af3084d
+Get-GraphItem group -Id a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
    Graph Location: /groups
 
@@ -126,8 +126,8 @@ Note that the output of `Get-GraphItem` is an object that in addition to the pro
 
 ```powershell
 # These all have the same output:
-Get-GraphItem -Uri -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
-Get-GraphItem -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
+Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
 Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
 ```
 
@@ -348,10 +348,12 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
 | Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
+| Invoke-GraphMethod        | Executes a method on a given Graph object specified by Type and Id or URI                               |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| New-GraphMethodParameter  | Creates a local representation of a Graph type for the specified parameter of a specified Graph method  |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
 | New-GraphItem             | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |

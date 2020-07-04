@@ -434,7 +434,7 @@ $newUser = New-GraphItem user -Property mailNickname, userPrincipalName, display
 We can see that the user has been successfully created by issuing a request to the Graph to get the new user using a command like the following:
 
 ```powershell
-PS> ggi user $newUser.Id
+PS> Get-GraphItem user -Id $newUser.Id
 
    Graph Location: /users
 
@@ -514,7 +514,7 @@ Group 7 Access Level Just the description
 Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
 $existingGroup | gls -ContentOnly | select description, displayName
 
@@ -522,7 +522,7 @@ mailNickname displayName description
 ------------ ----------- -----------
              Unused      Unassinged group
 
-$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$templateGroup = Get-GraphItem group -Id 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
 
 $existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
@@ -537,7 +537,7 @@ Finally, an object returned from the Graph may be "edited" locally and then resu
 the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 $existingGroup.displayName += ' - ' + [DateTime]::now
 
 $existingGroup | Set-GraphItem
@@ -989,7 +989,7 @@ The point of this cmdlet is to let you know what's syntactically valid, not what
 Note that it will even "make up" hypothetical Uri's for you when `-Children` with the `-IncludeVirtualChildren` option:
 
 ```
-Get-GraphChildItem /me/drive/root/children -children -IncludeVirtualChildren | select uri
+Get-GraphResourceWithMetadata /me/drive/root/children -children -IncludeVirtualChildren | select uri
 
 Uri
 ---
