@@ -235,7 +235,9 @@ ScriptClass GraphDataModel {
     }
 
     function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
-        $methodSchemas | foreach { $methodSchema = $_.Schema; $methodSchema.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+        if ( $methodSchemas ) {
+                 $methodSchemas | foreach { $methodSchema = $_.Schema; $methodSchema.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+        }
     }
 
     function __AddMethodBinding($typeName, $methodSchema) {
