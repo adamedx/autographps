@@ -163,8 +163,8 @@ ScriptClass TypeUriHelper {
                         # contain an id, they end with the parent segment. Another case where this happens
                         # is if the object was created through a POST, though that should definitely be
                         # fixed in the command that creates objects.
-                        if ( $id ) {
-                            if ( ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                        if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                            if ( $objectUriInfo.UriInfo.class -in 'EntityType', 'EntitySet' ) {
                                 $correctedUri = $objectUri, $id -join '/'
                                 $objectUriInfo = TypeFromUri $correctedUri $targetContext
                             } elseif ( $objectUriInfo.UriInfo.class -ne 'Singleton' ) {
