@@ -239,7 +239,7 @@ $newContact = $contactData | New-GraphItem -Uri me/contacts
 The `Remove-GraphItem` command deletes an entity from the Graph -- it is the inverse of `New-GraphItem`. It includes a set of parameters that allows for the specifiation of the type and the id of the entity to remove and also provides the option to specify the entity's URI. And if you already have an instance of the object available as we do from the above example, you can just pipe the instance to delete to `Remove-GraphItem`:
 
 ```powershell
-$newContext | Remove-GraphItem
+$newContact | Remove-GraphItem
 ```
 
 Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphItem`.

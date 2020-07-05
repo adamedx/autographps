@@ -2,7 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
+* Get-GraphRequestUri
+* Get-GraphQueryUri (AutoGraphPS-SDK)
+* New-GraphRequest, Expand-GraphResponse, Select-GraphResponse, Filter-GraphResponse, Add-GraphResponseRelationship
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Allow id to be emitted for new-graphobject
 * Add request builder in sdk and in this module
@@ -342,6 +344,7 @@
 * Add method invocation via Invoke-GraphMethod
 * Add method parameter validation to invoke-graphmethod
 * Rename GraphObject to GraphItem
+* Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
 
 ### Postponed
 

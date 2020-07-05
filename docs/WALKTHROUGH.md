@@ -473,7 +473,7 @@ createdDateTime      displayName     emailAddresses
 You can confirm that it really exists in the Graph by invoking a command such as
 
 ```powershell
-ggr -Uri /me/contacts | where displayName -eq $newContact.displayName
+Get-GraphResource -Uri /me/contacts | where displayName -eq $newContact.displayName
 ```
 
 which will issue a request to Graph to retrieve all contacts, and then filter the results with `where` to find the new contact by its display name and output it.
@@ -489,7 +489,7 @@ $newGroup | Set-GraphItem -Property displayName, description -Value 'Group 7 Acc
 This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphItem` and `New-GraphObject`, you can also specify commands using the following syntax:
 
 ```powershell
-Set-GraphItem group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
+Set-GraphItem group -Id $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
 And there are still more equivalent syntaxes, using the `PropertyTable` or `TemplateObject` parameters. `PropertyTable` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:

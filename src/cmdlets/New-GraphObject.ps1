@@ -66,6 +66,18 @@ function New-GraphObject {
         'Unknown'
     }
 
+    if ( $Value -and ! $Property ) {
+        throw [ArgumentException]::('When the Value parameter is specified, the property parameter must also be specified')
+    }
+
+    if ( $Value ) {
+        $valueLength = ( $Value | measure-object ).count
+        $propertyLength = ( $Property | measure-object ).count
+        if ( $valueLength -gt $propertyLength ) {
+            throw [ArgumentException]::("The specified Value parameter's length of $ValueLength must be less than the specified Property parameter's length of $propertyLength")
+}
+    }
+
     $prototype = $typeManager |=> GetPrototype $remappedTypeClass $TypeName $isFullyQualified $SetDefaultValues.IsPresent $Recurse.IsPresent $Property $Value $PropertyTable $SkipPropertyCheck.IsPresent
 
     $prototypeJson = $prototype.ObjectPrototype | convertto-json -depth 24
