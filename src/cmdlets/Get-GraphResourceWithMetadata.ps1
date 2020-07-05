@@ -297,13 +297,15 @@ function Get-GraphResourceWithMetadata {
 
             $restResult = $intermediateResult
 
+            $isEmptyResult = $restResult -and ( $restResult | gm value -erroraction ignore ) -and ! $restResult.value
+
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
                     $restResult | Get-GraphUriInfo -GraphName $context.name
                 } else {
                     $restResult
                 }
-            } else {
+            } elseif ( ! $isEmptyResult ) {
                 if ( ! $responseContentOnly ) {
                     # Getting uri info is expensive, so for a single request, get it only once and cache it
                     $requestSegment = $requestInfoCache[$contextIndex - 1].ResolvedRequestUri
@@ -325,7 +327,7 @@ function Get-GraphResourceWithMetadata {
             # TODO: Investigate scenarios where empty collection results sometimes return
             # a non-empty result containing and empty 'value' field in the content
             if ( $resolvedUri.Collection -and ! $RawContent.IsPresent ) {
-                if ( $restResult -and ( $restResult | gm value -erroraction ignore ) -and ! $restResult.value ) {
+                if ( $isEmptyResult ) {
                     $noResults = $true
                 }
             }
