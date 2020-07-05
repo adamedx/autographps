@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Make set-graphitem parameters more strict when MergeGraphItemWithPropertyTable is specified
+* Consider renaming MergeGraphItemWithPropertyTable in Set-GraphItem or making it only work when PropertyTable is specified
 * Get-GraphRequestUri
 * Get-GraphQueryUri (AutoGraphPS-SDK)
 * New-GraphRequest, Expand-GraphResponse, Select-GraphResponse, Filter-GraphResponse, Add-GraphResponseRelationship

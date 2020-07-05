@@ -24,6 +24,13 @@ $shell = if ( $PSEdition -eq 'Desktop' ) {
 
 $parameterSetTestsFinished = $null
 
+
+# This strange behavior is required because these tests try to trigger cases where mandatory parameters are not specified,
+# which would normally hange the test. To avoid this, we relaunch just these tests in a non-interactive powershell.
+# As long as all tests in this new powershell succeed, we record all of the tests in the instance that launched the
+# sub-instance as successful. If one or more tests fails in the sub-instance, all those tests in this instance
+# are marked as failed.
+# TODO: get the detailed status from the instance and mark it only those tests that failed.
 if ( ! ( get-variable ThisTestStarted -erroraction ignore ) ) {
     $command = "`$global:ThisTestStarted = `$true; invoke-pester -enableexit -tag parameterbinding -script '$($myinvocation.mycommand.source)'"
     & $shell -noninteractive -noprofile -command $command | out-host
@@ -37,7 +44,7 @@ if ( ! ( get-variable ThisTestStarted -erroraction ignore ) ) {
 
 
 Describe 'The Set-GraphItem command parameterbinding behavior' -tag parameterbinding {
-    Context 'When binding parameters' {
+    Context 'When binding parameters with validation that is only possible if powershell is launched as non-interactive' {
         BeforeAll {
             GetParameterTestFunction Set-GraphItem | new-item function:Set-GraphItemTest
             $contentObject = [PSCustomObject] @{Id='objectid'}
@@ -49,14 +56,14 @@ Describe 'The Set-GraphItem command parameterbinding behavior' -tag parameterbin
             }
         }
 
-        It "Should bind to the typeandpropertylist parameter set when type, id, property, and value are specified as named" {
+        It "Should bind to the typeandid parameter set when type, id, property, and value are specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
                 Set-GraphItemTest -typename type1 -id id -property propname -value valname| select -expandproperty ParameterSetName | should be 'bytypeandid'
             }
         }
 
-        It "Should bind to the typeandpropertylist parameter set when type, id, property, and value are specified as named" {
+        It "Should bind to the typeandid parameter set when type, id, property, and value are specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
                 Set-GraphItemTest -typename type1 -id id -property propname -value valname| select -expandproperty ParameterSetName | should be 'bytypeandid'
@@ -91,6 +98,28 @@ Describe 'The Set-GraphItem command parameterbinding behavior' -tag parameterbin
 
                 $bindingInfo.parametersetname | Should Be 'byobject'
                 $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $standardObject.Id
+            }
+        }
+
+        It "Should bind to the byobject parameterset when a wrapped object is specified to the pipeline and no other parameters are specified" {
+            $parameterSetTestsFinished | Should Not Be $null
+            if ( ! $parameterSetTestsFinished ) {
+                $bindingInfo = $standardObject | Set-GraphItemTest
+
+                $bindingInfo.parametersetname | Should Be 'byobject'
+                $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $standardObject.Id
+            }
+        }
+
+        It "Should bind to the byobject parameterset when a wrapped object is specified to the pipeline and the MergeGraphItemWithPropertyTable and PropertyTable parameters are specified" {
+            $parameterSetTestsFinished | Should Not Be $null
+            if ( ! $parameterSetTestsFinished ) {
+                $bindingInfo = $standardObject | Set-GraphItemTest -MergeGraphItemWithPropertyTable -PropertyTable @{prop3='propval3'}
+
+                $bindingInfo.parametersetname | Should Be 'byobject'
+                $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $standardObject.Id
+                $bindingInfo.BoundParameters['MergeGraphItemWithPropertyTable'].IsPresent | Should Be $true
+                $bindingInfo.BoundParameters['PropertyTable']['prop3'] | Should Be 'propval3'
             }
         }
 
