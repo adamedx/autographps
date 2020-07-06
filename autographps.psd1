@@ -158,6 +158,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\FunctionParameterHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',

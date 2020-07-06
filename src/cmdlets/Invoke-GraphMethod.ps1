@@ -21,6 +21,7 @@
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/MethodNameParameterCompleter)
 . (import-script common/MethodUriParameterCompleter)
+. (import-script common/FunctionParameterHelper)
 
 function Invoke-GraphMethod {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandidpipe', supportspaging=$true)]
@@ -200,24 +201,33 @@ function Invoke-GraphMethod {
             }
         }
 
+        $methodUriInfo = Get-GraphUriInfo $methodUri -GraphName $requestInfo.Context.Name -erroraction stop
+        $methodClass = $methodUriInfo.Class
+
+        if ( $methodClass -notin 'Action', 'Function' ) {
+            throw "Invalid method class '$methodClass' -- only 'Action' and 'Function' methods are supported"
+        }
+
         $parameterNames = @()
 
-        $methodBody = if ( $ParameterObject ) {
-            $parameterNames = $ParameterObject | gm -membertype noteproperty | select -expandproperty name
-            $ParameterObject
-        } elseif ( $ParameterTable ) {
-            $parameterNames = $parameterTable.keys
-            $ParameterTable
-        } elseif ( $Parameter ) {
-            $parameters = @{}
-            $parameterIndex = 0
-            foreach ( $parameterName in $Parameter ) {
-                $parameters.Add($parameterName, $Value[$parameterIndex])
-                $parameterIndex++
-            }
+        $methodBody = if ( $methodClass ) {
+            if ( $ParameterObject ) {
+                $parameterNames = $ParameterObject | gm -membertype noteproperty | select -expandproperty name
+                $ParameterObject
+            } elseif ( $ParameterTable ) {
+                $parameterNames = $parameterTable.keys
+                $ParameterTable
+            } elseif ( $Parameter ) {
+                $parameters = @{}
+                $parameterIndex = 0
+                foreach ( $parameterName in $Parameter ) {
+                    $parameters.Add($parameterName, $Value[$parameterIndex])
+                    $parameterIndex++
+                }
 
-            $parameterNames = $parameters.keys
-            $parameters
+                $parameterNames = $parameters.keys
+                $parameters
+            }
         }
 
         if ( ! $SkipParameterCheck.IsPresent -and $method.parameters) {
@@ -234,13 +244,14 @@ function Invoke-GraphMethod {
                     "`n  - Missing parameters: '$missingParameters'"
                 }
 
+                $owningtype | fl * | out-host
                 $errorMessage = @"
 Unable to invoke method '$targetMethodName' on type '$($owningType.TypeId)' with {0} parameters. This was due to:
  
 {1}{2}
  
 The complete set of valid parameters is '{3}'.
-"@  -f $method.parameters.name.count, $missingParameterMessage, $invalidParameterMessage, ( $method.parameters.name -join ', ' )
+"@  -f ($method.parameters.name | measure-object).count, $missingParameterMessage, $invalidParameterMessage, ( $method.parameters.name -join ', ' )
                 throw [ArgumentException]::new($errorMessage)
             }
         }
@@ -249,6 +260,11 @@ The complete set of valid parameters is '{3}'.
             @{Body=$methodBody}
         } else {
             @{}
+        }
+
+        if ( $methodClass -eq 'Function' ) {
+            $parameterString = $::.FunctionParameterHelper |=> ToUriParameterString $methodBody
+            $methodUri = $methodUri + $parameterString
         }
 
         Invoke-GraphRequest -Uri $methodUri -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop
