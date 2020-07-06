@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Generate odata context uri's: http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358910
 * Make set-graphitem parameters more strict when MergeGraphItemWithPropertyTable is specified
 * Consider renaming MergeGraphItemWithPropertyTable in Set-GraphItem or making it only work when PropertyTable is specified
 * Get-GraphRequestUri

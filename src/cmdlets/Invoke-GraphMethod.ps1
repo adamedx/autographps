@@ -262,12 +262,25 @@ The complete set of valid parameters is '{3}'.
             @{}
         }
 
-        if ( $methodClass -eq 'Function' ) {
+        $methodUriWithParameters = if ( $methodClass -eq 'Function' ) {
             $parameterString = $::.FunctionParameterHelper |=> ToUriParameterString $methodBody
-            $methodUri = $methodUri + $parameterString
+            $methodUri + $parameterString
+        } else {
+            $methodUri
         }
 
-        Invoke-GraphRequest -Uri $methodUri -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop
+        Invoke-GraphRequest -Uri $methodUriWithParameters -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop | foreach {
+            # WARNING: Invoke-GraphRequest currently assumes it can use the request URI to determine the type -- this is
+            # not generally true, but in the case of function is obviously broken because the URI contains parameters.
+            # To temporarily make this less terrible, we rewrite the __ItemContext method to remove the parameters.
+            # TODO: Use odata context returned in the response to accurately get URI and type information and remove
+            # the use of __ItemContext altogether.
+            if ( $methodClass -eq 'Function' -and ( $_ | gm __ItemContext -membertype scriptmethod ) ) {
+                $_ | add-member -membertype scriptmethod -name __ItemContext -value ([ScriptBlock]::Create("'$methodUri'")) -force
+            }
+
+            $_
+        }
     }
 
     end {
