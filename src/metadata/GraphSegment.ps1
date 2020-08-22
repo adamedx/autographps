@@ -37,8 +37,8 @@ ScriptClass GraphSegment {
         $isVertex = $true
         $this.leadsToVertex = if ( Test-ScriptObject $this.graphElement EntityEdge ) {
             $isVertex = $false
-            if ( $instanceName ) {
-                throw "An instance name '$instanceName' was specified for an edge, which already has a name"
+            if ( $instanceName -and $graphElement.Name -ne $instanceName ) {
+                throw "An instance name '$instanceName' was specified for an edge, and if it is specified it must match the existing name for this edge '$($graphElement.Name)', which it does not."
             }
             $this.type = $this.graphElement.transition.type
             # If this is one to many, then the next element is an individual vertex. Otherwise,
