@@ -213,7 +213,7 @@ ScriptClass SegmentHelper {
             $itemName = if ( $Id ) {
                 $Id
             } elseif ( $fullTypeName )  {
-                $fullTypeNae
+                $fullTypeName
             } else {
                 '[{0}]' -f $graphObject.GetType().Name
             }
