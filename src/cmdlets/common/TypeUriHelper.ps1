@@ -78,18 +78,34 @@ ScriptClass TypeUriHelper {
         }
 
         function InferTypeUriInfoFromRequestItem($requestItem, $responseObject) {
-            $absoluteUri = $requestItem.Uri
-            $fullPath = $requestItem.Path
-            $graphUri = $requestItem.GraphUri
+            $absoluteUri = $null
+            $fullPath = $null
+            $graphUri = $null
+            $typeSpecifier = $::.GraphUtilities |=> GetOptionalTypeFromResponseObject $responseObject
+            $fullTypeName = if ( $typeSpecifier ) {
+                $typeData = $::.GraphUtilities.ParseTypeName($typeSpecifier)
+                $typeData.TypeName
+            }
 
-            if ( $requestItem.Collection ) {
-                $absoluteUri = $absoluteUri.trimend('/'), $responseObject.Id -join '/'
-                $fullPath = $fullPath.trimend('/'), $responseObject.Id -join '/'
-                $graphUri = [Uri] ($graphUri.tostring().trimend('/'), $responseObject.Id -join '/')
+            if ( $requestItem ) {
+                $absoluteUri = $requestItem.Uri
+                $fullPath = $requestItem.Path
+                $graphUri = $requestItem.GraphUri
+                if ( ! $fullTypeName ) {
+                    $fullTypeName = $requestItem.FullTypeName
+                }
+
+                if ( $requestItem.Collection ) {
+                    $absoluteUri = $absoluteUri.trimend('/'), $responseObject.Id -join '/'
+                    $fullPath = $fullPath.trimend('/'), $responseObject.Id -join '/'
+                    $graphUri = [Uri] ($graphUri.tostring().trimend('/'), $responseObject.Id -join '/')
+                }
+            } else {
+                $graphUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true
             }
 
             [PSCustomObject] @{
-                FullTypeName = $requestItem.FullTypeName
+                FullTypeName = $fullTypeName
                 AbsoluteUri = $absoluteUri
                 FullPath = $fullPath
                 GraphUri = $graphUri

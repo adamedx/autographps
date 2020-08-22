@@ -94,7 +94,7 @@ ScriptClass GraphSegment {
             }
         } elseif ( $this.graphElement.type -eq 'EntitySet' ) {
             $typeData = $this.graphElement.entity.typeData
-            $graph |=> GetTypeVertex $typeData.EntityTypeName
+            $graph |=> GetTypeVertex $typeData.TypeName
         } else {
             throw "Unexpected vertex type '$($this.graphElement.type)' for segment '$($segment.name)'"
         }

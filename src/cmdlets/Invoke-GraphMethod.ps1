@@ -90,6 +90,8 @@ function Invoke-GraphMethod {
 
         [switch] $RawContent,
 
+        [switch] $NoMetadata,
+
         [switch] $ChildrenOnly,
 
         [switch] $FullyQualifiedTypeName,
@@ -270,16 +272,18 @@ The complete set of valid parameters is '{3}'.
         }
 
         Invoke-GraphRequest -Uri $methodUriWithParameters -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop | foreach {
-            # WARNING: Invoke-GraphRequest currently assumes it can use the request URI to determine the type -- this is
-            # not generally true, but in the case of function is obviously broken because the URI contains parameters.
-            # To temporarily make this less terrible, we rewrite the __ItemContext method to remove the parameters.
-            # TODO: Use odata context returned in the response to accurately get URI and type information and remove
-            # the use of __ItemContext altogether.
-            if ( $methodClass -eq 'Function' -and ( $_ | gm __ItemContext -membertype scriptmethod ) ) {
-                $_ | add-member -membertype scriptmethod -name __ItemContext -value ([ScriptBlock]::Create("'$methodUri'")) -force
+            # Note that there is not relation between the structure of the URI used to make an action or function
+            # request and the types returned in the response -- they could be literally anything. The method below
+            # addresses this by creating a public segment that reflects the type returned in the response metadata,
+            # which is the only way to know the returned type. This can also be true in conventional GET requests
+            # for entity types or their structural properties, but only due to polymorphism, and of course in those
+            # cases rather than not having a type at all, the worst case is that we are forced to assume the least-derived
+            # type, which is a situation of information loss but not of incorrectness.
+            if ( ! $NoMetadata.IsPresent ) {
+                $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
+            } else {
+                $_
             }
-
-            $_
         }
     }
 

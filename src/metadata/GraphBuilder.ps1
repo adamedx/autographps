@@ -99,7 +99,7 @@ ScriptClass GraphBuilder {
 
         foreach ( $transition in $transitions ) {
             # Look for the existing type in the graph itself
-            $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $transition.typedata.entitytypename
+            $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $transition.typedata.typename
             $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
             if ( ! $sink ) {
                 # If we don't find the existing type, try to get it from the model instead
@@ -109,7 +109,7 @@ ScriptClass GraphBuilder {
                     __AddEntityTypeVertex $graph $unaliasedName
                     $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
                 } else {
-                    write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.entitytypename)"
+                    write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.typename)"
                 }
             }
 
@@ -117,7 +117,7 @@ ScriptClass GraphBuilder {
                 $edge = new-so EntityEdge $sourceVertex $sink $transition
                 $sourceVertex |=> AddEdge $edge
             } else {
-                write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.entitytypename) = '$unaliasedName', skipping"
+                write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.typename) = '$unaliasedName', skipping"
             }
         }
 
@@ -132,7 +132,7 @@ ScriptClass GraphBuilder {
             return
         }
 
-        $qualifiedTypeName = $vertex.entity.typedata.entitytypename
+        $qualifiedTypeName = $vertex.entity.typedata.typename
         $unqualifiedTypeName = $this.dataModel |=> UnqualifyTypeName $qualifiedTypeName
         $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding edges for '$($vertex.name)'"
 
@@ -150,7 +150,7 @@ ScriptClass GraphBuilder {
             throw "Data from type already copied to singleton '$($source.name)'"
         }
 
-        $entityName = ($source.entity.typeData).EntityTypeName
+        $entityName = ($source.entity.typeData).TypeName
         $typeVertex = $graph |=> TypeVertexFromTypeName $entityName
 
         if ( $typeVertex -eq $null ) {
@@ -181,7 +181,7 @@ ScriptClass GraphBuilder {
             return
         }
 
-        $sourceTypeName = $sourceVertex.entity.typeData.EntityTypeName
+        $sourceTypeName = $sourceVertex.entity.typeData.TypeName
         $methods = $this.dataModel |=> GetMethodBindingsForType $sourceTypeName
 
         if ( ! $methods ) {

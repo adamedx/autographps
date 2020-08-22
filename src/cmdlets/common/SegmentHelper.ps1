@@ -81,7 +81,7 @@ ScriptClass SegmentHelper {
             # Use the return type, which for vertices is the self, but
             # for edges is the vertex to which the self leads
             $fullTypeName = if ( $resultTypeData ) {
-                $resultTypeData.EntityTypeName
+                $resultTypeData.TypeName
             } else {
                 ''
             }
@@ -187,6 +187,78 @@ ScriptClass SegmentHelper {
                 Details = $null
                 Content = $graphItem
                 Preview = $this.__GetPreview($graphItem, $itemId)
+            }
+        }
+
+        function ToPublicSegmentFromGraphResponseObject( $graphContext, $graphObject ) {
+            $typeInfo = $::.TypeUriHelper |=> InferTypeUriInfoFromRequestItem $null $graphObject
+
+            $absoluteUri = $null
+            $locationUriPath = $null
+
+            if ( $typeInfo.GraphUri ) {
+                $absoluteUri = $graphContext.Connection.GraphEndpoint.Graph, $graphContext.Version, $typeInfo.GraphUri
+                $locationUriPath = $::.GraphUtilities |=> ToLocationUriPath $graphContext $typeInfo.GraphUri
+            }
+
+            $fullTypeName = $typeInfo.FullTypeName
+
+            $typeComponents = $fullTypeName -split '\.'
+
+            # Objects may actually be raw json, or even binary, depending
+            # on callers specifying that they don't want objects, but the
+            # raw content value from the Graph web response
+            $Id = $graphObject | select -expandproperty id -erroraction ignore
+
+            $itemName = if ( $Id ) {
+                $Id
+            } elseif ( $fullTypeName )  {
+                $fullTypeNae
+            } else {
+                '[{0}]' -f $graphObject.GetType().Name
+            }
+
+            $itemId = if ( $graphObject -is [PSCustomObject] -and $graphObject.pstypenames.contains('GraphSegmentDisplayType') -and ($graphObject.Content) ) {
+                $graphObject.Content.Id
+            } else {
+                $itemName
+            }
+
+            $namespace = if ( $fullTypeName ) {
+                $components = $fullTypeName -split '\.'
+                $length = (, $components).length -2
+                if ( $length -gt 0 ) {
+                    $components[0..$length] -join '.'
+                } else {
+                    $fullTypeName
+                }
+            }
+
+            # Using ToString() here to work around a strange behavior where
+            # PSTypeName does not cause type conversion
+            [PSCustomObject] @{
+                PSTypeName = ($this.SegmentDisplayTypeName.tostring())
+                ParentPath = $null
+                Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
+                Name = $itemName
+                Relation = 'Direct'
+                Collection = $false
+                Class = 'EntityType'
+                Type = $typeComponents[$typeComponents.length - 1]
+                Id = $itemId
+                Namespace = $namespace
+                Uri = $absoluteUri
+                GraphName = $graphContext.Name
+                GraphUri = $typeinfo.GraphUri
+                Path = $locationUriPath
+                FullTypeName = $fullTypeName
+                Version = $graphContext.Version
+                Endpoint = $graphContext.Connection.GraphEndpoint
+                IsDynamic = $true
+                Parent = $null
+                Details = $null
+                Content = $graphObject
+                Preview = $this.__GetPreview($graphObject, $itemId)
             }
         }
 

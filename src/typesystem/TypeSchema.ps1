@@ -47,10 +47,10 @@ ScriptClass TypeSchema {
         }
 
         function GetNormalizedPropertyTypeInfo($namespace, $typeSpec) {
-            $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $namespace $typeSpec
+            $typeData = $::.GraphUtilities.ParseTypeName($typeSpec)
 
             [PSCustomObject] @{
-                TypeFullName = $typeData.EntityTypeName
+                TypeFullName = $typeData.TypeName
                 IsCollection = $typeData.isCollection
             }
         }

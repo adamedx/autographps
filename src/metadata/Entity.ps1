@@ -25,7 +25,7 @@ ScriptClass Entity {
         $schemaElement = $schema | select -first 1
         $this.type = $schemaElement | select -expandproperty localname
         $this.name = $schemaElement | select -first 1 | select -expandproperty name
-        $this.typeData = GetEntityTypeData $schema
+        $this.typeData = $this.GetEntityTypeData($schema)
         $this.navigations = if ( ($schema | gm navigationproperty) -ne $null ) {
             $schema.navigationproperty | foreach {
                 new-so Entity $_ $namespace
@@ -40,13 +40,13 @@ ScriptClass Entity {
     function GetEntityTypeData($schema) {
         $typeData = switch ($this.type) {
             'NavigationProperty' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $schema.type
+                $::.GraphUtilities.ParseTypeName($schema.Type)
             }
             'NavigationPropertyBinding' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $schema.parameter.bindingparameter.type
+                $::.GraphUtilities.ParseTypeName($schema.parameter.bindingparameter.type)
             }
             'Function' {
-                $this.scriptclass |=> GetEntityTypeDataFromTypeName $this.namespace $schema.ReturnType
+                $::.GraphUtilities.ParseTypeName($schema.ReturnType)
             }
         }
 
@@ -79,7 +79,7 @@ ScriptClass Entity {
                     throw "Unknown entity type $($this.type) for entity name $($this.name)"
                 }
             }
-            $typeData = [PSCustomObject]@{EntityTypeName=$typeName;IsCollection=$isCollection}
+            $typeData = [PSCustomObject]@{TypeName=$typeName;IsCollection=$isCollection}
         }
 
         $typeData
@@ -88,19 +88,6 @@ ScriptClass Entity {
     static {
         function QualifyName($namespace, $name) {
             "{0}.{1}" -f $namespace, $name
-        }
-
-        function GetEntityTypeDataFromTypeName([string] $namespace, [string] $typeName) {
-            $isCollection = $false
-
-            $scalarQualifiedTypeName = if ($typeName -match 'Collection\((?<typename>.+)\)') {
-                $isCollection = $true
-                $matches.typename
-            } else {
-                $typeName
-            }
-
-            [PSCustomObject]@{EntityTypeName=$scalarQualifiedTypeName;IsCollection=$isCollection}
         }
     }
 }
