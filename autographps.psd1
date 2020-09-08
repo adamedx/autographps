@@ -231,7 +231,7 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.22.0
 
 ### Breaking changes
 
