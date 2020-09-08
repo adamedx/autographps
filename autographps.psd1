@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.21.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.22.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -227,7 +227,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* andd *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
 
 ### New dependencies
 
@@ -248,6 +248,7 @@ None.
 * `Get-GraphType` now supports pipeline input to take an object emitted by `Get-GraphItem` or `Get-GraphResource` and return the type information for that object's type
 * `ShowGraphHelp` has been updated to show help information based on a new `Uri` parameter
 * `ShowGraphHelp` can also take in pipeline input to give help information for an object returned by other commands in this module
+* Commands that return objects from the Graph now return the actual derived type of the object in heterogenous collections that are defined as returning a base type
 
 ### Fixed defects
 

@@ -478,7 +478,7 @@ Get-GraphResource -Uri /me/contacts | where displayName -eq $newContact.displayN
 
 which will issue a request to Graph to retrieve all contacts, and then filter the results with `where` to find the new contact by its display name and output it.
 
-#### Update an existing resource: contacts, group, and user
+#### Update an existing resource: contact, group, and user
 
 To modify an existing Graph resource, use the `Set-GraphItem` command. You can pipe in the result of a previous `Get-GraphItem`, `Get-GraphResource`, `New-GraphItem`, etc., invocation as the object to modify:
 
@@ -649,6 +649,55 @@ $oldContact | Remove-GraphItem
 * Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
 * Look for opportunities to use the PowerShell pipeline with AutoGraphPS command for concise, efficient, and scalable automation of Graph resource management.
 
+### Invoking Graph methods for complex behaviors and operations
+
+We've covered the ways in which data can be created, updated, queried, and deleted. Graph also supports capabilities beyond those circumscribed by such `CRUD` operations through *methods*. Graph methods, not to be confused with methods like `PUT`, `GET`, et. al. of the HTTP protocol upon which the Graph protocol is layered, can perform arbitrary operations. These Graph methods are very much like *methods* in the object-oriented sense, i.e. they are named units of computation that operate on state within the scope of some object. Methods in Graph have the following characteristics:
+
+* Methods are scoped to an entity type, e.g. `user`, `group`, `drive`, etc.
+* Methods have a name that can be used to invoke them -- examples are `sendMail` on the user object, `assignLicense` on the group object, or `search` on the drive object.
+* To invoke a method, you need to be able directly or indirectly space the `id` of the entity and the name of the method
+
+Within the framework of the Graph's REST protocol, invoking a method involves constructing the appropriate URI just as in the case of all the `CRUD` operations. The URI in this case will refer to both a particular instance of an entity, typically using an `id` but potentially using a singleton such as `me`.
+
+#### Using Invoke-GraphMethod to access Graph methods
+
+AutoGraphPS provides the `Invoke-GraphMethod` command to make it easy to invoke methods. Here's an example that performs a search of the user's drive, using the [`search` method](https://docs.microsoft.com/en-us/graph/api/driveitem-search?view=graph-rest-1.0&tabs=http) of the calling user's `drive` and passing the query string in the method's `q` parameter:
+
+```powershell
+Invoke-GraphMethod -uri me/drive search -Parameter q -Value 'name:docx powershell'
+
+Info Type      Preview                                               Id
+---- ----      -------                                               --
+t +> driveItem Exploring the Microsoft Graph.docx                    AX893842
+t +> driveItem PowerShell user experience for Graph.docx             ZZ8972ZR
+t +> driveItem DevOps and PowerShell use cases.docx                  KSJFLAJ3
+t +> driveItem Analysis of PowerShell and REST API usability         K8JRAJZE
+```
+
+The method returned a set of `driveItem` objects that satisfied the query `name:docx powershell`, the intent of which was to return any content on the drive that contained the keyword `powershell` in items with a `name` containing `docx`.
+
+In the next example, `Invoke-GraphMethod` is used to send an email message. In this case, we construct the email message to send using `New-Graphobject` and `New-GraphMethodParameterObject` before passing it as a parameter to `Invoke-GraphMethod`:
+
+```powershell
+$me = gls me
+$recipientEmail = new-graphobject emailAddress address katwe@newnoir.org
+$recipient = new-graphobject recipient emailAddress $recipientEmail
+
+$sendMailParameters = New-GraphMethodParameterObject user sendMail
+
+$sendMailParameters.SaveToSentItems = $true
+$sendMailParameters.Message = $sendMailParameters.Message | select subject, body, toRecipients
+
+$sendMailParameters.Message.toRecipients = @($recipient)
+$sendMailParameters.Message.Subject = 'What time is it?'
+$sendMailParameters.Message.Body.ContentType = 'text'
+$sendMailParameters.Message.Body.Content = "The time is $([DateTime]::now), so it's time to Wake Up! --Love, $($me.Content.givenName)"
+
+$me | Invoke-GraphMethod -methodname sendmail -ParameterObject $sendMailParameters
+```
+
+In this case, we invoke the method `sendMail` on the previously retrieved `$me` object by passing `$me` in the pipeline. The constructed parameters are specified by the `ParameterObject` parameter of `Invoke-GraphMethod`.
+
 ### Advanced queries with `-Query`
 
 The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
@@ -802,7 +851,7 @@ The ability of PowerShell to express mutual nesting of arrays and `HashTable` in
 
 ##### Making it easier with New-GraphObject
 
-While relatively simple manual construction of JSON serializable objects is feasible with PowerShell syntax, the process still requires human understanding of the detailed correspondence between JSON format and PowerShell data types with mistake-free rendering of the object.
+Simple manual construction of JSON serializable objects is feasible with PowerShell syntax, however the process still requires human understanding of the detailed correspondence between JSON format and PowerShell data types with mistake-free rendering of the object.
 
 Fortunately, AutoGraphPS provides the `New-GraphObject` command which correctly renders the object according to the API schema and removes the source of much of the human error. For example, the, following sequence of commands can be used to create a contact just as in the previous `contact` example:
 

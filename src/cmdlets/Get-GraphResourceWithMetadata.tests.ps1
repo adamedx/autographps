@@ -41,7 +41,6 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
         Mock Invoke-GraphRequest ([ScriptBlock]::Create($mockScript)) -modulename autographps
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
-            write-host igotcalled
             [PSCustomObject] @{
                 RawContent = $MockContext
                 RawContentLength = $MockContext.length

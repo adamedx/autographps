@@ -63,7 +63,7 @@ function Invoke-GraphMethod {
         [parameter(parametersetname='byuri', mandatory=$true)]
         [Uri] $Uri,
 
-        [parameter(parametersetname='byobject', mandatory=$true)]
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
         [parameter(parametersetname='byuri')]
@@ -136,7 +136,7 @@ function Invoke-GraphMethod {
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $GraphItem
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $GraphItem $true
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
@@ -246,7 +246,6 @@ function Invoke-GraphMethod {
                     "`n  - Missing parameters: '$missingParameters'"
                 }
 
-                $owningtype | fl * | out-host
                 $errorMessage = @"
 Unable to invoke method '$targetMethodName' on type '$($owningType.TypeId)' with {0} parameters. This was due to:
  
