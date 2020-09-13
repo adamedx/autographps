@@ -566,7 +566,7 @@ This adds a directional relationship between the group and the user "group is re
 To see the new relationship, use the `Get-GraphRelatedItem` command:
 
 ```powershell
-Get-GraphRelatedItem group $newgroup.id -WithRelationship members
+Get-GraphRelatedItem -TypeName group -Id $newgroup.id -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -664,7 +664,7 @@ Within the framework of the Graph's REST protocol, invoking a method involves co
 AutoGraphPS provides the `Invoke-GraphMethod` command to make it easy to invoke methods. Here's an example that performs a search of the user's drive, using the [`search` method](https://docs.microsoft.com/en-us/graph/api/driveitem-search?view=graph-rest-1.0&tabs=http) of the calling user's `drive` and passing the query string in the method's `q` parameter:
 
 ```powershell
-Invoke-GraphMethod -uri me/drive search -Parameter q -Value 'name:docx powershell'
+Invoke-GraphMethod /me/drive/search q 'name:docx powershell'
 
 Info Type      Preview                                               Id
 ---- ----      -------                                               --
@@ -675,6 +675,13 @@ t +> driveItem Analysis of PowerShell and REST API usability         K8JRAJZE
 ```
 
 The method returned a set of `driveItem` objects that satisfied the query `name:docx powershell`, the intent of which was to return any content on the drive that contained the keyword `powershell` in items with a `name` containing `docx`.
+
+Since the URI given as the first parameter is relative to the current location, the following invocation would produce the same result:
+
+```powerShell
+gcd /me/drive
+Invoke-GraphMethod search q 'name:docx powershell'
+```
 
 In the next example, `Invoke-GraphMethod` is used to send an email message. In this case, we construct the email message to send using `New-Graphobject` and `New-GraphMethodParameterObject` before passing it as a parameter to `Invoke-GraphMethod`:
 

@@ -56,6 +56,8 @@ ScriptClass MethodUriParameterCompleter {
                 if ( $targetContext ) {
                     $::.TypeUriHelper |=> GetUriFromDecoratedObject $targetContext $graphObjectParam
                 }
+            } else {
+                '.'
             }
 
             if ( $targetUri ) {

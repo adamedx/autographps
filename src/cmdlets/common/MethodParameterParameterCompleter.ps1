@@ -17,10 +17,13 @@ ScriptClass MethodParameterParameterCompleter {
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $graphName = $fakeBoundParameters['GraphName']
+        $typeName = $fakeBoundParameters['TypeName']
         $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
             $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
+        } else {
+            $typeName -ne $null -and $typeName.Contains('.')
         }
-        $typeName = $fakeBoundParameters['TypeName']
+
         $methodName = $fakeBoundParameters['MethodName']
         $uriParam = $fakeBoundParameters['Uri']
 
@@ -56,7 +59,7 @@ ScriptClass MethodParameterParameterCompleter {
             $parameterNames = if ( $type ) {
                 $method = $type.methods | where name -eq $methodName
                 if ( $method ) {
-                    $method.Parameters.Name
+                    $method.MemberData.Parameters.Name
                 }
             }
 

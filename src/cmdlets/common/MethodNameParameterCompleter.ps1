@@ -16,13 +16,12 @@ ScriptClass MethodNameParameterCompleter {
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
         $graphName = $fakeBoundParameters['GraphName']
+        $typeName = $fakeBoundParameters['TypeName']
         $fullyQualified = if ( $fakeBoundParameters['FullyQualifiedTypeName'] ) {
             $fakeBoundParameters['FullyQualifiedTypeName'].IsPresent
         } else {
-            $false
+            $typeName -ne $null -and $typeName.Contains('.')
         }
-
-        $typeName = $fakeBoundParameters['TypeName']
 
         if ( ! $typeName ) {
             return $null

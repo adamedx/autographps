@@ -24,34 +24,37 @@
 . (import-script common/FunctionParameterHelper)
 
 function Invoke-GraphMethod {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandidpipe', supportspaging=$true)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri', supportspaging=$true)]
     param(
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [Alias('GraphUri')]
+        [Uri] $Uri = $null,
+
+        [parameter(position=1, parametersetname='bytypeandid')]
+        [parameter(position=1, parametersetname='byobject')]
+        [parameter(position=1, parametersetname='byuripipeline')]
+        [parameter(position=1, parametersetname='byuri')]
+        [string[]] $Parameter,
+
+        [parameter(position=2, parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='byobject')]
+        [parameter(position=2, parametersetname='byuripipeline')]
+        [parameter(position=2, parametersetname='byuri')]
+        [object[]] $Value,
+
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='byobject', mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', mandatory=$true)]
+        [parameter(parametersetname='byuri')]
+        [string] $MethodName,
+
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         [String] $TypeName,
 
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
         [String] $Id,
-
-        [parameter(position=2, parametersetname='bytypeandid', mandatory=$true)]
-        [parameter(position=2, parametersetname='bytypeandidpipe', mandatory=$true)]
-        [parameter(position=2, parametersetname='byobject', mandatory=$true)]
-        [parameter(position=2, parametersetname='byuri')]
-        [string] $MethodName,
-
-        [parameter(position=3, parametersetname='bytypeandid')]
-        [parameter(position=3, parametersetname='bytypeandidpipe')]
-        [parameter(position=3, parametersetname='byuri')]
-        [parameter(position=3, parametersetname='byobject')]
-        [string[]] $Parameter,
-
-        [parameter(position=4, parametersetname='bytypeandid')]
-        [parameter(position=4, parametersetname='bytypeandidpipe')]
-        [parameter(position=4, parametersetname='byuri')]
-        [parameter(position=4, parametersetname='byobject')]
-        [object[]] $Value,
 
         [string[]] $Property,
 
@@ -60,17 +63,14 @@ function Invoke-GraphMethod {
         [Alias('Body')]
         [PSCustomObject] $ParameterObject,
 
-        [parameter(parametersetname='byuri', mandatory=$true)]
-        [Uri] $Uri,
-
-        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byobject', mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='byuri')]
         [parameter(parametersetname='bytypeandid')]
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='byobject')]
-        $GraphName,
+        $GraphName = $null,
 
         $PropertyFilter,
 
@@ -136,7 +136,13 @@ function Invoke-GraphMethod {
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $Id $GraphItem $true
+        $targetUri = if ( $Uri ) {
+            $Uri
+        } elseif ( ! $TypeName ) {
+            '.'
+        }
+
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $targetUri $Id $GraphItem $true
 
         if ( ! $SkipPropertyCheck.IsPresent ) {
             $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $Property
@@ -173,10 +179,10 @@ function Invoke-GraphMethod {
             $requestInfo.TypeInfo.FullTypeName
         }
 
-        if ( $Uri ) {
-            $typeUriInfo = Get-GraphUriInfo $Uri -GraphName $requestInfo.Context.Name -erroraction stop
+        if ( $targetUri ) {
+            $typeUriInfo = Get-GraphUriInfo $targetUri -GraphName $requestInfo.Context.Name -erroraction stop
             if ( ! $MethodName -and $typeUriInfo.Class -notin 'Action', 'Function' ) {
-                throw [ArgumentException]::new("The URI '$Uri' is not a method but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
+                throw [ArgumentException]::new("The URI '$targetUri' is not a method URI but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
             }
         }
 
@@ -186,9 +192,13 @@ function Invoke-GraphMethod {
             $targetMethodName = $typeUriInfo.Name
             $typeUriInfo = Get-GraphUriInfo $typeUriInfo.ParentPath -GraphName $requestInfo.Context.Name -erroraction stop
             $targetTypeName = $typeUriInfo.FullTypeName
-            $Uri
+            $targetUri.tostring()
         } else {
             $requestInfo.Uri.tostring()
+        }
+
+        if ( ! $methodUri ) {
+            throw 'Unable to determine the method Uri from the parameters specified.'
         }
 
         $owningType = Get-GraphType $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
@@ -196,7 +206,7 @@ function Invoke-GraphMethod {
         $method = $owningType.Methods | where Name -eq $targetMethodName
 
         if ( ! $method ) {
-            if ( $Uri -or $GraphItem ) {
+            if ( $targetUri -or $GraphItem ) {
                 throw [ArgumentException]::new("The specified method URI '$methodUri' could not be found in the graph '$($requestInfo.Context.Name)'")
             } else {
                 throw [ArgumentException]::new("The specified method '$MethodName' could not be found for the '$TypeName' in the graph '$($requestInfo.Context.Name)'")
@@ -227,7 +237,7 @@ function Invoke-GraphMethod {
                     $parameterIndex++
                 }
 
-                $parameterNames = $parameters.keys
+                $parameterNames = $parameters.keys | foreach { $_ }
                 $parameters
             }
         }
@@ -265,7 +275,8 @@ The complete set of valid parameters is '{3}'.
 
         $methodUriWithParameters = if ( $methodClass -eq 'Function' ) {
             $parameterString = $::.FunctionParameterHelper |=> ToUriParameterString $methodBody
-            $methodUri + $parameterString
+            $global:myuri = $methodUri
+            $methodUri.tostring().trimend('/') + $parameterString
         } else {
             $methodUri
         }

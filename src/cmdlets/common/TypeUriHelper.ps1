@@ -156,7 +156,7 @@ ScriptClass TypeUriHelper {
                     FullTypeName = $resolvedType.typeId
                     IsCollection = $true
                 }
-            } elseif ( $uri )  {
+            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of typedgraphobject over uri
                 TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
                 if (  $::.SegmentHelper |=> IsGraphSegmentType $typedGraphObject ) {

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ ScriptClass SegmentHelper {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
 
         function __initialize {
-            # NOTE: There is one or more ps1xml files that defines display formats for this type basedon
+            # NOTE: There are one or more ps1xml files that defines display formats for this type based on
             # on the PSTypeName. That may override behaviors like default columns defined here, though other
             # aspects like serialization behavior should be preserved as the ps1xml options are *merged*
             # with exisitng options. In particular the ps1xml file provides the ability to emit a "title row"
@@ -120,7 +120,7 @@ ScriptClass SegmentHelper {
                 Type = $shortTypeName
                 Id = $segment.name
                 Namespace = $namespace
-                Uri = $Uri
+                AbsoluteUri = $Uri
                 GraphName = $parser.context.name
                 GraphUri = $relativeUri
                 Path = $path
@@ -175,7 +175,7 @@ ScriptClass SegmentHelper {
                 Type = $typeComponents[$typeComponents.length - 1]
                 Id = $itemId
                 Namespace = $requestSegment.Namespace
-                Uri = $typeInfo.AbsoluteUri
+                AbsoluteUri = $typeInfo.AbsoluteUri
                 GraphName = $graphContext.Name
                 GraphUri = $typeinfo.GraphUri
                 Path = $typeInfo.FullPath
@@ -247,7 +247,7 @@ ScriptClass SegmentHelper {
                 Type = $typeComponents[$typeComponents.length - 1]
                 Id = $itemId
                 Namespace = $namespace
-                Uri = $absoluteUri
+                AbsoluteUri = $absoluteUri
                 GraphName = $graphContext.Name
                 GraphUri = $typeinfo.GraphUri
                 Path = $locationUriPath

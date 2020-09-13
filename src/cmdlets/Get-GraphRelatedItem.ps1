@@ -21,26 +21,27 @@
 . (import-script common/GraphUriParameterCompleter)
 
 function Get-GraphRelatedItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typedobjectandproperty')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='fromuri')]
     param(
-        [parameter(position=0, parametersetname='typeandproperty', mandatory=$true)]
+        [parameter(position=0, parametersetname='uriandproperty', mandatory=$true)]
+        [Alias('FromUri')]
+        [Uri] $Uri,
+
+        [Alias('WithRelationship')]
+        [parameter(position=1)]
+        [string[]] $Relationship,
+
+        [parameter(parametersetname='typeandproperty', mandatory=$true)]
         [Alias('FromType')]
         [string] $TypeName,
 
-        [parameter(position=1, parametersetname='typeandproperty', mandatory=$true)]
+        [parameter(parametersetname='typeandproperty', mandatory=$true)]
         [Alias('FromId')]
         [string] $Id,
 
         [parameter(parametersetname='typedobjectandproperty', valuefrompipeline=$true, mandatory=$true)]
         [Alias('FromItem')]
         [PSCustomObject] $GraphItem,
-
-        [Alias('WithRelationship')]
-        [string[]] $Relationship,
-
-        [parameter(parametersetname='uriandproperty', mandatory=$true)]
-        [Alias('FromUri')]
-        [Uri] $Uri,
 
         $GraphName,
 

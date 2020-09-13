@@ -22,50 +22,50 @@
 function Add-GraphRelatedItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
     param(
-        [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypefullyqualified', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
-        $TypeName,
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuripropmap', mandatory=$true)]
+        [parameter(position=0, parametersetname='byurifromobject', mandatory=$true)]
+        [parameter(position=0, parametersetname='addtoexistingurifromobject', mandatory=$true)]
+        [parameter(position=0, parametersetname='addtoexistinguripropmap', mandatory=$true)]
+        [Uri] $Uri,
 
-        [parameter(position=1, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypefullyqualified', mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
-        [parameter(position=1, parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
-        $Id,
-
-        [parameter(position=2, mandatory=$true)]
+        [parameter(position=1, mandatory=$true)]
         [Alias('WithRelationship')]
         [string] $Relationship,
 
-        [parameter(position=3, parametersetname='bytypeoptionallyqualified')]
-        [parameter(position=3, parametersetname='bytypefullyqualified')]
-        [parameter(position=3, parametersetname='byuri', mandatory=$true)]
-        [parameter(position=3, parametersetname='addtoexistingobject')]
+        [parameter(position=2, parametersetname='bytypeoptionallyqualified')]
+        [parameter(position=2, parametersetname='bytypefullyqualified')]
+        [parameter(position=2, parametersetname='byuri', mandatory=$true)]
+        [parameter(position=2, parametersetname='addtoexistingobject')]
         [string[]] $Property,
 
-        [parameter(position=4, parametersetname='bytypeoptionallyqualified')]
-        [parameter(position=4, parametersetname='bytypefullyqualified')]
-        [parameter(position=4, parametersetname='byuri')]
-        [parameter(position=4, parametersetname='addtoexistingobject')]
-        [parameter(position=4, parametersetname='addtoexistinguri')]
+        [parameter(position=3, parametersetname='bytypeoptionallyqualified')]
+        [parameter(position=3, parametersetname='bytypefullyqualified')]
+        [parameter(position=3, parametersetname='byuri')]
+        [parameter(position=3, parametersetname='addtoexistingobject')]
+        [parameter(position=3, parametersetname='addtoexistinguri')]
         [object[]] $Value,
+
+        [parameter(parametersetname='bytypeoptionallyqualified', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        $TypeName,
+
+        [parameter(parametersetname='bytypeoptionallyqualified', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualified', mandatory=$true)]
+        [parameter(parametersetname='bytypeoptionallyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedpropmap', mandatory=$true)]
+        [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', mandatory=$true)]
+        [parameter(parametersetname='bytypefullyqualifiedfromobject', mandatory=$true)]
+        $Id,
 
         [parameter(parametersetname='addtoexistingobjectfromobject', mandatory=$true)]
         [parameter(parametersetname='addtoexistingobjectpropmap', mandatory=$true)]
         [parameter(parametersetname='addtoexistingobject', mandatory=$true)]
         [PSCustomObject] $FromObject,
-
-        [parameter(parametersetname='byuri', mandatory=$true)]
-        [parameter(parametersetname='byuripropmap', mandatory=$true)]
-        [parameter(parametersetname='byurifromobject', mandatory=$true)]
-        [parameter(parametersetname='addtoexistingurifromobject', mandatory=$true)]
-        [parameter(parametersetname='addtoexistinguripropmap', mandatory=$true)]
-        [Uri] $Uri,
 
         [parameter(parametersetname='bytypeoptionallyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='bytypefullyqualifiedfromobject', valuefrompipeline=$true, mandatory=$true)]
