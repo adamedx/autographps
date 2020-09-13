@@ -24,13 +24,13 @@ Describe 'The Get-GraphUriInfo command' -tag testnow {
         It "Should successfully return child segments of the 'me' singleton of entity type 'user' including actions and functions" {
             $progresspreference = 'silentlycontinue'
 
-            $propertiesToValidate = 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version'
+            $propertiesToValidate = 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'AbsoluteUri', 'Version'
 
             $children = Get-GraphUriInfo /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, AbsoluteUri, Version
 
 
             # Use this command to generate the file:
-            # Get-GraphUriInfo /me -Children | sort Id | select 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version' | convertto-json -Depth 1
+            # Get-GraphUriInfo /me -Children | sort Id | select 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'AbsoluteUri', 'Version' | convertto-json -Depth 1
             $GetGraphUriMeResult = get-content $psscriptroot/../../test/assets/GetGraphUriMe.json
 
             $expectedChildren = $GetGraphUriMeResult | ConvertFrom-Json
