@@ -94,7 +94,7 @@ ScriptClass TypeUriHelper {
             }
 
             if ( $requestItem ) {
-                $absoluteUri = $requestItem.Uri
+                $absoluteUri = $requestItem.AbsoluteUri
                 $fullPath = $requestItem.Path
                 $graphUri = $requestItem.GraphUri
                 if ( ! $fullTypeName ) {
