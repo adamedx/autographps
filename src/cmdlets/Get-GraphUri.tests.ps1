@@ -26,7 +26,7 @@ Describe 'The Get-GraphUriInfo command' -tag testnow {
 
             $propertiesToValidate = 'Class', 'Collection', 'Endpoint', 'FullTypeName', 'GraphUri', 'Id', 'Info', 'IsDynamic', 'Namespace', 'ParentPath', 'Path', 'Preview', 'PSTypeName', 'Relation', 'Type', 'Uri', 'Version'
 
-            $children = Get-GraphUriInfo /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, Uri, Version
+            $children = Get-GraphUriInfo /me -children | select Class, Collection, Endpoint, FullTypeName, GraphUri, Id, Info, IsDynamic, Namespace, ParentPath, Path, Preview, PSTypeName, Relation, Type, AbsoluteUri, Version
 
 
             # Use this command to generate the file:
