@@ -186,6 +186,14 @@ function Get-GraphResourceWithMetadata {
             $targetFilter = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $context $resolvedUri.FullTypeName $SimpleMatch
         }
 
+        $pagingResultCount = 20
+
+        if ( ( $pscmdlet.pagingparameters.First -ne $null ) -and
+             ( $pscmdlet.pagingparameters.First -gt 0 ) -and
+             ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue ) ) {
+                 $pagingResultCount = $pscmdlet.pagingparameters.first
+             }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
@@ -199,7 +207,7 @@ function Get-GraphResourceWithMetadata {
             Descending = $Descending
             RawContent=$RawContent
             Headers=$Headers
-            First=$pscmdlet.pagingparameters.first
+            First=$pagingResultCount
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
             Connection = $context.connection
