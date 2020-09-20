@@ -21,10 +21,12 @@
 . (import-script common/GraphUriParameterCompleter)
 
 function Get-GraphRelatedItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='fromuri')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='uriandproperty')]
     param(
         [parameter(position=0, parametersetname='uriandproperty', mandatory=$true)]
+        [parameter(parametersetname='uripipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('FromUri')]
+        [Alias('GraphUri')]
         [Uri] $Uri,
 
         [Alias('WithRelationship')]
@@ -43,6 +45,10 @@ function Get-GraphRelatedItem {
         [Alias('FromItem')]
         [PSCustomObject] $GraphItem,
 
+        [parameter(parametersetname='uripipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='uriandproperty')]
+        [parameter(parametersetname='typeandproperty')]
+        [parameter(parametersetname='typedobjectandproperty')]
         $GraphName,
 
         [switch] $ContentOnly,
@@ -60,7 +66,7 @@ function Get-GraphRelatedItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true v
 
         $requestErrorAction = $ErrorActionPreference
 

@@ -291,7 +291,7 @@ ScriptClass TypeUriHelper {
                 $::.TypeUriHelper |=> GetTypeAwareRequestInfo $graphName $targetTypeName $isFullyQualifiedTypeName $null $targetObjectId $null
             } else {
                 foreach ( $destinationId in $targetId ) {
-                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $destinationId $null $null
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null $false
                 }
             }
         }

@@ -23,57 +23,49 @@
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('GraphUri')]
+        $Uri,
+
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
         $Id,
 
         [string[]] $Property,
-
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
-        [parameter(position=0, parametersetname='byurichildren', mandatory=$true)]
-        $Uri,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='byobject')]
         $GraphName,
 
-        [parameter(parametersetname='byurichildren')]
         $PropertyFilter,
 
-        [parameter(parametersetname='byurichildren')]
         $Filter,
 
-        [parameter(parametersetname='byurichildren')]
         [Alias('SearchString')]
         $SimpleMatch,
 
-        [parameter(parametersetname='byurichildren')]
         [String] $Search,
 
         [string[]] $Expand,
 
-        [parameter(parametersetname='byurichildren')]
         [Alias('Sort')]
         [object[]] $OrderBy = $null,
 
-        [parameter(parametersetname='byurichildren')]
         [Switch] $Descending,
 
         [switch] $ContentOnly,
 
         [switch] $RawContent,
 
-        [parameter(parametersetname='byurichildren', mandatory=$true)]
         [switch] $ChildrenOnly,
 
         [switch] $FullyQualifiedTypeName,

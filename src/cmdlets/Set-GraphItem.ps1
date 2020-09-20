@@ -23,7 +23,12 @@
 function Set-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('GraphUri')]
+        $Uri,
+
+        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         [string] $TypeName,
 
@@ -31,21 +36,24 @@ function Set-GraphItem {
         [string] $Id,
 
         [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
+        [parameter(parametersetname='bytypeandid')]
         [string[]] $Property,
 
         [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
+        [parameter(parametersetname='bytypeandid')]
         [object[]] $Value,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
-        $Uri,
-
+        [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [string] $GraphName,
 
         [HashTable] $PropertyTable,

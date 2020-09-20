@@ -20,62 +20,64 @@
 . (import-script common/GraphUriParameterCompleter)
 
 function Remove-GraphItemRelationship {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='typeandpropertytotargetobject')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='uriandpropertytouri')]
     param(
-        [parameter(position=0, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=0, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
-        [Alias('FromType')]
-        [string] $TypeName,
-
-        [parameter(position=1, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=1, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
-        [Alias('FromId')]
-        [string] $Id,
-
-        [parameter(position=0, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
-        [parameter(position=0, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
-        [Alias('FromItem')]
-        [PSCustomObject] $GraphItem,
-
-        [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
-        [parameter(position=1, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
-        [parameter(position=1, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
-        [parameter(position=1, parametersetname='uriandpropertytotargetid')]
-        [parameter(position=1, parametersetname='uriandpropertytotargetobject')]
-        [parameter(position=1, parametersetname='uriandpropertytotargeturi')]
-        [string] $Relationship,
-
-        [parameter(parametersetname='typeandpropertytotargetid')]
-        [parameter(parametersetname='typedobjectandpropertytotargetid')]
-        [parameter(parametersetname='uriandpropertytotargetid')]
-        [parameter(parametersetname='typedobjectandpropertytotargetobject')]
-        [string] $OverrideTargetTypeName,
-
-        [parameter(position=3, parametersetname='typeandpropertytotargetid', mandatory=$true)]
-        [parameter(position=2, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
-        [parameter(position=2, parametersetname='uriandpropertytotargetid', mandatory=$true)]
-        [Alias('ToId')]
-        [object[]] $TargetId,
-
-        [parameter(parametersetname='typeandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='typedobjectandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='uriandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('ToItem')]
-        [object] $TargetObject,
-
-        [parameter(parametersetname='uriandpropertytotargeturi', mandatory=$true)]
-        [parameter(parametersetname='uriandpropertytotargetid', mandatory=$true)]
-        [parameter(parametersetname='uriandpropertytotargetobject', mandatory=$true)]
+        [parameter(position=0, parametersetname='uriandpropertytoid', mandatory=$true)]
+        [parameter(position=0, parametersetname='uriandpropertytouri', mandatory=$true)]
+        [parameter(position=0, parametersetname='uriandpropertytoobject', mandatory=$true)]
         [Alias('FromUri')]
         [Uri] $Uri,
 
-        [parameter(parametersetname='uriandpropertytotargeturi', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertytotargeturi', mandatory=$true)]
-        [parameter(parametersetname='typedobjectandpropertytotargeturi', mandatory=$true)]
+        [Alias('WithRelationship')]
+        [parameter(position=1)]
+        [string] $Relationship,
+
+        [parameter(parametersetname='typeandpropertytoid', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytouri', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoobject', mandatory=$true)]
+        [Alias('FromType')]
+        [string] $TypeName,
+
+        [parameter(parametersetname='typeandpropertytoid', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytouri', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoobject', mandatory=$true)]
+        [Alias('FromId')]
+        [string] $Id,
+
+        [parameter(position=0, parametersetname='typedobjectandpropertytoid', mandatory=$true)]
+        [parameter(position=0, parametersetname='typedobjectandpropertytouri', mandatory=$true)]
+        [parameter(position=0, parametersetname='typedobjectandpropertytoobject', mandatory=$true)]
+        [Alias('FromItem')]
+        [PSCustomObject] $GraphItem,
+
+        [string] $OverrideTargetTypeName,
+
+        [Alias('ToId')]
+        [parameter(parametersetname='typedobjectandpropertytoid', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoid', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertytoid', mandatory=$true)]
+        [string] $TargetId,
+
+        [parameter(parametersetname='uriandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [Alias('ToItem')]
+        [PSCustomObject] $TargetObject,
+
+        [parameter(parametersetname='uriandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('ToUri')]
+        [Alias('GraphUri')]
         [Uri[]] $TargetUri,
 
+        [parameter(parametersetname='uriandpropertytoid')]
+        [parameter(parametersetname='typeandpropertytoid')]
+        [parameter(parametersetname='typedobjectandpropertytoid')]
+        [parameter(parametersetname='uriandpropertytouri', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='typeandpropertytouri', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='typedobjectandpropertytouri', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='uriandpropertytoobject')]
+        [parameter(parametersetname='typeandpropertytoobject')]
+        [parameter(parametersetname='typedobjectandpropertytoobject')]
         $GraphName,
 
         [switch] $FullyQualifiedTypeName,
@@ -102,10 +104,16 @@ function Remove-GraphItemRelationship {
         }
 
         $targetTypeName = $targetTypeInfo.TypeId
+
+        $referenceUris = @()
     }
 
     process {
         $targetInfo = $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $targetId $TargetUri $TargetObject
+
+        if ( ! $targetInfo ) {
+            throw "Unable to determine URI for specified type '$targetTypeName' or input object"
+        }
 
         $graphNameParameter = @{}
 
@@ -117,10 +125,13 @@ function Remove-GraphItemRelationship {
 
         $referenceUri = $sourceInfo.Uri, $referenceId, '$ref' -join '/'
 
-        Invoke-GraphRequest $referenceUri -Method DELETE -connection $sourceInfo.RequestInfo.Context.connection -erroraction 'stop' | out-null
+        $referenceUris += $referenceUri
     }
 
     end {
+        foreach ( $referenceUriToRemove in $referenceUris ) {
+            Invoke-GraphRequest $referenceUriToRemove -Method DELETE -connection $sourceInfo.RequestInfo.Context.connection | out-null
+        }
     }
 }
 

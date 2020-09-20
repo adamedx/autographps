@@ -23,43 +23,44 @@ function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri',  mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
         [Alias('OfUri')]
+        [Alias('GraphUri')]
         $Uri,
 
-        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('OfObject')]
-        [PSCustomObject] $GraphItem,
-
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(parametersetname='bytypecollection', mandatory=$true)]
         [Alias('OfTypeName')]
         [Alias('FullTypeName')]
         [string] $TypeName,
 
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('OfId')]
         [string] $Id,
 
         [string[]] $Property,
 
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [Alias('OfObject')]
+        [PSCustomObject] $GraphItem,
+
         [Alias('WithRelationship')]
         [string[]] $Relationship,
 
-
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='bytypecollection')]
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypecollection')]
+        [parameter(parametersetname='byobject')]
         [string] $GraphName,
 
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
         [parameter(parametersetname='bytypecollection')]
         [HashTable] $PropertyFilter,
 
         [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
         [string] $Filter,
 
         $SimpleMatch,
@@ -129,7 +130,7 @@ function Get-GraphChildItem {
         $ignoreProperty = $SkipPropertyCheck.IsPresent -or ( $Relationship -ne $null )
 
         if ( $accumulatedItems ) {
-            $accumulatedItems | Get-GraphItem @remappedParameters -SkipPropertyCheck:$ignoreProperty
+            $accumulatedItems | Get-GraphItem @remappedParameters -SkipPropertyCheck:$ignoreProperty -ChildrenOnly:$true
         } else {
             foreach ( $remappedUri in $remappedUris ) {
                 Get-GraphItem -Uri $remappedUri @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty
