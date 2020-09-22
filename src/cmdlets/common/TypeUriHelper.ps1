@@ -49,7 +49,7 @@ ScriptClass TypeUriHelper {
                 $responseObject.GraphUri.tostring()
             } else {
                 # Try to parse the odata context
-                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $false $resourceId
+                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
 
                 # If the odata context is not parseable for some reason, fall back to older logic
                 if ( ! $objectUri -and ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) ) {
@@ -223,19 +223,30 @@ ScriptClass TypeUriHelper {
             [Uri] $uriString
         }
 
-        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty)  {
+        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty, $relationshipInfo)  {
             $fromId = if ( $Id ) {
                 $Id
             } elseif ( $graphObject -and ( $graphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
                 $graphObject.Id # This is needed when an object is supplied without an id parameter
             }
 
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $graphObject
+            $requestInfo = if ( $relationshipInfo ) {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $relationshipInfo.GraphName $null $false $relationshipInfo.FromUri $null $null
+            } else {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $graphObject
+            }
 
             $segments = @()
             $segments += $requestInfo.uri.tostring()
-            if ( $navigationProperty -and $requestInfo.uri ) {
-                $segments += $navigationProperty
+
+            $targetNavigation = if ( $RelationshipInfo ) {
+                $relationshipInfo.Relationship
+            } else {
+                $navigationProperty
+            }
+
+            if ( $targetNavigation -and $requestInfo.uri ) {
+                $segments += $targetNavigation
             }
 
             $sourceUri = $segments -join '/'
@@ -275,8 +286,10 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false) {
-            if ( $TargetUri ) {
+        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false, $relationshipInfo) {
+            if ( $relationshipInfo ) {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $relationshipInfo.GraphName $null $false $relationshipInfo.TargetUri $relationshipInfo.TargetId $null
+            } elseif ( $TargetUri ) {
                 foreach ( $destinationUri in $TargetUri ) {
                     $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
                 }

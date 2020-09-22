@@ -17,6 +17,7 @@
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphItem)
+. (import-script cmdlets\Get-GraphItemRelationship)
 . (import-script cmdlets\Get-GraphRelatedItem)
 . (import-script cmdlets\Get-GraphItemUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)

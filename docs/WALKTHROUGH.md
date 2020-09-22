@@ -563,10 +563,16 @@ New-GraphItemRelationship -FromItem $newGroup -ToItem $newUser -Relationship mem
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
 
-To see the new relationship, use the `Get-GraphRelatedItem` command:
+To see the new relationship, but not the related items themselves, use the `Get-GraphItemRelationship` command:
 
 ```powershell
-Get-GraphRelatedItem -TypeName group -Id $newgroup.id -WithRelationship members
+$newGroup | Get-GraphRelatedItem -WithRelationship members
+```
+
+To see the actual items from the relationships (e.g. the members of a group and not just their id's), use the `Get-GraphRelatedItem` command:
+
+```powershell
+$newGroup | Get-GraphRelatedItem -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -609,19 +615,19 @@ t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 The inverse of the `New-GraphItemRelationship` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
 
 ```powershell
-Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -Relationship members -Id 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
 A syntax that supports an object rather than identifier for the subject or object of the relationship or both is also available:
 
 ```powershell
-Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members -Id 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
-And the pipeline is also supported -- this example removes all members from the group `$teamGroup`:
+And the pipeline is also supported -- these example removse all members from the group `$teamGroup`:
 
 ```powershell
-$teamGroup | Get-GraphRelatedItem -WithRelationship members | Remove-GraphItemRelationship -FromItem $teamgroup -Relationship members
+$teamGroup | Get-GraphItemRelationship -WithRelationship members | Remove-GraphItemRelationship
 ```
 
 #### Delete resources

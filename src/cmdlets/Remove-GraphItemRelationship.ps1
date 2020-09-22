@@ -20,10 +20,10 @@
 . (import-script common/GraphUriParameterCompleter)
 
 function Remove-GraphItemRelationship {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='uriandpropertytouri')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='uriandpropertytoid')]
     param(
         [parameter(position=0, parametersetname='uriandpropertytoid', mandatory=$true)]
-        [parameter(position=0, parametersetname='uriandpropertytouri', mandatory=$true)]
+        [parameter(position=0, parametersetname='uriandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='uriandpropertytoobject', mandatory=$true)]
         [Alias('FromUri')]
         [Uri] $Uri,
@@ -52,22 +52,26 @@ function Remove-GraphItemRelationship {
 
         [string] $OverrideTargetTypeName,
 
-        [Alias('ToId')]
         [parameter(parametersetname='typedobjectandpropertytoid', mandatory=$true)]
         [parameter(parametersetname='typeandpropertytoid', mandatory=$true)]
         [parameter(parametersetname='uriandpropertytoid', mandatory=$true)]
+        [Alias('ToId')]
         [string] $TargetId,
 
-        [parameter(parametersetname='uriandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='typedobjectandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='typeandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='uriandpropertytoobject', mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertytoobject', mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoobject', mandatory=$true)]
         [Alias('ToItem')]
         [PSCustomObject] $TargetObject,
 
         [parameter(parametersetname='uriandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [Alias('ToUri')]
+        [parameter(parametersetname='typeandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
-        [Uri[]] $TargetUri,
+        [Uri] $TargetUri,
+
+        [parameter(parametersetname='relationshipobject', valuefrompipeline=$true, mandatory=$true)]
+        [PSCustomObject] $RelationshipObject,
 
         [parameter(parametersetname='uriandpropertytoid')]
         [parameter(parametersetname='typeandpropertytoid')]
@@ -87,29 +91,40 @@ function Remove-GraphItemRelationship {
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
+        $sourceInfo = if ( $TypeName -or $Uri -or $GraphItem ) {
+            $referenceSource = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Id $Uri $GraphItem $Relationship
 
-        if ( ! $sourceInfo ) {
-            throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+            if ( ! $referenceSource ) {
+                throw "Unable to determine Uri for specified GraphItem parameter -- specify the TypeName or Uri parameter and retry the command"
+            }
+
+            $referenceSource
         }
 
-        if ( ! $SkipRelationshipCheck.IsPresent ) {
-            $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Relationship NavigationProperty
+        $targetTypeName = if ( $sourceInfo ) {
+            if ( ! $SkipRelationshipCheck.IsPresent ) {
+                $::.QueryTranslationHelper |=> ValidatePropertyProjection $sourceInfo.RequestInfo.Context $sourceInfo.RequestInfo.TypeInfo $Relationship NavigationProperty
+            }
+
+            $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Relationship $OverrideTargetTypeName $false
+
+            if ( ! $targetTypeInfo ) {
+                throw "Unable to find specified property '$Relationship' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
+            }
+
+            $targetTypeInfo.TypeId
         }
-
-        $targetTypeInfo = $::.TypeUriHelper |=> GetReferenceTargetTypeInfo $GraphName $sourceInfo.RequestInfo $Relationship $OverrideTargetTypeName $false
-
-        if ( ! $targetTypeInfo ) {
-            throw "Unable to find specified property '$Relationship' on the specified source -- specify the property's type with the OverrideTargetTypeName and retry the command"
-        }
-
-        $targetTypeName = $targetTypeInfo.TypeId
 
         $referenceUris = @()
     }
 
     process {
-        $targetInfo = $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $targetId $TargetUri $TargetObject
+        $targetInfo = if ( $RelationshipObject ) {
+            $sourceInfo = $::.TypeUriHelper |=> GetReferenceSourceInfo $GraphName $null $false $null $null $null $null $RelationshipObject
+            $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $null $false $null $null $null $false $RelationshipObject
+        } else {
+            $::.TypeUriHelper |=> GetReferenceTargetInfo $GraphName $targetTypeName $FullyQualifiedTypeName.IsPresent $targetId $TargetUri $TargetObject
+        }
 
         if ( ! $targetInfo ) {
             throw "Unable to determine URI for specified type '$targetTypeName' or input object"
@@ -119,6 +134,8 @@ function Remove-GraphItemRelationship {
 
         if ( $graphName ) {
             $graphNameParameter = @{GraphName=$GraphName}
+        } elseif ( $RelationshipObject ) {
+            $graphNameParameter = @{GraphName=$RelationshipObject.GraphName}
         }
 
         $referenceId = $targetInfo.Uri.tostring().trimend('/') -split '/' | select -last 1

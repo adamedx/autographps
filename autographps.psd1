@@ -78,6 +78,7 @@ NestedModules = @(
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItem',
+    'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
     'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
@@ -135,6 +136,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphItem.ps1',
+        '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
@@ -168,6 +170,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\QueryTranslationHelper.ps1',
+        '.\src\cmdlets\common\RelationshipDisplayType.ps1',
         '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
@@ -243,6 +246,7 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 
 * New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
 * New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
+* New command `Get-GraphItemRelationship`: this command returns the specified relationships from a given object to other objects
 * `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
 * `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
 * `Get-GraphType` now supports a `Uri` parameter to get type information about the type of any object in the graph given its Uri
