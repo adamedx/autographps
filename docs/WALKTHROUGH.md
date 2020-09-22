@@ -559,6 +559,12 @@ To modify a relationship, the `New-GraphItemRelationship` command may be used:
 
 ```powershell
 New-GraphItemRelationship -FromItem $newGroup -ToItem $newUser -Relationship members
+
+
+Relationship TargetId                             FromUri                                      TargetUri
+------------ --------                             -------                                      ---------
+members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/e510d45c-aec3-4026-ba8e-317480ae7bc5
+members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/71edbed4-a7e7-4b46-8e2f-a28e9135ca54
 ```
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
@@ -596,7 +602,7 @@ $newUser2 = New-GraphItem user -Property mailNickname, userPrincipalName, displa
 $teamGroup = new-graphitem group mailNickName, displayName, mailEnabled, securityEnabled Group7AccessT1, 'Group 7 Access 2', $false, $true
 
 # Add the users to the group
-$newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members
+$newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members | out-null
 
 # Display the group's updated membership with the new users
 
