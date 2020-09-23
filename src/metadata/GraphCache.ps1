@@ -185,7 +185,6 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         # a necessity, though most of those workarounds are now built in to ScriptClass itself. It may even be feasible to parse the entire graph
         # rather than only parse just in time since the entire graph can be parsed efficiently in the background without being serialized and deserialized.
         $graphLoadJob = Start-ThreadJob { param($cacheClass, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; $cacheClass.__GetGraph($graphEndpoint, $version, $schemadata) } -argumentlist $cacheClass, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
->>>>>>> 57491dd... WIP: Initial ThreadJob implementation
 
         $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
