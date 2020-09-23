@@ -18,11 +18,10 @@
 * Add progress for pipeline operations
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Wrapper for ggci to only support "global" types
-* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
+* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type) -- seems like we somehow did this in GraphUtilities?
 * Use https://github.com/PowerShell/platyPS to generate markdown help
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
-* Use odata context
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
@@ -350,6 +349,7 @@
 * Add method parameter validation to invoke-graphmethod
 * Rename GraphObject to GraphItem
 * Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
+* Use odata context
 
 ### Postponed
 

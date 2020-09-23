@@ -241,12 +241,14 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 * The `GraphObject` parameter in `New-GraphObject` and `Set-GraphItem` has been renamed `TemplateObject`.
 * The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
 * Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
+* The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
 
 ### New features
 
 * New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
 * New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
 * New command `Get-GraphItemRelationship`: this command returns the specified relationships from a given object to other objects
+* The `New-GraphItemRelationship` now returns objects representing the relationship that was created -- previously this command had no output. The output format is the same as that of the new `Get-GraphItemRelationship` command and is accepted as input to an updated `Remove-GraphItemRelationship` command.
 * `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
 * `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
 * `Get-GraphType` now supports a `Uri` parameter to get type information about the type of any object in the graph given its Uri
