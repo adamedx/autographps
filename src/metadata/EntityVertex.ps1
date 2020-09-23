@@ -31,7 +31,7 @@ ScriptClass EntityVertex {
             $this.type = $entity.type
             $this.name = $entity.Name
             $this.id = $entity |=> GetEntityId
-            $this.typeName = $entity.typedata.EntityTypeName
+            $this.typeName = $entity.typedata.TypeName
         } else {
             $this.type = 'Null'
             $this.name = 'Null'
@@ -68,7 +68,7 @@ ScriptClass EntityVertex {
         if ( $this.entity ) {
             $this.entity.typeData
         } else {
-            @{EntityTypeName='Null';IsCollection=$false}
+            @{TypeName='Null';IsCollection=$false}
         }
     }
 

@@ -50,7 +50,7 @@ function Get-GraphUriInfo {
 
         [Switch] $IgnoreMissingMetadata,
 
-        [String] $GraphScope = $null,
+        [String] $GraphName = $null,
 
         [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
@@ -90,8 +90,8 @@ function Get-GraphUriInfo {
 
     $disallowVirtualChildren = $Children.ispresent -and ! $IncludeVirtualChildren.ispresent
 
-    $context = if ( $GraphScope ) {
-        $::.Logicalgraphmanager.Get().contexts[$GraphScope].Context
+    $context = if ( $GraphName ) {
+        $::.Logicalgraphmanager.Get().contexts[$GraphName].Context
     }
 
     while ( $nextUris.Count -gt 0 ) {

@@ -14,13 +14,12 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeUriHelper)
+. (import-script common/RelationshipDisplayType)
 . (import-script common/GraphParameterCompleter)
-. (import-script common/TypeParameterCompleter)
-. (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/GraphUriParameterCompleter)
 
-function Get-GraphRelatedItem {
+function Get-GraphItemRelationship {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='uriandproperty')]
     param(
         [parameter(position=0, parametersetname='uriandproperty', mandatory=$true)]
@@ -51,14 +50,14 @@ function Get-GraphRelatedItem {
         [parameter(parametersetname='typedobjectandproperty')]
         $GraphName,
 
-        [switch] $ContentOnly,
-
         [switch] $FullyQualifiedTypeName,
 
         [switch] $SkipRelationshipCheck
     )
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $relationshipInfo = $null
     }
 
     process {
@@ -66,7 +65,7 @@ function Get-GraphRelatedItem {
             $Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true v
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true
 
         $requestErrorAction = $ErrorActionPreference
 
@@ -91,22 +90,40 @@ function Get-GraphRelatedItem {
             }
         }
 
-        $relationShipUris = foreach ( $currentRelationship in $targetRelationships ) {
+        $relationshipInfo = foreach ( $currentRelationship in $targetRelationships ) {
             if ( ! $SkipRelationshipCheck.IsPresent ) {
                 $::.QueryTranslationHelper |=> ValidatePropertyProjection $requestInfo.Context $requestInfo.TypeInfo $currentRelationship NavigationProperty
             }
 
-            [Uri] ( $::.GraphUtilities |=> ToLocationUriPath $requestInfo.context ( $requestInfo.Uri.ToString(), $currentRelationship -join '/' ) )
+            $fromUri = $requestInfo.Uri
+            $relationshipRequestUri = [Uri] ( $::.GraphUtilities |=> ToLocationUriPath $requestInfo.context ( $requestInfo.Uri.ToString(), $currentRelationship -join '/' ) )
+
+            @{Name=$currentRelationShip; FromUri=$fromUri; RequestUri=$relationshipRequestUri}
         }
     }
 
     end {
         $graphNameArgument = if ( $GraphName ) { @{GraphName=$GraphName} } else { @{} }
-        $relationshipUris | Get-GraphResourceWithMetadata @graphNameArgument -ContentOnly:$($ContentOnly.IsPresent) -ErrorAction $requestErrorAction
+
+        $relationshipResults = foreach ( $relationshipDetail in $relationshipInfo ) {
+            $relatedItems = $relationshipDetail.RequestUri | Get-GraphResourceWithMetadata @graphNameArgument -ErrorAction $requestErrorAction -Property id
+
+            @{
+                RelationshipInfo = $relationshipDetail
+                RelatedItems = $relatedItems
+            }
+        }
+
+        foreach ( $result in $relationshipResults ) {
+            foreach ( $relatedItem in $result.RelatedItems ) {
+                $relatedItemUri = ( $relatedItem.Content | Get-GraphUri -UnqualifiedUri  -erroraction silentlycontinue )[0]
+                new-so RelationshipDisplayType $requestInfo.Context.Name $result.RelationshipInfo.Name $result.RelationshipInfo.FromUri $relatedItemUri $relatedItem.id
+            }
+        }
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Uri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)

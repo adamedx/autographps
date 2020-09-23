@@ -2,28 +2,31 @@
 
 ## To-do items -- prioritized
 
+* Fix ambiguous new object problem
+* Add DefaultUriForType to Get-GraphType
+* Generate odata context uri's: http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358910
+* Make set-graphitem parameters more strict when MergeGraphItemWithPropertyTable is specified
+* Consider renaming MergeGraphItemWithPropertyTable in Set-GraphItem or making it only work when PropertyTable is specified
+* Get-GraphRequestUri
+* Get-GraphQueryUri (AutoGraphPS-SDK)
+* New-GraphRequest, Expand-GraphResponse, Select-GraphResponse, Filter-GraphResponse, Add-GraphResponseRelationship
+* When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
+* Allow id to be emitted for new-graphobject
+* Add request builder in sdk and in this module
+* Add New-GraphFilter
 * Add trace-graphrequest / measure-graphrequest commands
 * Add progress for pipeline operations
-* Show-GraphHelp should take a uri
-* Get-GraphType should take a URI
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Wrapper for ggci to only support "global" types
-* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type)
+* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type) -- seems like we somehow did this in GraphUtilities?
 * Use https://github.com/PowerShell/platyPS to generate markdown help
-* Should 'type' be 'resource' or 'resourcetype'?
-* Invoke-GraphMethod
 * Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
-* Use odata context
-* Rename GraphObject to GraphItem
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
 * Add autocomplete from last items
 * Make setdefaultvalues in new-graphobject take effect
 * Fix directory header inconsistency which used graph qualified paths in some cases, others no graph
-* Add methods to Get-GraphType
-  * $edges = $graph.typevertices['microsoft.graph.user'].outgoingedges; $edges.keys |where { $edgeName = $_; $edge = $edges[$edgeName]; if ( $edge.transition.type -eq 'Action' -or $edge.transition.type -eq 'Function' ) { $true } } | foreach { $edges[$_] }
-* Add method invocation via Invoke-GraphMethod
 * Fix CI on Linux to actually fail when test failures occur
 * Get-GraphType and New-GraphObject should accept both fqn and uqn instead of just uqn for primitive types as for other type classes
 * Remove module rename workaround for case issues in CI on Linux
@@ -136,7 +139,6 @@
 * set-graphconfig
 * invoke-graphaction
 * generate nuspec
-* Find a better name!
 * README
 * Extended Samples
 * More tests
@@ -339,6 +341,15 @@
 * Set-GraphItem should take an object, not just a hashtable
 * gls and co. should use TypeName instead of FullTypeName, something else other than type
 * Optimize performance for pipeline scenarios for get-graphitem, get-graphchilditem
+* Find a better name! -- We did -- AutoGraph!
+* Add methods to Get-GraphType
+* Add Uri support to get-graphtype, new-graphmethodparameterobject
+* Fix memberdata aspect of member
+* Add method invocation via Invoke-GraphMethod
+* Add method parameter validation to invoke-graphmethod
+* Rename GraphObject to GraphItem
+* Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
+* Use odata context
 
 ### Postponed
 
@@ -356,6 +367,10 @@
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
 * Fix gls of the result of gls to return the same thing, not the entityset
+* Fix TypeMember to be more like MemberDisplayType
+* Rename graphscope to graphname on get-graphuriinfo
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
 
 ### Abandoned
 

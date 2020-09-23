@@ -26,8 +26,9 @@ ScriptClass TypeDefinition {
     $DefaultValue = $null
     $DefaultCollectionValue = $null
     $NativeSchema = $null
+    $Methods = $null
 
-    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $properties, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema, $navigationProperties) {
+    function __initialize($typeId, [GraphTypeClass] $class, $name, $namespace, $baseType, $properties, $defaultValue, $defaultCollectionValue, $isComposite, $nativeSchema, $navigationProperties, $methods) {
         if ( $class -eq 'Unknown' ) {
             throw [ArgumentException]::new("Error creating definition for type '$typeId': the specified type class 'Unknown' is not valid -- the type must be Enumeration, Complex, Primitive, or Entity")
         }
@@ -38,6 +39,7 @@ ScriptClass TypeDefinition {
         $this.Name = $name
         $this.Properties = @()
         $this.NavigationProperties = @()
+        $this.Methods = @()
         $this.Namespace = $namespace
         $this.IsComposite = $IsComposite
         $this.DefaultValue = $defaultValue
@@ -54,6 +56,10 @@ ScriptClass TypeDefinition {
         if ( $NavigationProperties ) {
             # See the singleton override workaround for the same case above for Properties
             $this.NavigationProperties = if ( ! $navigationProperties -or $navigationProperties.GetType().IsArray ) { $navigationProperties } else { , @($navigationProperties) }
+        }
+
+        if ( $Methods ) {
+            $this.Methods = if ( ! $methods -or $methods.GetType().IsArray ) { $methods } else { , @($methods) }
         }
     }
 }

@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.32.1'
+ModuleVersion = '0.33.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.21.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.22.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
 )
 
@@ -78,6 +78,7 @@ NestedModules = @(
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItem',
+    'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
     'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
@@ -85,9 +86,11 @@ NestedModules = @(
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
+    'Invoke-GraphMethod',
     'New-Graph',
     'New-GraphItem',
     'New-GraphItemRelationship',
+    'New-GraphMethodParameterObject',
     'New-GraphObject',
     'Remove-Graph',
     'Remove-GraphItem',
@@ -133,6 +136,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphItem.ps1',
+        '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
@@ -140,9 +144,11 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
+        '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
+        '.\src\cmdlets\New-GraphMethodParameterObject.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Remove-GraphItem.ps1',
@@ -154,11 +160,17 @@ VariablesToExport = @(
         '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
+        '.\src\cmdlets\common\FunctionParameterHelper.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
+        '.\src\cmdlets\common\MemberDisplayType.ps1',
+        '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
+        '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
+        '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\QueryTranslationHelper.ps1',
+        '.\src\cmdlets\common\RelationshipDisplayType.ps1',
         '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
@@ -180,7 +192,8 @@ VariablesToExport = @(
         '.\src\metadata\GraphSegment.ps1',
         '.\src\metadata\SegmentParser.ps1',
         '.\src\metadata\QualifiedSchema.ps1',
-        '.\src\metadata\UriCache.ps1'
+        '.\src\metadata\UriCache.ps1',
+        '.\src\typesystem\MethodInfo.ps1',
         '.\src\typesystem\TypeMember.ps1',
         '.\src\typesystem\TypeSchema.ps1',
         '.\src\typesystem\TypeDefinition.ps1',
@@ -215,18 +228,41 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.32.1 Release Notes
+## AutoGraphPS 0.33.0 Release Notes
 
-Cosmetic update to address name change of default branch to 'main'. Functionality is identical to v0.32.0.
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
 
 ### New dependencies
 
+* AutoGraphPS-SDK 0.22.0
+
 ### Breaking changes
+
+* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphItem` has been renamed `TemplateObject`.
+* The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
+* Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
+* The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
 
 ### New features
 
+* New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
+* New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
+* New command `Get-GraphItemRelationship`: this command returns the specified relationships from a given object to other objects
+* The `New-GraphItemRelationship` now returns objects representing the relationship that was created -- previously this command had no output. The output format is the same as that of the new `Get-GraphItemRelationship` command and is accepted as input to an updated `Remove-GraphItemRelationship` command.
+* `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
+* `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
+* `Get-GraphType` now supports a `Uri` parameter to get type information about the type of any object in the graph given its Uri
+* `Get-GraphType` now supports pipeline input to take an object emitted by `Get-GraphItem` or `Get-GraphResource` and return the type information for that object's type
+* `ShowGraphHelp` has been updated to show help information based on a new `Uri` parameter
+* `ShowGraphHelp` can also take in pipeline input to give help information for an object returned by other commands in this module
+* Commands that return objects from the Graph now return the actual derived type of the object in heterogenous collections that are defined as returning a base type
+
 ### Fixed defects
 
+* In some cases, `New-GraphObject` would not correctly create arrays when an array was only of size 1, instead a scalar was emitted. This has been fixed to generate an array of size 1 in such cases. This issue caused Graph to reject requests with objects in this scenario due to an invlaid schema.
+* `Set-GraphItem` now works in more cases when an object is piped in as the object to update but the object came from a POST request or is only accessible via a navigation property (e.g. /me/contacts).
+
+None.
 '@
     } # End of PSData hashtable
 

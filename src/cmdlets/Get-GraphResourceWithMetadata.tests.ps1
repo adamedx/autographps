@@ -22,7 +22,7 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
     Context 'When making REST method calls to Graph' {
         BeforeAll {
             $progresspreference = 'silentlycontinue'
-#            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
         }
 
         ScriptClass MockToken {
@@ -41,7 +41,6 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
         Mock Invoke-GraphRequest ([ScriptBlock]::Create($mockScript)) -modulename autographps
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
-            write-host igotcalled
             [PSCustomObject] @{
                 RawContent = $MockContext
                 RawContentLength = $MockContext.length

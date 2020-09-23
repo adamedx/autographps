@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../../typesystem/TypeDefinition)
+. (import-script MemberDisplayType)
 
 ScriptClass TypeHelper {
     static {
@@ -26,24 +27,29 @@ ScriptClass TypeHelper {
             Properties = 'Properties'
             Relationships = 'NavigationProperties'
             IsComposite = 'IsComposite'
+            Methods = 'Methods'
             NativeSchema = 'NativeSchema'
         }
-
 
         function __initialize {
             __RegisterDisplayType
         }
 
         function ToPublic( $privateObject ) {
+            $properties = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)).Result
+            $relationships = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)).Result
+            $methods = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)).Result
+
             $result = [PSCustomObject] @{
                 TypeId = $privateObject.($this.displayProperties.TypeId)
                 Namespace = $privateObject.($this.displayProperties.Namespace)
                 TypeClass = $privateObject.($this.displayProperties.TypeClass)
                 BaseType = $privateObject.($this.displayProperties.BaseType)
-                Properties = $privateObject.($this.displayProperties.Properties)
-                Relationships = $privateObject.($this.displayProperties.Relationships)
                 IsComposite = $privateObject.($this.displayProperties.IsComposite)
                 NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
+                Relationships = $relationships
+                Properties = $properties
+                Methods = $methods
             }
 
             $result.psobject.typenames.add($this. DisplayTypeName)
@@ -53,7 +59,7 @@ ScriptClass TypeHelper {
         function __RegisterDisplayType {
             remove-typedata -typename $this.DisplayTypeName -erroraction ignore
 
-            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'Relationships')
+            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'IsComposite', 'Properties', 'Relationships', 'Methods')
 
             $displayTypeArguments = @{
                 TypeName = $this.DisplayTypeName

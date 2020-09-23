@@ -68,10 +68,15 @@ ScriptClass ScalarTypeProvider {
             $properties = [ordered] @{}
 
             $_.Schema.member | foreach {
-                $propertyValue = [PSCustomObject] @{
+                $memberData = [PSCustomObject] @{
                     Type = 'Edm.String'
                     Name = [PSCUstomObject] @{Name=$_.name;Value=$_.value}
                 }
+
+                # TODO: The 'name' field is being misused here -- a previous implementation relied on this structure
+                # being in the name field. Now that we are using TypeMember instead of an arbitrary structure, we can
+                # just let consumers use the MemberData field and let name just be a name.
+                $propertyValue = new-so TypeMember ([PSCUstomObject] @{Name=$_.name;Value=$_.value}) 'Edm.String' $false Enumeration $memberData
                 $properties.Add($_.name, $propertyValue)
             }
 

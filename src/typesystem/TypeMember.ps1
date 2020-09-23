@@ -15,18 +15,26 @@
 ScriptClass TypeMember {
     $Name = $null
     $TypeId = $null
-    $IsCollection = $null
+    $IsCollection = $false
     $MemberType = $null
+    $MemberData = $null
 
-    function __initialize($name, $typeId, $isCollection, $memberType) {
+    function __initialize($name, $typeId, [bool] $isCollection, $memberType, $memberData) {
         $this.Name = $name
+        $this.MemberData = $memberData
         $this.TypeId = $typeId
         $this.IsCollection = $isCollection
-        $this.MemberType = if ( $memberType -eq $null -or $MemberType -eq 'Property' ) {
+        $this.MemberType = if ( $memberType -eq $null -or $MemberType -in 'Property' ) {
             'Property'
+        } elseif ( $memberType -eq 'Method' ) {
+            if ( $memberData.ReturnTypeInfo ) {
+                $this.TypeId = $memberData.ReturnTypeInfo.TypeId
+                $this.IsCollection = $memberData.ReturnTypeInfo.IsCollection
+            }
+            'Method'
         } elseif ( $memberType -eq 'NavigationProperty' ) {
             'Relationship'
-        } else {
+        } elseif ( $memberType -ne 'Enumeration' )  {
             throw [ArgumentException]::new("Invalid member type '$memberType' specified: member type must be one of 'Property' or 'NavigationProperty'")
         }
     }

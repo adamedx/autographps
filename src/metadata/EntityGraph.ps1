@@ -52,15 +52,15 @@ ScriptClass EntityGraph {
         } elseif ( $vertex.type -eq 'EntitySet' -or $vertex.type -eq 'Singleton' ) {
             $this.rootVertices.Add($vertex.name, $vertex)
             if ( $vertex.type -eq 'EntitySet' ) {
-                __AddEntityTypeToEntitySetMapping $entity.typeData.EntityTypeName $entity.name
+                __AddEntityTypeToEntitySetMapping $entity.typeData.TypeName $entity.name
             }
         }
     }
 
     function TypeVertexFromTypeName($typeName) {
-        $typeData = $::.Entity |=> GetEntityTypeDataFromTypeName $null $typeName
+        $typeData = $::.GraphUtilities.ParseTypeName($typeName)
 
-        $this.typeVertices[$typeData.EntityTypeName]
+        $this.typeVertices[$typeData.TypeName]
     }
 
     function GetTypeVertex($qualifiedTypeName) {
@@ -109,11 +109,15 @@ ScriptClass EntityGraph {
         $this.dataModel |=> GetComplexTypes
     }
 
+    function GetMethodsForType($qualifiedTypeName) {
+        $this.dataModel |=> GetMethodBindingsForType $qualifiedTypeName
+    }
+
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
             if ( $vertex.entity.type -eq 'Singleton' -or $vertex.entity.type -eq 'EntitySet' ) {
-                __AddTypeVertex $vertex.entity.typedata.entitytypename
+                __AddTypeVertex $vertex.entity.typedata.typename
             }
             __AddTypeForVertex $vertex
             $::.ProgressWriter |=> WriteProgress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed

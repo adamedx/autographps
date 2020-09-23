@@ -434,7 +434,7 @@ $newUser = New-GraphItem user -Property mailNickname, userPrincipalName, display
 We can see that the user has been successfully created by issuing a request to the Graph to get the new user using a command like the following:
 
 ```powershell
-PS> ggi user $newUser.Id
+PS> Get-GraphItem user -Id $newUser.Id
 
    Graph Location: /users
 
@@ -473,12 +473,12 @@ createdDateTime      displayName     emailAddresses
 You can confirm that it really exists in the Graph by invoking a command such as
 
 ```powershell
-ggr -Uri /me/contacts | where displayName -eq $newContact.displayName
+Get-GraphResource -Uri /me/contacts | where displayName -eq $newContact.displayName
 ```
 
 which will issue a request to Graph to retrieve all contacts, and then filter the results with `where` to find the new contact by its display name and output it.
 
-#### Update an existing resource: contacts, group, and user
+#### Update an existing resource: contact, group, and user
 
 To modify an existing Graph resource, use the `Set-GraphItem` command. You can pipe in the result of a previous `Get-GraphItem`, `Get-GraphResource`, `New-GraphItem`, etc., invocation as the object to modify:
 
@@ -489,44 +489,44 @@ $newGroup | Set-GraphItem -Property displayName, description -Value 'Group 7 Acc
 This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphItem` and `New-GraphObject`, you can also specify commands using the following syntax:
 
 ```powershell
-Set-GraphItem group $newGroup.id displayName, description 'Group 7 Access Level', 'All users with Group 7 access'
+Set-GraphItem group -Id $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
-And there are still more equivalent syntaxes, using the `PropertyMap` or `GraphObject` parameters. `PropertyMap` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
+And there are still more equivalent syntaxes, using the `PropertyTable` or `TemplateObject` parameters. `PropertyTable` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
 
 ```powershell
-$newGroup | Set-GraphItem -PropertyMap @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
+$newGroup | Set-GraphItem -PropertyTable @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
 ```
 
-The `GraphObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
+The `TeamplateObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
 
 ```powershell
 $modifiedGroup = New-GraphObject group description 'Just the description'
-$newGroup | Set-GraphItem -GraphObject $modifiedGroup
+$newGroup | Set-GraphItem -TemplateObject $modifiedGroup
 
-gls -GraphItem $newGroup -ContentOnly | select displayname, description
+$newGroup | gls -ContentOnly | select displayname, description
 
 displayName          description
 -----------          -----------
 Group 7 Access Level Just the description
 ```
 
-Both the `GraphObject` and `PropertyMap` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
+Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
              Unused      Unassinged group
 
-$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$templateGroup = Get-GraphItem group -Id 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
 
-$existingGroup | Set-GraphItem -GraphObject $templateGroup -PropertyMap @{mailNickName='dorateam'}
+$existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
@@ -537,19 +537,19 @@ Finally, an object returned from the Graph may be "edited" locally and then resu
 the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 $existingGroup.displayName += ' - ' + [DateTime]::now
 
 $existingGroup | Set-GraphItem
 
-gls -GraphItem $existingGroup -ContentOnly | select description, displayName
+$existingGroup | gls -ContentOnly | select description, displayName
 
 description                       displayName
 -----------                       -----------
 Standard team collaboration group Team group - 05/16/2019 15:14:41
 ```
 
-Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `GraphObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
+Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `TemplateObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
 
 #### Link resources: add a user to a group (AAD accounts only)
 
@@ -559,14 +559,26 @@ To modify a relationship, the `New-GraphItemRelationship` command may be used:
 
 ```powershell
 New-GraphItemRelationship -FromItem $newGroup -ToItem $newUser -Relationship members
+
+
+Relationship TargetId                             FromUri                                      TargetUri
+------------ --------                             -------                                      ---------
+members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/e510d45c-aec3-4026-ba8e-317480ae7bc5
+members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/71edbed4-a7e7-4b46-8e2f-a28e9135ca54
 ```
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
 
-To see the new relationship, use the `Get-GraphRelatedItem` command:
+To see the new relationship, but not the related items themselves, use the `Get-GraphItemRelationship` command:
 
 ```powershell
-Get-GraphRelatedItem group $newgroup.id -WithRelationship members
+$newGroup | Get-GraphRelatedItem -WithRelationship members
+```
+
+To see the actual items from the relationships (e.g. the members of a group and not just their id's), use the `Get-GraphRelatedItem` command:
+
+```powershell
+$newGroup | Get-GraphRelatedItem -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
@@ -590,7 +602,7 @@ $newUser2 = New-GraphItem user -Property mailNickname, userPrincipalName, displa
 $teamGroup = new-graphitem group mailNickName, displayName, mailEnabled, securityEnabled Group7AccessT1, 'Group 7 Access 2', $false, $true
 
 # Add the users to the group
-$newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members
+$newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members | out-null
 
 # Display the group's updated membership with the new users
 
@@ -609,19 +621,19 @@ t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 The inverse of the `New-GraphItemRelationship` command is `Remove-GraphItemRelationship`. In this example the user with id `36d3e3d4-55f2-405f-a601-fd522b7998f4` is removed from the group with id `51a617a1-9174-4836-9a8c-d1cee804bc61`:
 
 ```powershell
-Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1cee804bc61 -Relationship members -Id 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
 A syntax that supports an object rather than identifier for the subject or object of the relationship or both is also available:
 
 ```powershell
-Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members -Id 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
-And the pipeline is also supported -- this example removes all members from the group `$teamGroup`:
+And the pipeline is also supported -- these example removse all members from the group `$teamGroup`:
 
 ```powershell
-$teamGroup | Get-GraphRelatedItem -WithRelationship members | Remove-GraphItemRelationship -FromItem $teamgroup -Relationship members
+$teamGroup | Get-GraphItemRelationship -WithRelationship members | Remove-GraphItemRelationship
 ```
 
 #### Delete resources
@@ -648,6 +660,62 @@ $oldContact | Remove-GraphItem
 * Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItem`, etc. to ease your workflow and avoid the need to refer to documentation
 * Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
 * Look for opportunities to use the PowerShell pipeline with AutoGraphPS command for concise, efficient, and scalable automation of Graph resource management.
+
+### Invoking Graph methods for complex behaviors and operations
+
+We've covered the ways in which data can be created, updated, queried, and deleted. Graph also supports capabilities beyond those circumscribed by such `CRUD` operations through *methods*. Graph methods, not to be confused with methods like `PUT`, `GET`, et. al. of the HTTP protocol upon which the Graph protocol is layered, can perform arbitrary operations. These Graph methods are very much like *methods* in the object-oriented sense, i.e. they are named units of computation that operate on state within the scope of some object. Methods in Graph have the following characteristics:
+
+* Methods are scoped to an entity type, e.g. `user`, `group`, `drive`, etc.
+* Methods have a name that can be used to invoke them -- examples are `sendMail` on the user object, `assignLicense` on the group object, or `search` on the drive object.
+* To invoke a method, you need to be able directly or indirectly space the `id` of the entity and the name of the method
+
+Within the framework of the Graph's REST protocol, invoking a method involves constructing the appropriate URI just as in the case of all the `CRUD` operations. The URI in this case will refer to both a particular instance of an entity, typically using an `id` but potentially using a singleton such as `me`.
+
+#### Using Invoke-GraphMethod to access Graph methods
+
+AutoGraphPS provides the `Invoke-GraphMethod` command to make it easy to invoke methods. Here's an example that performs a search of the user's drive, using the [`search` method](https://docs.microsoft.com/en-us/graph/api/driveitem-search?view=graph-rest-1.0&tabs=http) of the calling user's `drive` and passing the query string in the method's `q` parameter:
+
+```powershell
+Invoke-GraphMethod /me/drive/search q 'name:docx powershell'
+
+Info Type      Preview                                               Id
+---- ----      -------                                               --
+t +> driveItem Exploring the Microsoft Graph.docx                    AX893842
+t +> driveItem PowerShell user experience for Graph.docx             ZZ8972ZR
+t +> driveItem DevOps and PowerShell use cases.docx                  KSJFLAJ3
+t +> driveItem Analysis of PowerShell and REST API usability         K8JRAJZE
+```
+
+The method returned a set of `driveItem` objects that satisfied the query `name:docx powershell`, the intent of which was to return any content on the drive that contained the keyword `powershell` in items with a `name` containing `docx`.
+
+Since the URI given as the first parameter is relative to the current location, the following invocation would produce the same result:
+
+```powerShell
+gcd /me/drive
+Invoke-GraphMethod search q 'name:docx powershell'
+```
+
+In the next example, `Invoke-GraphMethod` is used to send an email message. In this case, we construct the email message to send using `New-Graphobject` and `New-GraphMethodParameterObject` before passing it as a parameter to `Invoke-GraphMethod`:
+
+```powershell
+$me = gls me
+$recipientEmail = new-graphobject emailAddress address katwe@newnoir.org
+$recipient = new-graphobject recipient emailAddress $recipientEmail
+
+$sendMailParameters = New-GraphMethodParameterObject user sendMail
+
+$sendMailParameters.SaveToSentItems = $true
+$sendMailParameters.Message = $sendMailParameters.Message | select subject, body, toRecipients
+
+$sendMailParameters.Message.toRecipients = @($recipient)
+$sendMailParameters.Message.Subject = 'What time is it?'
+$sendMailParameters.Message.Body.ContentType = 'text'
+$sendMailParameters.Message.Body.Content = "The time is $([DateTime]::now), so it's time to Wake Up! --Love, $($me.Content.givenName)"
+
+$me | Invoke-GraphMethod -methodname sendmail -ParameterObject $sendMailParameters
+```
+
+In this case, we invoke the method `sendMail` on the previously retrieved `$me` object by passing `$me` in the pipeline. The constructed parameters are specified by the `ParameterObject` parameter of `Invoke-GraphMethod`.
 
 ### Advanced queries with `-Query`
 
@@ -802,7 +870,7 @@ The ability of PowerShell to express mutual nesting of arrays and `HashTable` in
 
 ##### Making it easier with New-GraphObject
 
-While relatively simple manual construction of JSON serializable objects is feasible with PowerShell syntax, the process still requires human understanding of the detailed correspondence between JSON format and PowerShell data types with mistake-free rendering of the object.
+Simple manual construction of JSON serializable objects is feasible with PowerShell syntax, however the process still requires human understanding of the detailed correspondence between JSON format and PowerShell data types with mistake-free rendering of the object.
 
 Fortunately, AutoGraphPS provides the `New-GraphObject` command which correctly renders the object according to the API schema and removes the source of much of the human error. For example, the, following sequence of commands can be used to create a contact just as in the previous `contact` example:
 
@@ -818,16 +886,16 @@ Note that the `Value` parameter is not mandatory, and in fact does not require t
 
 One difficulty is that Graph defines to kinds of composite types, the `Entity` and `Complex` types of OData. To avoid the potentially incorrect asssumption that type names are unique across `Entity` and `Complex` types, you must specify the `TypeClass` parameter with the value `Complext` to override the default type class of `Entity` that `New-GraphObject` uses to build the object.
 
-##### The PropertyMap alternative
-The `PropertyMap` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
+##### The PropertyTable alternative
+The `PropertyTable` argument combines the approaches above, allowig you to use the `HashTable` `@{}` syntax to specify each property and value as keys and vlaues in a `HashTable` object using the `{}` syntax. Because this expresses properties and values in one pair rather than as part of two separate lists which must be carefully arranged to align the right value to the desired property, it is less error-prone. Since the `HashTable` may be specified with a multi-line syntax, this can be a very readable way to express the object:
 
 ```powershell
-$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyMap @{
+$emailAddress = New-GraphObject -TypeClass Complex emailAddress -PropertyTable @{
     name = 'Work'
     address = 'cleo@soulsonic.org'
 }
 
-$contactData = New-GraphObject contact -PropertyMap @{
+$contactData = New-GraphObject contact -PropertyTable @{
     givenName = 'Cleopatra Jones'
     emailAddresses = @($emailAddress)
 }
@@ -989,7 +1057,7 @@ The point of this cmdlet is to let you know what's syntactically valid, not what
 Note that it will even "make up" hypothetical Uri's for you when `-Children` with the `-IncludeVirtualChildren` option:
 
 ```
-Get-GraphChildItem /me/drive/root/children -children -IncludeVirtualChildren | select uri
+Get-GraphResourceWithMetadata /me/drive/root/children -children -IncludeVirtualChildren | select uri
 
 Uri
 ---

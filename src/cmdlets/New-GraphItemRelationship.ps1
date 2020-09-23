@@ -104,6 +104,10 @@ function New-GraphItemRelationship {
 
         $targetTypeName = $targetTypeInfo.TypeId
 
+        $sourceSegments = $sourceInfo.Uri.ToString() -split '/'
+        $targetRelationship = $sourceSegments | select -last 1
+        $sourceItemUri = [Uri] ( ( $sourceSegments | select -first ( $sourceSegments.length - 1 ) ) -join '/' )
+
         $fromUri = $sourceInfo.uri.tostring().trimend('/'), '$ref' -join '/'
 
         # Note that if the array has only one element, it will be treated like a single
@@ -111,6 +115,8 @@ function New-GraphItemRelationship {
         # but in this case it makes it slightly easier by letting us accumulate results in an array
         # in both the case where we are posting to a collection and also when we are not.
         $references = @()
+
+        $targets = @()
     }
 
     process {
@@ -133,12 +139,17 @@ function New-GraphItemRelationship {
         foreach ( $target in $targetInfo ) {
             $absoluteUri = $::.TypeUriHelper |=> ToGraphAbsoluteUri $target.Context $target.Uri
             $references += @{'@odata.id' = $absoluteUri}
+            $targets += $target.Uri
         }
     }
 
     end {
+        $targetIndex = 0
         foreach ( $referenceRequest in $references ) {
-            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop' | out-null
+            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop'
+            $referenceTarget = $targets[$targetIndex++]
+            $referenceId = $referenceTarget.ToString() -split '/' | select -last 1
+            new-so RelationshipDisplayType $sourceInfo.requestInfo.Context.Name $targetRelationship $sourceItemUri $referenceTarget $referenceId
         }
     }
 }

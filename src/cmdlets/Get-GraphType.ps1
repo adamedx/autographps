@@ -27,6 +27,11 @@ function Get-GraphType {
         [Alias('Name')]
         $TypeName,
 
+        [parameter(parametersetname='optionallyqualified')]
+        [parameter(parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(parametersetname='fullyqualified')]
+        [parameter(parametersetname='fullyqualifiedmembersonly')]
+        [parameter(parametersetname='list')]
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         [Alias('Class')]
         $TypeClass = 'Any',
@@ -34,6 +39,10 @@ function Get-GraphType {
         [parameter(parametersetname='optionallyqualified')]
         [parameter(parametersetname='optionallyqualifiedmembersonly')]
         $Namespace,
+
+        [parameter(parametersetname='uri', mandatory=$true)]
+        [parameter(parametersetname='urimembersonly', mandatory=$true)]
+        $Uri,
 
         $GraphName,
 
@@ -43,11 +52,19 @@ function Get-GraphType {
 
         [parameter(parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
         [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
+        [parameter(parametersetname='urimembersonly', mandatory=$true)]
         [switch] $TransitiveMembers,
 
         [parameter(position=1, parametersetname='optionallyqualifiedmembersonly')]
         [parameter(position=1, parametersetname='fullyqualifiedmembersonly')]
+        [parameter(parametersetname='urimembersonly')]
         [string] $MemberFilter,
+
+        [parameter(position=2, parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(position=2, parametersetname='fullyqualifiedmembersonly')]
+        [parameter(parametersetname='urimembersonly')]
+        [ValidateSet('Property', 'Relationship', 'Method')]
+        [string] $MemberType,
 
         [parameter(parametersetname='list', mandatory=$true)]
         [switch] $ListNames
@@ -66,29 +83,56 @@ function Get-GraphType {
 
         $typeManager = $::.TypeManager |=> Get $targetContext
 
-        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') )
+        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
 
-        $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $TypeName $isFullyQualified ( $TypeClass -ne 'Any' )
+        $targetTypeName = if ( $TypeName ) {
+            $TypeName
+        } else {
+            $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.Name -erroraction stop
+            $isFullyQualified = $true
+            if ( $uriInfo.FullTypeName -eq 'Null' ) {
+                return $null
+            }
+            $uriInfo.FullTypeName
+        }
+
+        $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $targetTypeName $isFullyQualified ( $TypeClass -ne 'Any' )
 
         if ( ! $type ) {
-            throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
+            if ( $TypeName ) {
+                throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
+            } else {
+                throw "Unexpected error: the specified URI '$Uri' could nnot be resolved to any type in graph '$($targetContext.name)'"
+            }
         }
 
         $result = $::.TypeHelper |=> ToPublic $type
 
-        $unsortedResult = if ( ! $TransitiveMembers.IsPresent ) {
-            $result
+        if ( ! $TransitiveMembers.IsPresent ) {
+            $result | sort-object name
         } else {
-            if ( ! $MemberFilter ) {
-                $result.Properties
-                $result.Relationships
+            $fieldMap = [ordered] @{
+                Property = 'Properties'
+                Relationship = 'Relationships'
+                Method = 'Methods'
+            }
+
+            $orderedMemberFields = if ( $MemberType ) {
+                , $fieldMap[$MemberType]
             } else {
-                $result.Properties | where { $_.Name -like "*$($MemberFilter)*" }
-                $result.Relationships | where { $_.Name -like "*$($MemberFilter)*" }
+                $fieldMap.values
+            }
+
+            foreach ( $memberField in $orderedMemberFields ) {
+                $members = if ( ! $MemberFilter ) {
+                    $result.$MemberField
+                } else {
+                    $result.$MemberField | where { $_.Name -like "*$($MemberFilter)*" }
+                }
+
+                $members | sort-object name
             }
         }
-
-        $unsortedResult | sort-object Name
     } else {
         $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
             $TypeClass
@@ -101,3 +145,4 @@ function Get-GraphType {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType TypeName (new-so TypeParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphType Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)

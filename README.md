@@ -52,6 +52,18 @@ Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Micro
 
 ### How do I use it?
 
+As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
+
+AutoGraphPS cmdlets support two equivalent paradigms for accessing Microsoft Graph:
+* The **type-based** paradigm: Entities modeled by the Graph are grouped into *"types"*, sets of objects with a common set of properties including a unique identifier field called `id`. A type might be the set of users or groups in a tenant, the set of drives, or any other concept you'd like to manage via the Graph API. *If you know the type of an object and its and `id`, and if needed its relationship to other objects, you can use AutoGraphPS commands to manage that object.*
+* The **resource-based** paradigm: Because Microsoft Graph is a REST-based API, all of these aforementioned type-based objects can be accessed via one or more *Uniform Resource Identifiers (URIs)*. AutoGraphPS commands allow you to specify these URIs.
+
+The latter approach is most useful for interoperation with other REST-based tools or in general if you're more familiar with the Graph REST API itself; generally the commands used in this scenario would be considered more "advanced" or low-level.
+
+The former type-based approach is most efficient when you know *what* you want to manage, i.e. *users*, *groups*, *messages*, etc. and is likely applicable to a broader set of users than the resource URI-based model.
+
+#### Access via URI
+
 If you're familiar with the Microsoft Graph REST API or you've used [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer), you know that Graph is accessed via [URI's that look like the following](https://developer.microsoft.com/en-us/graph/docs/concepts/overview#popular-requests):
 
 ```
@@ -70,9 +82,56 @@ Get-GraphResource users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphResource` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
+For more details or reference material describing the Graph API URIs, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
 
-To more details or reference material describing the resources available in the Graph API and how to make valid requests, visit the [Graph API documentation](https://docs.microsoft.com/en-us/graph/api/overview?toc=./ref/toc.json&view=graph-rest-1.0).
+#### Access by type
+
+Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphItem`:
+
+```powershell
+Get-GraphItem user -Id f7e9d7b6-f92f-4a78-8537-6b78d874936e
+
+   Graph Location: /users
+
+Info Type Preview      Id
+---- ---- -------      --
+t +> user Laquan Smith a57f301b-4fc2-4fac-865c-ee4e1af3084d
+
+Get-GraphItem group -Id a57f301b-4fc2-4fac-865c-ee4e1af3084d
+
+   Graph Location: /groups
+
+Info Type   Preview        Id
+---- -----  -------        --
+t +> group  Mathmeticians  57f301b-4fc2-4fac-865c-ee4e1af3084d
+```
+
+Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
+
+```powershell
+Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
+
+id                : f7e9d7b6-f92f-4a78-8537-6b78d874936e
+officeLocation    : 3/1415
+@odata.context    : https://graph.microsoft.com/v1.0/$metadata#users/$entity
+surname           : Smith
+mail              : laquan@newgriot.edu
+jobTitle          : Researcher
+givenName         : Laquan
+userPrincipalName : laquan@newgriot.edu
+...
+```
+
+Note that the output of `Get-GraphItem` is an object that in addition to the protocol response from Graph contains metadata about the response data such as the name of its type, the URI used to access it, a heuristically generated `Preview` field intended for human browsing, etc. The actual API response data exists in the `Content` field and is identical to that returned by the `Get-GraphResource` command. The `-ContentOnly` parameter for `Get-GraphItem` removes the metadata and returns only the response just as with `Get-GraphResource`, eliminating the need to use `Select-Object` or otherwise filter the response to just the `Content`:
+
+```powershell
+# These all have the same output:
+Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
+Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
+```
+
+There is also a related command, `Get-GraphChildItem` that enables the enumeration of multiple objects and relates to `Get-GraphItem` in a fashion similar to the relationship between the standard `Get-ChildItem` and `Get-Item` commands of PowerShell.
 
 ### More fun commands
 
@@ -131,31 +190,74 @@ t +> driveItem Pyramid.js    13J3KD2
 
 #### Don't forget write operations
 
-Yes, you can perform write-operations using the `Invoke-GraphRequet` command, as in this example which creates a new `contact`:
+Yes, you can perform write-operations! Commands like `New-GraphItem`, `Set-GraphItem`, and `Remove-GraphItem` allow you to make changes to data in the Graph.
+
+#### Create a new item with New-GraphItem
+
+The `New-GraphItem` command creates new entities in the Graph. The example below creates a new security group:
 
 ```powershell
-$contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value blackgold, 'Black Gold', $false, $true
+
+description                   :
+mailNickname                  : blackgold
+@odata.context                : https://graph.microsoft.com/v1.0/$metadata#groups/$entity
+createdDateTime               : 2020-07-03T07:00:16Z
+displayName                   : Black Gold
+...
 ```
 
-As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.*
+##### Update an item with Set-GraphItem
 
-Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
+The `Set-GraphItem` command lets you change the properties of an existing item:
+
+```powershell
+$newGroup | Set-GraphItem -Property displayName, description -Value 'Black Gold Team', 'Collaboration for the Black Gold Gala event'
+$newGroup | Get-GraphItem -ContentOnly | select displayName, description
+
+displayName     description
+-----------     -----------
+Black Gold Team Collaboration for the Black Gold Gala event
+```
+
+In this case, the `displayName` and `description` properties of the newly created group are updated to new values when `Set-GraphItem` is executed. A subsequent invocation of `Get-GraphItem` to request the current version of the object from Graph reflects the updates made to those properties.
 
 ##### New-GraphObject makes write operations easier
 
-In the example above we constructed a PowerShell `HashTable` to supply the argument; specifying this structure is fairly intuitive if you know the JSON format you need. Just make the keys of the JSON object keys of the `HashTable`, and the values of the JSON object values of the `HashTable`. AutoGraphPS can use PowerShell's JSON serialization to transform it into the JSON required by Graph. If you commonly deal with PowerShell `HashTable` objects and syntax, this is a natural and concise way to specify JSON parameters.
+In the example above the input required to create the new object, in this case a group, was easy to specify -- just a handful of strings. However for more complicated objects, e.g. nested structures, specifying them on the command-line can be rather convoluted. The `New-GraphObject` command makes it fairly simple to create objects of any type required by the Graph, and of course it provides parameter completion to save you time and the worry that you might have typed a non-existent parameter.
 
-The `New-GraphObject` command makes this even easier. If you know the name of the type of object, in this case `contact`, and you know the properties you need to set, you can specify that information explicitly. This would result in the more readable version of the previous example below:
+For example, if you know the name of the type of object, say `contact`, and you know the properties you need to set, you can specify that information explicitly. This would result in the straightforward usage below:
 
 ```powershell
-$emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -value Work, cleo@soulsonic.org
-$contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', $emailAddress
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
-
+$emailAddress = New-GraphObject emailAddress -Property name, address -value Work, cleo@soulsonic.org
+$contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', @($emailAddress)
+$newContact = $contactData | New-GraphItem -Uri me/contacts
 ```
 
-Note that support for a simpler command interface for write operations is coming soon to AutoGraphPS that will bring ease-of-use parity with the read-only commands. Key problems to solve here include discovering the kinds of object and types you need (including removing the need to know when to use the `TypeClass` parameter in the example above) and simplifying and standardizing the command and parameters used to issue the actual write operation.
+##### Clean up with Remove-GraphItem
+
+The `Remove-GraphItem` command deletes an entity from the Graph -- it is the inverse of `New-GraphItem`. It includes a set of parameters that allows for the specifiation of the type and the id of the entity to remove and also provides the option to specify the entity's URI. And if you already have an instance of the object available as we do from the above example, you can just pipe the instance to delete to `Remove-GraphItem`:
+
+```powershell
+$newContact | Remove-GraphItem
+```
+
+Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphItem`.
+
+##### Invoke-GraphRequest handles all the REST
+
+What if you can't find exactly the command you need to interact with the Graph? The `Invoke-GraphRequest` is a general-purpose command that, with the right parameters, can emulate any of the other commands that interact with Graph. It is a generic REST client capable of issuing any valid request to the Graph. You can use it if you run into a scenario that isn't covered by the other commmands. In general it may be useful if you're already using REST to interact with the Graph.
+
+Here's one example that issues the same request as in the earlier example for `New-GraphItem':
+
+```powershell
+$contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
+Invoke-GraphRequest -Method POST me/contacts -Body $contactData
+```
+
+As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphRequest`, even if it trades off simplicity.
+
+Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
 
 #### So how do I find all the URIs and JSON for Graph?
 
@@ -246,10 +348,12 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
 | Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
+| Invoke-GraphMethod        | Executes a method on a given Graph object specified by Type and Id or URI                               |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| New-GraphMethodParameter  | Creates a local representation of a Graph type for the specified parameter of a specified Graph method  |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
 | New-GraphItem             | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |

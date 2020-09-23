@@ -127,7 +127,7 @@ function Get-GraphResourceWithMetadata {
                     throw "The specified graph '$GraphName' does not exist"
                 }
                 $context = $graphContext.context
-                $GraphArgument['GraphScope'] = $GraphName
+                $GraphArgument['GraphName'] = $GraphName
             }
 
             if ( $GraphItem -and ( $::.SegmentHelper |=> IsGraphSegmentType $GraphItem ) ) {
@@ -186,6 +186,14 @@ function Get-GraphResourceWithMetadata {
             $targetFilter = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $context $resolvedUri.FullTypeName $SimpleMatch
         }
 
+        $pagingResultCount = 20
+
+        if ( ( $pscmdlet.pagingparameters.First -ne $null ) -and
+             ( $pscmdlet.pagingparameters.First -gt 0 ) -and
+             ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue ) ) {
+                 $pagingResultCount = $pscmdlet.pagingparameters.first
+             }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
@@ -199,7 +207,7 @@ function Get-GraphResourceWithMetadata {
             Descending = $Descending
             RawContent=$RawContent
             Headers=$Headers
-            First=$pscmdlet.pagingparameters.first
+            First=$pagingResultCount
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
             Connection = $context.connection
@@ -297,18 +305,20 @@ function Get-GraphResourceWithMetadata {
 
             $restResult = $intermediateResult
 
+            $isEmptyResult = $restResult -and ( $restResult | gm value -erroraction ignore ) -and ! $restResult.value
+
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
-                    $restResult | Get-GraphUriInfo -GraphScope $context.name
+                    $restResult | Get-GraphUriInfo -GraphName $context.name
                 } else {
                     $restResult
                 }
-            } else {
+            } elseif ( ! $isEmptyResult ) {
                 if ( ! $responseContentOnly ) {
                     # Getting uri info is expensive, so for a single request, get it only once and cache it
                     $requestSegment = $requestInfoCache[$contextIndex - 1].ResolvedRequestUri
                     if ( ! $requestSegment ) {
-                        $requestSegment = Get-GraphUriInfo -GraphScope $context.name $specifiedUri
+                        $requestSegment = Get-GraphUriInfo -GraphName $context.name $specifiedUri
                         $requestInfoCache[$contextIndex].ResolvedRequestUri = $requestSegment
                     }
                     # The request segment information gives information about the uri used to make the request;
@@ -325,7 +335,7 @@ function Get-GraphResourceWithMetadata {
             # TODO: Investigate scenarios where empty collection results sometimes return
             # a non-empty result containing and empty 'value' field in the content
             if ( $resolvedUri.Collection -and ! $RawContent.IsPresent ) {
-                if ( $restResult -and ( $restResult | gm value -erroraction ignore ) -and ! $restResult.value ) {
+                if ( $isEmptyResult ) {
                     $noResults = $true
                 }
             }

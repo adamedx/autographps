@@ -78,14 +78,14 @@ function Get-GraphItemUri {
         throw "Unable to determine Uri for specified FromObject parameter -- specify the correct TypeName or Uri parameter and retry the command"
     }
 
-    $graphScopeParameter = @{}
+    $graphNameParameter = @{}
 
     if ( $GraphName ) {
-        $graphScopeParameter = @{GraphScope=$GraphName}
+        $graphNameParameter = @{GraphName=$GraphName}
     }
 
     try {
-        Get-GraphUriInfo $referenceInfo.RequestInfo.Uri.tostring() @graphScopeParameter | out-null
+        Get-GraphUriInfo $referenceInfo.RequestInfo.Uri.tostring() @graphNameParameter | out-null
     } catch {
         throw 'Unable to resolve specified parameters to a valid URI for the graph'
     }

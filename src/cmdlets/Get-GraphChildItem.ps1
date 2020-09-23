@@ -20,63 +20,49 @@
 . (import-script common/TypeUriParameterCompleter)
 
 function Get-GraphChildItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='bytypecollection')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(parametersetname='byuri',  mandatory=$true)]
-        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri',  mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
         [Alias('OfUri')]
-        [Uri] $Uri,
+        [Alias('GraphUri')]
+        $Uri,
 
-        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', valuefrompipeline=$true, mandatory=$true)]
-        [Alias('OfObject')]
-        [PSCustomObject] $GraphItem,
-
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypecollection', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='bytypecollection', mandatory=$true)]
         [Alias('OfTypeName')]
         [Alias('FullTypeName')]
         [string] $TypeName,
 
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('OfId')]
         [string] $Id,
 
-        [parameter(position=2, parametersetname='byuri')]
-        [parameter(position=2, parametersetname='bytypeandid')]
-        [parameter(position=2, parametersetname='bytypeandidpipe')]
-        [parameter(position=2, parametersetname='bytypecollection')]
         [string[]] $Property,
 
-        [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='byobjectandpropertyfilter')]
-        [parameter(parametersetname='bytypeandid')]
-        [parameter(parametersetname='bytypeandidpipe')]
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [Alias('OfObject')]
+        [PSCustomObject] $GraphItem,
+
         [Alias('WithRelationship')]
         [string[]] $Relationship,
 
-
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuriandpropertyfilter')]
-        [parameter(parametersetname='byobject')]
-        [parameter(parametersetname='byobjectandpropertyfilter')]
-        [parameter(parametersetname='bytypecollection')]
-        [parameter(parametersetname='bytypecollectionpropertyfilter')]
-        [parameter(parametersetname='bytypeandidpipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypecollection')]
+        [parameter(parametersetname='byobject')]
         [string] $GraphName,
 
-        [parameter(parametersetname='bytypecollectionpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='byuriandpropertyfilter', mandatory=$true)]
-        [parameter(parametersetname='byobjectandpropertyfilter', mandatory=$true)]
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
+        [parameter(parametersetname='bytypecollection')]
         [HashTable] $PropertyFilter,
 
+        [parameter(parametersetname='byuri')]
+        [parameter(parametersetname='byuripipeline')]
         [string] $Filter,
 
-        [Alias('SearchString')]
         $SimpleMatch,
 
         [String] $Search,
@@ -101,8 +87,11 @@ function Get-GraphChildItem {
 
         $accumulatedItems = @()
 
-        if ( $SimpleMatch -and $Filter ) {
-            throw "The SimpleMatch and Filter parameters may not both be specified -- specify only one of these parameters and retry the command."
+        $filterSpecs = 'PropertyFilter', 'Filter', 'SimpleMatch' |
+          where { $PSBoundParameters[$_] }
+
+        if ( ( $filterSpecs | measure-object ).count -gt 1 ) {
+            throw [ArgumentException]::new("Only one of the following specified parameters may be specified: {0}" -f ($filterSpecs -join ', '))
         }
 
         $remappedParameters = @{}
@@ -141,7 +130,7 @@ function Get-GraphChildItem {
         $ignoreProperty = $SkipPropertyCheck.IsPresent -or ( $Relationship -ne $null )
 
         if ( $accumulatedItems ) {
-            $accumulatedItems | Get-GraphItem @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty
+            $accumulatedItems | Get-GraphItem @remappedParameters -SkipPropertyCheck:$ignoreProperty -ChildrenOnly:$true
         } else {
             foreach ( $remappedUri in $remappedUris ) {
                 Get-GraphItem -Uri $remappedUri @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty

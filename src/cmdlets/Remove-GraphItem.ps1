@@ -22,22 +22,29 @@
 . (import-script Get-GraphItem)
 
 function Remove-GraphItem {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeandid')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
-        [parameter(position=0, parametersetname='bytypeandfilter', mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('GraphUri')]
+        [Uri] $Uri,
+
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
         [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
         $Id,
 
-        [parameter(parametersetname='byuri', mandatory=$true)]
-        [Uri] $Uri,
-
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
         [PSCustomObject] $GraphItem,
 
+        [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byobjectandfilter')]
+        [parameter(parametersetname='bytypeandid')]
+        [parameter(parametersetname='bytypeandfilter')]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]

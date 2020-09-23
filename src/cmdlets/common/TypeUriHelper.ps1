@@ -24,7 +24,7 @@ ScriptClass TypeUriHelper {
         }
 
         function TypeFromUri([Uri] $uri, $targetContext) {
-            $uriInfo = Get-GraphUriInfo $Uri -GraphScope $targetContext.name -erroraction stop
+            $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.name -erroraction stop
             [PSCustomObject] @{
                 FullTypeName = $uriInfo.FullTypeName
                 IsCollection = $uriInfo.Collection
@@ -45,29 +45,35 @@ ScriptClass TypeUriHelper {
             # The latter has a Path member with exactly the uri needed to resolve the object, the other requires
             # a workaround since it may only have a partial URI originally used as the target of a POST that created it.
 
-            if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
-                $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
-                $objectUri = $requestUri.GraphRelativeUri
-                $uriInfo = if ( $resourceId ) {
-                    Get-GraphUriInfo $objectUri
-                }
+            if ( ( $responseObject -is [PSCustomObject] ) -and ( $responseObject.psobject.typenames -contains 'GraphSegmentDisplayType' ) ) {
+                $responseObject.GraphUri.tostring()
+            } else {
+                # Try to parse the odata context
+                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
 
-                # When an object is supplied, its URI had better end with whatever id was supplied.
-                # This will not always be true of the uri retrieved from the object because this URI is the
-                # URI that was used to request the object from Graph, not necessarily the object's actual
-                # URI. For example, a request to POST to /groups will return an object located at
-                # /groups/9318e52c-6cd7-430e-9095-a54aa5754381. But __ItemContext contains the URI that was
-                # used to make the POST request, i.e. /groups. However, since the id is supplied to this method,
-                # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
-                # TODO: Get an explicit object URI from the object itself rather than this workaround which
-                # will have problematic corner cases.
-                if ( $uriInfo -and $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
-                    $objectUri = $objectUri.tostring(), $resourceId -join '/'
+                # If the odata context is not parseable for some reason, fall back to older logic
+                if ( ! $objectUri -and ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) ) {
+                    $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
+                    $objectUri = $requestUri.GraphRelativeUri
+                    $uriInfo = if ( $resourceId ) {
+                        Get-GraphUriInfo $objectUri
+                    }
+
+                    # When an object is supplied, its URI had better end with whatever id was supplied.
+                    # This will not always be true of the uri retrieved from the object because this URI is the
+                    # URI that was used to request the object from Graph, not necessarily the object's actual
+                    # URI. For example, a request to POST to /groups will return an object located at
+                    # /groups/9318e52c-6cd7-430e-9095-a54aa5754381. But __ItemContext contains the URI that was
+                    # used to make the POST request, i.e. /groups. However, since the id is supplied to this method,
+                    # we can recover the URI if we assume the discrepancy is indeed due to this scenario.
+                    # TODO: Get an explicit object URI from the object itself rather than this workaround which
+                    # will have problematic corner cases.
+                    if ( $uriInfo -and $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
+                        $objectUri = $objectUri.tostring(), $resourceId -join '/'
+                    }
                 }
 
                 $objectUri.tostring()
-            } elseif ( ( $responseObject -is [PSCustomObject] ) -and ( $responseObject.psobject.typenames -contains 'GraphSegmentDisplayType' ) ) {
-                $responseObject.GraphUri.tostring()
             }
         }
 
@@ -78,18 +84,34 @@ ScriptClass TypeUriHelper {
         }
 
         function InferTypeUriInfoFromRequestItem($requestItem, $responseObject) {
-            $absoluteUri = $requestItem.Uri
-            $fullPath = $requestItem.Path
-            $graphUri = $requestItem.GraphUri
+            $absoluteUri = $null
+            $fullPath = $null
+            $graphUri = $null
+            $typeSpecifier = $::.GraphUtilities |=> GetOptionalTypeFromResponseObject $responseObject
+            $fullTypeName = if ( $typeSpecifier ) {
+                $typeData = $::.GraphUtilities.ParseTypeName($typeSpecifier)
+                $typeData.TypeName
+            }
 
-            if ( $requestItem.Collection ) {
-                $absoluteUri = $absoluteUri.trimend('/'), $responseObject.Id -join '/'
-                $fullPath = $fullPath.trimend('/'), $responseObject.Id -join '/'
-                $graphUri = [Uri] ($graphUri.tostring().trimend('/'), $responseObject.Id -join '/')
+            if ( $requestItem ) {
+                $absoluteUri = $requestItem.AbsoluteUri
+                $fullPath = $requestItem.Path
+                $graphUri = $requestItem.GraphUri
+                if ( ! $fullTypeName ) {
+                    $fullTypeName = $requestItem.FullTypeName
+                }
+
+                if ( $requestItem.Collection ) {
+                    $absoluteUri = $absoluteUri.trimend('/'), $responseObject.Id -join '/'
+                    $fullPath = $fullPath.trimend('/'), $responseObject.Id -join '/'
+                    $graphUri = [Uri] ($graphUri.tostring().trimend('/'), $responseObject.Id -join '/')
+                }
+            } else {
+                $graphUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true
             }
 
             [PSCustomObject] @{
-                FullTypeName = $requestItem.FullTypeName
+                FullTypeName = $fullTypeName
                 AbsoluteUri = $absoluteUri
                 FullPath = $fullPath
                 GraphUri = $graphUri
@@ -113,14 +135,14 @@ ScriptClass TypeUriHelper {
             $objectUri
         }
 
-        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject) {
+        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject, $ignoreTypeIfObjectPresent) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
             $targetUri = if ( $uri ) {
                 $::.GraphUtilities |=> ToGraphRelativeUri $uri $targetContext
             }
 
-            $targetTypeInfo = if ( $typeName ) {
+            $targetTypeInfo = if ( $typeName -and ( ! $typedGraphObject -or $ignoreTypeIfObjectPresent ) ) {
                 $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $graphName -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
                 $typeUri = DefaultUriForType $targetContext $resolvedType.TypeId
 
@@ -134,7 +156,7 @@ ScriptClass TypeUriHelper {
                     FullTypeName = $resolvedType.typeId
                     IsCollection = $true
                 }
-            } elseif ( $uri )  {
+            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of typedgraphobject over uri
                 TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
                 if (  $::.SegmentHelper |=> IsGraphSegmentType $typedGraphObject ) {
@@ -157,10 +179,24 @@ ScriptClass TypeUriHelper {
                         $objectUriInfo = TypeFromUri $objectUri $targetContext
 
                         # TODO: When an object is supplied, it had better end with whatever id was supplied.
-                        # This will not always be true of the uri retrieved from the object
-                        if ( $id -and ( $objectUriInfo.UriInfo.class -in ( 'EntityType', 'EntitySet' ) ) -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
-                            $correctedUri = $objectUri, $id -join '/'
-                            $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                        # This will not always be true of the uri retrieved from the object because of some
+                        # corner cases with the commands used to get objects from the graph, particularly
+                        # when an object is retrieved as part of a collection URI -- such URIs do not
+                        # contain an id, they end with the parent segment. Another case where this happens
+                        # is if the object was created through a POST, though that should definitely be
+                        # fixed in the command that creates objects.
+                        if ( $id -and ! $objectUri.tostring().tolower().EndsWith("/$($id.tolower())" ) ) {
+                            if ( $objectUriInfo.UriInfo.class -in 'EntityType', 'EntitySet' ) {
+                                $correctedUri = $objectUri, $id -join '/'
+                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                            } elseif ( $objectUriInfo.UriInfo.class -ne 'Singleton' ) {
+                                # TODO: Refine this condition to avoid possibly invalid assumptions.
+                                # The object was probably obtained via POST or by enumerating an object collection,
+                                # so we'll just assume it's safe to concatenate the id. However, once the corner cases
+                                # are corrected in the object decoration, we should update to reliable logic.
+                                $correctedUri = $objectUri, $id -join '/'
+                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                            }
                         }
 
                         $targetUri = $objectUriInfo.UriInfo.graphUri
@@ -187,19 +223,30 @@ ScriptClass TypeUriHelper {
             [Uri] $uriString
         }
 
-        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty)  {
+        function GetReferenceSourceInfo($graphName, $typeName, $isFullyQualifiedTypeName, $id, $uri, $graphObject, $navigationProperty, $relationshipInfo)  {
             $fromId = if ( $Id ) {
                 $Id
-            } elseif ( $GraphObject -and ( $GraphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
-                $GraphObject.Id # This is needed when an object is supplied without an id parameter
+            } elseif ( $graphObject -and ( $graphObject | gm -membertype noteproperty id -erroraction ignore ) ) {
+                $graphObject.Id # This is needed when an object is supplied without an id parameter
             }
 
-            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $GraphObject
+            $requestInfo = if ( $relationshipInfo ) {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $relationshipInfo.GraphName $null $false $relationshipInfo.FromUri $null $null
+            } else {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualifiedTypeName $uri $fromId $graphObject
+            }
 
             $segments = @()
             $segments += $requestInfo.uri.tostring()
-            if ( $navigationProperty -and $requestInfo.uri ) {
-                $segments += $navigationProperty
+
+            $targetNavigation = if ( $RelationshipInfo ) {
+                $relationshipInfo.Relationship
+            } else {
+                $navigationProperty
+            }
+
+            if ( $targetNavigation -and $requestInfo.uri ) {
+                $segments += $targetNavigation
             }
 
             $sourceUri = $segments -join '/'
@@ -239,8 +286,10 @@ ScriptClass TypeUriHelper {
             }
         }
 
-        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false) {
-            if ( $TargetUri ) {
+        function GetReferenceTargetInfo($graphName, $targetTypeName, $isFullyQualifiedTypeName, $targetId, $targetUri, $targetObject, $allowCollectionTarget = $false, $relationshipInfo) {
+            if ( $relationshipInfo ) {
+                $::.TypeUriHelper |=> GetTypeAwareRequestInfo $relationshipInfo.GraphName $null $false $relationshipInfo.TargetUri $relationshipInfo.TargetId $null
+            } elseif ( $TargetUri ) {
                 foreach ( $destinationUri in $TargetUri ) {
                     $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $destinationUri $null $null
                 }
@@ -255,7 +304,7 @@ ScriptClass TypeUriHelper {
                 $::.TypeUriHelper |=> GetTypeAwareRequestInfo $graphName $targetTypeName $isFullyQualifiedTypeName $null $targetObjectId $null
             } else {
                 foreach ( $destinationId in $targetId ) {
-                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $destinationId $null $null
+                    $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $targetTypeName $isFullyQualifiedTypeName $null $destinationId $null $false
                 }
             }
         }
