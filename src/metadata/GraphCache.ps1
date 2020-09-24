@@ -175,10 +175,16 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
         write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
 
-        $dependencyModule = 'AutoGraphPS'
-        $thiscode = join-path $psscriptroot '../graph.ps1'
+        $cacheClass = $::.GraphCache
 
-        $graphLoadJob = start-job { param($module, $scriptsourcepath, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; import-module $module; . $scriptsourcepath; $::.GraphCache |=> __GetGraph $graphEndpoint $version $schemadata } -argumentlist $dependencymodule, $thiscode, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
+        # Start-ThreadJob starts a ThreadJob, a job running in another thread in this process rather than a separate process. It is much more efficient,
+        # but very strange things occur if ScriptClass method functionality is invoked, possibly because of the way ScriptClass interacts with the call
+        # stack. Due to this, the safest way to pass in ScriptClass state is to pass in an object, and use standard method call syntax rather than
+        # ScriptClass syntax to invoke it. Regardless, Start-ThreadJob is far more efficient than Start-Job AND it doesn't have to serialize and
+        # deserialize objects -- many of the strange workarounds in this module to ensure that ScriptClass object state was preserved is no longer
+        # a necessity, though most of those workarounds are now built in to ScriptClass itself. It may even be feasible to parse the entire graph
+        # rather than only parse just in time since the entire graph can be parsed efficiently in the background without being serialized and deserialized.
+        $graphLoadJob = Start-ThreadJob { param($cacheClass, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; $cacheClass.__GetGraph($graphEndpoint, $version, $schemadata) } -argumentlist $cacheClass, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
         $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"

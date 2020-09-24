@@ -69,6 +69,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 NestedModules = @(
     @{ModuleName='autographps-sdk';ModuleVersion='0.22.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
+    @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -230,11 +231,12 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*)
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance.
 
 ### New dependencies
 
 * AutoGraphPS-SDK 0.22.0
+* ThreadJob 2.0.3 -- this is the introductory use of ThreadJob for this module
 
 ### Breaking changes
 
@@ -256,6 +258,7 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 * `ShowGraphHelp` has been updated to show help information based on a new `Uri` parameter
 * `ShowGraphHelp` can also take in pipeline input to give help information for an object returned by other commands in this module
 * Commands that return objects from the Graph now return the actual derived type of the object in heterogenous collections that are defined as returning a base type
+* Metadata download and initial processing now uses a thread in the same process hosting AutoGraphPS, rather than a separate process. This offers a dramatic performance improvement in obtaining the API metadata that the commands rely upon. The new implementation uses `Start-ThreadJob` instead of `Start-Job` to process metadata asynchronously.
 
 ### Fixed defects
 
