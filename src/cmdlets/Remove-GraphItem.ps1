@@ -80,7 +80,7 @@ function Remove-GraphItem {
             }
 
             $targetUri = $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject
-            Invoke-GraphRequest $targetUri -Method DELETE -erroraction stop -connection $requestInfo.Context.Connection | out-null
+            Invoke-GraphApiRequest $targetUri -Method DELETE -erroraction stop -connection $requestInfo.Context.Connection | out-null
         }
     }
 
@@ -89,3 +89,4 @@ function Remove-GraphItem {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)
+

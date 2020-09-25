@@ -163,7 +163,7 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
     }
 
     end {}
@@ -173,4 +173,5 @@ $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (ne
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)
+
 

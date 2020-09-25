@@ -38,7 +38,7 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
 
         # Variables from the script can't be used in the scriptblock if modulename is used. So we will dynamically
         # create a script block -- sigh. :(
-        Mock Invoke-GraphRequest ([ScriptBlock]::Create($mockScript)) -modulename autographps
+        Mock Invoke-GraphApiRequest ([ScriptBlock]::Create($mockScript)) -modulename autographps
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest {
             [PSCustomObject] @{
@@ -62,3 +62,4 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
         }
     }
 }
+

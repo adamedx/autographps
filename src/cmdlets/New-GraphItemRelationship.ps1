@@ -146,7 +146,7 @@ function New-GraphItemRelationship {
     end {
         $targetIndex = 0
         foreach ( $referenceRequest in $references ) {
-            Invoke-GraphRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop'
+            Invoke-GraphApiRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop'
             $referenceTarget = $targets[$targetIndex++]
             $referenceId = $referenceTarget.ToString() -split '/' | select -last 1
             new-so RelationshipDisplayType $sourceInfo.requestInfo.Context.Name $targetRelationship $sourceItemUri $referenceTarget $referenceId
@@ -160,3 +160,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItemRelationship TargetUri (new-so GraphUriParameterCompleter LocationUri)
+

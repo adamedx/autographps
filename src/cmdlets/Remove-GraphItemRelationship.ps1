@@ -147,7 +147,7 @@ function Remove-GraphItemRelationship {
 
     end {
         foreach ( $referenceUriToRemove in $referenceUris ) {
-            Invoke-GraphRequest $referenceUriToRemove -Method DELETE -connection $sourceInfo.RequestInfo.Context.connection | out-null
+            Invoke-GraphApiRequest $referenceUriToRemove -Method DELETE -connection $sourceInfo.RequestInfo.Context.connection | out-null
         }
     }
 }
@@ -156,3 +156,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationsh
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Property (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItemRelationship Uri (new-so GraphUriParameterCompleter LocationUri)
+

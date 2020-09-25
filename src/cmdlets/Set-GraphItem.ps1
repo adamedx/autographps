@@ -133,7 +133,7 @@ function Set-GraphItem {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
-        Invoke-GraphRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
     }
 
     end {}
@@ -143,3 +143,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem TypeName (ne
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property $false)
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem ExcludeObjectProperty (new-so TypeUriParameterCompleter Property $false Property $null $null GraphObject)
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem GraphName (new-so GraphParameterCompleter)
+

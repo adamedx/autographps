@@ -248,7 +248,7 @@ function Get-GraphResourceWithMetadata {
             }
         } elseif ( $emitTarget ) {
             try {
-                $graphResult = Invoke-GraphRequest @requestArguments
+                $graphResult = Invoke-GraphApiRequest @requestArguments
                 $intermediateResults += $graphResult
                 $requestCacheEntry = @{ResolvedRequestUri=$resolvedUri}
                 # We need the context with each result, because in theory each result came from a different
@@ -360,3 +360,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetad
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+
