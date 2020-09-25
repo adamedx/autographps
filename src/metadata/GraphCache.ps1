@@ -216,9 +216,9 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
             $connection = new-so GraphConnection $graphEndpoint $null $null
 
             $schema = try {
-                invoke-graphrequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
+                Invoke-GraphApiRequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
             } catch {
-                write-verbose "Invoke-GraphRequest failed to download schema"
+                write-verbose "Invoke-GraphApiRequest failed to download schema"
                 write-verbose $_
                 write-verbose $_.exception
                 throw
@@ -229,5 +229,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         }
     }
 }
+
+
 
 

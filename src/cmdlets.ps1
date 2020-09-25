@@ -13,15 +13,15 @@
 # limitations under the License.
 
 . (import-script client/LocationContext)
-. (import-script cmdlets\New-GraphItemRelationship)
+. (import-script cmdlets\New-GraphItemResourceRelationship)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
-. (import-script cmdlets\Get-GraphItem)
-. (import-script cmdlets\Get-GraphItemRelationship)
+. (import-script cmdlets\Get-GraphItemResource)
+. (import-script cmdlets\Get-GraphItemResourceRelationship)
 . (import-script cmdlets\Get-GraphRelatedItem)
-. (import-script cmdlets\Get-GraphItemUri)
+. (import-script cmdlets\Get-GraphItemResourceUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)
-. (import-script cmdlets\Get-GraphChildItem)
+. (import-script cmdlets\Get-GraphChildItemResource)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphType)
 . (import-script cmdlets\Get-GraphUri)
@@ -30,18 +30,24 @@
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\New-GraphMethodParameterObject)
 . (import-script cmdlets\Remove-Graph)
-. (import-script cmdlets\Remove-GraphItem)
-. (import-script cmdlets\Remove-GraphItemRelationship)
-. (import-script cmdlets\Set-GraphItem)
+. (import-script cmdlets\Remove-GraphItemResource)
+. (import-script cmdlets\Remove-GraphItemResourceRelationship)
+. (import-script cmdlets\Set-GraphItemResource)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Show-GraphHelp)
 . (import-script cmdlets\Update-GraphMetadata)
 . (import-script cmdlets\New-GraphObject)
-. (import-script cmdlets\New-GraphItem)
+. (import-script cmdlets\New-GraphItemResource)
 . (import-script cmdlets\Add-GraphRelatedItem)
 
 # Add parameter completion to commands exported by a different module as a UX enhancement
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Select (new-so TypeUriParameterCompleter Property)
+
+
+
+
+
+

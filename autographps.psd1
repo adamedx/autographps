@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.22.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.23.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -231,11 +231,11 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance.
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance. And an included dependency that exposes commands to users of this module has renamed some fo those commands.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.22.0
+* AutoGraphPS-SDK 0.23.0 -- this includes commands from the `AutoGraphPS-SDK` module that have been renamed
 * ThreadJob 2.0.3 -- this is the introductory use of ThreadJob for this module
 
 ### Breaking changes
@@ -244,6 +244,10 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 * The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
 * Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
 * The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
+* The following commands that originate from the `AutoGraphPS-SDK` dependency have been renamed -- if you use this module and try to invoke the commands by their earlier names, those invocations will fail:
+  `Connect-Graph` is now `Connect-GraphApi`
+  `Disconnect-Graph` is now `Disconnect-GraphApi`
+  `Invoke-GraphRequest` is now `Invoke-GraphApiRequest`
 
 ### New features
 

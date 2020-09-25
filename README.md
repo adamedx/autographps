@@ -139,7 +139,7 @@ Run the command below to grant permissions that allow AutoGraphPS to read your *
 
 ```powershell
 # You only have to do this once, not each time you use AutoGraphPS
-Connect-Graph User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
+Connect-GraphApi User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
 ```
 
 Now traverse the Graph via the `gcd` alias to "move" to a new Uri current location in the Graph. This is analgous to the usage of "cd" to change to a new current working directory in file-system oriented shells like `bash` and PowerShell:
@@ -325,8 +325,8 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Cmdlet (alias)            | Description                                                                                             |
 |---------------------------|---------------------------------------------------------------------------------------------------------|
 | Clear-GraphLog            | Clear the log of REST requests to Graph made by the module's commands                                   |
-| Connect-Graph             | Establishes authentication and authorization context used across cmdlets for the current graph          |
-| Disconnect-Graph          | Clears authentication and authorization context used across cmdlets for the current graph               |
+| Connect-GraphApi          | Establishes authentication and authorization context used across cmdlets for the current graph          |
+| Disconnect-GraphApi       | Clears authentication and authorization context used across cmdlets for the current graph               |
 | Find-GraphPermissions     | Given a search string, `Find-GraphPermissions` lists permissions with names that contain that string    |
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
 | Format-GraphLog (fgl)       | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests |

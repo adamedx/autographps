@@ -10,7 +10,7 @@ After you've installed the module, invoke AutoGraphPS cmdlets from any PowerShel
 
 ### Get started -- simple commands
 
-**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph by signing in. If you have not already done this using `Connect-Graph`, that's ok -- any commands that need a connection will request one before communicating with the graph. After that, any subsequent commands will re-use that same connection, so you won't have to sign in again.
+**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph by signing in. If you have not already done this using `Connect-GraphApi`, that's ok -- any commands that need a connection will request one before communicating with the graph. After that, any subsequent commands will re-use that same connection, so you won't have to sign in again.
 
 Here's a really simple command you can execute -- if it asks you to sign-in, please do so:
 
@@ -54,7 +54,7 @@ The commands above are trivial demonstrations of Graph. In particular, they only
 Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
 
 ```powershell
-Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
+Connect-GraphApi User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
 This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
@@ -370,7 +370,7 @@ Now let's see concrete examples of these commands in action.
 Our earlier examples were read-only operations. For write-operations to succeed, you'll need to request specific write permissions, so execute this command before you try the examples:
 
 ```powershell
-Connect-Graph User.ReadWrite.All, Group.ReadWrite.All, Contacts.ReadWrite
+Connect-GraphApi User.ReadWrite.All, Group.ReadWrite.All, Contacts.ReadWrite
 ```
 
 A few notes are in order:
@@ -805,7 +805,7 @@ Often, users and developers remedy the error by reading the documentation, and u
 ```
 PS> gls me/people
 WARNING: Graph endpoint returned 'Unauthorized' accessing 'me/people'. Retry after re-authenticating via the
-'Connect-Graph' cmdlet and requesting appropriate permissions. See this location for documentation on
+'Connect-GraphApi' cmdlet and requesting appropriate permissions. See this location for documentation on
 permissions that may apply to this part of the Graph:
 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'.
 WARNING: {
@@ -820,12 +820,12 @@ WARNING: {
 }
 ```
 
-The warning message in the AutoGraphPS output includes a link to the permissions documentation and suggestion to use `Connect-Graph` to grant AutoGraphPS additional permissions. Consultation of the documentation may lead the user to conclude that AutoGraphPS is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-Graph` to request `People.Read` will succeed:
+The warning message in the AutoGraphPS output includes a link to the permissions documentation and suggestion to use `Connect-GraphApi` to grant AutoGraphPS additional permissions. Consultation of the documentation may lead the user to conclude that AutoGraphPS is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-GraphApi` to request `People.Read` will succeed:
 
 ```powershell
 # This will prompt the user to re-authenticate and grant People.Read
 # to AutoGraphPS
-Connect-Graph People.Read
+Connect-GraphApi People.Read
 
 gls me/people
 
