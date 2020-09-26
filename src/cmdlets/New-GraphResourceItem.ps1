@@ -19,7 +19,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function New-GraphItem {
+function New-GraphResourceItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='bytypeoptionallyqualified')]
     param(
         [parameter(position=0, parametersetname='bytypeoptionallyqualified', mandatory=$true)]
@@ -163,14 +163,16 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
     }
 
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphResourceItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphResourceItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphResourceItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphResourceItem GraphName (new-so GraphParameterCompleter)
+
+
 

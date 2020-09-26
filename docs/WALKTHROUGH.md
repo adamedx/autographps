@@ -10,7 +10,7 @@ After you've installed the module, invoke AutoGraphPS cmdlets from any PowerShel
 
 ### Get started -- simple commands
 
-**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph by signing in. If you have not already done this using `Connect-Graph`, that's ok -- any commands that need a connection will request one before communicating with the graph. After that, any subsequent commands will re-use that same connection, so you won't have to sign in again.
+**AutoGraphPS** cmdlets allow you to explore the graph. Before using the cmdlets, you must establish a connection to the graph by signing in. If you have not already done this using `Connect-GraphApi`, that's ok -- any commands that need a connection will request one before communicating with the graph. After that, any subsequent commands will re-use that same connection, so you won't have to sign in again.
 
 Here's a really simple command you can execute -- if it asks you to sign-in, please do so:
 
@@ -54,7 +54,7 @@ The commands above are trivial demonstrations of Graph. In particular, they only
 Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
 
 ```powershell
-Connect-Graph User.Read, Files.Read, Mail.Read, Contacts.Read
+Connect-GraphApi User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
 This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
@@ -328,11 +328,11 @@ The `$false` assignment in the hash table means that the field will use *ascendi
 
 AutoGraphPS isn't just an excellent browsing experience, it features commands for modifying the Graph as well:
 
-* `New-GraphItem`
-* `Set-GraphItem`
+* `New-GraphResourceItem`
+* `Set-GraphResourceItem`
 * `New-GraphObject`
 * `New-GraphItemRelationship`
-* `Remove-GraphItem`
+* `Remove-GraphResourceItem`
 
 The following examples demonstrate common usage of these commands in creating and editing Graph resources. Unlike the read-only cases we've explored so far, you're likely to need some light research before jumping in with these command, i.e. you might want to read the actual Graph API documentation first. In particular, you'll need to have some basic answers in mind for the following questions before using write-operation commands:
 
@@ -359,7 +359,7 @@ Lastly, while in many cases the property values are simple "primitive" types lik
 $ipRange = New-GraphObject ipv6Range
 ```
 
-You can then set the properties of the `$ipRange` variable as desired, and specify that variable as one of the property values to `New-GraphItem` or `Set-GraphItem`.
+You can then set the properties of the `$ipRange` variable as desired, and specify that variable as one of the property values to `New-GraphResourceItem` or `Set-GraphResourceItem`.
 
 Now this preamble may seem rather lengthy compared to our near zero-knowledge approach of read-only use cases, but all of this really boils down to the need to know what you're going to change before you make an update, which isn't unreasonable for these more "dangerous" write use-cases. Fortunately, the answers to all of those questions are a few tab-completions or `Get-GraphType` / `Show-GraphHelp` invocations away.
 
@@ -370,7 +370,7 @@ Now let's see concrete examples of these commands in action.
 Our earlier examples were read-only operations. For write-operations to succeed, you'll need to request specific write permissions, so execute this command before you try the examples:
 
 ```powershell
-Connect-Graph User.ReadWrite.All, Group.ReadWrite.All, Contacts.ReadWrite
+Connect-GraphApi User.ReadWrite.All, Group.ReadWrite.All, Contacts.ReadWrite
 ```
 
 A few notes are in order:
@@ -380,13 +380,13 @@ A few notes are in order:
 
 #### Create a simple resource: group (AAD accounts only)
 
-This example uses the `New-GraphItem` command to creates a new AAD security group:
+This example uses the `New-GraphResourceItem` command to creates a new AAD security group:
 
 ```powershell
-PS> $newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value Group7Access, 'Group 7 Access', $false, $true
+PS> $newGroup = New-GraphResourceItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value Group7Access, 'Group 7 Access', $false, $true
 ```
 
-The example specifies the following parameters for `New-GraphItem`:
+The example specifies the following parameters for `New-GraphResourceItem`:
 * The first (unnamed) parameter `group` specifies that the type of the resource to create is `group`
 * The `Property` parameter specifies the properties that must be set for the new resource
 * The `Value` parameter specifies the values to which those properties must be set
@@ -405,18 +405,18 @@ createdDateTime      displayName    mailNickname
 2020-04-22T01:27:41Z Group 7 Access Group7Access
 ```
 
-The example specifies the following parameters for `New-GraphItem`:
+The example specifies the following parameters for `New-GraphResourceItem`:
 * The first (unnamed) parameter `group` specifies that the type of the resource to create is `group`
 * The `Property` parameter specifies the properties that must be set for the new resource
 * The `Value` parameter specifies the values to which those properties must be set
 
-Additionally, following the invocation of `New-GraphItem` that creates the new security group, the example assigns the result of the creation to the variable `$newGroup`, and then outputs 3 columns of the variable to the console for inspection.
+Additionally, following the invocation of `New-GraphResourceItem` that creates the new security group, the example assigns the result of the creation to the variable `$newGroup`, and then outputs 3 columns of the variable to the console for inspection.
 
 #### Create a resource with nested data: user
 
 Creating a group was easy. Let's create a user. Before doing so, a quick consultation of the user resource's documentation via `Show-GraphHelp user` indicates that we need to specify the following properties at creation time: `mailNickName`, `userPrincipalName`, `displayName`, `accountEnabled`, and `passwordProfile`. The first four are simple types (`string`, `string`, `string`, and `bool` respectively) that we know how to specify via command line arguments, but according to the documentation (and also `Get-GraphType user`), the last is of type `passswordProfile`, how do we specify that?
 
-We can use the `New-GraphObject` command to create the data structures as PowerShell objects (or optionally as `JSON` text). `New-GraphObject` does not issue requests or otherwise interact with Graph, but the local objects it creates can be can be specified to commands like `New-GraphItem`, `Set-GraphItem`, etc., that must submit such objects in requests. The parameters of `New-GraphObject` have similar naming and semantics to thsoe of `New-GraphItem` when it comes to types and properties, so after consulting the documentation for `passwordProfile` we see that we can create the `passwordProfile` object with this command:
+We can use the `New-GraphObject` command to create the data structures as PowerShell objects (or optionally as `JSON` text). `New-GraphObject` does not issue requests or otherwise interact with Graph, but the local objects it creates can be can be specified to commands like `New-GraphResourceItem`, `Set-GraphResourceItem`, etc., that must submit such objects in requests. The parameters of `New-GraphObject` have similar naming and semantics to thsoe of `New-GraphResourceItem` when it comes to types and properties, so after consulting the documentation for `passwordProfile` we see that we can create the `passwordProfile` object with this command:
 
 ```powershell
 $passwordProfile = New-GraphObject passwordprofile -Property forceChangePasswordNextSignIn, password -value $true, (Get-Credential user).GetNetworkCredential().Password
@@ -428,13 +428,13 @@ Now we're ready to actually make the request to Graph that creates the user:
 
 ```powershell
 # This assumes you set `$passwordProfile` using the earlier `New-GraphObject` example
-$newUser = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value treejack, treejack@newnoir.org, 'Treemonisha Jackson', $true, $passwordProfile
+$newUser = New-GraphResourceItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value treejack, treejack@newnoir.org, 'Treemonisha Jackson', $true, $passwordProfile
 ```
 
 We can see that the user has been successfully created by issuing a request to the Graph to get the new user using a command like the following:
 
 ```powershell
-PS> Get-GraphItem user -Id $newUser.Id
+PS> Get-GraphResourceItem user -Id $newUser.Id
 
    Graph Location: /users
 
@@ -448,19 +448,19 @@ t +> user Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
 In this example, a new `contact` (i.e. e-mail or phone contact; requires either a free Microsoft account or non-trial AAD subscription) for the signed-in user is created. Here's a first attempt:
 
 ```powershell
-PS> $newContact = new-graphitem contact
+PS> $newContact = New-GraphResourceItem contact
 
 foreach : Exception calling "InvokeMethod" with "2" argument(s): "Unable to find URI for type 'contact' -- explicitly specify the target URI and retry."
 ```
 
-Unfortunately, that didn't work. The exception and resulting error message indicating we should *specify the target URI and retry* means that `New-GraphItem` could not translate our request to create a contact to a REST URI for Graph. Unlike the user case, there is no well-known request URI at which to create a contact (for `user` it is a URI like `https://graph.microsoft.com/v1.0/users`) because *`contact` is the type of object that exists only in relation to another object, not as a standalone instance*.
+Unfortunately, that didn't work. The exception and resulting error message indicating we should *specify the target URI and retry* means that `New-GraphResourceItem` could not translate our request to create a contact to a REST URI for Graph. Unlike the user case, there is no well-known request URI at which to create a contact (for `user` it is a URI like `https://graph.microsoft.com/v1.0/users`) because *`contact` is the type of object that exists only in relation to another object, not as a standalone instance*.
 
-Actually reviewing the REST documentation for contact shows that the use case for creating a contact is accomplished via `POST` to the resource URI `https://graph.microsoft.com/v1.0/me/contacts`. Conveniently, `New-GraphItem` supports a `Uri` parameter that allows you to specify the URI (`me` since AutoGraphPS commands abstract the earlier parts of the URI), so after searching for additional documentation about `contact` and experimenting to make up for the fact that as of this writing the documentation lacks details about which properties are required at creation time, we can execute the following commands to create a `contact`:
+Actually reviewing the REST documentation for contact shows that the use case for creating a contact is accomplished via `POST` to the resource URI `https://graph.microsoft.com/v1.0/me/contacts`. Conveniently, `New-GraphResourceItem` supports a `Uri` parameter that allows you to specify the URI (`me` since AutoGraphPS commands abstract the earlier parts of the URI), so after searching for additional documentation about `contact` and experimenting to make up for the fact that as of this writing the documentation lacks details about which properties are required at creation time, we can execute the following commands to create a `contact`:
 
 ```powershell
 # Create the emailAddress object that is required at creation time as an array
 $emailAddress = New-GraphObject emailAddress -Property name, address -Value Work, cleo@soulsonic.org
-$newContact = New-GraphItem -uri /me/contacts -Property givenName, emailAddresses -Value 'Cleopatra Jones', @($emailAddress)
+$newContact = New-GraphResourceItem -uri /me/contacts -Property givenName, emailAddresses -Value 'Cleopatra Jones', @($emailAddress)
 
 # Dump the returned item to the console
 PS> $newContact | select createdDateTime, displayname, emailAddresses
@@ -480,29 +480,29 @@ which will issue a request to Graph to retrieve all contacts, and then filter th
 
 #### Update an existing resource: contact, group, and user
 
-To modify an existing Graph resource, use the `Set-GraphItem` command. You can pipe in the result of a previous `Get-GraphItem`, `Get-GraphResource`, `New-GraphItem`, etc., invocation as the object to modify:
+To modify an existing Graph resource, use the `Set-GraphResourceItem` command. You can pipe in the result of a previous `Get-GraphResourceItem`, `Get-GraphResource`, `New-GraphResourceItem`, etc., invocation as the object to modify:
 
 ```powershell
-$newGroup | Set-GraphItem -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
+$newGroup | Set-GraphResourceItem -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
-This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphItem` and `New-GraphObject`, you can also specify commands using the following syntax:
+This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphResourceItem` and `New-GraphObject`, you can also specify commands using the following syntax:
 
 ```powershell
-Set-GraphItem group -Id $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
+Set-GraphResourceItem group -Id $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
 And there are still more equivalent syntaxes, using the `PropertyTable` or `TemplateObject` parameters. `PropertyTable` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
 
 ```powershell
-$newGroup | Set-GraphItem -PropertyTable @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
+$newGroup | Set-GraphResourceItem -PropertyTable @{displayName='Group 7 Access Level'; description='All users with Group 7 access'}
 ```
 
 The `TeamplateObject` parameter allows the these properties and values to be specified in the form of an object, such as one returned by `New-GraphObject` or even from the Graph itself via `Get-GraphResource` or `gls`:
 
 ```powershell
 $modifiedGroup = New-GraphObject group description 'Just the description'
-$newGroup | Set-GraphItem -TemplateObject $modifiedGroup
+$newGroup | Set-GraphResourceItem -TemplateObject $modifiedGroup
 
 $newGroup | gls -ContentOnly | select displayname, description
 
@@ -514,7 +514,7 @@ Group 7 Access Level Just the description
 Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
-$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphResourceItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
 $existingGroup | gls -ContentOnly | select description, displayName
 
@@ -522,9 +522,9 @@ mailNickname displayName description
 ------------ ----------- -----------
              Unused      Unassinged group
 
-$templateGroup = Get-GraphItem group -Id 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$templateGroup = Get-GraphResourceItem group -Id 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
 
-$existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
+$existingGroup | Set-GraphResourceItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
 $existingGroup | gls -ContentOnly | select description, displayName
 
@@ -537,10 +537,10 @@ Finally, an object returned from the Graph may be "edited" locally and then resu
 the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
 
 ```powershell
-$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphResourceItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 $existingGroup.displayName += ' - ' + [DateTime]::now
 
-$existingGroup | Set-GraphItem
+$existingGroup | Set-GraphResourceItem
 
 $existingGroup | gls -ContentOnly | select description, displayName
 
@@ -549,7 +549,7 @@ description                       displayName
 Standard team collaboration group Team group - 05/16/2019 15:14:41
 ```
 
-Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `TemplateObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
+Note that `Set-GraphResourceItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `TemplateObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
 
 #### Link resources: add a user to a group (AAD accounts only)
 
@@ -595,11 +595,11 @@ $passwordProfile1 = New-GraphObject passwordprofile -Property forceChangePasswor
 $passwordProfile2 = New-GraphObject passwordprofile -Property forceChangePasswordNextSignIn, password -Value $true, (Get-Credential user).GetNetworkCredential().Password
 
 # Create the actual users
-$newUser1 = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value vashford, vashford@newnoir.org, 'Val Ashford', $true, $passwordProfile1
-$newUser2 = New-GraphItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value nsimpson, nsimpson@newnoir.org, 'Nick Simpson', $true, $passwordProfile2
+$newUser1 = New-GraphResourceItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value vashford, vashford@newnoir.org, 'Val Ashford', $true, $passwordProfile1
+$newUser2 = New-GraphResourceItem user -Property mailNickname, userPrincipalName, displayname, accountEnabled, passwordProfile -Value nsimpson, nsimpson@newnoir.org, 'Nick Simpson', $true, $passwordProfile2
 
 # Create a new group for the users
-$teamGroup = new-graphitem group mailNickName, displayName, mailEnabled, securityEnabled Group7AccessT1, 'Group 7 Access 2', $false, $true
+$teamGroup = New-GraphResourceItem group mailNickName, displayName, mailEnabled, securityEnabled Group7AccessT1, 'Group 7 Access 2', $false, $true
 
 # Add the users to the group
 $newUser1, $newUser2 | New-GraphItemRelationship $teamGroup members | out-null
@@ -638,26 +638,26 @@ $teamGroup | Get-GraphItemRelationship -WithRelationship members | Remove-GraphI
 
 #### Delete resources
 
-Lastly, the resources we've created can all be deleted using the `Remove-GraphItem` command. This example deletes the group with the id `c436312c-4f6e-4963-ac05-bf68b98d7475`:
+Lastly, the resources we've created can all be deleted using the `Remove-GraphResourceItem` command. This example deletes the group with the id `c436312c-4f6e-4963-ac05-bf68b98d7475`:
 
 ```powershell
-Remove-GraphItem group c436312c-4f6e-4963-ac05-bf68b98d7475
+Remove-GraphResourceItem group c436312c-4f6e-4963-ac05-bf68b98d7475
 ```
 
-The command also takes an object returned by `Get-GraphItem` or `Get-GraphResource`, etc., which is useful for deleting resources accessible only through a relationship with another resource, such as `contact`:
+The command also takes an object returned by `Get-GraphResourceItem` or `Get-GraphResource`, etc., which is useful for deleting resources accessible only through a relationship with another resource, such as `contact`:
 
 ```powershell
 # If you have a variable containing the contact retrieved by an AutoGraphPS
-# command such as Get-GraphResource, New-GraphItem, gls, etc., you can easily
-# delete it by passing it to Remove-GraphItem
-$oldContact | Remove-GraphItem
+# command such as Get-GraphResource, New-GraphResourceItem, gls, etc., you can easily
+# delete it by passing it to Remove-GraphResourceItem
+$oldContact | Remove-GraphResourceItem
 ```
 
 #### Write operation tips and tricks
 
 * Use `Show-GraphHelp` to get the documentation for the Graph resource in which you're interested.
 * Use `Get-GraphType -Members` to view the properties of the type or structure you're updating
-* Use parameter completion with commands like `New-GraphObject`, `New-GraphItem`, `Set-GraphItem`, etc. to ease your workflow and avoid the need to refer to documentation
+* Use parameter completion with commands like `New-GraphObject`, `New-GraphResourceItem`, `Set-GraphResourceItem`, etc. to ease your workflow and avoid the need to refer to documentation
 * Pay attention to error messages from Graph -- these messages will often give useful information about missing or invalid properties so that you can try again, or at least help you navigate a particular help topic.
 * Look for opportunities to use the PowerShell pipeline with AutoGraphPS command for concise, efficient, and scalable automation of Graph resource management.
 
@@ -805,7 +805,7 @@ Often, users and developers remedy the error by reading the documentation, and u
 ```
 PS> gls me/people
 WARNING: Graph endpoint returned 'Unauthorized' accessing 'me/people'. Retry after re-authenticating via the
-'Connect-Graph' cmdlet and requesting appropriate permissions. See this location for documentation on
+'Connect-GraphApi' cmdlet and requesting appropriate permissions. See this location for documentation on
 permissions that may apply to this part of the Graph:
 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'.
 WARNING: {
@@ -820,12 +820,12 @@ WARNING: {
 }
 ```
 
-The warning message in the AutoGraphPS output includes a link to the permissions documentation and suggestion to use `Connect-Graph` to grant AutoGraphPS additional permissions. Consultation of the documentation may lead the user to conclude that AutoGraphPS is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-Graph` to request `People.Read` will succeed:
+The warning message in the AutoGraphPS output includes a link to the permissions documentation and suggestion to use `Connect-GraphApi` to grant AutoGraphPS additional permissions. Consultation of the documentation may lead the user to conclude that AutoGraphPS is missing the 'People.Read' scope, and a retry of the original attempt after using `Connect-GraphApi` to request `People.Read` will succeed:
 
 ```powershell
 # This will prompt the user to re-authenticate and grant People.Read
 # to AutoGraphPS
-Connect-Graph People.Read
+Connect-GraphApi People.Read
 
 gls me/people
 

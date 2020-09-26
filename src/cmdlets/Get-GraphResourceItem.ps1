@@ -20,7 +20,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function Get-GraphItem {
+function Get-GraphResourceItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri', mandatory=$true)]
@@ -149,9 +149,10 @@ function Get-GraphItem {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem OrderBy (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem Property (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem OrderBy (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+

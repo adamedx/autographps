@@ -281,7 +281,7 @@ The complete set of valid parameters is '{3}'.
             $methodUri
         }
 
-        Invoke-GraphRequest -Uri $methodUriWithParameters -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop | foreach {
+        Invoke-GraphApiRequest -Uri $methodUriWithParameters -Method POST @bodyParam -Connection $requestInfo.Context.Connection @coreParameters @filterParameter @pagingParameters -erroraction stop | foreach {
             # Note that there is not relation between the structure of the URI used to make an action or function
             # request and the types returned in the response -- they could be literally anything. The method below
             # addresses this by creating a public segment that reflects the type returned in the response metadata,
@@ -308,3 +308,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod OrderBy
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
+

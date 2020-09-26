@@ -18,7 +18,7 @@
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function Get-GraphItemUri {
+function Get-GraphResourceItemUri {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='fromtype')]
     param(
         [parameter(position=0, parametersetname='fromtype', mandatory=$true)]
@@ -124,7 +124,8 @@ function Get-GraphItemUri {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItemUri Uri (new-so GraphUriParameterCompleter LocationUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItemUri TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItemUri Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItemUri GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceItemUri Uri (new-so GraphUriParameterCompleter LocationUri)
+

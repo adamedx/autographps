@@ -130,10 +130,10 @@ function Get-GraphChildItem {
         $ignoreProperty = $SkipPropertyCheck.IsPresent -or ( $Relationship -ne $null )
 
         if ( $accumulatedItems ) {
-            $accumulatedItems | Get-GraphItem @remappedParameters -SkipPropertyCheck:$ignoreProperty -ChildrenOnly:$true
+            $accumulatedItems | Get-GraphResourceItem @remappedParameters -SkipPropertyCheck:$ignoreProperty -ChildrenOnly:$true
         } else {
             foreach ( $remappedUri in $remappedUris ) {
-                Get-GraphItem -Uri $remappedUri @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty
+                Get-GraphResourceItem -Uri $remappedUri @remappedParameters -ChildrenOnly:$true -SkipPropertyCheck:$ignoreProperty
             }
         }
     }
@@ -146,4 +146,5 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Relatio
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
+
 

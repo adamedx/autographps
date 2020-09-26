@@ -20,7 +20,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function Set-GraphItem {
+function Set-GraphResourceItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri', mandatory=$true)]
@@ -133,13 +133,15 @@ function Set-GraphItem {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
-        Invoke-GraphRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
     }
 
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem Property (new-so TypeUriParameterCompleter Property $false)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem ExcludeObjectProperty (new-so TypeUriParameterCompleter Property $false Property $null $null GraphObject)
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphResourceItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphResourceItem Property (new-so TypeUriParameterCompleter Property $false)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphResourceItem ExcludeObjectProperty (new-so TypeUriParameterCompleter Property $false Property $null $null GraphObject)
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphResourceItem GraphName (new-so GraphParameterCompleter)
+
+

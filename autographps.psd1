@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.22.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.23.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -77,11 +77,11 @@ NestedModules = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
-    'Get-GraphChildItem',
-    'Get-GraphItem',
+    'Get-GraphResourceChildItem',
+    'Get-GraphResourceItem',
     'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
-    'Get-GraphItemUri',
+    'Get-GraphResourceItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
@@ -89,14 +89,14 @@ NestedModules = @(
     'Get-GraphUriInfo',
     'Invoke-GraphMethod',
     'New-Graph',
-    'New-GraphItem',
+    'New-GraphResourceItem',
     'New-GraphItemRelationship',
     'New-GraphMethodParameterObject',
     'New-GraphObject',
     'Remove-Graph',
-    'Remove-GraphItem',
+    'Remove-GraphResourceItem',
     'Remove-GraphItemRelationship',
-    'Set-GraphItem',
+    'Set-GraphResourceItem',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',
@@ -135,10 +135,10 @@ VariablesToExport = @(
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
-        '.\src\cmdlets\Get-GraphChildItem.ps1',
-        '.\src\cmdlets\Get-GraphItem.ps1',
+        '.\src\cmdlets\Get-GraphResourceChildItem.ps1',
+        '.\src\cmdlets\Get-GraphResourceItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Get-GraphItemUri.ps1',
+        '.\src\cmdlets\Get-GraphResourceItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
@@ -147,14 +147,14 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\New-GraphItem.ps1',
+        '.\src\cmdlets\New-GraphResourceItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
         '.\src\cmdlets\New-GraphMethodParameterObject.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
-        '.\src\cmdlets\Remove-GraphItem.ps1',
+        '.\src\cmdlets\Remove-GraphResourceItem.ps1',
         '.\src\cmdlets\Remove-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Set-GraphItem.ps1',
+        '.\src\cmdlets\Set-GraphResourceItem.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
@@ -231,19 +231,30 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance.
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance. Multiple commands from this module and a dependent module are have been renamed.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.22.0
+* AutoGraphPS-SDK 0.23.0 -- this includes commands from the `AutoGraphPS-SDK` module that have been renamed
 * ThreadJob 2.0.3 -- this is the introductory use of ThreadJob for this module
 
 ### Breaking changes
 
-* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphItem` has been renamed `TemplateObject`.
+* The following commands have been renamed the names of the commands were already in use in other community modules:
+  `Get-GraphChildItem` -> `Get-GraphResourceChildItem`
+  `Get-GraphItem` -> `Get-GraphResourceItem`
+  `Get-GraphItemUri` `Get-GraphResourceItemUri`
+  `New-GraphItem` -> `New-GraphResourceItem`
+  `Remove-GraphItem` `Remove-GraphResourceItem`
+  `Set-GraphItem` -> `Set-GraphResourceItem`
+* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphResourceItem` has been renamed `TemplateObject`.
 * The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
 * Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
 * The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
+* The following commands that originate from the `AutoGraphPS-SDK` dependency have been renamed -- if you use this module and try to invoke the commands by their earlier names, those invocations will fail:
+  `Connect-Graph` is now `Connect-GraphApi`
+  `Disconnect-Graph` is now `Disconnect-GraphApi`
+  `Invoke-GraphRequest` is now `Invoke-GraphApiRequest`
 
 ### New features
 

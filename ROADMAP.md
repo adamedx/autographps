@@ -350,6 +350,7 @@
 * Rename GraphObject to GraphItem
 * Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
 * Use odata context
+* Use Start-ThreadJob instead of Start-Job for background metadata processing
 
 ### Postponed
 
