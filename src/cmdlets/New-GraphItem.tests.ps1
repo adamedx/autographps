@@ -42,10 +42,10 @@ if ( ! ( get-variable ThisTestStarted -erroraction ignore ) ) {
 }
 
 
-Describe 'The Get-GraphResourceItem command parameterbinding behavior' -tag parameterbinding {
+Describe 'The New-GraphItem command parameterbinding behavior' -tag parameterbinding {
     Context 'When binding parameters with validation that is only possible if powershell is launched as non-interactive' {
         BeforeAll {
-            GetParameterTestFunction Get-GraphResourceItem | new-item function:Get-GraphResourceItemTest
+            GetParameterTestFunction New-GraphItem | new-item function:New-GraphItemTest
             $contentObject = [PSCustomObject] @{Id='objectid'}
             $standardObject = [PSCustomObject] @{
                 Id = 'objectid'
@@ -55,24 +55,17 @@ Describe 'The Get-GraphResourceItem command parameterbinding behavior' -tag para
             }
         }
 
-        It "Should bind to the typeandid parameter set when type, id, and property are specified as named" {
+        It "Should bind to the bytypeoptionallyqualified parameter set when type, property, and value are specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                Get-GraphResourceItemTest -typename type1 -id id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
+                New-GraphItemTest -typename type1 -property propname -value valname | select -expandproperty ParameterSetName | should be 'bytypeoptionallyqualified'
             }
         }
 
-        It "Should bind to the typeandid parameter set when type, id, and property are specified as named" {
+        It "Should bind to the byuri parameterset when the first parameter is named and the property and value parameters are specified" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                Get-GraphResourceItemTest -typename type1 -id id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
-            }
-        }
-
-        It "Should bind to the byuri parameter set when the first parameter is positional and no id parameter is specified" {
-            $parameterSetTestsFinished | Should Not Be $null
-            if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = Get-GraphResourceItemTest me -property propname
+                $bindingInfo = New-GraphItemTest -uri me -property propname -value valname
 
                 $bindingInfo.ParameterSetName | Should Be 'byuri'
                 $bindingInfo.BoundParameters['Uri'] | Should Be 'me'
@@ -80,39 +73,55 @@ Describe 'The Get-GraphResourceItem command parameterbinding behavior' -tag para
         }
 
 
-        It "Should bind to the byobject parameterset when an unwrapped object is specified to the pipeline and the property parameter s specified by name" {
+        It "Should bind to the bytypeoptionallyqualifiedfromobject parameterset when an unwrapped object is specified to the pipeline and the type is specified by position" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = $contentObject | Get-GraphResourceItemTest -property propname
+                $bindingInfo = $contentObject | New-GraphItemTest user
 
-                $bindingInfo.parametersetname | Should Be 'byobject'
-                $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $contentObject.Id
+                $bindingInfo.parametersetname | Should Be 'bytypeoptionallyqualifiedfromobject'
+                $bindingInfo.BoundParameters['TemplateObject'].Id | Should Be $contentObject.Id
             }
         }
 
-        It "Should bind to the byobject parameterset when a wrapped object is specified to the pipeline and the property parameter is specified by name" {
+        It "Should bind to the bytypeoptionallyqualifiedfromobject parameterset when a wrapped object is specified to the pipeline and the type is specified by position" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = $standardObject | Get-GraphResourceItemTest -property propname
+                $bindingInfo = $standardObject | New-GraphItemTest user
 
-                $bindingInfo.parametersetname | Should Be 'byobject'
-                $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $standardObject.Id
+                $bindingInfo.parametersetname | Should Be 'bytypeoptionallyqualifiedfromobject'
+                $bindingInfo.BoundParameters['TemplateObject'].Id | Should Be $standardObject.Id
             }
         }
 
-        It "Should bind to the bytypeandid parameterset when a type is specified as positional and id, and property are named" {
+        It "Should bind to the bytypeoptionallyqualified parameterset when the type property, and value prameters are all positional" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = Get-GraphResourceItemTest user -id userid -property propname
+                $bindingInfo = New-GraphItemTest user propname valdata
 
-                $bindingInfo.parametersetname | Should Be 'bytypeandid'
+                $bindingInfo.parametersetname | Should Be 'bytypeoptionallyqualified'
 
-                $bindingInfo.BoundParameters['Id'] | Should Be 'userid'
                 $bindingInfo.BoundParameters['TypeName'] | Should Be 'user'
                 $bindingInfo.BoundParameters['Property'] | Should Be 'propname'
+                $bindingInfo.BoundParameters['Value'] | Should Be 'valdata'
             }
         }
     }
+
+    Context 'When invoking New-GraphItem' {
+        BeforeAll {
+            $progresspreference = 'silentlycontinue'
+            Update-GraphMetadata -Path "$psscriptroot/../../test/assets/microsoft-directoryservices-fragment.xml" -force -wait -warningaction silentlycontinue
+        }
+
+        It "Should throw an exception when value is specified but property is not specified" {
+            { New-GraphItem microsoft.graph.user -value valnoprop | select -expandproperty ParameterSetName } | Should Throw "the Property parameter must also be specified"
+        }
+
+        It "Should throw an exception when Value is specified but has a larger size than Property" {
+            { New-GraphItem microsoft.graph.user -property propname -value val1, val2 | select -expandproperty ParameterSetName } | Should Throw "must be less than the specified"
+        }
+    }
 }
+
 
 

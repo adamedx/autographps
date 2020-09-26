@@ -32,11 +32,11 @@ Describe "Autographps application" {
                 'Add-GraphRelatedItem'
                 'Find-GraphPermission'
                 'Get-Graph'
-                'Get-GraphResourceChildItem'
-                'Get-GraphResourceItem'
+                'Get-GraphChildItem'
+                'Get-GraphItem'
                 'Get-GraphItemRelationship'
                 'Get-GraphRelatedItem'
-                'Get-GraphResourceItemUri'
+                'Get-GraphItemUri'
                 'Get-GraphResourceWithMetadata'
                 'Get-GraphLocation'
                 'Get-GraphType'
@@ -44,14 +44,14 @@ Describe "Autographps application" {
                 'Get-GraphUriInfo'
                 'Invoke-GraphMethod'
                 'New-Graph'
-                'New-GraphResourceItem'
+                'New-GraphItem'
                 'New-GraphItemRelationship'
                 'New-GraphMethodParameterObject'
                 'New-GraphObject'
                 'Remove-Graph'
-                'Remove-GraphResourceItem'
+                'Remove-GraphItem'
                 'Remove-GraphItemRelationship'
-                'Set-GraphResourceItem',
+                'Set-GraphItem',
                 'Set-GraphLocation'
                 'Set-GraphPrompt'
                 'Show-GraphHelp'
@@ -95,5 +95,7 @@ Describe "Autographps application" {
         }
     }
 }
+
+
 
 

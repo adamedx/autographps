@@ -17,13 +17,15 @@ set-alias gg  Get-Graph
 set-alias ggrel Get-GraphItemRelationship
 set-alias ggreli Get-GraphRelatedItem
 set-alias ggu Get-GraphUriInfo
-set-alias ggci Get-GraphResourceChildItem
-set-alias ggi Get-GraphResourceItem
+set-alias ggci Get-GraphChildItem
+set-alias ggi Get-GraphItem
 set-alias gls Get-GraphResourceWithMetadata
 set-alias gwd Get-GraphLocation
-set-alias gni New-GraphResourceItem
-set-alias grm Remove-GraphResourceItem
-set-alias gsi Set-GraphResourceItem
+set-alias gni New-GraphItem
+set-alias grm Remove-GraphItem
+set-alias gsi Set-GraphItem
 set-alias igm Invoke-GraphMethod
 set-alias ngo New-GraphObject
 set-alias ngp New-GraphMethodParameterObject
+
+

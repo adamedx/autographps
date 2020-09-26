@@ -77,11 +77,11 @@ NestedModules = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
-    'Get-GraphResourceChildItem',
-    'Get-GraphResourceItem',
+    'Get-GraphChildItem',
+    'Get-GraphItem',
     'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
-    'Get-GraphResourceItemUri',
+    'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
@@ -89,14 +89,14 @@ NestedModules = @(
     'Get-GraphUriInfo',
     'Invoke-GraphMethod',
     'New-Graph',
-    'New-GraphResourceItem',
+    'New-GraphItem',
     'New-GraphItemRelationship',
     'New-GraphMethodParameterObject',
     'New-GraphObject',
     'Remove-Graph',
-    'Remove-GraphResourceItem',
+    'Remove-GraphItem',
     'Remove-GraphItemRelationship',
-    'Set-GraphResourceItem',
+    'Set-GraphItem',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',
@@ -135,10 +135,10 @@ VariablesToExport = @(
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
-        '.\src\cmdlets\Get-GraphResourceChildItem.ps1',
-        '.\src\cmdlets\Get-GraphResourceItem.ps1',
+        '.\src\cmdlets\Get-GraphChildItem.ps1',
+        '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Get-GraphResourceItemUri.ps1',
+        '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
@@ -147,14 +147,14 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\New-GraphResourceItem.ps1',
+        '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
         '.\src\cmdlets\New-GraphMethodParameterObject.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
-        '.\src\cmdlets\Remove-GraphResourceItem.ps1',
+        '.\src\cmdlets\Remove-GraphItem.ps1',
         '.\src\cmdlets\Remove-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Set-GraphResourceItem.ps1',
+        '.\src\cmdlets\Set-GraphItem.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
@@ -239,6 +239,14 @@ Fixes command name conflict with AutoGraphPS-SDK dependency for the `Remove-Grap
 
 ### Breaking changes
 
+* The following commands are renamed back to what they were prior to an incorrect rename in the version of this module (0.33.0) prior to this one:
+  Get-GraphResourceChildItem -> Get-GraphChildItem
+  Get-GraphResourceItem -> Get-GraphItem
+  Get-GraphResourceItemUri -> Get-GraphItemUri
+  New-GraphResourceItem -> New-GraphItem
+  Remove-GraphResourceItem -> Remove-GraphItem
+  Set-GraphResourceItem -> Set-GraphItem
+
 None.
 
 ### New features
@@ -261,3 +269,5 @@ None.
 # DefaultCommandPrefix = ''
 
 }
+
+

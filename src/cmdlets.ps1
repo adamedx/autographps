@@ -16,12 +16,12 @@
 . (import-script cmdlets\New-GraphItemRelationship)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
-. (import-script cmdlets\Get-GraphResourceItem)
+. (import-script cmdlets\Get-GraphItem)
 . (import-script cmdlets\Get-GraphItemRelationship)
 . (import-script cmdlets\Get-GraphRelatedItem)
-. (import-script cmdlets\Get-GraphResourceItemUri)
+. (import-script cmdlets\Get-GraphItemUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)
-. (import-script cmdlets\Get-GraphResourceChildItem)
+. (import-script cmdlets\Get-GraphChildItem)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphType)
 . (import-script cmdlets\Get-GraphUri)
@@ -30,21 +30,23 @@
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\New-GraphMethodParameterObject)
 . (import-script cmdlets\Remove-Graph)
-. (import-script cmdlets\Remove-GraphResourceItem)
+. (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Remove-GraphItemRelationship)
-. (import-script cmdlets\Set-GraphResourceItem)
+. (import-script cmdlets\Set-GraphItem)
 . (import-script cmdlets\Set-GraphLocation)
 . (import-script cmdlets\Set-GraphPrompt)
 . (import-script cmdlets\Show-GraphHelp)
 . (import-script cmdlets\Update-GraphMetadata)
 . (import-script cmdlets\New-GraphObject)
-. (import-script cmdlets\New-GraphResourceItem)
+. (import-script cmdlets\New-GraphItem)
 . (import-script cmdlets\Add-GraphRelatedItem)
 
 # Add parameter completion to commands exported by a different module as a UX enhancement
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Select (new-so TypeUriParameterCompleter Property)
+
+
 
 
 

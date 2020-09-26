@@ -18,11 +18,11 @@ $functions = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
-    'Get-GraphResourceItem',
+    'Get-GraphItem',
     'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
-    'Get-GraphResourceItemUri',
-    'Get-GraphResourceChildItem',
+    'Get-GraphItemUri',
+    'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
@@ -30,14 +30,14 @@ $functions = @(
     'Get-GraphUriInfo',
     'Invoke-GraphMethod',
     'New-Graph',
-    'New-GraphResourceItem',
+    'New-GraphItem',
     'New-GraphItemRelationship',
     'New-GraphMethodParameterObject',
     'New-GraphObject',
     'Remove-Graph',
-    'Remove-GraphResourceItem',
+    'Remove-GraphItem',
     'Remove-GraphItemRelationship',
-    'Set-GraphResourceItem',
+    'Set-GraphItem',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',
@@ -59,3 +59,5 @@ $variables = @(
 )
 
 export-modulemember -function $functions -alias $aliases -variable $variables
+
+
