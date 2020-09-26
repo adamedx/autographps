@@ -42,7 +42,7 @@ ScriptClass GraphBuilder {
 
     function InitializeGraph($graph) {
         $metadataActivity = "Building graph version '$($this.version)' for endpoint '$($this.graphEndpoint)'"
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity $metadataActivity
+        Write-Progress -id 1 -activity $metadataActivity
 
         __AddRootVertices $graph
     }
@@ -81,7 +81,7 @@ ScriptClass GraphBuilder {
             throw "Type '$qualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
         }
 
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding type '$qualifiedTypeName'"
+        Write-Progress -id 1 -activity "Adding type '$qualifiedTypeName'"
 
         __AddVerticesFromSchemas $graph $entityType EntityType
     }
@@ -134,7 +134,7 @@ ScriptClass GraphBuilder {
 
         $qualifiedTypeName = $vertex.entity.typedata.typename
         $unqualifiedTypeName = $this.dataModel |=> UnqualifyTypeName $qualifiedTypeName
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Adding edges for '$($vertex.name)'"
+        Write-Progress -id 1 -activity "Adding edges for '$($vertex.name)'"
 
         __AddEdgesToEntityTypeVertex $graph $vertex
 

@@ -115,12 +115,12 @@ ScriptClass EntityGraph {
 
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
-            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Update vertex '$($vertex.name)'"
+            Write-Progress -id 1 -activity "Update vertex '$($vertex.name)'"
             if ( $vertex.entity.type -eq 'Singleton' -or $vertex.entity.type -eq 'EntitySet' ) {
                 __AddTypeVertex $vertex.entity.typedata.typename
             }
             __AddTypeForVertex $vertex
-            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed
+            Write-Progress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed
         }
     }
 
