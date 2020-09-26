@@ -19,7 +19,7 @@
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
 
-function Get-GraphChildItem {
+function Get-GraphResourceChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri',  mandatory=$true)]
@@ -139,12 +139,11 @@ function Get-GraphChildItem {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $false)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $false)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem OrderBy (new-so TypeUriParameterCompleter Property)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem TypeName (new-so TypeUriParameterCompleter TypeName $false)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem Property (new-so TypeUriParameterCompleter Property $false)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem OrderBy (new-so TypeUriParameterCompleter Property)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceChildItem GraphName (new-so GraphParameterCompleter)
 

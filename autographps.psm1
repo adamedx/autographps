@@ -44,7 +44,7 @@ $functions = @(
     'Update-GraphMetadata'
 )
 
-$aliases = @('gcd', 'gg', 'ggu', 'ggci', 'ggi', 'gls', 'gwd')
+$aliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # Note that in order to make variables from nested modules
 # accessible without the user directly invoking them,
