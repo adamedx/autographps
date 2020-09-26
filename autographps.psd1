@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.34.0'
+ModuleVersion = '0.35.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.23.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.24.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -77,11 +77,11 @@ NestedModules = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
     'Get-Graph',
-    'Get-GraphResourceChildItem',
-    'Get-GraphResourceItem',
+    'Get-GraphChildItem',
+    'Get-GraphItem',
     'Get-GraphItemRelationship',
     'Get-GraphRelatedItem',
-    'Get-GraphResourceItemUri',
+    'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphType',
@@ -89,14 +89,14 @@ NestedModules = @(
     'Get-GraphUriInfo',
     'Invoke-GraphMethod',
     'New-Graph',
-    'New-GraphResourceItem',
+    'New-GraphItem',
     'New-GraphItemRelationship',
     'New-GraphMethodParameterObject',
     'New-GraphObject',
     'Remove-Graph',
-    'Remove-GraphResourceItem',
+    'Remove-GraphItem',
     'Remove-GraphItemRelationship',
-    'Set-GraphResourceItem',
+    'Set-GraphItem',
     'Set-GraphLocation',
     'Set-GraphPrompt',
     'Show-GraphHelp',
@@ -135,10 +135,10 @@ VariablesToExport = @(
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
-        '.\src\cmdlets\Get-GraphResourceChildItem.ps1',
-        '.\src\cmdlets\Get-GraphResourceItem.ps1',
+        '.\src\cmdlets\Get-GraphChildItem.ps1',
+        '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Get-GraphResourceItemUri.ps1',
+        '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
@@ -147,14 +147,14 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\New-GraphResourceItem.ps1',
+        '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
         '.\src\cmdlets\New-GraphMethodParameterObject.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
-        '.\src\cmdlets\Remove-GraphResourceItem.ps1',
+        '.\src\cmdlets\Remove-GraphItem.ps1',
         '.\src\cmdlets\Remove-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Set-GraphResourceItem.ps1',
+        '.\src\cmdlets\Set-GraphItem.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
@@ -229,41 +229,33 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.34.0 Release Notes
+## AutoGraphPS 0.35.0 Release Notes
 
-Bug fixes and minor usability improvements
+Fixes command name conflict with AutoGraphPS-SDK dependency for the `Remove-GraphItem` command, and undoes the renaming of several commands in this module incorrectly undertaken when the `Remove-GraphItem` conflict was misunderstood to be due to community usage rather than a defect in a dependency.
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.24.0
 
 ### Breaking changes
+
+* The following commands are renamed back to what they were prior to an incorrect rename in the version of this module (0.33.0) prior to this one:
+  Get-GraphResourceChildItem -> Get-GraphChildItem
+  Get-GraphResourceItem -> Get-GraphItem
+  Get-GraphResourceItemUri -> Get-GraphItemUri
+  New-GraphResourceItem -> New-GraphItem
+  Remove-GraphResourceItem -> Remove-GraphItem
+  Set-GraphResourceItem -> Set-GraphItem
 
 None.
 
 ### New features
 
-* Progress UX now uses the built-in PowerShell progress output mechanism rather than a custom mechanism
-* New aliases have been introduced for common commands:
-  `gcd -> Set-GraphLocation`
-  `gg -> Get-Graph`
-  `ggrel -> Get-GraphItemRelationship`
-  `ggreli -> Get-GraphRelatedItem`
-  `ggu -> Get-GraphUriInfo`
-  `ggci -> Get-GraphResourceChildItem`
-  `ggi -> Get-GraphResourceItem`
-  `gls -> Get-GraphResourceWithMetadata`
-  `gwd -> Get-GraphLocation`
-  `gni -> New-GraphResourceItem`
-  `grm -> Remove-GraphResourceItem`
-  `gsi -> Set-GraphResourceItem`
-  `igm -> Invoke-GraphMethod`
-  `ngo -> New-GraphObject`
-  `ngp -> New-GraphMethodParameterObject`
+None.
 
 ### Fixed defects
 
-* The `Get-GraphResourceChildItem` command was inaccessible due to a regression from the command name changes in the previous release -- this has been fixed
+* At installation time the module would complain of a conflict with `Remove-GraphItem` which is exposed by this module. It turns out that while an earlier version of `AutoGraphPS-SDK` had exported an identically-named command but had renamed it to `Remove-GraphResource`, the rename process was incomplete and `AutoGraphPS-SDK` was still exporting this command. The fix for this module is to include an updated version of `AutoGraphPS-SDK` that no longer exports `Remove-GraphItem` and does export `Remove-GraphResource`.
 
 '@
     } # End of PSData hashtable
@@ -277,3 +269,5 @@ None.
 # DefaultCommandPrefix = ''
 
 }
+
+
