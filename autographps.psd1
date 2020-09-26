@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.34.0'
+ModuleVersion = '0.35.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.23.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.24.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -229,13 +229,13 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.34.0 Release Notes
+## AutoGraphPS 0.35.0 Release Notes
 
-Bug fixes and minor usability improvements
+Fixes command name conflict with AutoGraphPS-SDK dependency for the `Remove-GraphItem` command, and undoes the renaming of several commands in this module incorrectly undertaken when the `Remove-GraphItem` conflict was misunderstood to be due to community usage rather than a defect in a dependency.
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.24.0
 
 ### Breaking changes
 
@@ -243,27 +243,11 @@ None.
 
 ### New features
 
-* Progress UX now uses the built-in PowerShell progress output mechanism rather than a custom mechanism
-* New aliases have been introduced for common commands:
-  `gcd -> Set-GraphLocation`
-  `gg -> Get-Graph`
-  `ggrel -> Get-GraphItemRelationship`
-  `ggreli -> Get-GraphRelatedItem`
-  `ggu -> Get-GraphUriInfo`
-  `ggci -> Get-GraphResourceChildItem`
-  `ggi -> Get-GraphResourceItem`
-  `gls -> Get-GraphResourceWithMetadata`
-  `gwd -> Get-GraphLocation`
-  `gni -> New-GraphResourceItem`
-  `grm -> Remove-GraphResourceItem`
-  `gsi -> Set-GraphResourceItem`
-  `igm -> Invoke-GraphMethod`
-  `ngo -> New-GraphObject`
-  `ngp -> New-GraphMethodParameterObject`
+None.
 
 ### Fixed defects
 
-* The `Get-GraphResourceChildItem` command was inaccessible due to a regression from the command name changes in the previous release -- this has been fixed
+* At installation time the module would complain of a conflict with `Remove-GraphItem` which is exposed by this module. It turns out that while an earlier version of `AutoGraphPS-SDK` had exported an identically-named command but had renamed it to `Remove-GraphResource`, the rename process was incomplete and `AutoGraphPS-SDK` was still exporting this command. The fix for this module is to include an updated version of `AutoGraphPS-SDK` that no longer exports `Remove-GraphItem` and does export `Remove-GraphResource`.
 
 '@
     } # End of PSData hashtable
