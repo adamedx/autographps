@@ -19,9 +19,9 @@
 . (import-script common/TypeParameterCompleter)
 . (import-script common/TypePropertyParameterCompleter)
 . (import-script common/TypeUriParameterCompleter)
-. (import-script Get-GraphItem)
+. (import-script Get-GraphResourceItem)
 
-function Remove-GraphItem {
+function Remove-GraphResourceItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
         [parameter(position=0, parametersetname='byuri', mandatory=$true)]
@@ -87,6 +87,7 @@ function Remove-GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphResourceItem TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphResourceItem GraphName (new-so GraphParameterCompleter)
+
 

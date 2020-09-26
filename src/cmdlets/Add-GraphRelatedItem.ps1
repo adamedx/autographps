@@ -124,9 +124,9 @@ function Add-GraphRelatedItem {
     end {
 
         if ( $newObjects ) {
-            $newObjects | New-GraphItem -Uri $sourceInfo.Uri @remappedParameters
+            $newObjects | New-GraphResourceItem -Uri $sourceInfo.Uri @remappedParameters
         } else {
-            New-GraphItem -Uri $sourceInfo.Uri @remappedParameters
+            New-GraphResourceItem -Uri $sourceInfo.Uri @remappedParameters
         }
     }
 }
@@ -135,5 +135,6 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem TypeN
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Property (new-so TypeUriParameterCompleter Property $false Property TypeName Relationship)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Add-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
+
 
 
