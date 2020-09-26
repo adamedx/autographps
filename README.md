@@ -55,12 +55,9 @@ Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Micro
 As with any PowerShell cmdlet, you can use AutoGraphPS cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects. For help with any of the commands in this module, try the standard `Get-Help` command, e.g. `Get-Help Get-GraphResource`.
 
 AutoGraphPS cmdlets support two equivalent paradigms for accessing Microsoft Graph:
-* The **type-based** paradigm: Entities modeled by the Graph are grouped into *"types"*, sets of objects with a common set of properties including a unique identifier field called `id`. A type might be the set of users or groups in a tenant, the set of drives, or any other concept you'd like to manage via the Graph API. *If you know the type of an object and its and `id`, and if needed its relationship to other objects, you can use AutoGraphPS commands to manage that object.*
-* The **resource-based** paradigm: Because Microsoft Graph is a REST-based API, all of these aforementioned type-based objects can be accessed via one or more *Uniform Resource Identifiers (URIs)*. AutoGraphPS commands allow you to specify these URIs.
 
-The latter approach is most useful for interoperation with other REST-based tools or in general if you're more familiar with the Graph REST API itself; generally the commands used in this scenario would be considered more "advanced" or low-level.
-
-The former type-based approach is most efficient when you know *what* you want to manage, i.e. *users*, *groups*, *messages*, etc. and is likely applicable to a broader set of users than the resource URI-based model.
+* The **resource-based** paradigm: Because Microsoft Graph is a REST-based API, the entirety of the Graph API surface may be reliably accessed via *Uniform Resource Identifiers (URIs)* as [documented in the Graph API reference](https://docs.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0). Most commands default to URI as all functionality is accessible through a URI; users with a developer background or general comfort with REST will be comfortable with this paradigm.
+* The **type-based** paradigm: Entities modeled by the Graph are grouped into *"types"*, collections of objects with a common set of properties including a unique identifier field called `id`. A type might be the set of users or groups in a tenant, the set of drives, or any other concept you'd like to manage via the Graph API. *If you know the type of an object and its and `id`, and if needed its relationship to other objects, you can use AutoGraphPS commands to manage that object.* This information is usually easy to intuit or memorize and makes for simpler usage and improved readability for scripts, but since not all aspects of the API are expressible via type and `id`, this is not the default paradigm where both are applicable.
 
 #### Access via URI
 
