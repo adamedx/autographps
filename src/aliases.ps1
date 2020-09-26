@@ -14,9 +14,16 @@
 
 set-alias gcd Set-GraphLocation
 set-alias gg  Get-Graph
+set-alias ggrel Get-GraphItemRelationship
+set-alias ggreli Get-GraphRelatedItem
 set-alias ggu Get-GraphUriInfo
 set-alias ggci Get-GraphResourceChildItem
 set-alias ggi Get-GraphResourceItem
 set-alias gls Get-GraphResourceWithMetadata
 set-alias gwd Get-GraphLocation
-
+set-alias gni New-GraphResourceItem
+set-alias grm Remove-GraphResourceItem
+set-alias gsi Set-GraphResourceItem
+set-alias igm Invoke-GraphMethod
+set-alias ngo New-GraphObject
+set-alias ngp New-GraphMethodParameterObject

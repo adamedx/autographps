@@ -116,7 +116,7 @@ ScriptClass GraphDataModel {
     }
 
     function GetEntitySets {
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity sets"
+        Write-Progress -id 1 -activity "Reading entity sets"
         foreach ( $model in $this.apiModels.Values ) {
             if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
                 __QualifySchemaClass EntitySet $model.namespace $model.Schema.EntityContainer
@@ -125,7 +125,7 @@ ScriptClass GraphDataModel {
     }
 
     function GetSingletons {
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading singletons"
+        Write-Progress -id 1 -activity "Reading singletons"
         foreach ( $model in $this.apiModels.Values ) {
             if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
                 __QualifySchemaClass Singleton $model.namespace $model.Schema.EntityContainer
@@ -134,21 +134,21 @@ ScriptClass GraphDataModel {
     }
 
     function GetEnumTypes {
-        $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading enumerated types"
+        Write-Progress -id 1 -activity "Reading enumerated types"
         foreach ( $model in $this.apiModels.Values ) {
                 __QualifySchemaClass EnumType $model.namespace $model.Schema
         }
     }
 
     function GetActions {
-        $::.ProgressWriter |=> WriteProgress -id 1 "Reading actions"
+        Write-Progress -id 1 "Reading actions"
         foreach ( $model in $this.apiModels.Values ) {
             __QualifySchemaClass Action $model.namespace $model.Schema
         }
     }
 
     function GetFunctions {
-        $::.ProgressWriter |=> WriteProgress -id 1 "Reading functions"
+        Write-Progress -id 1 "Reading functions"
         foreach ( $model in $this.apiModels.Values ) {
             __QualifySchemaClass Function $model.namespace $model.Schema
         }
@@ -211,7 +211,7 @@ ScriptClass GraphDataModel {
     function __InitializeTypesOnDemand {
         if ( ! $this.typeSchemas ) {
             $this.typeSchemas = @{}
-            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types"
+            Write-Progress -id 1 -activity "Reading entity types"
             foreach ( $model in $this.apiModels.Values ) {
                 if ( $model.Schema | gm EntityType -erroraction ignore ) {
                     $typeSchemas = $model.Schema.EntityType
@@ -222,7 +222,7 @@ ScriptClass GraphDataModel {
                 }
             }
 
-            $::.ProgressWriter |=> WriteProgress -id 1 -activity "Reading entity types" -completed
+            Write-Progress -id 1 -activity "Reading entity types" -completed
         }
     }
 

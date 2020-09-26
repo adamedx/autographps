@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.33.0'
+ModuleVersion = '0.34.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -116,7 +116,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggci', 'ggi', 'ggu', 'gls', 'gwd')
+    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -229,54 +229,42 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.33.0 Release Notes
+## AutoGraphPS 0.34.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance. Multiple commands from this module and a dependent module are have been renamed.
+Bug fixes and minor usability improvements
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.23.0 -- this includes commands from the `AutoGraphPS-SDK` module that have been renamed
-* ThreadJob 2.0.3 -- this is the introductory use of ThreadJob for this module
+None.
 
 ### Breaking changes
 
-* The following commands have been renamed the names of the commands were already in use in other community modules:
-  `Get-GraphChildItem` -> `Get-GraphResourceChildItem`
-  `Get-GraphItem` -> `Get-GraphResourceItem`
-  `Get-GraphItemUri` `Get-GraphResourceItemUri`
-  `New-GraphItem` -> `New-GraphResourceItem`
-  `Remove-GraphItem` `Remove-GraphResourceItem`
-  `Set-GraphItem` -> `Set-GraphResourceItem`
-* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphResourceItem` has been renamed `TemplateObject`.
-* The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
-* Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
-* The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.
-* The following commands that originate from the `AutoGraphPS-SDK` dependency have been renamed -- if you use this module and try to invoke the commands by their earlier names, those invocations will fail:
-  `Connect-Graph` is now `Connect-GraphApi`
-  `Disconnect-Graph` is now `Disconnect-GraphApi`
-  `Invoke-GraphRequest` is now `Invoke-GraphApiRequest`
+None.
 
 ### New features
 
-* New command `Invoke-GraphMethod`: this command issues requests for actions and functions, i.e. *methods* of the Graph API
-* New command `New-GraphMethodParameter`: this command creates objects for the parameters of a given method of an entity
-* New command `Get-GraphItemRelationship`: this command returns the specified relationships from a given object to other objects
-* The `New-GraphItemRelationship` now returns objects representing the relationship that was created -- previously this command had no output. The output format is the same as that of the new `Get-GraphItemRelationship` command and is accepted as input to an updated `Remove-GraphItemRelationship` command.
-* `Get-GraphType` now returns *methods* of types in addition to *properties* and *relationships* (*navigation properties*)
-* `Get-GraphType` has a new `MemberType` parameter to limit the transitive member list to just the specific types (`Property`, `Relationship`, and `Method`) of members.
-* `Get-GraphType` now supports a `Uri` parameter to get type information about the type of any object in the graph given its Uri
-* `Get-GraphType` now supports pipeline input to take an object emitted by `Get-GraphItem` or `Get-GraphResource` and return the type information for that object's type
-* `ShowGraphHelp` has been updated to show help information based on a new `Uri` parameter
-* `ShowGraphHelp` can also take in pipeline input to give help information for an object returned by other commands in this module
-* Commands that return objects from the Graph now return the actual derived type of the object in heterogenous collections that are defined as returning a base type
-* Metadata download and initial processing now uses a thread in the same process hosting AutoGraphPS, rather than a separate process. This offers a dramatic performance improvement in obtaining the API metadata that the commands rely upon. The new implementation uses `Start-ThreadJob` instead of `Start-Job` to process metadata asynchronously.
+* Progress UX now uses the built-in PowerShell progress output mechanism rather than a custom mechanism
+* New aliases have been introduced for common commands:
+  `gcd -> Set-GraphLocation`
+  `gg -> Get-Graph`
+  `ggrel -> Get-GraphItemRelationship`
+  `ggreli -> Get-GraphRelatedItem`
+  `ggu -> Get-GraphUriInfo`
+  `ggci -> Get-GraphResourceChildItem`
+  `ggi -> Get-GraphResourceItem`
+  `gls -> Get-GraphResourceWithMetadata`
+  `gwd -> Get-GraphLocation`
+  `gni -> New-GraphResourceItem`
+  `grm -> Remove-GraphResourceItem`
+  `gsi -> Set-GraphResourceItem`
+  `igm -> Invoke-GraphMethod`
+  `ngo -> New-GraphObject`
+  `ngp -> New-GraphMethodParameterObject`
 
 ### Fixed defects
 
-* In some cases, `New-GraphObject` would not correctly create arrays when an array was only of size 1, instead a scalar was emitted. This has been fixed to generate an array of size 1 in such cases. This issue caused Graph to reject requests with objects in this scenario due to an invlaid schema.
-* `Set-GraphItem` now works in more cases when an object is piped in as the object to update but the object came from a POST request or is only accessible via a navigation property (e.g. /me/contacts).
+* The `Get-GraphResourceChildItem` command was inaccessible due to a regression from the command name changes in the previous release -- this has been fixed
 
-None.
 '@
     } # End of PSData hashtable
 

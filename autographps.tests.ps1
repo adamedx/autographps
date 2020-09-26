@@ -17,7 +17,7 @@ Describe "Autographps application" {
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
-        # it (module files  are just hash tables expressed as PowerShell script)
+        # it (module files are just hash tables expressed as PowerShell script)
         $moduleContentLines = get-content $manifestPath
         $moduleData = $moduleContentLines | out-string | iex
         $moduleData['Name'] = $moduleName
@@ -57,7 +57,6 @@ Describe "Autographps application" {
                 'Show-GraphHelp'
                 'Update-GraphMetadata')
 
-
             $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
@@ -66,9 +65,27 @@ Describe "Autographps application" {
                 if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
+                { get-command $_ | out-null } | Should Not Throw
             }
 
             $verifiedExportsCount | Should BeExactly $expectedFunctions.length
+        }
+
+        It "should export the exact same set of aliases as are in the set of expected aliases" {
+            $expectedAliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+
+            $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
+
+            $verifiedExportsCount = 0
+
+            $expectedAliases | foreach {
+                if ( $manifest.AliasesToExport -contains $_ ) {
+                    $verifiedExportsCount++
+                }
+                $_ | get-alias | select -expandproperty resolvedcommandname | get-command | select -expandproperty module | select -expandproperty name | Should Be $manifest.Name
+            }
+
+            $verifiedExportsCount | Should BeExactly $expectedAliases.length
         }
     }
 
