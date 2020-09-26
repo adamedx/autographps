@@ -135,10 +135,10 @@ VariablesToExport = @(
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
-        '.\src\cmdlets\Get-GraphChildItem.ps1',
-        '.\src\cmdlets\Get-GraphItem.ps1',
+        '.\src\cmdlets\Get-GraphResourceChildItem.ps1',
+        '.\src\cmdlets\Get-GraphResourceItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Get-GraphItemUri.ps1',
+        '.\src\cmdlets\Get-GraphResourceItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
@@ -147,14 +147,14 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\Invoke-GraphMethod.ps1',
         '.\src\cmdlets\New-Graph.ps1',
-        '.\src\cmdlets\New-GraphItem.ps1',
+        '.\src\cmdlets\New-GraphResourceItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
         '.\src\cmdlets\New-GraphMethodParameterObject.ps1',
         '.\src\cmdlets\New-GraphObject.ps1',
         '.\src\cmdlets\Remove-Graph.ps1',
-        '.\src\cmdlets\Remove-GraphItem.ps1',
+        '.\src\cmdlets\Remove-GraphResourceItem.ps1',
         '.\src\cmdlets\Remove-GraphItemRelationship.ps1',
-        '.\src\cmdlets\Set-GraphItem.ps1',
+        '.\src\cmdlets\Set-GraphResourceItem.ps1',
         '.\src\cmdlets\Set-GraphLocation.ps1',
         '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Show-GraphHelp.ps1',
@@ -231,7 +231,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.33.0 Release Notes
 
-This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance. And an included dependency that exposes commands to users of this module has renamed some fo those commands.
+This release adds new commands dedicated to invoking methods (i.e. `OData` *Actions* and *Functions*). There is also new functionality for exploring the *methods* of types in addition to their *properties* and *relationships* (*navigation properties*). It also adds background metadata processing via ThreadJob rather than PowerShell jobs to optimize performance. Multiple commands from this module and a dependent module are have been renamed.
 
 ### New dependencies
 
@@ -240,7 +240,14 @@ This release adds new commands dedicated to invoking methods (i.e. `OData` *Acti
 
 ### Breaking changes
 
-* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphItem` has been renamed `TemplateObject`.
+* The following commands have been renamed the names of the commands were already in use in other community modules:
+  `Get-GraphChildItem` -> `Get-GraphResourceChildItem`
+  `Get-GraphItem` -> `Get-GraphResourceItem`
+  `Get-GraphItemUri` `Get-GraphResourceItemUri`
+  `New-GraphItem` -> `New-GraphResourceItem`
+  `Remove-GraphItem` `Remove-GraphResourceItem`
+  `Set-GraphItem` -> `Set-GraphResourceItem`
+* The `GraphObject` parameter in `New-GraphObject` and `Set-GraphResourceItem` has been renamed `TemplateObject`.
 * The `PropertyMap` parameter in `New-GraphItem`, `New-GraphObject`, `Set-GraphItem`, and any other commands has been renamed to `PropertyTable`.
 * Commands like Get-GraphItem, Set-GraphItem, etc., that allow specification of a type name and id as an alternative to a URI or object now expect a URI in the default parameter set, including in positionally bound parameters and pipeline parameters. It turns out that type name and id are ambiguous, as that combination cannot always be translated to a unique URI, particularly when an entity set for a given type is defined as using a base type for that type, or when there is no entity set that supports the type. This changes parameter bindings in a way that will break previous versions of several commands when positional binding is used or the pipeline is used.
 * The `New-GraphItemRelationship` command now returns output, previously it returned none -- see the `New Features` section for details on the returned output.

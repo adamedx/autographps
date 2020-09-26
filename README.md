@@ -86,10 +86,10 @@ For more details or reference material describing the Graph API URIs, visit the 
 
 #### Access by type
 
-Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphItem`:
+Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphResourceItem`:
 
 ```powershell
-Get-GraphItem user -Id f7e9d7b6-f92f-4a78-8537-6b78d874936e
+Get-GraphResourceItem user -Id f7e9d7b6-f92f-4a78-8537-6b78d874936e
 
    Graph Location: /users
 
@@ -97,7 +97,7 @@ Info Type Preview      Id
 ---- ---- -------      --
 t +> user Laquan Smith a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
-Get-GraphItem group -Id a57f301b-4fc2-4fac-865c-ee4e1af3084d
+Get-GraphResourceItem group -Id a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
    Graph Location: /groups
 
@@ -106,7 +106,7 @@ Info Type   Preview        Id
 t +> group  Mathmeticians  57f301b-4fc2-4fac-865c-ee4e1af3084d
 ```
 
-Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
+Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphResourceItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
 
 ```powershell
 Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
@@ -122,16 +122,16 @@ userPrincipalName : laquan@newgriot.edu
 ...
 ```
 
-Note that the output of `Get-GraphItem` is an object that in addition to the protocol response from Graph contains metadata about the response data such as the name of its type, the URI used to access it, a heuristically generated `Preview` field intended for human browsing, etc. The actual API response data exists in the `Content` field and is identical to that returned by the `Get-GraphResource` command. The `-ContentOnly` parameter for `Get-GraphItem` removes the metadata and returns only the response just as with `Get-GraphResource`, eliminating the need to use `Select-Object` or otherwise filter the response to just the `Content`:
+Note that the output of `Get-GraphResourceItem` is an object that in addition to the protocol response from Graph contains metadata about the response data such as the name of its type, the URI used to access it, a heuristically generated `Preview` field intended for human browsing, etc. The actual API response data exists in the `Content` field and is identical to that returned by the `Get-GraphResource` command. The `-ContentOnly` parameter for `Get-GraphResourceItem` removes the metadata and returns only the response just as with `Get-GraphResource`, eliminating the need to use `Select-Object` or otherwise filter the response to just the `Content`:
 
 ```powershell
 # These all have the same output:
-Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
-Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
+Get-GraphResourceItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphResourceItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
 Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
 ```
 
-There is also a related command, `Get-GraphChildItem` that enables the enumeration of multiple objects and relates to `Get-GraphItem` in a fashion similar to the relationship between the standard `Get-ChildItem` and `Get-Item` commands of PowerShell.
+There is also a related command, `Get-GraphChildItem` that enables the enumeration of multiple objects and relates to `Get-GraphResourceItem` in a fashion similar to the relationship between the standard `Get-ChildItem` and `Get-Item` commands of PowerShell.
 
 ### More fun commands
 
@@ -190,14 +190,14 @@ t +> driveItem Pyramid.js    13J3KD2
 
 #### Don't forget write operations
 
-Yes, you can perform write-operations! Commands like `New-GraphItem`, `Set-GraphItem`, and `Remove-GraphItem` allow you to make changes to data in the Graph.
+Yes, you can perform write-operations! Commands like `New-GraphResourceItem`, `Set-GraphResourceItem`, and `Remove-GraphResourceItem` allow you to make changes to data in the Graph.
 
-#### Create a new item with New-GraphItem
+#### Create a new item with New-GraphResourceItem
 
-The `New-GraphItem` command creates new entities in the Graph. The example below creates a new security group:
+The `New-GraphResourceItem` command creates new entities in the Graph. The example below creates a new security group:
 
 ```powershell
-New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value blackgold, 'Black Gold', $false, $true
+New-GraphResourceItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value blackgold, 'Black Gold', $false, $true
 
 description                   :
 mailNickname                  : blackgold
@@ -207,20 +207,20 @@ displayName                   : Black Gold
 ...
 ```
 
-##### Update an item with Set-GraphItem
+##### Update an item with Set-GraphResourceItem
 
-The `Set-GraphItem` command lets you change the properties of an existing item:
+The `Set-GraphResourceItem` command lets you change the properties of an existing item:
 
 ```powershell
-$newGroup | Set-GraphItem -Property displayName, description -Value 'Black Gold Team', 'Collaboration for the Black Gold Gala event'
-$newGroup | Get-GraphItem -ContentOnly | select displayName, description
+$newGroup | Set-GraphResourceItem -Property displayName, description -Value 'Black Gold Team', 'Collaboration for the Black Gold Gala event'
+$newGroup | Get-GraphResourceItem -ContentOnly | select displayName, description
 
 displayName     description
 -----------     -----------
 Black Gold Team Collaboration for the Black Gold Gala event
 ```
 
-In this case, the `displayName` and `description` properties of the newly created group are updated to new values when `Set-GraphItem` is executed. A subsequent invocation of `Get-GraphItem` to request the current version of the object from Graph reflects the updates made to those properties.
+In this case, the `displayName` and `description` properties of the newly created group are updated to new values when `Set-GraphResourceItem` is executed. A subsequent invocation of `Get-GraphResourceItem` to request the current version of the object from Graph reflects the updates made to those properties.
 
 ##### New-GraphObject makes write operations easier
 
@@ -231,31 +231,31 @@ For example, if you know the name of the type of object, say `contact`, and you 
 ```powershell
 $emailAddress = New-GraphObject emailAddress -Property name, address -value Work, cleo@soulsonic.org
 $contactData = New-GraphObject contact -Property givenName, emailAddresses -value 'Cleopatra Jones', @($emailAddress)
-$newContact = $contactData | New-GraphItem -Uri me/contacts
+$newContact = $contactData | New-GraphResourceItem -Uri me/contacts
 ```
 
-##### Clean up with Remove-GraphItem
+##### Clean up with Remove-GraphResourceItem
 
-The `Remove-GraphItem` command deletes an entity from the Graph -- it is the inverse of `New-GraphItem`. It includes a set of parameters that allows for the specifiation of the type and the id of the entity to remove and also provides the option to specify the entity's URI. And if you already have an instance of the object available as we do from the above example, you can just pipe the instance to delete to `Remove-GraphItem`:
+The `Remove-GraphResourceItem` command deletes an entity from the Graph -- it is the inverse of `New-GraphResourceItem`. It includes a set of parameters that allows for the specifiation of the type and the id of the entity to remove and also provides the option to specify the entity's URI. And if you already have an instance of the object available as we do from the above example, you can just pipe the instance to delete to `Remove-GraphResourceItem`:
 
 ```powershell
-$newContact | Remove-GraphItem
+$newContact | Remove-GraphResourceItem
 ```
 
-Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphItem`.
+Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphResourceItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphResourceItem`.
 
 ##### Invoke-GraphRequest handles all the REST
 
 What if you can't find exactly the command you need to interact with the Graph? The `Invoke-GraphRequest` is a general-purpose command that, with the right parameters, can emulate any of the other commands that interact with Graph. It is a generic REST client capable of issuing any valid request to the Graph. You can use it if you run into a scenario that isn't covered by the other commmands. In general it may be useful if you're already using REST to interact with the Graph.
 
-Here's one example that issues the same request as in the earlier example for `New-GraphItem':
+Here's one example that issues the same request as in the earlier example for `New-GraphResourceItem':
 
 ```powershell
 $contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
 Invoke-GraphRequest -Method POST me/contacts -Body $contactData
 ```
 
-As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphRequest`, even if it trades off simplicity.
+As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphResourceItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphRequest`, even if it trades off simplicity.
 
 Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
 
@@ -338,7 +338,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphChildItem (ggci) | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
 | Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
-| Get-GraphItem (gls)       | Retrieves an entity specified by type and ID or URI |
+| Get-GraphResourceItem     | Retrieves an entity specified by type and ID or URI |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                     |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
@@ -355,17 +355,17 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
 | New-GraphMethodParameter  | Creates a local representation of a Graph type for the specified parameter of a specified Graph method  |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
-| New-GraphItem             | Creates an instance of the specified entity type in the Graph given a set of properties |
+| New-GraphResourceItem     | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
 | Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
 | Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
 | Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
-| Remove-GraphItem          | Removes an entity specified by type and ID or URI |
+| Remove-GraphResourceItem  | Removes an entity specified by type and ID or URI |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
-| Set-GraphItemProperty     | Sets properties of a given Graph entity with the specified values |
+| Set-GraphResourceItem     | Updates properties of a given Graph entity with the specified values |
 | Set-GraphLocation (gcd)   | Sets the current graph and location in the graph's Uri hierarchy; analog to `cd` / `set-location` cmdlet for PowerShell when working with file systems |
 | Set-GraphLogOption        | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |

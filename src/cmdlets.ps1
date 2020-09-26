@@ -13,13 +13,13 @@
 # limitations under the License.
 
 . (import-script client/LocationContext)
-. (import-script cmdlets\New-GraphRelationship)
+. (import-script cmdlets\New-GraphItemRelationship)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphResourceItem)
 . (import-script cmdlets\Get-GraphItemRelationship)
 . (import-script cmdlets\Get-GraphRelatedItem)
-. (import-script cmdlets\Get-GraphItemResourceUri)
+. (import-script cmdlets\Get-GraphResourceItemUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)
 . (import-script cmdlets\Get-GraphResourceChildItem)
 . (import-script cmdlets\Get-GraphLocation)
