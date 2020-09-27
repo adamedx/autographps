@@ -39,6 +39,7 @@ Describe "Autographps application" {
                 'Get-GraphItemUri'
                 'Get-GraphResourceWithMetadata'
                 'Get-GraphLocation'
+                'Get-GraphMember'
                 'Get-GraphType'
                 'Get-GraphUri'
                 'Get-GraphUriInfo'
@@ -72,7 +73,7 @@ Describe "Autographps application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+            $expectedAliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'ggm', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 

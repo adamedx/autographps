@@ -102,7 +102,7 @@ function Get-GraphType {
             if ( $TypeName ) {
                 throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
             } else {
-                throw "Unexpected error: the specified URI '$Uri' could nnot be resolved to any type in graph '$($targetContext.name)'"
+                throw "Unexpected error: the specified URI '$Uri' could not be resolved to any type in graph '$($targetContext.name)'"
             }
         }
 

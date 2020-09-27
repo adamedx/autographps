@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.35.0'
+ModuleVersion = '0.36.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -84,6 +84,7 @@ NestedModules = @(
     'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
+    'Get-GraphMember',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -116,7 +117,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -140,6 +141,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphMember.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
@@ -166,6 +168,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\MemberDisplayType.ps1',
+        '.\src\cmdlets\common\MemberParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
@@ -175,6 +178,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
+        '.\src\cmdlets\common\TypeMemberFinder.ps1',
         '.\src\cmdlets\common\TypeParameterCompleter.ps1',
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeUriHelper.ps1',
@@ -229,23 +233,18 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.35.0 Release Notes
+## AutoGraphPS 0.36.0 Release Notes
 
-Fixes command name conflict with AutoGraphPS-SDK dependency for the `Remove-GraphItem` command, and undoes the renaming of several commands in this module incorrectly undertaken when the `Remove-GraphItem` conflict was misunderstood to be due to community usage rather than a defect in a dependency.
+Adds additional commands to make type inspection more usable.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.24.0
+None.
 
 ### Breaking changes
 
-* The following commands are renamed back to what they were prior to an incorrect rename in the version of this module (0.33.0) prior to this one:
-  Get-GraphResourceChildItem -> Get-GraphChildItem
-  Get-GraphResourceItem -> Get-GraphItem
-  Get-GraphResourceItemUri -> Get-GraphItemUri
-  New-GraphResourceItem -> New-GraphItem
-  Remove-GraphResourceItem -> Remove-GraphItem
-  Set-GraphResourceItem -> Set-GraphItem
+* Added the following command:
+  `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
 
 None.
 
@@ -255,7 +254,7 @@ None.
 
 ### Fixed defects
 
-* At installation time the module would complain of a conflict with `Remove-GraphItem` which is exposed by this module. It turns out that while an earlier version of `AutoGraphPS-SDK` had exported an identically-named command but had renamed it to `Remove-GraphResource`, the rename process was incomplete and `AutoGraphPS-SDK` was still exporting this command. The fix for this module is to include an updated version of `AutoGraphPS-SDK` that no longer exports `Remove-GraphItem` and does export `Remove-GraphResource`.
+None.
 
 '@
     } # End of PSData hashtable
@@ -269,5 +268,3 @@ None.
 # DefaultCommandPrefix = ''
 
 }
-
-
