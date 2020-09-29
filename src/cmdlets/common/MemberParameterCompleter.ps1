@@ -15,10 +15,12 @@
 ScriptClass MemberParameterCompleter {
     $typeNameParameter = $null
     $memberTypeParameter = $null
+    $memberType = $null
 
-    function __initialize( $typeNameParameter, $memberTypeParameter ) {
+    function __initialize( $typeNameParameter, $memberTypeParameter, $memberType ) {
         $this.typeNameParameter = $typeNameParameter
         $this.memberTypeParameter = $memberTypeParameter
+        $this.memberType = $memberType
     }
 
     function CompleteCommandParameter {
@@ -26,7 +28,11 @@ ScriptClass MemberParameterCompleter {
 
         $graphName = $fakeBoundParameters['GraphName']
         $typeName = $fakeBoundParameters[$this.typeNameParameter]
-        $memberType = $fakeBoundParameters[$this.memberTypeParameter]
+        $memberType = if ( $this.memberType ) {
+            $memberType
+        } else {
+            $fakeBoundParameters[$this.memberTypeParameter]
+        }
 
         $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 

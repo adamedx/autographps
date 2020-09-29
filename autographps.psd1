@@ -85,6 +85,7 @@ NestedModules = @(
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
     'Get-GraphMember',
+    'Get-GraphMethod',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -117,7 +118,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -142,6 +143,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphMember.ps1',
+        '.\src\cmdlets\Get-GraphMethod.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
@@ -243,8 +245,9 @@ None.
 
 ### Breaking changes
 
-* Added the following command:
-  `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
+* Added the following commands:
+  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
+  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
 
 None.
 

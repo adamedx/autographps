@@ -20,6 +20,7 @@ set-alias ggu Get-GraphUriInfo
 set-alias ggci Get-GraphChildItem
 set-alias ggi Get-GraphItem
 set-alias ggm Get-GraphMember
+set-alias ggmt Get-GraphMethod
 set-alias gls Get-GraphResourceWithMetadata
 set-alias gwd Get-GraphLocation
 set-alias gni New-GraphItem
@@ -28,4 +29,3 @@ set-alias gsi Set-GraphItem
 set-alias igm Invoke-GraphMethod
 set-alias ngo New-GraphObject
 set-alias ngp New-GraphMethodParameterObject
-
