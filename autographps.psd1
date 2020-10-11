@@ -76,6 +76,7 @@ NestedModules = @(
     FunctionsToExport = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
+    'Find-GraphType',
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItem',
@@ -135,6 +136,7 @@ VariablesToExport = @(
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
+        '.\src\cmdlets\Find-GraphType.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
@@ -209,6 +211,8 @@ VariablesToExport = @(
         '.\src\typesystem\ScalarTypeProvider.ps1',
         '.\src\typesystem\CompositeTypeProvider.ps1',
         '.\src\typesystem\TypeManager.ps1',
+        '.\src\typesystem\TypeMatch.ps1',
+        '.\src\typesystem\TypeSearcher.ps1',
         '.\src\typesystem\GraphObjectBuilder.ps1'
     )
 
@@ -256,6 +260,8 @@ None.
 None.
 
 ### Fixed defects
+
+* Not all functions under the path /reports and possibly other paths were being detected and thus could not be used with `Invoke-GraphMethod`.
 
 None.
 

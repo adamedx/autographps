@@ -236,7 +236,15 @@ ScriptClass GraphDataModel {
 
     function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
         if ( $methodSchemas ) {
-                 $methodSchemas | foreach { $methodSchema = $_.Schema; $methodSchema.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+            # Assume that the first parameter is actually the binding parameter -- it is usually,
+            # but not always, named 'bindingParameter'
+            foreach ( $methodSchema in $methodSchemas ) {
+                $nativeSchema = $methodSchema.Schema
+                if ( ( $nativeSchema | gm parameter -erroraction ignore ) -and $nativeSchema.parameter) {
+                    $bindingParameter = $nativeSchema.parameter | select -first 1
+                    __AddMethodBinding $bindingParameter.type $nativeSchema
+                }
+            }
         }
     }
 

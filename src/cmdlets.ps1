@@ -14,6 +14,7 @@
 
 . (import-script client/LocationContext)
 . (import-script cmdlets\New-GraphItemRelationship)
+. (import-script cmdlets\Find-GraphType)
 . (import-script cmdlets\Find-GraphPermission)
 . (import-script cmdlets\Get-Graph)
 . (import-script cmdlets\Get-GraphItem)

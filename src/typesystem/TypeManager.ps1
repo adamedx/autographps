@@ -13,12 +13,12 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
-. (import-script TypeSchema)
 . (import-script TypeProvider)
 . (import-script ScalarTypeProvider)
 . (import-script CompositeTypeProvider)
 . (import-script TypeDefinition)
 . (import-script GraphObjectBuilder)
+. (import-script TypeSearcher)
 
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
@@ -29,6 +29,7 @@ ScriptClass TypeManager {
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
     $typeProviders = $null
+    $typeSearcher = $null
 
     function __initialize($graphContext) {
         $this.graphContext = $graphContext
@@ -67,6 +68,71 @@ ScriptClass TypeManager {
             IsCollection = $isCollection
             ObjectProtoType = $prototype
         }
+    }
+
+    function SearchTypes([string] $typeNameTerm, [bool] $exactMatch = $false, [GraphTypeClass[]] $typeClasses) {
+        if ( [GraphTypeClass]::Primitive -in $typeClasses )  {
+            throw [ArgumentException]::new("The type class 'Primitive' is not supported for this command")
+        }
+
+        $validClasses = GetTypeClassPrecedence | where { $_ -ne 'Primitive' }
+
+        $targetClasses = if ( $typeClasses ) {
+            $typeClasses
+        } else {
+            $validClasses
+        }
+
+        if ( ! $this.typeSearcher ) {
+            $providers = foreach ( $class in $validClasses ) {
+                __GetTypeProvider $class $this.graph
+            }
+
+            $sortedTypeNames = $this.ScriptClass |=> GetSortedTypeNames $validClasses $this.graphContext
+
+            $this.typeSearcher = new-so TypeSearcher $providers $sortedTypeNames
+        }
+
+        $qualifiedName = foreach ( $class in $targetClasses ) {
+            $nameForClass = GetOptionallyQualifiedName $class $typeNameTerm $false
+            if ( $nameForClass ) {
+                $nameForClass
+                break
+            }
+        }
+
+        $normalizedSearchTerm = if ( $exactMatch -and $qualifiedName ) {
+            $qualifiedName
+        } else {
+            $typeNameTerm
+        }
+
+        $searchCriteria = @{
+            Name = @{
+                SearchTerm = $normalizedSearchTerm
+                ExactMatch = $exactMatch
+            }
+
+            TypeClass = @{
+                SearchTerm = $targetClasses
+                ExactMatch = $true
+            }
+        }
+
+        $results = $this.typeSearcher |=> Search $searchCriteria
+
+        if ( ! $exactMatch ) {
+            foreach ( $result in $results ) {
+                $isExactMatch = $qualifiedName -eq $result.MatchedTypeName
+
+                if ( $isExactMatch ) {
+                    $result |=> SetExactMatch
+                    break
+                }
+            }
+        }
+
+        $results | sort-object Score -descending
     }
 
     function FindTypeDefinition($typeClass, $typeName, $fullyQualified, $errorIfNotFound = $false) {
@@ -287,7 +353,7 @@ ScriptClass TypeManager {
         }
 
         function GetSortedTypeNames($allowedTypeClasses, $graphContext) {
-            $typeClasses = if ( $allowedTypeClasses -eq 'Unknown' ) {
+            $typeClasses = if ( ! $allowedTypeClasses -or ( $allowedTypeClasses -eq 'Unknown' ) ) {
                 'Entity', 'Complex', 'Primitive', 'Enumeration'
             } else {
                 , $allowedTypeClasses

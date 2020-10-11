@@ -31,6 +31,7 @@ Describe "Autographps application" {
             $expectedFunctions = @(
                 'Add-GraphRelatedItem'
                 'Find-GraphPermission'
+                'Find-GraphType'
                 'Get-Graph'
                 'Get-GraphChildItem'
                 'Get-GraphItem'
@@ -97,7 +98,3 @@ Describe "Autographps application" {
         }
     }
 }
-
-
-
-

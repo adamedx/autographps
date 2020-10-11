@@ -43,7 +43,7 @@ ScriptClass Entity {
                 $::.GraphUtilities.ParseTypeName($schema.Type)
             }
             'NavigationPropertyBinding' {
-                $::.GraphUtilities.ParseTypeName($schema.parameter.bindingparameter.type)
+                $::.GraphUtilities.ParseTypeName($schema.parameter.bindingParameter.type)
             }
             'Function' {
                 $::.GraphUtilities.ParseTypeName($schema.ReturnType)

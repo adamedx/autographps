@@ -16,6 +16,7 @@
 
 $functions = @(
     'Add-GraphRelatedItem',
+    'Find-GraphType',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphItem',
@@ -61,5 +62,3 @@ $variables = @(
 )
 
 export-modulemember -function $functions -alias $aliases -variable $variables
-
-
