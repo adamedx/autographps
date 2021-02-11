@@ -21,7 +21,7 @@ function Get-GraphMethod {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0)]
-        [string[]] $Name,
+        [string] $Name,
 
         [parameter(parametersetname='fortypename', mandatory=$true)]
         $TypeName,
@@ -51,7 +51,7 @@ function Get-GraphMethod {
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphItem
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualified $Uri $null $GraphItem $false $true
 
         $targetContext = $requestInfo.Context
 

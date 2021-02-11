@@ -135,7 +135,7 @@ ScriptClass TypeUriHelper {
             $objectUri
         }
 
-        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject, $ignoreTypeIfObjectPresent) {
+        function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject, $ignoreTypeIfObjectPresent, $targetUriOptional) {
             $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
 
             $targetUri = if ( $uri ) {
@@ -143,12 +143,12 @@ ScriptClass TypeUriHelper {
             }
 
             $targetTypeInfo = if ( $typeName -and ( ! $typedGraphObject -or $ignoreTypeIfObjectPresent ) ) {
-                $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $graphName -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
+                $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $targetContext.Name -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
                 $typeUri = DefaultUriForType $targetContext $resolvedType.TypeId
 
                 if ( $typeUri ) {
                     $targetUri = $typeUri, $id -join '/'
-                } else {
+                } elseif ( ! $targetUriOptional )  {
                     throw "Unable to find URI for type '$typeName' -- explicitly specify the target URI or an existing item and retry."
                 }
 
@@ -205,7 +205,9 @@ ScriptClass TypeUriHelper {
                 }
             }
 
-            if ( ! $targetUri ) {
+            $targetUriString = if ( $targetUri ) {
+                $targetUri.tostring().trimend('/')
+            } elseif ( ! $targetUriOptional ) {
                 throw [ArgumentException]::new('Either a type name or URI must be specified')
             }
 
@@ -214,7 +216,7 @@ ScriptClass TypeUriHelper {
                 TypeName = $targetTypeInfo.FullTypeName
                 IsCollection = $targetTypeInfo.IsCollection
                 TypeInfo = $targetTypeInfo
-                Uri = $targetUri.tostring().trimend('/')
+                Uri = $targetUriString
             }
         }
 
