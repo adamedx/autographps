@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script common/MethodDisplayType)
 . (import-script common/TypeMemberFinder)
 . (import-script common/TypeUriParameterCompleter)
 . (import-script common/MemberParameterCompleter)
 
 function Get-GraphMethod {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='forobject')]
-    [OutputType('GraphTypeDisplayType')]
+    [OutputType('MethodDisplayType')]
     param(
         [parameter(position=0)]
         [Alias('MethodName')]
@@ -62,15 +63,7 @@ function Get-GraphMethod {
 
         foreach ( $method in $methods ) {
             if ( ! $Parameters.IsPresent ) {
-                [PSCustomObject] @{
-                    Name = $method.Name
-                    MethodType = $method.MethodType
-                    ReturnType = [PSCustomObject] @{
-                        TypeId = $method.TypeId
-                        IsCollection = $method.IsCollection
-                    }
-                    Parameters = $method.Parameters
-                }
+                new-so MethodDisplayType $method
             } else {
                 $method.Parameters
             }

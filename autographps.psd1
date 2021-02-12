@@ -173,6 +173,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\MemberDisplayType.ps1',
         '.\src\cmdlets\common\MemberParameterCompleter.ps1',
+        '.\src\cmdlets\common\MethodDisplayType.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
