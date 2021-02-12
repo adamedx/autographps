@@ -21,6 +21,7 @@ function Get-GraphMethod {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0)]
+        [Alias('MethodName')]
         [string] $Name,
 
         [parameter(parametersetname='fortypename', mandatory=$true)]
@@ -46,22 +47,18 @@ function Get-GraphMethod {
 
     begin {
         Enable-ScriptClassVerbosePreference
-
-        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and $TypeName.Contains('.') )
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualified $Uri $null $GraphItem $false $true
+        $forwardedParameters = @{MemberType='Method'}
 
-        $targetContext = $requestInfo.Context
-
-        $badTypeMessage = if ( $TypeName ) {
-            "The specified type '$TypeName' was not found in graph '$($targetContext.name)'"
-        } else {
-            "Unexpected error: the specified URI '$Uri' could not be resolved to any type in graph '$($targetContext.name)'"
+        'Name', 'TypeName', 'Uri', 'GraphName', 'GraphItem', 'FullyQualifiedTypeName' | foreach {
+            if ( $PSBoundParameters.ContainsKey($_) ) {
+                $forwardedParameters.Add($_, $PSBoundParameters[$_])
+            }
         }
 
-        $methods = $::.TypeMemberFinder |=> FindMembersByTypeName $targetContext $requestInfo.TypeName Method $Name $MethodFilter $badTypeMessage
+        $methods = Get-GraphMember @forwardedParameters
 
         foreach ( $method in $methods ) {
             if ( ! $Parameters.IsPresent ) {

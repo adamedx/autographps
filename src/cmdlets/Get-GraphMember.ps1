@@ -21,6 +21,7 @@ function Get-GraphMember {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0)]
+        [Alias('MemberName')]
         [string[]] $Name,
 
         [parameter(parametersetname='fortypename', mandatory=$true)]
