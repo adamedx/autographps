@@ -62,7 +62,7 @@ function Get-GraphMember {
     }
 
     process {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $null $GraphItem
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualified $Uri $null $GraphItem $false $true
 
         $targetContext = $requestInfo.Context
 
