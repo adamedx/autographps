@@ -143,7 +143,14 @@ ScriptClass TypeUriHelper {
             }
 
             $targetTypeInfo = if ( $typeName -and ( ! $typedGraphObject -or $ignoreTypeIfObjectPresent ) ) {
-                $resolvedType = Get-GraphType $TypeName -TypeClass Entity -GraphName $targetContext.Name -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
+                $remappedTypeClass = if ( $targetUriOptional ) {
+                    'Any'
+                } else {
+                    # We only need to enforce entity if we expect a default URI
+                    'Entity'
+                }
+
+                $resolvedType = Get-GraphType $TypeName -TypeClass $remappedTypeClass -GraphName $targetContext.Name -FullyQualifiedTypeName:$fullyQualifiedTypeName -erroraction stop
                 $typeUri = DefaultUriForType $targetContext $resolvedType.TypeId
 
                 if ( $typeUri ) {
