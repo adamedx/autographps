@@ -37,7 +37,6 @@ Describe 'The TypeSearcher class' {
 
         It 'Should return exactly 3 matches when inexact match for a valid type name is specified in a graph schema that has 3 type names that satisfy the inexact match' {
             $searchResults = $typeManager |=> SearchTypes User $false
-            $global:myresults = $searchResults
             $searchResults | Should Not Be $null
             $searchResults.GetType().FullName | Should Be 'System.Object[]'
             $searchResults.Length | Should Be 23

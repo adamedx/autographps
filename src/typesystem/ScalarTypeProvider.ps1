@@ -13,14 +13,18 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script TypeIndex)
 
 ScriptClass ScalarTypeProvider {
     $base = $null
     $primitiveDefinitions = $null
     $enumerationDefinitions = $null
     $primitiveNames = $null
+    $indexes = $null
 
     function __initialize($graph) {
+        $this.indexes = $null
+
         $this.base = new-so TypeProvider $this $graph
 
         LoadEnumerationTypeDefinitions
@@ -58,6 +62,25 @@ ScriptClass ScalarTypeProvider {
                 break
             }
         }
+    }
+
+    function GetTypeIndexes([string[]] $indexFields) {
+        if ( ! $this.indexes ) {
+            $nameIndex = new-so TypeIndex Name
+            $propertyIndex = new-so TypeIndex Property
+
+            foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
+                $enumerationDefinition = $this.enumerationDefinitions[$typeId]
+                $nameIndex |=> Add $typeId $typeId Enumeration
+                foreach ( $property in $enumerationDefinition.Properties ) {
+                    $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
+                }
+            }
+
+            $this.indexes = $nameIndex, $propertyIndex
+        }
+
+        $this.indexes
     }
 
     function LoadEnumerationTypeDefinitions {

@@ -15,14 +15,17 @@
 . (import-script TypeSchema)
 . (import-script MethodInfo)
 . (import-script TypeDefinition)
+. (import-script TypeIndex)
 
 ScriptClass CompositeTypeProvider {
     $base = $null
     $entityTypeTable = $null
     $complexTypeTable = $null
+    $indexes = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
+        $this.indexes = $null
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -87,6 +90,27 @@ ScriptClass CompositeTypeProvider {
                 break
             }
         }
+    }
+
+    function GetTypeIndexes([string[]] $indexFields) {
+        if ( ! $this.indexes ) {
+            $indexes = @{
+                Name = new-so TypeIndex Name
+                Property = new-so TypeIndex Property
+                NavigationProperty = new-so TypeIndex NavigationProperty
+                Method = new-so TypeIndex Method
+            }
+
+            $complexSchemas = GetComplexTypeSchemas
+            $entitySchemas = GetEntityTypeSchemas
+
+            __UpdateTypeIndexes $indexes $complexSchemas Complex
+            __UpdateTypeIndexes $indexes $entitySchemas Entity
+
+            $this.indexes = $indexes
+        }
+
+        $this.indexes.Values
     }
 
     function GetComplexTypeSchemas {
@@ -178,6 +202,47 @@ ScriptClass CompositeTypeProvider {
         }
 
         $nativeSchema
+    }
+
+    function __UpdateTypeIndexes($indices, $schemas, $typeClass) {
+        $nameIndex = $indices['Name']
+        $propertyIndex = $indices['Property']
+        $navigationPropertyIndex = $indices['NavigationProperty']
+        $methodIndex = $indices['Method']
+
+        foreach ( $typeId in $schemas.Keys ) {
+            $nativeSchema = $schemas[$typeId]
+            $nameIndex |=> Add $typeId $typeId $typeClass
+            $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
+                $nativeSchema.Schema.property
+            } else {
+                @()
+            }
+
+            $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
+                $nativeSchema.Schema.navigationproperty
+            } else {
+                @()
+            }
+
+            foreach ( $property in $properties ) {
+                $propertyIndex |=> Add $property.Name $typeId $typeClass
+            }
+
+            foreach ( $navigationProperty in $navigationProperties ) {
+                $navigationPropertyIndex |=> Add $navigationProperty.Name $typeId $typeClass
+            }
+        }
+
+        $methodSchemas = GetMethodSchemasForType $typeId
+
+        if ( $methodSchemas ) {
+            foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
+                $methodIndex |=> Add $nativeMethodSchema.Name $typeId $typeClass
+            }
+        }
+
+        $this.indexes = $nameIndex, $propertyIndex, $navigationPropertyIndex, $methodIndex
     }
 
     static {

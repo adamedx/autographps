@@ -17,6 +17,8 @@ ScriptClass TypeMatch {
     $SearchOptions = $null
     $SearchTerm = $null
     $MatchedTypeName = $null
+    $MatchedTypeClass = $null
+    $MatchedTerms = $null
     $IsExactMatch = $false
     $Score = 0
 
@@ -26,11 +28,13 @@ ScriptClass TypeMatch {
         }
     }
 
-    function __initialize($criterionName, $searchOptions, $searchTerm, $typeName, $isExactMatch) {
+    function __initialize($criterionName, $searchOptions, $searchTerm, $typeName, $isExactMatch, $matchedTypeClass, [string[]] $matchedTerms) {
         $this.Criteria = @{}
         $this.SearchOptions = $searchOptions
         $this.SearchTerm = $searchTerm
         $this.MatchedTypeName = $typeName
+        $this.MatchedTypeClass = $matchedTypeClass
+        $this.matchedTerms = $matchedTerms
         $this.IsExactMatch = ( $criterionName -eq 'TypeName' ) -and $isExactMatch
 
         AddCriterion $criterionName
