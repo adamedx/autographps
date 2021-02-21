@@ -13,38 +13,43 @@
 # limitations under the License.
 
 . (import-script TypeMatch)
+. (import-script TypeTable)
 
 ScriptClass TypeSearcher {
     $sortedTypeNames = $null
+    $typeTable = $null
 
     static {
         $Matchers = @{
-            Name = {param($searcher, $searchTerm, $exactMatch, $searchOptions) $searcher |=> __MatchName $searchTerm $exactMatch $searchOptions}
+            Name = {param($searcher, $criterion, $searchTerm, $typeClasses, $lookupClass) $searcher |=> __Search $criterion $typeClasses $searchTerm $lookupClass}
         }
     }
 
     function __initialize( $typeProviders, $sortedTypeNames ) {
+<#
         $this.sortedTypeNames = [System.Collections.Generic.SortedList[string,string]]::new([System.StringComparer]::OrdinalIgnoreCase)
         foreach ( $typeName in $sortedTypeNames ) {
             $this.sortedTypeNames.Add($typeName, $typeName)
         }
+#>
+        $this.typeTable = new-so TypeTable $typeProviders Entity, Complex, Enumeration $sortedTypeNames
+        <#
+        $indices = foreach ( $provider in $typeProviders ) {
+            $provider |=> GetTypeIndexes Name, Property, NavigationProperty, Method
+        }
+        $this.typeTable = new-so TypeTable $indices Entity, Complex, Enumeration $sortedTypeNames
+#>
     }
 
-    function Search($searchFields, $searchOptions) {
+    function Search($searchFields) {
         $typeMatches = @{}
-        foreach ( $fieldName in $searchFields.Keys ) {
-            $field = $searchFields[$fieldName]
-
-            $matcher = $this.scriptclass.Matchers[$fieldName]
-
-            $fieldMatches = if ( $matcher ) {
-                . $matcher $this $field.SearchTerm $field.ExactMatch $searchOptions
-            }
+        foreach ( $field in $searchFields ) {
+            $fieldMatches = __Search $field.Name $field.TypeClasses $field.SearchTerm $field.LookupClass
 
             foreach ( $match in $fieldMatches ) {
                 $existingMatch = $typeMatches[$match.MatchedTypeName]
                 if ( $existingMatch ) {
-                    $existingMatch |=> AddCriterion $fieldName $existingMatch.Criteria.IsExactMatch $searchOptions
+                    $existingMatch |=> Merge $match
                 } else {
                     $typeMatches.Add($match.MatchedTypeName, $match)
                 }
@@ -52,6 +57,17 @@ ScriptClass TypeSearcher {
         }
 
         $typeMatches.Values
+    }
+
+    function __Search($criterion, [string[]] $typeClasses, $searchTerm, $lookupClass) {
+        $this.typeTable |=> FindTypeInfoByField $criterion $searchTerm $typeClasses $lookupClass
+    }
+
+    function __InitializeTypeTable {
+<#        $indices = foreach ( $provider in $typeProviders ) {
+            $provider |=> GetTypeIndexes Name, Property, NavigationProperty, Method
+        }#>
+#        $this.typeTable = new-so TypeTable $this.typeProviders Entity, Complex, Enumeration $sortedTypeNames
     }
 
     function __MatchName($searchTerm, $exactMatch, $searchOptions) {

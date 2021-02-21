@@ -25,7 +25,11 @@ ScriptClass CompositeTypeProvider {
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
-        $this.indexes = $null
+        $this.indexes = [ordered] @{}
+
+        'Name', 'Property', 'NavigationProperty', 'Method' | foreach {
+            $this.indexes[$_] = new-so TypeIndex $_
+        }
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -92,25 +96,43 @@ ScriptClass CompositeTypeProvider {
         }
     }
 
-    function GetTypeIndexes([string[]] $indexFields) {
-        if ( ! $this.indexes ) {
-            $indexes = @{
-                Name = new-so TypeIndex Name
-                Property = new-so TypeIndex Property
-                NavigationProperty = new-so TypeIndex NavigationProperty
-                Method = new-so TypeIndex Method
+    function GetTypeIndexes([string[]] $indexFields, $typeClasses) {
+        $targetClasses = $typeClasses | where { $_ -in @('Entity', 'Complex') }
+
+        if ( $targetClasses ) {
+            foreach ( $indexField in $indexFields ) {
+                $index = $this.indexes[$indexField]
+                if ( ! ( $index |=> GetContext Entity ) ) {
+                    $entitySchemas = GetEntityTypeSchemas
+                    __UpdateTypeIndex $index $entitySchemas Entity
+                }
+
+                if ( ! ( $index |=> GetContext Complex ) ) {
+                    $complexSchemas = GetComplexTypeSchemas
+                    __UpdateTypeIndex $index $complexSchemas Complex
+                }
             }
-
-            $complexSchemas = GetComplexTypeSchemas
-            $entitySchemas = GetEntityTypeSchemas
-
-            __UpdateTypeIndexes $indexes $complexSchemas Complex
-            __UpdateTypeIndexes $indexes $entitySchemas Entity
-
-            $this.indexes = $indexes
         }
 
         $this.indexes.Values
+    }
+
+    function UpdateTypeIndexes($indexes, $typeClasses) {
+        $targetClasses = $typeClasses | where { $_ -in @('Entity', 'Complex') }
+
+        if ( $targetClasses ) {
+            foreach ( $index in $indexes ) {
+                if ( ! ( $index |=> GetContext Entity ) ) {
+                    $entitySchemas = GetEntityTypeSchemas
+                    __UpdateTypeIndex $index $entitySchemas Entity
+                }
+
+                if ( ! ( $index |=> GetContext Complex ) ) {
+                    $complexSchemas = GetComplexTypeSchemas
+                    __UpdateTypeIndex $index $complexSchemas Complex
+                }
+            }
+        }
     }
 
     function GetComplexTypeSchemas {
@@ -204,45 +226,41 @@ ScriptClass CompositeTypeProvider {
         $nativeSchema
     }
 
-    function __UpdateTypeIndexes($indices, $schemas, $typeClass) {
-        $nameIndex = $indices['Name']
-        $propertyIndex = $indices['Property']
-        $navigationPropertyIndex = $indices['NavigationProperty']
-        $methodIndex = $indices['Method']
-
+    function __UpdateTypeIndex($index, $schemas, $typeClass) {
         foreach ( $typeId in $schemas.Keys ) {
             $nativeSchema = $schemas[$typeId]
-            $nameIndex |=> Add $typeId $typeId $typeClass
-            $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
-                $nativeSchema.Schema.property
-            } else {
-                @()
-            }
 
-            $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
-                $nativeSchema.Schema.navigationproperty
-            } else {
-                @()
-            }
-
-            foreach ( $property in $properties ) {
-                $propertyIndex |=> Add $property.Name $typeId $typeClass
-            }
-
-            foreach ( $navigationProperty in $navigationProperties ) {
-                $navigationPropertyIndex |=> Add $navigationProperty.Name $typeId $typeClass
+            switch ( $index.IndexedField ) {
+                'Name' {  $index |=> Add $typeId $typeId $typeClass }
+                'Property' {
+                    if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
+                        foreach ( $property in $nativeSchema.Schema.property ) {
+                            $index |=> Add $property.Name $typeId $typeClass
+                        }
+                    }
+                }
+                'NavigationProperty' {
+                    if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
+                        foreach ( $navigationProperty in $nativeSchema.Schema.navigationproperty ) {
+                            $index |=> Add $navigationProperty.Name $typeId $typeClass
+                        }
+                    }
+                }
+                'Method' {
+                    $methodSchemas = GetMethodSchemasForType $typeId
+                    if ( $methodSchemas ) {
+                        foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
+                            $index |=> Add $nativeMethodSchema.Name $typeId $typeClass
+                        }
+                    }
+                }
+                default {
+                    throw "Unknown field name '$($index.IndexedField)'"
+                }
             }
         }
 
-        $methodSchemas = GetMethodSchemasForType $typeId
-
-        if ( $methodSchemas ) {
-            foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
-                $methodIndex |=> Add $nativeMethodSchema.Name $typeId $typeClass
-            }
-        }
-
-        $this.indexes = $nameIndex, $propertyIndex, $navigationPropertyIndex, $methodIndex
+        $index |=> SetContext TypeClass $index.IndexedField
     }
 
     static {

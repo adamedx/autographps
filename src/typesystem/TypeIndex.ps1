@@ -31,10 +31,12 @@ enum TypeIndexLookupClass {
 ScriptClass TypeIndex {
     $IndexedField = $null
     $index = $null
+    $context = $null
 
     function __initialize([TypeIndexClass] $indexedField) {
         $this.indexedField = $indexedField
         $this.index = [System.Collections.Generic.SortedList[String, Object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
+        $this.context = @{}
     }
 
     function Add([string] $lookupValue, $typeId, $typeClass) {
@@ -74,7 +76,9 @@ ScriptClass TypeIndex {
     }
 
     function FindStartsWith($searchString, $typeClasses) {
-        $matchedValues = $this.index.keys | where { $_.StartsWith($searchString) }
+        $normalizedSearchString = $searchString.tolower()
+
+        $matchedValues = $this.index.keys | where { $_.StartsWith($normalizedSearchString) }
 
         if ( $matchedValues ) {
             foreach ( $matchingvalue in $matchedValues ) {
@@ -105,6 +109,18 @@ ScriptClass TypeIndex {
                 }
             }
         }
+    }
+
+    function GetContext($key) {
+        $this.context[$key]
+    }
+
+    function SetContext($key, $value) {
+        $this.context[$key] = $value
+    }
+
+    function RemoveContext($key) {
+        $this.context.Remove($key)
     }
 
     function __FindEntry($key) {

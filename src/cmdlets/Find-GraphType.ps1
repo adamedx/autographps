@@ -16,10 +16,10 @@
 . (import-script common/TypeHelper)
 . (import-script common/TypeParameterCompleter)
 
-enum TypeSearchCriteria {
+enum TypeSearchCriterion {
     Name
-    Properties
-    Relationships
+    Property
+    Relationship
     Methods
     Members
 }
@@ -38,7 +38,10 @@ function Find-GraphType {
 
         $GraphName,
 
-        [TypeSearchCriteria[]] $Criteria
+        [TypeSearchCriterion[]] $Criteria = @('Name', 'Property', 'Relationship'),
+
+        [ValidateSet('Exact', 'StartsWith', 'Contain')]
+        $MatchType = 'Contains'
     )
     Enable-ScriptClassVerbosePreference
 
@@ -67,11 +70,32 @@ function Find-GraphType {
 
     $typeManager = $::.TypeManager |=> Get $targetContext
 
-    $searchResults = $typeManager |=> SearchTypes $SearchString $false $classes
+    $targetCriteria = [ordered] @{}
+
+    foreach ( $criterion in $Criteria ) {
+        if ( $criterion -eq 'Members' ) {
+            'Property', 'NavigationProperty', 'Method' | foreach {
+                $targetCriteria[$_] = $true
+            }
+        } elseif ( $criterion -eq 'Relationship' ) {
+            $targetCriteria['NavigationProperty'] = $true
+        } else {
+            $targetCriteria[$criterion] = $true
+        }
+    }
+
+    $searchResults = $typeManager |=> SearchTypes $SearchString $targetCriteria.Keys $classes $MatchType |
+      sort-object Score -descending
 
     if ( $searchResults ) {
         foreach ( $result in $searchResults ) {
-            Get-GraphType $result.MatchedTypeName -FullyQualifiedTypeName
+            [PSCustomObject] @{
+#                Score = $result.Score
+                TypeClass = $result.MatchedTypeClass
+                TypeId = $result.MatchedTypeName
+                Criteria = $result.MatchedTerms.Keys
+                Matches = $result.MatchedTerms.Values
+            }
         }
     }
 }

@@ -21,41 +21,31 @@ ScriptClass TypeTable {
     # indexing these fields.
 
     $types = $null
+    $typeProviders = $null
     $indexes = $null
     $orderedClasses = $null
 
-    function __initialize([PSCustomObject[]] $typeIndexes, [string[]] $orderedTypeClasses, [string[]] $sortedTypeNames, $typeFinder) {
+    function __initialize([HashTable] $typeProviders, [string[]] $orderedTypeClasses, [string[]] $sortedTypeNames, $typeFinder) {
         $this.types = [System.Collections.Generic.SortedDictionary[string, object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
         $this.indexes = @{}
+        $this.typeProviders = $typeProviders
 
         # Create empty indexes for each desired field
         'Name', 'Property', 'NavigationProperty', 'Method' | foreach {
             $index = new-so TypeIndex $_
-            $this.indexes.Add($_, $index)
-        }
-
-        # Now initialize each of the indexes by merging the different indexes
-        # that share the same field
-        foreach ( $index in $typeIndexes ) {
-            $lookupValues = $index |=> GetLookupValues
-            foreach ( $lookupValue in $lookupValues ) {
-                $entry = $index |=> Get $lookupValue
-                foreach ( $typeId in $entry.targets.keys ) {
-                    if ( ! $this.indexes[$index.IndexedField.tostring()] ) {
-                    }
-                    $this.indexes[$index.IndexedField.tostring()] |=> Add $lookupValue $typeId $entry.targets[$typeId]
-                }
-            }
+            $this.indexes.Add($_, @{Index=$index;Initialized=@{}})
         }
 
         $this.orderedClasses = $orderedTypeClasses
-
+<#
         foreach ( $typeId in $sortedTypeNames ) {
             $entry = __NewEntry $typeId
             __AddEntry $entry
         }
+#>
     }
 
+<#
     function GetTypeInfo([string] $typeId, $typeClass) {
         $classes = if ( $typeClass -and $typeClass -ne 'Unknown' ) {
             , $typeClass
@@ -86,6 +76,7 @@ ScriptClass TypeTable {
             }
         }
     }
+#>
 
     function FindTypeInfoByField([TypeIndexClass] $indexClass, $lookupValue, [string[]] $classes, [TypeIndexLookupClass] $lookupClass = 'Exact') {
         $searchMethod = switch ( $lookupClass ) {
@@ -97,23 +88,76 @@ ScriptClass TypeTable {
             }
         }
 
-        $targetClasses = if ( $classes ) {
-            $classes | where { $_ -ne 'Unknown' }
-        } else {
-            'Entity', 'Complex'
-        }
+        $index = __GetIndex $indexClass $classes
 
-        $this.indexes[$indexClass.tostring()] |=> $searchMethod $lookupValue $targetClasses
+        $index |=> $searchMethod $lookupValue $classes
     }
 
     function GetTypeIndex([TypeIndexClass] $indexClass) {
-        $this.indexes[$indexClass.tostring()]
+        throw 'notimplemented'
     }
 
     function AddType($typeId, $class, $schema) {
         $entry = __NewEntry $typeId $class $schema
         __AddEntry $typeId $entry
     }
+
+    function __GetIndex([TypeIndexClass] $indexClass, [string[]] $typeClasses) {
+        $indexInfo = $this.indexes[$indexClass.tostring()]
+        __InitializeIndexForTypeClasses $indexInfo $typeClasses
+        $indexInfo.Index
+    }
+
+    function __InitializeIndexForTypeClasses($indexInfo, [string[]] $typeClasses) {
+        foreach ( $typeClass in $typeClasses ) {
+            if ( ! $indexInfo.Initialized[$typeClass] ) {
+                $typeProvider = $this.typeProviders[$typeClass]
+                $indexesForTypeClass = $typeProvider |=> UpdateTypeIndexes @($indexInfo.Index) $typeClasses
+<#                $lookupValues = $indexesForTypeClass |=> GetLookupValues
+                foreach ( $lookupValue in $lookupValues ) {
+                    $entry = $indexesForTypeClass |=> Get $lookupValue
+                    foreach ( $typeId in $entry.targets.keys ) {
+                        $indexInfo.Index |=> Add $lookupValue $typeId $entry.targets[$typeId]
+                    }
+                }
+#>
+
+                $indexInfo.Initialized[$typeClass] = $true
+            }
+        }
+        <#
+        foreach ( $typeClass in $typeClasses ) {
+            if ( ! $indexInfo.Initialized[$typeClass] ) {
+                $typeProvider = $this.typeProviders[$typeClass]
+                $indexesForTypeClass = $typeProvider |=> GetTypeIndexes $indexInfo.Index.IndexedField $typeClasses
+                $lookupValues = $indexesForTypeClass |=> GetLookupValues
+                foreach ( $lookupValue in $lookupValues ) {
+                    $entry = $indexesForTypeClass |=> Get $lookupValue
+                    foreach ( $typeId in $entry.targets.keys ) {
+                        $indexInfo.Index |=> Add $lookupValue $typeId $entry.targets[$typeId]
+                    }
+                }
+
+                $indexInfo.Initialized[$typeClass] = $true
+            }
+        }
+#>
+    }
+<#
+    function __InitializeIndex($indexInfo) {
+        if ( ! $indexInfo.Initialized ) {
+            $index = $indexInfo.Index
+            $lookupValues = $index |=> GetLookupValues
+            foreach ( $lookupValue in $lookupValues ) {
+                $entry = $index |=> Get $lookupValue
+                foreach ( $typeId in $entry.targets.keys ) {
+                    $this.indexes[$index.IndexedField.tostring()] |=> Add $lookupValue $typeId $entry.targets[$typeId]
+                }
+            }
+            $indexInfo.Initialized = $true
+        }
+    }
+#>
 
     function __GetEntry($typeId) {
         $this.types[$typeId]
@@ -155,3 +199,10 @@ function __GetTable {
     $global:lasttable
 }
 
+
+function __Search($term, $fields = @('Name', 'Property', 'NavigationProperty'), $classes = @('Entity', 'Complex'), $lookupClass = 'Exact') {
+    $context = (get-graph).details
+    $typeManager = $::.TypeManager |=> Get $context
+
+    $typeManager |=> SearchTypes $term $fields $classes $lookupClass
+}

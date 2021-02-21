@@ -70,63 +70,73 @@ ScriptClass TypeManager {
         }
     }
 
-    function SearchTypes([string] $typeNameTerm, [bool] $exactMatch = $false, [GraphTypeClass[]] $typeClasses) {
-        if ( [GraphTypeClass]::Primitive -in $typeClasses )  {
-            throw [ArgumentException]::new("The type class 'Primitive' is not supported for this command")
+    function SearchTypes([string] $typeNameTerm, [string[]] $criteria, [string[]] $typeClasses, [TypeIndexLookupClass] $lookupClass = 'Contains') {
+        $supportedTypeClasses = [GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration
+
+        foreach ( $typeClass in $typeClasses ) {
+            if ( $typeClass -notin $supportedTypeClasses ) {
+                throw [ArgumentException]::new("The type class '$typeClass' is not supported for this command")
+            }
         }
 
-        $validClasses = GetTypeClassPrecedence | where { $_ -ne 'Primitive' }
+        if ( ! $typeClasses ) {
+            throw 'No type classes specified for search -- at least one must be specified'
+        }
 
-        $targetClasses = if ( $typeClasses ) {
-            $typeClasses
-        } else {
-            $validClasses
+        if ( ! $criteria ) {
+            throw 'No search criteria were specified -- at least one criterion field must be specified'
         }
 
         if ( ! $this.typeSearcher ) {
-            $providers = foreach ( $class in $validClasses ) {
-                __GetTypeProvider $class $this.graph
+            $providers = @{}
+
+            foreach ( $class in $supportedTypeClasses ) {
+                $providers[$class.tostring()] = __GetTypeProvider $class $this.graph
             }
 
-            $sortedTypeNames = $this.ScriptClass |=> GetSortedTypeNames $validClasses $this.graphContext
+#            $sortedTypeNames = $this.ScriptClass |=> GetSortedTypeNames $typeClasses $this.graphContext
 
-            $this.typeSearcher = new-so TypeSearcher $providers $sortedTypeNames
+            $this.typeSearcher = new-so TypeSearcher $providers $null
         }
 
-        $qualifiedName = foreach ( $class in $targetClasses ) {
-            $nameForClass = GetOptionallyQualifiedName $class $typeNameTerm $false
-            if ( $nameForClass ) {
-                $nameForClass
-                break
+        $qualifiedName = if ( ! $typeNameTerm.Contains('.') ) {
+            if ( $lookupClass -eq 'Exact' ) {
+                foreach ( $class in $typeClasses ) {
+                    $nameForClass = GetOptionallyQualifiedName $class $typeNameTerm $false
+                    if ( $nameForClass ) {
+                        $nameForClass
+                        break
+                    }
+                }
+            } elseif ( $lookupClass -eq 'StartsWith' ) {
+                "microsoft.graph." + $typeNameTerm
             }
         }
 
-        $normalizedSearchTerm = if ( $exactMatch -and $qualifiedName ) {
-            $qualifiedName
-        } else {
-            $typeNameTerm
-        }
+        $searchFields = foreach ( $criterion in $criteria ) {
+            $normalizedSearchTerm = if ( $criterion -eq 'Name' -and $qualifiedName ) {
+                $qualifiedName
+            } else {
+                $typeNameTerm
+            }
 
-        $searchCriteria = @{
-            Name = @{
+            @{
+                Name = $criterion
                 SearchTerm = $normalizedSearchTerm
-                ExactMatch = $exactMatch
-            }
-
-            TypeClass = @{
-                SearchTerm = $targetClasses
-                ExactMatch = $true
+                TypeClasses = $typeClasses
+                LookupClass = $lookupClass
             }
         }
 
-        $results = $this.typeSearcher |=> Search $searchCriteria
+        $results = $this.typeSearcher |=> Search $searchFields
 
-        if ( ! $exactMatch ) {
+        if ( $lookupClass -ne 'Exact' -and 'Name' -in $criteria -and ! $typeNameTerm.Contains('.') ) {
+            $qualifiedTypeName = GetOptionallyQualifiedName Entity $typeNameTerm $false
             foreach ( $result in $results ) {
-                $isExactMatch = $qualifiedName -eq $result.MatchedTypeName
+                $isExactMatch = $qualifiedTypeName -eq $result.MatchedTypeName
 
                 if ( $isExactMatch ) {
-                    $result |=> SetExactMatch
+                    $result |=> SetExactMatch Name
                     break
                 }
             }

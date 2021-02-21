@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* pipeline support for get-graphtype
 * Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
