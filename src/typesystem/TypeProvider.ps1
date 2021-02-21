@@ -37,11 +37,11 @@ ScriptClass TypeProvider {
         $this.derived |=> GetSortedTypeNames $typeClass
     }
 
-    function GetTypeIndexes([string[]] $indexFields) {
+    function UpdateTypeIndexes($indexes, $typeClasses) {
         if ( ! $this.derived ) {
             throw "Abstract class '$($this.scriptclass.classname)' may not be directly instantiated"
         }
-        $this.derived |=> GetTypeIndex $indexFields
+        $this.derived |=> UpdateTypeIndexes $indexFields
     }
 
     static {

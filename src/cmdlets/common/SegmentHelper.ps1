@@ -118,6 +118,7 @@ ScriptClass SegmentHelper {
                 Collection = $isCollection
                 Class = $entityClass
                 Type = $shortTypeName
+                TypeId = $fullTypeName
                 Id = $segment.name
                 Namespace = $namespace
                 AbsoluteUri = $Uri

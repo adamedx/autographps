@@ -197,7 +197,7 @@ function Get-GraphResourceWithMetadata {
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
-            Uri = if ( $resolvedUri.Type -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
+            Uri = if ( $resolvedUri.TypeId -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
             Query = $Query
             Filter = $targetFilter
             Search = $Search

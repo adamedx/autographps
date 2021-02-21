@@ -14,12 +14,10 @@
 
 ScriptClass TypeMatch {
     $Criteria = $null
-    $SearchOptions = $null
     $SearchTerm = $null
     $MatchedTypeName = $null
     $MatchedTypeClass = $null
     $MatchedTerms = $null
-    $IsExactMatch = $false
     $Score = 0
 
     static {
@@ -31,16 +29,16 @@ ScriptClass TypeMatch {
         }
     }
 
-    function __initialize($criterionName, $searchOptions, $searchTerm, $typeName, $isExactMatch, $matchedTypeClass, [string[]] $matchedTerms) {
+    function __initialize($criterionName, $searchTerm, $typeName, $matchedTypeClass, [string[]] $matchedTerms) {
         $this.Criteria = [ordered] @{}
-        $this.SearchOptions = $searchOptions
         $this.SearchTerm = $searchTerm
         $this.MatchedTypeName = $typeName
         $this.MatchedTypeClass = $matchedTypeClass
-        $this.IsExactMatch = $searchTerm -in $matchedTerms
         $this.MatchedTerms = @{$criterionName=$matchedTerms}
 
-        AddCriterion $criterionName $this.IsExactMatch
+        $isExactMatch = $searchTerm -in $matchedTerms
+
+        AddCriterion $criterionName $isExactMatch
     }
 
     function AddCriterion([string] $criterionName, $isExactMatch) {
@@ -51,7 +49,6 @@ ScriptClass TypeMatch {
     function SetExactMatch($criterionKey) {
         if ( $this.Criteria[$criterionKey] ) {
             $this.Criteria[$criterionKey].IsExactMatch = $true
-            $this.IsExactMatch = $true
         }
 
         __UpdateScore
@@ -64,10 +61,7 @@ ScriptClass TypeMatch {
 
         foreach ( $criterionKey in $other.Criteria.Keys ) {
             $existingCriteria = $this.Criteria[$criterionKey]
-            if ( $existingCriteria ) {
-#                $this.Criteria.Add('Duplicate' + $this.Criteria.Count, [PSCustomObject] @{Name=$criterionKey; IsExactMatch = $other.isExactMatch})
-#                $existingCriteria.isExactMatch = $other.isExactMatch
-            } else {
+            if ( ! $existingCriteria ) {
                 $this.Criteria.Add($criterionKey, [PSCustomObject] @{Name=$criterionKey; IsExactMatch = $other.isExactMatch})
             }
         }
@@ -80,10 +74,6 @@ ScriptClass TypeMatch {
             }
         }
 
-        if ( $other.IsExactMatch ) {
- #           $this.IsExactMatch = $true
-        }
-
         __UpdateScore
     }
 
@@ -91,12 +81,6 @@ ScriptClass TypeMatch {
         $score = $this.Criteria.Count
 
         foreach ( $criterionName in $this.Criteria.Keys ) {
-            $weight = __GetWeight $this.Criteria[$criterionName]
-
-<#            if ( $this.matchedTypeName -eq 'microsoft.graph.user' ) {
-                write-host "current=$score
-            }
-#>
             $score += __GetWeight $this.Criteria[$criterionName]
         }
 
@@ -105,11 +89,7 @@ ScriptClass TypeMatch {
 
     function __GetWeight($criterion) {
         $knownWeight = $this.scriptclass.MatchWeight[$criterion.Name]
-<#
-        if ( $criterion.Name -eq 'Name' ) {
-            write-host Name, $criterion.IsExactMatch
-        }
-#>
+
         $normalizedWeight = if ( $knownWeight ) {
             $knownWeight
         } else {

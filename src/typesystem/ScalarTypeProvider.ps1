@@ -98,6 +98,13 @@ ScriptClass ScalarTypeProvider {
             $nameIndex = $indexes | where IndexedField -eq Name
             $propertyIndex = $indexes | where IndexedField -eq Property
 
+            if ( $nameIndex -or $propertyIndex ) {
+                $indexNames = @()
+                $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
+                $indexNameDescription = $indexNames -join ','
+                write-progress -id 1 -activity "Updating search indexes '$indexNameDescription' for enumeration types" -status 'In progress'
+            }
+
             foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
                 $enumerationDefinition = $this.enumerationDefinitions[$typeId]
                 if( $nameIndex ) {
@@ -109,10 +116,6 @@ ScriptClass ScalarTypeProvider {
                         $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
                     }
                 }
-            }
-
-            foreach ( $index in $this.indexes ) {
-                $index |=> SetContext TypeClass Enumeration
             }
         }
     }

@@ -96,38 +96,18 @@ ScriptClass CompositeTypeProvider {
         }
     }
 
-    function GetTypeIndexes([string[]] $indexFields, $typeClasses) {
-        $targetClasses = $typeClasses | where { $_ -in @('Entity', 'Complex') }
-
-        if ( $targetClasses ) {
-            foreach ( $indexField in $indexFields ) {
-                $index = $this.indexes[$indexField]
-                if ( ! ( $index |=> GetContext Entity ) ) {
-                    $entitySchemas = GetEntityTypeSchemas
-                    __UpdateTypeIndex $index $entitySchemas Entity
-                }
-
-                if ( ! ( $index |=> GetContext Complex ) ) {
-                    $complexSchemas = GetComplexTypeSchemas
-                    __UpdateTypeIndex $index $complexSchemas Complex
-                }
-            }
-        }
-
-        $this.indexes.Values
-    }
-
     function UpdateTypeIndexes($indexes, $typeClasses) {
         $targetClasses = $typeClasses | where { $_ -in @('Entity', 'Complex') }
 
         if ( $targetClasses ) {
             foreach ( $index in $indexes ) {
-                if ( ! ( $index |=> GetContext Entity ) ) {
+
+                if ( 'Entity' -in $targetClasses ) {
                     $entitySchemas = GetEntityTypeSchemas
                     __UpdateTypeIndex $index $entitySchemas Entity
                 }
 
-                if ( ! ( $index |=> GetContext Complex ) ) {
+                if ( 'Complex' -in $targetClasses ) {
                     $complexSchemas = GetComplexTypeSchemas
                     __UpdateTypeIndex $index $complexSchemas Complex
                 }
@@ -227,6 +207,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function __UpdateTypeIndex($index, $schemas, $typeClass) {
+        write-progress -id 1 -activity "Updating search index '$($index.IndexedField)' for type class '$typeClass'" -status 'In progress'
         foreach ( $typeId in $schemas.Keys ) {
             $nativeSchema = $schemas[$typeId]
 
@@ -249,6 +230,7 @@ ScriptClass CompositeTypeProvider {
                 'Method' {
                     $methodSchemas = GetMethodSchemasForType $typeId
                     if ( $methodSchemas ) {
+                        write-progress -id 2 -activity "Updating search index 'method' for type '$typeId'" -status 'In progress'
                         foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
                             $index |=> Add $nativeMethodSchema.Name $typeId $typeClass
                         }
@@ -259,8 +241,6 @@ ScriptClass CompositeTypeProvider {
                 }
             }
         }
-
-        $index |=> SetContext TypeClass $index.IndexedField
     }
 
     static {

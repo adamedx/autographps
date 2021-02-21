@@ -14,15 +14,18 @@
 
 . (import-script ../typesystem/TypeManager)
 . (import-script common/TypeHelper)
+. (import-script common/TypeSearchResultDisplayType)
 . (import-script common/TypeParameterCompleter)
 
 enum TypeSearchCriterion {
     Name
     Property
     Relationship
-    Methods
-    Members
+    Method
+    Member
 }
+
+
 
 function Find-GraphType {
     [cmdletbinding(positionalbinding=$false)]
@@ -32,20 +35,21 @@ function Find-GraphType {
         $SearchString,
 
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
-        $TypeClass = 'Any',
+        $TypeClass = 'Entity',
 
         $Namespace,
 
         $GraphName,
 
-        [TypeSearchCriterion[]] $Criteria = @('Name', 'Property', 'Relationship'),
+        [TypeSearchCriterion[]] $Criteria = @('Name'),
 
+        [parameter(position=1)]
         [ValidateSet('Exact', 'StartsWith', 'Contain')]
         $MatchType = 'Contains'
     )
     Enable-ScriptClassVerbosePreference
 
-    if ( $TypeClass -eq 'Primitive' ) {
+    if ( $TypeClass -contains 'Primitive' ) {
         throw [ArgumentException]::new("The type class 'Primitive' is not supported for this command")
     }
 
@@ -57,16 +61,14 @@ function Find-GraphType {
     #    match navigations
     # For each method type
     #    match the name
-    #    match the return type
-    #    match the parameters
+    #    match the return type -- TODO
+    #    match the parameters -- TODO
 
-    $classes = if ( $TypeClass -ne 'Any' ) {
-        , $TypeClass
+    $classes = if ( $TypeClass -notcontains 'Any' ) {
+        $TypeClass
     } else {
-        'Enumeration', 'Complex', 'Entity'
+        'Entity', 'Complex', 'Enumeration'
     }
-
-    # TypeSearcher::Search($searchTerm, $searchFields, $searchOptions)
 
     $typeManager = $::.TypeManager |=> Get $targetContext
 
@@ -89,13 +91,7 @@ function Find-GraphType {
 
     if ( $searchResults ) {
         foreach ( $result in $searchResults ) {
-            [PSCustomObject] @{
-#                Score = $result.Score
-                TypeClass = $result.MatchedTypeClass
-                TypeId = $result.MatchedTypeName
-                Criteria = $result.MatchedTerms.Keys
-                Matches = $result.MatchedTerms.Values
-            }
+            new-so TypeSearchResultDisplayType $result $targetContext.Name
         }
     }
 }

@@ -180,6 +180,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\QueryTranslationHelper.ps1',
         '.\src\cmdlets\common\RelationshipDisplayType.ps1',
+        '.\src\cmdlets\common\TypeSearchResultDisplayType.ps1',
         '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',

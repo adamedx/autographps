@@ -15,7 +15,7 @@
 . (import-script TypeIndex)
 
 ScriptClass TypeTable {
-    # The idea of this class allows for fast lookup of types based on specific
+    # Ths class allows for fast lookup of types based on specific
     # fields in the metadata of the types, including the names, properties,
     # and methods of the types. The quick lookup us implemented by
     # indexing these fields.
@@ -23,9 +23,8 @@ ScriptClass TypeTable {
     $types = $null
     $typeProviders = $null
     $indexes = $null
-    $orderedClasses = $null
 
-    function __initialize([HashTable] $typeProviders, [string[]] $orderedTypeClasses, [string[]] $sortedTypeNames, $typeFinder) {
+    function __initialize([HashTable] $typeProviders) {
         $this.types = [System.Collections.Generic.SortedDictionary[string, object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
         $this.indexes = @{}
         $this.typeProviders = $typeProviders
@@ -35,48 +34,7 @@ ScriptClass TypeTable {
             $index = new-so TypeIndex $_
             $this.indexes.Add($_, @{Index=$index;Initialized=@{}})
         }
-
-        $this.orderedClasses = $orderedTypeClasses
-<#
-        foreach ( $typeId in $sortedTypeNames ) {
-            $entry = __NewEntry $typeId
-            __AddEntry $entry
-        }
-#>
     }
-
-<#
-    function GetTypeInfo([string] $typeId, $typeClass) {
-        $classes = if ( $typeClass -and $typeClass -ne 'Unknown' ) {
-            , $typeClass
-        } elseif ( $typeClass -eq 'Primitive' )  {
-            throw "Type lookups for the 'Primitive' type class are not supported"
-        } else {
-            $this.providers.keys
-        }
-
-        foreach ( $class in $classes ) {
-            if ( ! $this.providers[$class].Initialized ) {
-                __InitializeTypeClass $class
-            }
-
-            $entry = __GetEntry $typeId
-
-            if ( $entry ) {
-                $schema = if ( $entry[$typeId] ) {
-                    $entry[$typeId]
-                } else {
-                    $definition = $this.providers[$typeClass] |=> GetTypeDefinition $typeClass $typeId
-                }
-                $schema = $entry[$class]
-                if ( $schema ) {
-                    [PSCustomObject] @{TypeId=$typeId;Class=$class;Schema=$schema}
-                }
-                break
-            }
-        }
-    }
-#>
 
     function FindTypeInfoByField([TypeIndexClass] $indexClass, $lookupValue, [string[]] $classes, [TypeIndexLookupClass] $lookupClass = 'Exact') {
         $searchMethod = switch ( $lookupClass ) {
@@ -88,13 +46,10 @@ ScriptClass TypeTable {
             }
         }
 
-        $index = __GetIndex $indexClass $classes
+        $indexInfo = $this.indexes[$indexClass.tostring()]
+        __InitializeIndexForTypeClasses $indexInfo $classes
 
-        $index |=> $searchMethod $lookupValue $classes
-    }
-
-    function GetTypeIndex([TypeIndexClass] $indexClass) {
-        throw 'notimplemented'
+        $indexInfo.Index |=> $searchMethod $lookupValue $classes
     }
 
     function AddType($typeId, $class, $schema) {
@@ -102,107 +57,13 @@ ScriptClass TypeTable {
         __AddEntry $typeId $entry
     }
 
-    function __GetIndex([TypeIndexClass] $indexClass, [string[]] $typeClasses) {
-        $indexInfo = $this.indexes[$indexClass.tostring()]
-        __InitializeIndexForTypeClasses $indexInfo $typeClasses
-        $indexInfo.Index
-    }
-
     function __InitializeIndexForTypeClasses($indexInfo, [string[]] $typeClasses) {
         foreach ( $typeClass in $typeClasses ) {
             if ( ! $indexInfo.Initialized[$typeClass] ) {
                 $typeProvider = $this.typeProviders[$typeClass]
                 $indexesForTypeClass = $typeProvider |=> UpdateTypeIndexes @($indexInfo.Index) $typeClasses
-<#                $lookupValues = $indexesForTypeClass |=> GetLookupValues
-                foreach ( $lookupValue in $lookupValues ) {
-                    $entry = $indexesForTypeClass |=> Get $lookupValue
-                    foreach ( $typeId in $entry.targets.keys ) {
-                        $indexInfo.Index |=> Add $lookupValue $typeId $entry.targets[$typeId]
-                    }
-                }
-#>
-
                 $indexInfo.Initialized[$typeClass] = $true
             }
         }
-        <#
-        foreach ( $typeClass in $typeClasses ) {
-            if ( ! $indexInfo.Initialized[$typeClass] ) {
-                $typeProvider = $this.typeProviders[$typeClass]
-                $indexesForTypeClass = $typeProvider |=> GetTypeIndexes $indexInfo.Index.IndexedField $typeClasses
-                $lookupValues = $indexesForTypeClass |=> GetLookupValues
-                foreach ( $lookupValue in $lookupValues ) {
-                    $entry = $indexesForTypeClass |=> Get $lookupValue
-                    foreach ( $typeId in $entry.targets.keys ) {
-                        $indexInfo.Index |=> Add $lookupValue $typeId $entry.targets[$typeId]
-                    }
-                }
-
-                $indexInfo.Initialized[$typeClass] = $true
-            }
-        }
-#>
     }
-<#
-    function __InitializeIndex($indexInfo) {
-        if ( ! $indexInfo.Initialized ) {
-            $index = $indexInfo.Index
-            $lookupValues = $index |=> GetLookupValues
-            foreach ( $lookupValue in $lookupValues ) {
-                $entry = $index |=> Get $lookupValue
-                foreach ( $typeId in $entry.targets.keys ) {
-                    $this.indexes[$index.IndexedField.tostring()] |=> Add $lookupValue $typeId $entry.targets[$typeId]
-                }
-            }
-            $indexInfo.Initialized = $true
-        }
-    }
-#>
-
-    function __GetEntry($typeId) {
-        $this.types[$typeId]
-    }
-
-    function __AddEntry($entry) {
-        if ( __GetEntry $entry.TypeId ){
-            throw "Entry for type id '$($entry.TypeId)' already exists"
-        }
-
-        $this.types.Add($entry.TypeId, $entry)
-    }
-
-    function __NewEntry($typeId) {
-        @{TypeId=$typeId;Class=$null;Schema=$null}
-    }
-}
-
-function __GetTable {
-    $context = (get-graph).details
-    $typeManager = $::.TypeManager |=> Get $context
-    $global:mycon = $context
-    $global:myman = $typeManager
-    $sortedTypeNames = $::.TypeManager |=> GetSortedTypeNames Entity, Complex, Enumeration $context
-
-    $scalarProvider = $typeManager |=> __GetTypeProvider Enumeration
-    $compositeProvider = $typeManager |=> __GetTypeProvider Complex
-    $typeIndexes = @()
-
-    $global:myprov = $scalarProvider
-    $indices = $scalarProvider |=> GetTypeIndexes Name, Property, NavigationProperty, Method
-    $compositeIndices = $compositeProvider |=> GetTypeIndexes Name, Property, NavigationProperty, Method
-#    $typeFinder = new-so TypeFinder $typeManager
-
-    $typeIndexes += $indices
-    $typeIndexes += $compositeIndices
-
-    $global:lasttable = new-so TypeTable $typeIndexes Entity, Complex, Enumeration $sortedTypeNames
-    $global:lasttable
-}
-
-
-function __Search($term, $fields = @('Name', 'Property', 'NavigationProperty'), $classes = @('Entity', 'Complex'), $lookupClass = 'Exact') {
-    $context = (get-graph).details
-    $typeManager = $::.TypeManager |=> Get $context
-
-    $typeManager |=> SearchTypes $term $fields $classes $lookupClass
 }

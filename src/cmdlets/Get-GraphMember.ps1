@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 . (import-script common/MemberParameterCompleter)
 
 function Get-GraphMember {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='forobject')]
+    [cmdletbinding(positionalbinding=$false)]
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0)]
@@ -25,9 +25,12 @@ function Get-GraphMember {
         [string[]] $Name,
 
         [parameter(parametersetname='fortypename', mandatory=$true)]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('TypeId')]
         $TypeName,
 
         [parameter(parametersetname='fortypename')]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         $TypeClass = 'Any',
 
@@ -36,7 +39,10 @@ function Get-GraphMember {
         [Alias('GraphUri')]
         $Uri,
 
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='forobject')]
+        [parameter(parametersetname='uri')]
+        [parameter(parametersetname='fortypename')]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]
@@ -52,7 +58,9 @@ function Get-GraphMember {
 
     begin {
         Enable-ScriptClassVerbosePreference
+    }
 
+    process {
         $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
             $TypeClass
         } else {
@@ -60,9 +68,7 @@ function Get-GraphMember {
         }
 
         $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
-    }
 
-    process {
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualified $Uri $null $GraphItem $false $true
 
         $targetContext = $requestInfo.Context

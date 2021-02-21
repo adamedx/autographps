@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,20 +20,19 @@ function Get-GraphType {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
     [OutputType('GraphTypeDisplayType')]
     param(
-        [parameter(position=0, parametersetname='optionallyqualified', mandatory=$true)]
-        [parameter(position=0, parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
+        [parameter(position=0, parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='optionallyqualifiedmembersonly', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
-        [Alias('Name')]
+        [Alias('TypeId')]
         $TypeName,
 
-        [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='optionallyqualifiedmembersonly')]
+        [parameter(parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='optionallyqualifiedmembersonly', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='fullyqualified')]
         [parameter(parametersetname='fullyqualifiedmembersonly')]
         [parameter(parametersetname='list')]
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
-        [Alias('Class')]
         $TypeClass = 'Any',
 
         [parameter(parametersetname='optionallyqualified')]
@@ -44,6 +43,7 @@ function Get-GraphType {
         [parameter(parametersetname='urimembersonly', mandatory=$true)]
         $Uri,
 
+        [parameter(valuefrompipelinebypropertyname=$true)]
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
@@ -70,76 +70,84 @@ function Get-GraphType {
         [switch] $ListNames
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
+        $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
+    }
 
-    if ( ! $ListNames.IsPresent ) {
-        $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
-            $TypeClass
-        } else {
-            'Unknown'
-        }
-
-        $typeManager = $::.TypeManager |=> Get $targetContext
-
-        $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
-
-        $targetTypeName = if ( $TypeName ) {
-            $TypeName
-        } else {
-            $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.Name -erroraction stop
-            $isFullyQualified = $true
-            if ( $uriInfo.FullTypeName -eq 'Null' ) {
-                return $null
-            }
-            $uriInfo.FullTypeName
-        }
-
-        $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $targetTypeName $isFullyQualified ( $TypeClass -ne 'Any' )
-
-        if ( ! $type ) {
-            if ( $TypeName ) {
-                throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
+    process {
+        if ( ! $ListNames.IsPresent ) {
+            $remappedTypeClass = if ( $TypeClass -ne 'Any' ) {
+                $TypeClass
             } else {
-                throw "Unexpected error: the specified URI '$Uri' could not be resolved to any type in graph '$($targetContext.name)'"
-            }
-        }
-
-        $result = $::.TypeHelper |=> ToPublic $type
-
-        if ( ! $TransitiveMembers.IsPresent ) {
-            $result | sort-object name
-        } else {
-            $fieldMap = [ordered] @{
-                Property = 'Properties'
-                Relationship = 'Relationships'
-                Method = 'Methods'
+                'Unknown'
             }
 
-            $orderedMemberFields = if ( $MemberType ) {
-                , $fieldMap[$MemberType]
+            $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
+
+            $typeManager = $::.TypeManager |=> Get $targetContext
+
+            $targetTypeName = if ( $TypeName ) {
+                $TypeName
             } else {
-                $fieldMap.values
+                $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.Name -erroraction stop
+                $isFullyQualified = $true
+                if ( $uriInfo.FullTypeName -eq 'Null' ) {
+                    return $null
+                }
+                $uriInfo.FullTypeName
             }
 
-            foreach ( $memberField in $orderedMemberFields ) {
-                $members = if ( ! $MemberFilter ) {
-                    $result.$MemberField
+            $type = $typeManager |=> FindTypeDefinition $remappedTypeClass $targetTypeName $isFullyQualified
+
+            if ( ! $type ) {
+                if ( $TypeName ) {
+                    throw "The specified type '$TypeName' of type class '$TypeClass' was not found in graph '$($targetContext.name)'"
                 } else {
-                    $result.$MemberField | where { $_.Name -like "*$($MemberFilter)*" }
+                    throw "Unexpected error: the specified URI '$Uri' could not be resolved to any type in graph '$($targetContext.name)'"
+                }
+            }
+
+            $result = $::.TypeHelper |=> ToPublic $type
+
+            if ( ! $TransitiveMembers.IsPresent ) {
+                $result | sort-object name
+            } else {
+                $fieldMap = [ordered] @{
+                    Property = 'Properties'
+                    Relationship = 'Relationships'
+                    Method = 'Methods'
                 }
 
-                $members | sort-object name
+                $orderedMemberFields = if ( $MemberType ) {
+                    , $fieldMap[$MemberType]
+                } else {
+                    $fieldMap.values
+                }
+
+                foreach ( $memberField in $orderedMemberFields ) {
+                    $members = if ( ! $MemberFilter ) {
+                        $result.$MemberField
+                    } else {
+                        $result.$MemberField | where { $_.Name -like "*$($MemberFilter)*" }
+                    }
+
+                    $members | sort-object name
+                }
             }
         }
-    } else {
-        $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
-            $TypeClass
-        } else {
-            'Entity'
+    }
+
+    end {
+        if ( $ListNames.IsPresent ) {
+            $sortTypeClass = if ( $TypeClass -ne 'Any' ) {
+                $TypeClass
+            } else {
+                'Entity'
+            }
+            $::.TypeManager |=> GetSortedTypeNames $sortTypeClass $targetContext
         }
-        $::.TypeManager |=> GetSortedTypeNames $sortTypeClass $targetContext
     }
 }
 

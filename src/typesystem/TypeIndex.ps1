@@ -31,12 +31,10 @@ enum TypeIndexLookupClass {
 ScriptClass TypeIndex {
     $IndexedField = $null
     $index = $null
-    $context = $null
 
     function __initialize([TypeIndexClass] $indexedField) {
         $this.indexedField = $indexedField
         $this.index = [System.Collections.Generic.SortedList[String, Object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
-        $this.context = @{}
     }
 
     function Add([string] $lookupValue, $typeId, $typeClass) {
@@ -69,7 +67,7 @@ ScriptClass TypeIndex {
             foreach ( $matchingType in $entry.targets.keys ) {
                 $matchedTypeClass = $entry.targets[$matchingType]
                 if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
-                    new-so TypeMatch $this.indexedField $null $key $matchingType $true $matchedTypeClass @($key)
+                    new-so TypeMatch $this.indexedField $key $matchingType $matchedTypeClass @($key)
                 }
             }
         }
@@ -86,7 +84,7 @@ ScriptClass TypeIndex {
                 foreach ( $matchingType in $entry.targets.keys ) {
                     $matchedTypeClass = $entry.targets[$matchingType]
                     if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
-                        new-so TypeMatch $this.indexedField $null $searchString $matchingType $false $matchedTypeClass $matchedValues
+                        new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass $matchedValues
                     }
                 }
             }
@@ -104,23 +102,11 @@ ScriptClass TypeIndex {
                 foreach ( $matchingType in $entry.targets.keys ) {
                     $matchedTypeClass = $entry.targets[$matchingType]
                     if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
-                        new-so TypeMatch $this.indexedField $null $searchString $matchingType $false $matchedTypeClass $matchedValues
+                        new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass $matchedValues
                     }
                 }
             }
         }
-    }
-
-    function GetContext($key) {
-        $this.context[$key]
-    }
-
-    function SetContext($key, $value) {
-        $this.context[$key] = $value
-    }
-
-    function RemoveContext($key) {
-        $this.context.Remove($key)
     }
 
     function __FindEntry($key) {
