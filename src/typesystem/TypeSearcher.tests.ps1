@@ -24,30 +24,33 @@ Describe 'The TypeSearcher class' {
         }
 
         It 'Should return exactly 1 match when exact match for a valid type name is specified' {
-            $searchResults = $typeManager |=> SearchTypes User $true
+            $searchResults = $typeManager |=> SearchTypes User Name Entity Exact
             $searchResults | Should Not Be $null
             $searchResults.GetType().FullName | Should Be 'System.Management.Automation.PSCustomObject'
             $searchResults.MatchedTypeName | Should be 'microsoft.graph.user'
         }
 
         It 'Should return 0 matches when exact match for a non-existent type name is specified' {
-            $searchResults = $typeManager |=> SearchTypes IDontExist $true
+            $searchResults = $typeManager |=> SearchTypes IDontExist Name Entity Exact
             $searchResults | Should Be $null
         }
 
-        It 'Should return exactly 3 matches when inexact match for a valid type name is specified in a graph schema that has 3 type names that satisfy the inexact match' {
-            $searchResults = $typeManager |=> SearchTypes User $false
+        It 'Should return exactly 4 matches when startswith match for a valid type name is specified in a graph schema that has 3 type names that satisfy the startswith match' {
+            $searchResults = $typeManager |=> SearchTypes User Name Entity StartsWith
             $searchResults | Should Not Be $null
             $searchResults.GetType().FullName | Should Be 'System.Object[]'
-            $searchResults.Length | Should Be 23
-            $searchResults[0].MatchedTypeName | Should be 'microsoft.graph.user'
+            $searchResults.Length | Should Be 4
+
+            'microsoft.graph.useractivity',
+            'microsoft.graph.user',
+            'microsoft.graph.userinstallstatesummary',
+            'microsoft.graph.usersettings' | foreach {
+                $searchResults.MatchedTypeName -contains $_
+            }
         }
 
-        It 'Should return 0 matches when inexact match for a non-existent type name is specified' {
-            $searchResults = $typeManager |=> SearchTypes IDontExist $false
-            $searchResults | Should Be $null
-
-            $searchResults = $typeManager |=> SearchTypes IDontExist
+        It 'Should return 0 matches when startswith match for a non-existent type name is specified' {
+            $searchResults = $typeManager |=> SearchTypes IDontExist Name Entity StartsWith
             $searchResults | Should Be $null
         }
     }
