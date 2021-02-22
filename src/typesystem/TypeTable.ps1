@@ -84,7 +84,7 @@ ScriptClass TypeTable {
         foreach ( $typeClass in $typeClasses ) {
             if ( ! $indexInfo.Initialized[$typeClass] ) {
                 $typeProvider = $this.typeProviders[$typeClass]
-                $indexesForTypeClass = $typeProvider |=> UpdateTypeIndexes @($indexInfo.Index) $typeClasses
+                $indexesForTypeClass = $typeProvider |=> UpdateTypeIndexes @($indexInfo.Index) $typeClass
                 $indexInfo.Initialized[$typeClass] = $true
             }
         }

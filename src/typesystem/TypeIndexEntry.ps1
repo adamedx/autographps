@@ -24,7 +24,7 @@ ScriptClass TypeIndexEntry {
     }
 
     function AddTarget($typeId, $typeClass) {
-        $this.targets[$typeId] = $typeClass
+        $this.targets.Add($typeId, $typeClass)
     }
 
     function GetTargetTypeIds {
