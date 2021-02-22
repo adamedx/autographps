@@ -110,7 +110,7 @@ limitations under the License.
                 <PropertyName>EnumerationTypeCount</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>EnumerationTypeCount</PropertyName>
+                <PropertyName>EnumerationValueCount</PropertyName>
               </ListItem>
             </ListItems>
           </ListEntry>
