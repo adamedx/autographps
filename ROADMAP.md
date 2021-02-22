@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* pipeline support for get-graphtype
 * Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
@@ -353,6 +352,8 @@
 * Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
 * Use odata context
 * Use Start-ThreadJob instead of Start-Job for background metadata processing
+* pipeline support for get-graphtype
+* Graph statistics command
 
 ### Postponed
 

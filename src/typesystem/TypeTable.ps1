@@ -15,7 +15,7 @@
 . (import-script TypeIndex)
 
 ScriptClass TypeTable {
-    # Ths class allows for fast lookup of types based on specific
+    # This class allows for fast lookup of types based on specific
     # fields in the metadata of the types, including the names, properties,
     # and methods of the types. The quick lookup us implemented by
     # indexing these fields.
@@ -52,9 +52,32 @@ ScriptClass TypeTable {
         $indexInfo.Index |=> $searchMethod $lookupValue $classes
     }
 
-    function AddType($typeId, $class, $schema) {
-        $entry = __NewEntry $typeId $class $schema
-        __AddEntry $typeId $entry
+    function GetStatistics([TypeIndexClass[]] $indexClasses) {
+        foreach ( $indexClass in $indexClasses ) {
+            $indexInfo = $this.indexes[$indexClass.tostring()]
+            __InitializeIndexForTypeClasses $indexInfo 'Entity', 'Complex', 'Enumeration'
+        }
+
+        # Treat the name index as having one entry per type
+        $typeCountStatistics = $this.indexes['Name'].Index |=> GetStatistics
+        $propertyCountStatistics = $this.indexes['Property'].Index |=> GetStatistics
+        $navigationPropertyCountStatistics = $this.indexes['NavigationProperty'].Index |=> GetStatistics
+        $methodCountStatistics = $this.indexes['Method'].Index |=> GetStatistics
+
+        $methodCount = if ( $this.indexes['Method'].Initialized['Entity'] ) {
+            $methodCountStatistics.EntityCount # Methods currently only exist on entities
+        }
+
+        [PSCustomObject] @{
+            EntityCount = $typeCountStatistics.EntityCount
+            EntityPropertyCount = $propertyCountStatistics.EntityCount
+            EntityNavigationPropertyCount = $navigationPropertyCountStatistics.EntityCount
+            ComplexCount = $typeCountStatistics.ComplexCount
+            ComplexPropertyCount = $propertyCountStatistics.ComplexCount
+            EnumerationCount = $typeCountStatistics.EnumerationCount
+            EnumerationValueCount = $propertyCountStatistics.EnumerationCount
+            MethodCount = $methodCount
+        }
     }
 
     function __InitializeIndexForTypeClasses($indexInfo, [string[]] $typeClasses) {

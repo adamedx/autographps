@@ -31,10 +31,16 @@ enum TypeIndexLookupClass {
 ScriptClass TypeIndex {
     $IndexedField = $null
     $index = $null
+    $typeClassAggregates = $null
 
     function __initialize([TypeIndexClass] $indexedField) {
         $this.indexedField = $indexedField
         $this.index = [System.Collections.Generic.SortedList[String, Object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
+        $this.typeClassAggregates = @{
+            Entity = 0
+            Complex = 0
+            Enumeration = 0
+        }
     }
 
     function Add([string] $lookupValue, $typeId, $typeClass) {
@@ -46,6 +52,10 @@ ScriptClass TypeIndex {
         }
 
         $entry |=> AddTarget $typeId $typeClass
+
+        if ( $this.typeClassAggregates.ContainsKey($typeClass.tostring()) ) {
+            $this.typeClassAggregates[$typeClass.tostring()] += 1
+        }
     }
 
     function Get($key) {
@@ -106,6 +116,14 @@ ScriptClass TypeIndex {
                     }
                 }
             }
+        }
+    }
+
+    function GetStatistics {
+        [PSCustomObject] @{
+            EntityCount = $this.typeClassAggregates['Entity']
+            ComplexCount = $this.typeClassAggregates['Complex']
+            EnumerationCount = $this.typeClassAggregates['Enumeration']
         }
     }
 

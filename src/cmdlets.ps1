@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphMember)
 . (import-script cmdlets\Get-GraphMethod)
+. (import-script cmdlets\Get-GraphStatistics)
 . (import-script cmdlets\Get-GraphType)
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\Get-GraphUriInfo)

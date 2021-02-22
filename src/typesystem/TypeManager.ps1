@@ -71,10 +71,8 @@ ScriptClass TypeManager {
     }
 
     function SearchTypes([string] $typeNameTerm, [string[]] $criteria, [string[]] $typeClasses, [TypeIndexLookupClass] $lookupClass = 'Contains') {
-        $supportedTypeClasses = [GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration
-
         foreach ( $typeClass in $typeClasses ) {
-            if ( $typeClass -notin $supportedTypeClasses ) {
+            if ( $typeClass -notin $this.ScriptClass.SupportedTypeClasses ) {
                 throw [ArgumentException]::new("The type class '$typeClass' is not supported for this command")
             }
         }
@@ -87,15 +85,7 @@ ScriptClass TypeManager {
             throw 'No search criteria were specified -- at least one criterion field must be specified'
         }
 
-        if ( ! $this.typeSearcher ) {
-            $providers = @{}
-
-            foreach ( $class in $supportedTypeClasses ) {
-                $providers[$class.tostring()] = __GetTypeProvider $class $this.graph
-            }
-
-            $this.typeSearcher = new-so TypeSearcher $providers $null
-        }
+        __InitializeTypeSearcher
 
         $qualifiedName = if ( ! $typeNameTerm.Contains('.') ) {
             if ( $lookupClass -eq 'Exact' ) {
@@ -141,6 +131,12 @@ ScriptClass TypeManager {
         }
 
         $results | sort-object Score -descending
+    }
+
+    function GetTypeSearcher {
+        __InitializeTypeSearcher
+
+        $this.typeSearcher
     }
 
     function FindTypeDefinition($typeClass, $typeName, $fullyQualified, $errorIfNotFound = $false) {
@@ -320,6 +316,19 @@ ScriptClass TypeManager {
         }
     }
 
+    function __InitializeTypeSearcher {
+        if ( ! $this.typeSearcher ) {
+            $providers = @{}
+
+            foreach ( $class in $this.scriptclass.SupportedTypeClasses ) {
+                $providers[$class.tostring()] = __GetTypeProvider $class $this.graph
+            }
+
+            $this.typeSearcher = new-so TypeSearcher $providers $null
+        }
+    }
+
+
     function GetTypeClassPrecedence {
         [GraphTypeClass]::Primitive, [GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration
     }
@@ -348,6 +357,10 @@ ScriptClass TypeManager {
     }
 
     static {
+        . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
+
+        const SupportedTypeClasses @([GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration)
+
         function Get($graphContext) {
             $manager = $graphContext |=> GetState $::.GraphManager.TypeStateKey
 

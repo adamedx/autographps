@@ -39,4 +39,8 @@ ScriptClass TypeSearcher {
 
         $typeMatches.Values
     }
+
+    function GetTypeStatistics([string[]] $indexClasses) {
+        $this.TypeTable |=> GetStatistics $indexClasses
+    }
 }

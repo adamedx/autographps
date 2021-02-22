@@ -87,6 +87,7 @@ NestedModules = @(
     'Get-GraphLocation',
     'Get-GraphMember',
     'Get-GraphMethod',
+    'Get-GraphStatistics',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -148,6 +149,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphMethod.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
+        '.\src\cmdlets\Get-GraphStatistics.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
@@ -168,6 +170,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\FunctionParameterHelper.ps1',
+        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
@@ -254,15 +257,15 @@ None.
 
 ### Breaking changes
 
-* Added the following commands:
-  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
-  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
-
 None.
 
 ### New features
 
-None.
+* Added the following commands:
+  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
+  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
+  * `Find-GraphType`: This command returns the types that match specified criteria. This is useful for finding types that can be used to accomplish tasks in the problem domain represented by the search terms.
+  * `Get-GraphType` now accepts objects from the pipeline.
 
 ### Fixed defects
 

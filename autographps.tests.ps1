@@ -42,6 +42,7 @@ Describe "Autographps application" {
                 'Get-GraphLocation'
                 'Get-GraphMember'
                 'Get-GraphMethod'
+                'Get-GraphStatistics'
                 'Get-GraphType'
                 'Get-GraphUri'
                 'Get-GraphUriInfo'

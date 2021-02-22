@@ -24,7 +24,7 @@ limitations under the License.
         <TypeName>GraphSegmentDisplayType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <!-- This GropuBy tag causes an extra row of output to be displayed above the table
+        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
              header, which we use to provide the name of the URI being enumerated or requested,
              the same way that Get-ChildItem shows a directory title for the file system. -->
         <PropertyName>ParentPath</PropertyName>
@@ -64,5 +64,60 @@ limitations under the License.
         </TableRowEntries>
       </TableControl>
     </View>
+
+
+
+    <View>
+      <Name>GraphStatisticsFormatType</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphStatisticsDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
+             header, which we use to provide the name of the URI being enumerated or requested,
+             the same way that Get-ChildItem shows a directory title for the file system. -->
+        <PropertyName>GraphName</PropertyName>
+        <Label>Graph Name</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>EntityTypeCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EntityPropertyCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EntityRelationshipCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.EntityMethodCount -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>EntityMethodCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ComplexTypeCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ComplexPropertyCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EnumerationTypeCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EnumerationTypeCount</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
   </ViewDefinitions>
 </Configuration>

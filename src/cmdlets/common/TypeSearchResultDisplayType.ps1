@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ScriptClass TypeSearchResultDisplayType {
-    $Score = $null
+    $Relevance = $null
     $TypeClass = $null
     $TypeId = $null
     $Criteria = $null
@@ -21,7 +21,7 @@ ScriptClass TypeSearchResultDisplayType {
     $GraphName = $null
 
     function __initialize($typeMatch, $graphName) {
-        $this.Score = $typeMatch.Score
+        $this.Relevance = $typeMatch.Score
         $this.TypeClass = $typeMatch.MatchedTypeClass
         $this.TypeId = $typeMatch.MatchedTypeName
         $this.Criteria = $typeMatch.MatchedTerms.Keys
