@@ -13,6 +13,10 @@
 # limitations under the License.
 
 ScriptClass GraphStatisticsDisplayType {
+    # Note that the display format for this type is managed
+    # by a format xml file elsewhere in this module rather
+    # than directly by this class
+
     $EntityTypeCount = $null
     $EntityPropertyCount = $null
     $EntityRelationshipCount = $null
@@ -36,31 +40,5 @@ ScriptClass GraphStatisticsDisplayType {
         $this.EntityMethodCount = $statistics.MethodCount
         $this.GraphName = $graphName
     }
-
-    static {
-        function __RegisterDisplayType {
-            $displayTypeName = $this.ClassName
-
-            $displayProperties = @(
-                'EntityTypeCount'
-                'EntityPropertyCount'
-                'EntityRelationshipCount'
-                'ComplexTypeCount'
-                'ComplexPropertyCount'
-                'EnumerationTypeCount'
-            )
-
-            remove-typedata -typename $displayTypeName -erroraction ignore
-
-            $displayTypeArguments = @{
-                TypeName = $displayTypeName
-                DefaultDisplayPropertySet = $displayProperties
-            }
-
-            Update-TypeData -force @displayTypeArguments
-        }
-    }
 }
 
-
-$::.GraphStatisticsDisplayType |=> __RegisterDisplayType

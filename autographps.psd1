@@ -270,6 +270,7 @@ None.
 ### Fixed defects
 
 * Not all functions under the path /reports and possibly other paths were being detected and thus could not be used with `Invoke-GraphMethod`.
+* For some types, such as driveItem, the output of Get-GraphType would show duplicate methods for methods like getActivityByInterval -- now only one version of the method is returned (a type cannot have two methods with the same name).
 
 None.
 
