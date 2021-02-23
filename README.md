@@ -341,6 +341,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphMember (ggm)     | Gets information about the members of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
+| Get-GraphMethod (ggmt)    | Gets information about the methods of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
 | Get-GraphStatistics       | Returns statistics about the types exposed by the Graph API                                             |
