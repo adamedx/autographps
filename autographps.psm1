@@ -16,6 +16,7 @@
 
 $functions = @(
     'Add-GraphRelatedItem',
+    'Find-GraphType',
     'Find-GraphPermission',
     'Get-Graph',
     'Get-GraphItem',
@@ -25,6 +26,9 @@ $functions = @(
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
+    'Get-GraphMember',
+    'Get-GraphMethod',
+    'Get-GraphStatistics',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -44,7 +48,7 @@ $functions = @(
     'Update-GraphMetadata'
 )
 
-$aliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+$aliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'ggm', 'ggmt', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # Note that in order to make variables from nested modules
 # accessible without the user directly invoking them,
@@ -59,5 +63,3 @@ $variables = @(
 )
 
 export-modulemember -function $functions -alias $aliases -variable $variables
-
-

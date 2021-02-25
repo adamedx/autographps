@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
-. (import-script TypeSchema)
 . (import-script TypeProvider)
 . (import-script ScalarTypeProvider)
 . (import-script CompositeTypeProvider)
 . (import-script TypeDefinition)
 . (import-script GraphObjectBuilder)
+. (import-script TypeSearcher)
 
 ScriptClass TypeManager {
     . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
@@ -29,6 +29,7 @@ ScriptClass TypeManager {
     $prototypes = $null
     $hasRequiredTypeDefinitions = $false
     $typeProviders = $null
+    $typeSearcher = $null
 
     function __initialize($graphContext) {
         $this.graphContext = $graphContext
@@ -67,6 +68,75 @@ ScriptClass TypeManager {
             IsCollection = $isCollection
             ObjectProtoType = $prototype
         }
+    }
+
+    function SearchTypes([string] $typeNameTerm, [string[]] $criteria, [string[]] $typeClasses, [TypeIndexLookupClass] $lookupClass = 'Contains') {
+        foreach ( $typeClass in $typeClasses ) {
+            if ( $typeClass -notin $this.ScriptClass.SupportedTypeClasses ) {
+                throw [ArgumentException]::new("The type class '$typeClass' is not supported for this command")
+            }
+        }
+
+        if ( ! $typeClasses ) {
+            throw 'No type classes specified for search -- at least one must be specified'
+        }
+
+        if ( ! $criteria ) {
+            throw 'No search criteria were specified -- at least one criterion field must be specified'
+        }
+
+        __InitializeTypeSearcher
+
+        $qualifiedName = if ( ! $typeNameTerm.Contains('.') ) {
+            if ( $lookupClass -eq 'Exact' ) {
+                foreach ( $class in $typeClasses ) {
+                    $nameForClass = GetOptionallyQualifiedName $class $typeNameTerm $false
+                    if ( $nameForClass ) {
+                        $nameForClass
+                        break
+                    }
+                }
+            } elseif ( $lookupClass -eq 'StartsWith' ) {
+                "microsoft.graph." + $typeNameTerm
+            }
+        }
+
+        $searchFields = foreach ( $criterion in $criteria ) {
+            $normalizedSearchTerm = if ( $criterion -eq 'Name' -and $qualifiedName ) {
+                $qualifiedName
+            } else {
+                $typeNameTerm
+            }
+
+            @{
+                Name = $criterion
+                SearchTerm = $normalizedSearchTerm
+                TypeClasses = $typeClasses
+                LookupClass = $lookupClass
+            }
+        }
+
+        $results = $this.typeSearcher |=> Search $searchFields
+
+        if ( $lookupClass -ne 'Exact' -and 'Name' -in $criteria -and ! $typeNameTerm.Contains('.') ) {
+            $qualifiedTypeName = GetOptionallyQualifiedName Entity $typeNameTerm $false
+            foreach ( $result in $results ) {
+                $isExactMatch = $qualifiedTypeName -eq $result.MatchedTypeName
+
+                if ( $isExactMatch ) {
+                    $result |=> SetExactMatch Name
+                    break
+                }
+            }
+        }
+
+        $results | sort-object Score -descending
+    }
+
+    function GetTypeSearcher {
+        __InitializeTypeSearcher
+
+        $this.typeSearcher
     }
 
     function FindTypeDefinition($typeClass, $typeName, $fullyQualified, $errorIfNotFound = $false) {
@@ -246,6 +316,19 @@ ScriptClass TypeManager {
         }
     }
 
+    function __InitializeTypeSearcher {
+        if ( ! $this.typeSearcher ) {
+            $providers = @{}
+
+            foreach ( $class in $this.scriptclass.SupportedTypeClasses ) {
+                $providers[$class.tostring()] = __GetTypeProvider $class $this.graph
+            }
+
+            $this.typeSearcher = new-so TypeSearcher $providers $null
+        }
+    }
+
+
     function GetTypeClassPrecedence {
         [GraphTypeClass]::Primitive, [GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration
     }
@@ -274,6 +357,10 @@ ScriptClass TypeManager {
     }
 
     static {
+        . {}.module.newboundscriptblock($::.TypeSchema.EnumScript)
+
+        const SupportedTypeClasses @([GraphTypeClass]::Entity, [GraphTypeClass]::Complex, [GraphTypeClass]::Enumeration)
+
         function Get($graphContext) {
             $manager = $graphContext |=> GetState $::.GraphManager.TypeStateKey
 
@@ -287,7 +374,7 @@ ScriptClass TypeManager {
         }
 
         function GetSortedTypeNames($allowedTypeClasses, $graphContext) {
-            $typeClasses = if ( $allowedTypeClasses -eq 'Unknown' ) {
+            $typeClasses = if ( ! $allowedTypeClasses -or ( $allowedTypeClasses -eq 'Unknown' ) ) {
                 'Entity', 'Complex', 'Primitive', 'Enumeration'
             } else {
                 , $allowedTypeClasses

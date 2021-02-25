@@ -275,7 +275,6 @@ The complete set of valid parameters is '{3}'.
 
         $methodUriWithParameters = if ( $methodClass -eq 'Function' ) {
             $parameterString = $::.FunctionParameterHelper |=> ToUriParameterString $methodBody
-            $global:myuri = $methodUri
             $methodUri.tostring().trimend('/') + $parameterString
         } else {
             $methodUri

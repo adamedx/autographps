@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
 * Generate odata context uri's: http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358910
@@ -351,6 +352,8 @@
 * Make URI the default for get-graphitem so parametersets disambiguate to avoid switching between uri-based vs. type commands
 * Use odata context
 * Use Start-ThreadJob instead of Start-Job for background metadata processing
+* pipeline support for get-graphtype
+* Graph statistics command
 
 ### Postponed
 

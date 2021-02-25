@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.35.0'
+ModuleVersion = '0.36.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -76,6 +76,7 @@ NestedModules = @(
     FunctionsToExport = @(
     'Add-GraphRelatedItem',
     'Find-GraphPermission',
+    'Find-GraphType',
     'Get-Graph',
     'Get-GraphChildItem',
     'Get-GraphItem',
@@ -84,6 +85,9 @@ NestedModules = @(
     'Get-GraphItemUri',
     'Get-GraphResourceWithMetadata',
     'Get-GraphLocation',
+    'Get-GraphMember',
+    'Get-GraphMethod',
+    'Get-GraphStatistics',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -116,7 +120,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -133,6 +137,7 @@ VariablesToExport = @(
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
+        '.\src\cmdlets\Find-GraphType.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
         '.\src\cmdlets\Get-Graph.ps1',
         '.\src\cmdlets\Get-GraphChildItem.ps1',
@@ -140,8 +145,11 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
+        '.\src\cmdlets\Get-GraphMember.ps1',
+        '.\src\cmdlets\Get-GraphMethod.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
+        '.\src\cmdlets\Get-GraphStatistics.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
@@ -162,19 +170,24 @@ VariablesToExport = @(
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\FunctionParameterHelper.ps1',
+        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\MemberDisplayType.ps1',
+        '.\src\cmdlets\common\MemberParameterCompleter.ps1',
+        '.\src\cmdlets\common\MethodDisplayType.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodUriParameterCompleter.ps1',
         '.\src\cmdlets\common\PermissionHelper.ps1',
         '.\src\cmdlets\common\QueryTranslationHelper.ps1',
         '.\src\cmdlets\common\RelationshipDisplayType.ps1',
+        '.\src\cmdlets\common\TypeSearchResultDisplayType.ps1',
         '.\src\cmdlets\common\RequestHelper.ps1',
         '.\src\cmdlets\common\SegmentHelper.ps1',
         '.\src\cmdlets\common\TypeHelper.ps1',
+        '.\src\cmdlets\common\TypeMemberFinder.ps1',
         '.\src\cmdlets\common\TypeParameterCompleter.ps1',
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeUriHelper.ps1',
@@ -195,14 +208,19 @@ VariablesToExport = @(
         '.\src\metadata\QualifiedSchema.ps1',
         '.\src\metadata\UriCache.ps1',
         '.\src\typesystem\MethodInfo.ps1',
+        '.\src\typesystem\TypeIndex.ps1',
+        '.\src\typesystem\TypeIndexEntry.ps1',
         '.\src\typesystem\TypeMember.ps1',
         '.\src\typesystem\TypeSchema.ps1',
         '.\src\typesystem\TypeDefinition.ps1',
         '.\src\typesystem\TypeProvider.ps1',
+        '.\src\typesystem\TypeTable.ps1',
         '.\src\typesystem\typesystem.ps1',
         '.\src\typesystem\ScalarTypeProvider.ps1',
         '.\src\typesystem\CompositeTypeProvider.ps1',
         '.\src\typesystem\TypeManager.ps1',
+        '.\src\typesystem\TypeMatch.ps1',
+        '.\src\typesystem\TypeSearcher.ps1',
         '.\src\typesystem\GraphObjectBuilder.ps1'
     )
 
@@ -229,33 +247,32 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.35.0 Release Notes
+## AutoGraphPS 0.36.0 Release Notes
 
-Fixes command name conflict with AutoGraphPS-SDK dependency for the `Remove-GraphItem` command, and undoes the renaming of several commands in this module incorrectly undertaken when the `Remove-GraphItem` conflict was misunderstood to be due to community usage rather than a defect in a dependency.
+Adds additional commands to make type inspection more usable.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.24.0
+None.
 
 ### Breaking changes
-
-* The following commands are renamed back to what they were prior to an incorrect rename in the version of this module (0.33.0) prior to this one:
-  Get-GraphResourceChildItem -> Get-GraphChildItem
-  Get-GraphResourceItem -> Get-GraphItem
-  Get-GraphResourceItemUri -> Get-GraphItemUri
-  New-GraphResourceItem -> New-GraphItem
-  Remove-GraphResourceItem -> Remove-GraphItem
-  Set-GraphResourceItem -> Set-GraphItem
 
 None.
 
 ### New features
 
-None.
+* Added the following commands:
+  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
+  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
+  * `Find-GraphType`: This command returns the types that match specified criteria. This is useful for finding types that can be used to accomplish tasks in the problem domain represented by the search terms.
+  * `Get-GraphType` now accepts objects from the pipeline.
 
 ### Fixed defects
 
-* At installation time the module would complain of a conflict with `Remove-GraphItem` which is exposed by this module. It turns out that while an earlier version of `AutoGraphPS-SDK` had exported an identically-named command but had renamed it to `Remove-GraphResource`, the rename process was incomplete and `AutoGraphPS-SDK` was still exporting this command. The fix for this module is to include an updated version of `AutoGraphPS-SDK` that no longer exports `Remove-GraphItem` and does export `Remove-GraphResource`.
+* Not all functions under the path /reports and possibly other paths were being detected and thus could not be used with `Invoke-GraphMethod`.
+* For some types, such as driveItem, the output of Get-GraphType would show duplicate methods for methods like getActivityByInterval -- now only one version of the method is returned (a type cannot have two methods with the same name).
+* Get-Graph was returning non-canonical file paths for the LastTypeMetadataSource property when commands like Update-GraphMetadata were used to obtain metadata from a file
+None.
 
 '@
     } # End of PSData hashtable
@@ -269,5 +286,3 @@ None.
 # DefaultCommandPrefix = ''
 
 }
-
-

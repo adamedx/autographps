@@ -43,8 +43,14 @@ ScriptClass MethodInfo {
                  }
              }
 
+        # Relies on the order of parameters -- we need to skip the first parameter
+        # This is usually -- but not always! -- named 'bindingParameter'. In some cases,
+        # it's the name of a type.
+        # TODO: This may mean that if it's not "bindingParameter" it binds differently
+        # than we are using it here -- we assume
+        $bindingParameter = $true
         $this.Parameters = foreach ( $parameter in $methodBindingSchema.Parameter ) {
-            if ( $parameter.name -ne 'bindingParameter' ) {
+            if ( $parameter.name -ne 'bindingParameter' -and ! $bindingParameter ) {
                 $parameterTypeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $parameter.type
                 $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameterTypeInfo.TypeFullName
 
@@ -54,6 +60,8 @@ ScriptClass MethodInfo {
                     IsCollection = $parameterTypeInfo.IsCollection
                 }
             }
+
+            $bindingParameter = $false
         }
     }
 }

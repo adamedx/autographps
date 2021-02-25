@@ -15,14 +15,21 @@
 . (import-script TypeSchema)
 . (import-script MethodInfo)
 . (import-script TypeDefinition)
+. (import-script TypeIndex)
 
 ScriptClass CompositeTypeProvider {
     $base = $null
     $entityTypeTable = $null
     $complexTypeTable = $null
+    $indexes = $null
 
     function __initialize($graph) {
         $this.base = new-so TypeProvider $this $graph
+        $this.indexes = [ordered] @{}
+
+        'Name', 'Property', 'NavigationProperty', 'Method' | foreach {
+            $this.indexes[$_] = new-so TypeIndex $_
+        }
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
@@ -85,6 +92,25 @@ ScriptClass CompositeTypeProvider {
             'Complex' {
                 (GetComplexTypeSchemas).Keys
                 break
+            }
+        }
+    }
+
+    function UpdateTypeIndexes($indexes, $typeClasses) {
+        $targetClasses = $typeClasses | where { $_ -in @('Entity', 'Complex') }
+
+        if ( $targetClasses ) {
+            foreach ( $index in $indexes ) {
+
+                if ( 'Entity' -in $targetClasses ) {
+                    $entitySchemas = GetEntityTypeSchemas
+                    __UpdateTypeIndex $index $entitySchemas Entity
+                }
+
+                if ( 'Complex' -in $targetClasses ) {
+                    $complexSchemas = GetComplexTypeSchemas
+                    __UpdateTypeIndex $index $complexSchemas Complex
+                }
             }
         }
     }
@@ -178,6 +204,43 @@ ScriptClass CompositeTypeProvider {
         }
 
         $nativeSchema
+    }
+
+    function __UpdateTypeIndex($index, $schemas, $typeClass) {
+        write-progress -id 1 -activity "Updating search index '$($index.IndexedField)' for type class '$typeClass'" -status 'In progress'
+        foreach ( $typeId in $schemas.Keys ) {
+            $nativeSchema = $schemas[$typeId]
+
+            switch ( $index.IndexedField ) {
+                'Name' {  $index |=> Add $typeId $typeId $typeClass }
+                'Property' {
+                    if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
+                        foreach ( $property in $nativeSchema.Schema.property ) {
+                            $index |=> Add $property.Name $typeId $typeClass
+                        }
+                    }
+                }
+                'NavigationProperty' {
+                    if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
+                        foreach ( $navigationProperty in $nativeSchema.Schema.navigationproperty ) {
+                            $index |=> Add $navigationProperty.Name $typeId $typeClass
+                        }
+                    }
+                }
+                'Method' {
+                    $methodSchemas = GetMethodSchemasForType $typeId
+                    if ( $methodSchemas ) {
+                        write-progress -id 2 -activity "Updating search index 'method' for type '$typeId'" -status 'In progress'
+                        foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
+                            $index |=> Add $nativeMethodSchema.Name $typeId $typeClass
+                        }
+                    }
+                }
+                default {
+                    throw "Unknown field name '$($index.IndexedField)'"
+                }
+            }
+        }
     }
 
     static {

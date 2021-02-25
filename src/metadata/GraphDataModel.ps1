@@ -91,7 +91,11 @@ ScriptClass GraphDataModel {
             __AddMethodBindingsFromMethodSchemas $functions
         }
 
-        $this.methodBindings[$typeName]
+        $bindings = $this.methodBindings[$typeName]
+
+        if ( $bindings ) {
+            $bindings.Distinct.Values
+        }
     }
 
     function GetEntityTypes {
@@ -236,16 +240,41 @@ ScriptClass GraphDataModel {
 
     function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
         if ( $methodSchemas ) {
-                 $methodSchemas | foreach { $methodSchema = $_.Schema; $methodSchema.parameter | where name -eq bindingParameter | foreach { (__AddMethodBinding $_.type $methodSchema) } }
+            # Assume that the first parameter is actually the binding parameter -- it is usually,
+            # but not always, named 'bindingParameter'
+            foreach ( $methodSchema in $methodSchemas ) {
+                $nativeSchema = $methodSchema.Schema
+                if ( ( $nativeSchema | gm parameter -erroraction ignore ) -and $nativeSchema.parameter) {
+                    $bindingParameter = $nativeSchema.parameter | where name -eq 'bindingParameter' | select -first 1
+                    if ( ! $bindingParameter ) {
+                        $bindingParameter = $nativeSchema.parameter | select -first 1
+                    }
+
+                    if ( $bindingParameter ) {
+                        __AddMethodBinding $bindingParameter.type $nativeSchema
+                    }
+                }
+            }
         }
     }
 
     function __AddMethodBinding($typeName, $methodSchema) {
         $unaliasedName = UnaliasQualifiedName $typeName
         if ( $this.methodBindings[$unaliasedName] -eq $null ) {
-            $this.methodBindings[$unaliasedName] = @()
+            $this.methodBindings[$unaliasedName] = @{Distinct=@{};All=@()}
         }
 
-        $this.methodBindings[$unaliasedName] += $methodSchema
+        # TODO: Understand this strange behavior seen in real metadata.
+        # This covers a strange case -- it turns out that in 2021-02-22,
+        # driveItem has not one, but two function elements for getactivitybyinterval.
+        # The only difference is that one has no parameters, the other one does.
+        # From documentation (https://docs.microsoft.com/en-us/graph/api/itemactivitystat-getactivitybyinterval?view=graph-rest-1.0&tabs=http),
+        # there is nothing special about this function that would warrant such an odd
+        # representation in the schema. The current theory is that the second instance,
+        # which is the one that has the parameters, is the "real" instance, the first
+        # is some strange schema generation artifact, possibly one that is ignored by
+        # Microsoft Graph in some sort of "last writer wins" behavior.
+        $this.methodBindings[$unaliasedName]['Distinct'][$methodSchema.Name] = $methodSchema
+        $this.methodBindings[$unaliasedName]['All'] += $methodSchema
     }
 }

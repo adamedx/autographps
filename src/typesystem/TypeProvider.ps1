@@ -37,6 +37,13 @@ ScriptClass TypeProvider {
         $this.derived |=> GetSortedTypeNames $typeClass
     }
 
+    function UpdateTypeIndexes($indexes, $typeClasses) {
+        if ( ! $this.derived ) {
+            throw "Abstract class '$($this.scriptclass.classname)' may not be directly instantiated"
+        }
+        $this.derived |=> UpdateTypeIndexes $indexFields
+    }
+
     static {
         . {}.Module.NewBoundScriptBlock($::.TypeSchema.EnumScript)
 

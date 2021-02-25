@@ -198,6 +198,53 @@ Describe 'The Get-GraphType command' {
         It "Should be able to return all types in the newer aliased v1 metadata" {
             { GetAllTypes } | Should Not Throw
         }
+
+        # This remainder of this block includes tests for other commands because
+        # this speeds things up -- initializing a separate context (presumably in
+        # a different file) would duplicate the slow initialization speed required
+        # for these tests.
+        It "Should get the correct statistics from Get-GraphStatistics" {
+            $statistics = Get-GraphStatistics
+
+            $statistics.ComplexPropertyCount | Should Be 1145
+            $statistics.ComplexTypeCount | Should Be 327
+            $statistics.EntityMethodCount | Should Be $null
+            $statistics.EntityPropertyCount | Should Be 2348
+            $statistics.EntityRelationshipCount | Should Be 398
+            $statistics.EntityTypeCount | Should Be 334
+            $statistics.EnumerationTypeCount | Should Be 188
+            $statistics.EnumerationValueCount | Should Be 1078
+            $statistics.GraphName | Should Be 'v1.0'
+        }
+
+        It "Should get the correct detailed statistics from Get-GraphStatistics when the -Detailed parameter is specified" {
+            $statistics = Get-GraphStatistics -Detailed
+
+            $statistics.ComplexPropertyCount | Should Be 1145
+            $statistics.ComplexTypeCount | Should Be 327
+            $statistics.EntityMethodCount | Should Be 649
+            $statistics.EntityPropertyCount | Should Be 2348
+            $statistics.EntityRelationshipCount | Should Be 398
+            $statistics.EntityTypeCount | Should Be 334
+            $statistics.EnumerationTypeCount | Should Be 188
+            $statistics.EnumerationValueCount | Should Be 1078
+            $statistics.GraphName | Should Be 'v1.0'
+        }
+
+        It "Should return the correct number of methods via Get-GraphMethod for driveItem despite the function getActivitiesByInterval binding to it twice in the schema" {
+            $expectedMethods = @'
+[{"Name":"checkin","MethodType":"Action"},{"Name":"checkout","MethodType":"Action"},{"Name":"copy","MethodType":"Action"},{"Name":"createLink","MethodType":"Action"},{"Name":"createUploadSession","MethodType":"Action"},{"Name":"delta","MethodType":"Function"},{"Name":"getActivitiesByInterval","MethodType":"Function"},{"Name":"invite","MethodType":"Action"},{"Name":"preview","MethodType":"Action"},{"Name":"search","MethodType":"Function"}]
+'@ | convertfrom-json
+
+            $actualMethods = Get-GraphMethod -typename driveItem
+
+            $actualMethods.length | Should Be $expectedMethods.length
+
+            for ( $methodIndex = 0; $methodIndex -lt $expectedMethods.length; $methodIndex++ ) {
+                $actualMethods[$methodIndex].Name | Should Be $expectedMethods[$methodIndex].Name
+                $actualMethods[$methodIndex].MethodType | Should Be $expectedMethods[$methodIndex].MethodType
+            }
+        }
     }
 
     Context 'When invoked using v1 metadata without namespace aliases (i.e. deprecated format)' {

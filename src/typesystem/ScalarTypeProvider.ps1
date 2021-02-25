@@ -13,14 +13,18 @@
 # limitations under the License.
 
 . (import-script TypeSchema)
+. (import-script TypeIndex)
 
 ScriptClass ScalarTypeProvider {
     $base = $null
     $primitiveDefinitions = $null
     $enumerationDefinitions = $null
     $primitiveNames = $null
+    $indexes = $null
 
     function __initialize($graph) {
+        $this.indexes = $null
+
         $this.base = new-so TypeProvider $this $graph
 
         LoadEnumerationTypeDefinitions
@@ -56,6 +60,62 @@ ScriptClass ScalarTypeProvider {
             'Enumeration' {
                 $this.enumerationDefinitions.keys
                 break
+            }
+        }
+    }
+
+    function GetTypeIndexes([string[]] $indexFields, [string[]] $typeClasses) {
+        # Note that we initialize all indexes as well as the only supported
+        # type class, even if they are not asked for at the end we do
+        # filter for only the requested indexes
+        if ( 'Enumeration' -in $typeClasses -and ! $this.indexes ) {
+            $nameIndex = new-so TypeIndex Name
+            $propertyIndex = new-so TypeIndex Property
+
+            foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
+                $enumerationDefinition = $this.enumerationDefinitions[$typeId]
+                $nameIndex |=> Add $typeId $typeId Enumeration
+                foreach ( $property in $enumerationDefinition.Properties ) {
+                    $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
+                }
+            }
+
+            $this.indexes = $nameIndex, $propertyIndex
+
+            foreach ( $index in $this.indexes ) {
+                $index |=> SetContext TypeClass Enumeration
+            }
+        }
+
+        # Be sure to return only the indexes actually requested
+        if ( $this.indexes ) {
+            $this.indexes.Values | where IndexedField -in $indexFields
+        }
+    }
+
+    function UpdateTypeIndexes($indexes, [string[]] $typeClasses) {
+        if ( 'Enumeration' -in $typeClasses -and ! $this.indexes ) {
+            $nameIndex = $indexes | where IndexedField -eq Name
+            $propertyIndex = $indexes | where IndexedField -eq Property
+
+            if ( $nameIndex -or $propertyIndex ) {
+                $indexNames = @()
+                $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
+                $indexNameDescription = $indexNames -join ','
+                write-progress -id 1 -activity "Updating search indexes '$indexNameDescription' for enumeration types" -status 'In progress'
+            }
+
+            foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
+                $enumerationDefinition = $this.enumerationDefinitions[$typeId]
+                if( $nameIndex ) {
+                    $nameIndex |=> Add $typeId $typeId Enumeration
+                }
+
+                if ( $propertyIndex ) {
+                    foreach ( $property in $enumerationDefinition.Properties ) {
+                        $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
+                    }
+                }
             }
         }
     }
