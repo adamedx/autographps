@@ -77,7 +77,15 @@ ScriptClass GraphManager {
             # Finally set the location from which the graph's metadata is retrieved
             # to reflect what is being used in this update.
             $updateSource = if ( $metadataSourceOverridePath ) {
-                $metadataSourceOverridePath
+                $scheme = ( [Uri] $metadataSourceOverridePath ).scheme
+                if ( ! $scheme -or $scheme -eq 'file' ) {
+                    $metadataFileItem = get-item $metadataSourceOverridePath -erroraction ignore
+                    if ( $metadataFileItem ) {
+                        $metadataFileItem.FullName
+                    }
+                } else {
+                    $metadataSourceOverridePath
+                }
             } else {
                 $graphEndpoint.tostring().trimend('/'), $context.version, '$metadata' -join '/'
             }

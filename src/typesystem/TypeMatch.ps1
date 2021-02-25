@@ -62,7 +62,7 @@ ScriptClass TypeMatch {
         foreach ( $criterionKey in $other.Criteria.Keys ) {
             $existingCriteria = $this.Criteria[$criterionKey]
             if ( ! $existingCriteria ) {
-                $this.Criteria.Add($criterionKey, [PSCustomObject] @{Name=$criterionKey; IsExactMatch = $other.isExactMatch})
+                $this.Criteria.Add($criterionKey, [PSCustomObject] @{Name=$criterionKey; IsExactMatch = $false})
             }
         }
 

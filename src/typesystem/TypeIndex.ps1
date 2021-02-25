@@ -86,7 +86,7 @@ ScriptClass TypeIndex {
     function FindStartsWith($searchString, $typeClasses) {
         $normalizedSearchString = $searchString.tolower()
 
-        $matchedValues = $this.index.keys | where { $_.StartsWith($normalizedSearchString) }
+        $matchedValues = $this.index.keys | where { $_.tolower().StartsWith($normalizedSearchString) }
 
         if ( $matchedValues ) {
             foreach ( $matchingvalue in $matchedValues ) {
