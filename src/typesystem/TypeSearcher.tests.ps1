@@ -55,38 +55,37 @@ Describe 'The TypeSearcher class' {
         }
 
         It "Should return 13 matches for the entity type user by name index with a contains match" {
-            $searchResults = $typeManager |=> SearchTypes User Name Entity Contains | sort-object score -descending
-            $matchedTypesSortedByScore = @('microsoft.graph.user'
-                              'microsoft.graph.outlookuser'
-                              'microsoft.graph.usersettings'
-                              'microsoft.graph.educationuser'
-                              'microsoft.graph.deviceconfigurationuseroverview'
-                              'microsoft.graph.devicecomplianceuseroverview'
-                              'microsoft.graph.userinstallstatesummary'
-                              'microsoft.graph.manageddevicemobileappconfigurationusersummary'
-                              'microsoft.graph.devicecomplianceuserstatus'
-                              'microsoft.graph.manageddevicemobileappconfigurationuserstatus'
-                              'microsoft.graph.planneruser'
-                              'microsoft.graph.deviceconfigurationuserstatus'
-                              'microsoft.graph.useractivity')
+            $searchResults = $typeManager |=> SearchTypes User Name Entity Contains
+            $matchedTypes = @{'microsoft.graph.user' = 33
+                                           'microsoft.graph.devicecomplianceuseroverview' = 17
+                                           'microsoft.graph.devicecomplianceuserstatus' = 17
+                                           'microsoft.graph.deviceconfigurationuseroverview' = 17
+                                           'microsoft.graph.deviceconfigurationuserstatus' = 17
+                                           'microsoft.graph.educationuser' = 17
+                                           'microsoft.graph.manageddevicemobileappconfigurationuserstatus' = 17
+                                           'microsoft.graph.manageddevicemobileappconfigurationusersummary' = 17
+                                           'microsoft.graph.outlookuser' = 17
+                                           'microsoft.graph.planneruser' = 17
+                                           'microsoft.graph.useractivity' = 17
+                                           'microsoft.graph.userinstallstatesummary' = 17
+                                           'microsoft.graph.usersettings' = 17}
 
-            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
-            $typeIndex = 0
-            $searchResults | where { $_.MatchedTypeName -in $matchedTypesSortedByScore[$typeIndex++] } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $searchResults | where MatchedTypeClass -eq Entity | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
-            $searchResults | where { $_.Criteria.count -eq 1 -and $_.Criteria.keys[0] -eq 'Name' } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | where { $matchedTypes[$_.MatchedTypeName] -eq $_.score } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
+
+            $searchResults | where MatchedTypeClass -eq Entity | measure-object | select -expandproperty count | Should Be $matchedTypes.count
+            $searchResults | where { $_.Criteria.count -eq 1 -and $_.Criteria.keys[0] -eq 'Name' } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
         }
 
         It "Should return 3 types that can be sorted by score, one complex, one entity, one enumeration, when searching name index for tone for any type class with contains match" {
             $searchResults = $typeManager |=> SearchTypes Tone Name Enumeration, Complex, Entity Contains
-            $matchedTypesSortedByScore = @('microsoft.graph.tone'
-                              'microsoft.graph.toneinfo'
-                              'microsoft.graph.subscribetotoneoperation')
-            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $matchedTypes = @{'microsoft.graph.tone' = 33
+                              'microsoft.graph.toneinfo' = 17
+                              'microsoft.graph.subscribetotoneoperation' = 17}
+            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $typeIndex = 0
-            $searchResults | sort Score -descending | where { $_.MatchedTypeName -eq $matchedTypesSortedByScore[$typeIndex++] } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | where { $matchedTypes[$_.MatchedTypeName] -eq $_.score } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
             'Entity' -in $searchResults.MatchedTypeClass | Should Be $true
             'Complex' -in $searchResults.MatchedTypeClass | Should Be $true
@@ -94,30 +93,29 @@ Describe 'The TypeSearcher class' {
 
             $searchResults | where {
                 $_.Criteria.count -eq 1 -and $_.Criteria.keys[0] -eq 'Name'
-            } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
         }
 
         It "Should return all 3 type classes for types sortable by score when searching for mailbox in all 3 typeclasses with name and property and startswith match" {
-            $searchResults = $typeManager |=> SearchTypes mailbox Name, Property Enumeration, Complex, Entity StartsWith | sort-object score -descending
-            $matchedTypesSortedByScore = @('microsoft.graph.mailboxsettings'
-                              'microsoft.graph.user'
-                              'microsoft.graph.mailtipstype'
-                              'microsoft.graph.mailtips')
-            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults = $typeManager |=> SearchTypes mailbox Name, Property Enumeration, Complex, Entity StartsWith | sort-object matchedtypename | sort-object score -descending
+            $matchedTypes = @{'microsoft.graph.mailboxsettings' = 17
+                              'microsoft.graph.user' = 9
+                              'microsoft.graph.mailtipstype' = 9
+                              'microsoft.graph.mailtips' = 9}
+            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $typeIndex = 0
-            $searchResults | where { $_.MatchedTypeName -eq $matchedTypesSortedByScore[$typeIndex++] } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | where { $matchedTypes[$_.MatchedTypeName] -eq $_.score } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $searchResults[0].MatchedTypeClass -eq 'Complex' | Should Be $true
-            $searchResults[1].MatchedTypeClass -eq 'Entity' | Should Be $true
-            $searchResults[2].MatchedTypeClass -eq 'Enumeration' | Should Be $true
-            $searchResults[3].MatchedTypeClass -eq 'Complex' | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailboxsettings' | select -expandproperty MatchedTypeClass) -eq 'Complex' | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.user' | select -expandproperty MatchedTypeClass) -eq 'Entity' | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailtipstype' | select -expandproperty MatchedTypeClass) -eq 'Enumeration' | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailtips' | select -expandproperty MatchedTypeClass) -eq 'Complex' | Should Be $true
 
-            $searchResults[0].Criteria['Name'] -ne $null | Should Be $true
-            $searchResults[1].Criteria['Property'] -ne $null | Should Be $true
-            $searchResults[2].Criteria['Property'] -ne $null | Should Be $true
-            $searchResults[3].Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailboxsettings').Criteria['Name'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.user').Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailtipstype').Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.mailtips').Criteria['Property'] -ne $null | Should Be $true
         }
 
         It "Should match exactly 'sendMail' when searching Index method for all 3 typeclasses using StartsWith" {
@@ -128,26 +126,25 @@ Describe 'The TypeSearcher class' {
         }
 
         It "Should return 6 methods sortable by score when searching for send method across name, property, method for typeclass entity using StartsWith" {
-            $matchedTypesSortedByScore = @('microsoft.graph.message'
-                              'microsoft.graph.inferenceclassificationoverride'
-                              'microsoft.graph.invitation'
-                              'microsoft.graph.post'
-                              'microsoft.graph.notificationmessagetemplate'
-                              'microsoft.graph.user')
-            $searchResults = $typeManager |=> SearchTypes send Name, property, method Entity StartsWith | sort-object score -descending
+            $matchedTypes = @{'microsoft.graph.message' = 12
+                              'microsoft.graph.inferenceclassificationoverride' = 9
+                              'microsoft.graph.invitation' = 9
+                              'microsoft.graph.post' = 9
+                              'microsoft.graph.notificationmessagetemplate' = 5
+                              'microsoft.graph.user' = 5}
+            $searchResults = $typeManager |=> SearchTypes send Name, property, method Entity StartsWith | sort-object matchedtypename | sort-object score -descending
 
-            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
-            $typeIndex = 0
-            $searchResults | where { $_.MatchedTypeName -eq $matchedTypesSortedByScore[$typeIndex++] } | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | measure-object | select -expandproperty count | Should Be $matchedTypes.count
+            $searchResults | where { $matchedTypes[$_.MatchedTypeName] -eq $_.score } | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $searchResults | where MatchedTypeClass -eq Entity | measure-object | select -expandproperty count | Should Be $matchedTypesSortedByScore.length
+            $searchResults | where MatchedTypeClass -eq Entity | measure-object | select -expandproperty count | Should Be $matchedTypes.count
 
-            $searchResults[0].Criteria['Property'] -ne $null -and $searchResults[0].Criteria['Method'] -ne $null | Should Be $true
-            $searchResults[1].Criteria['Property'] -ne $null | Should Be $true
-            $searchResults[2].Criteria['Property'] -ne $null | Should Be $true
-            $searchResults[3].Criteria['Property'] -ne $null | Should Be $true
-            $searchResults[4].Criteria['Method'] -ne $null | Should Be $true
-            $searchResults[5].Criteria['Method'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.message').Criteria['Property'] -ne $null -and $searchResults[0].Criteria['Method'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.inferenceclassificationoverride').Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.invitation').Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.post').Criteria['Property'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.notificationmessagetemplate').Criteria['Method'] -ne $null | Should Be $true
+            ($searchResults | where MatchedTypeName -eq 'microsoft.graph.user').Criteria['Method'] -ne $null | Should Be $true
         }
     }
 }
