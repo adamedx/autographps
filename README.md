@@ -19,7 +19,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux and MacOS, PowerShell 6.1.2 and higher are supported.
 
 ## Installation
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
@@ -241,20 +241,20 @@ $newContact | Remove-GraphItem
 
 Subsequent attempts to retrieve the entity from the Graph by identifier or URI using commands such as `Get-GraphItem` or `Get-GraphResource` will fail because the entity has been deleted by `Remove-GraphItem`.
 
-##### Invoke-GraphRequest handles all the REST
+##### Invoke-GraphApiRequest handles all the REST
 
-What if you can't find exactly the command you need to interact with the Graph? The `Invoke-GraphRequest` is a general-purpose command that, with the right parameters, can emulate any of the other commands that interact with Graph. It is a generic REST client capable of issuing any valid request to the Graph. You can use it if you run into a scenario that isn't covered by the other commmands. In general it may be useful if you're already using REST to interact with the Graph.
+What if you can't find exactly the command you need to interact with the Graph? The `Invoke-GraphApiRequest` is a general-purpose command that, with the right parameters, can emulate any of the other commands that interact with Graph. It is a generic REST client capable of issuing any valid request to the Graph. You can use it if you run into a scenario that isn't covered by the other commmands. In general it may be useful if you're already using REST to interact with the Graph.
 
 Here's one example that issues the same request as in the earlier example for `New-GraphItem':
 
 ```powershell
 $contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest -Method POST me/contacts -Body $contactData
+Invoke-GraphApiRequest -Method POST me/contacts -Body $contactData
 ```
 
-As its name suggests, the `Method` parameter of `Invoke-GraphRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphRequest`, even if it trades off simplicity.
+As its name suggests, the `Method` parameter of `Invoke-GraphApiRequest` lets you specify any **REST** method, i.e. `PUT`, `POST`, `PATCH`, and `DELETE`. Thus `Invoke-GraphApiRequest` is capable of executing any capability of Graph and can be considered *the universal Graph command.* The example given here is less readable than the `New-GraphObject` / `New-GraphItem` example and requires you to know more about the underlying Graph protocol (e.g that creation of data usually means you must use the `POST` method), but it is consistent with the idea that if you can't find the command you need, you can always find a way to get things working with `Invoke-GraphApiRequest`, even if it trades off simplicity.
 
-Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
+Note that the `Body` parameter allows you to specify the JSON body of the request which typically describes the information to write. In the example above, rather than specify the JSON directly, we chose to express it as a PowerShell `HashTable` object. When the `Body` parameter is not a JSON string, `Invoke-GraphApiRequest` converts whatever type you specify to JSON for you. The way the `HashTable` was structured in this example allowed it to be serialized into exactly the JSON format required to `POST` a `contact` object to `/me/contacts` as a well-formed request.
 
 #### So how do I find all the URIs and JSON for Graph?
 
@@ -284,7 +284,7 @@ https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/us
 #### AutoGraphPS tips
 Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
-**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
+**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
 **2. Use tab-completion to learn and save time:** Many AutoGraphPS commands, including `Get-GraphResource`, `gls`, and `gcd` will tab-complete command parameters just like many other popular PowerShell commands do. URIs, resource names, and permission names are just some of the kinds of parameters that AutoGraphPS will tab-complete for you to reduce the time needed to issue a command and also clue you in on when you're potentially providing invalid input.
 
@@ -348,14 +348,14 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
-| Invoke-GraphRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
+| Invoke-GraphApiRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
 | Invoke-GraphMethod        | Executes a method on a given Graph object specified by Type and Id or URI                               |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
 | New-GraphMethodParameter  | Creates a local representation of a Graph type for the specified parameter of a specified Graph method  |
-| New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphRequest` |
+| New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphApiRequest` |
 | New-GraphItem     | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |

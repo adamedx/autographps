@@ -24,6 +24,7 @@ ScriptClass TypeHelper {
             Namespace = 'Namespace'
             TypeClass = 'Class'
             BaseType = 'BaseType'
+            DefaultUri = 'DefaultUri'
             Properties = 'Properties'
             RelationshipNames = 'PropertyNames'
             Relationships = 'NavigationProperties'
@@ -36,7 +37,7 @@ ScriptClass TypeHelper {
             __RegisterDisplayType
         }
 
-        function ToPublic( $privateObject ) {
+        function ToPublic( $privateObject, $defaultUri ) {
             $properties = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)).Result
             $relationships = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)).Result
             $methods = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)).Result
@@ -48,6 +49,7 @@ ScriptClass TypeHelper {
                 Namespace = $privateObject.($this.displayProperties.Namespace)
                 TypeClass = $privateObject.($this.displayProperties.TypeClass)
                 BaseType = $privateObject.($this.displayProperties.BaseType)
+                DefaultUri = $defaultUri
                 RelationshipNames = $relationshipNames
                 IsComposite = $privateObject.($this.displayProperties.IsComposite)
                 NativeSchema = $privateObject.($this.displayProperties.NativeSchema)
@@ -63,7 +65,7 @@ ScriptClass TypeHelper {
         function __RegisterDisplayType {
             remove-typedata -typename $this.DisplayTypeName -erroraction ignore
 
-            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'RelationshipNames')
+            $coreProperties = @('TypeId', 'TypeClass', 'BaseType', 'DefaultUri', 'Relationships', 'Properties', 'Methods')
 
             $displayTypeArguments = @{
                 TypeName = $this.DisplayTypeName

@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
 * Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
@@ -354,6 +355,7 @@
 * Use Start-ThreadJob instead of Start-Job for background metadata processing
 * pipeline support for get-graphtype
 * Graph statistics command
+* Allow types to be piped to show-graphhelp from find-graphtype
 
 ### Postponed
 
@@ -375,6 +377,7 @@
 * Rename graphscope to graphname on get-graphuriinfo
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
+* Make show-graphhelp support pipeline
 
 ### Abandoned
 
