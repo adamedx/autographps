@@ -109,7 +109,11 @@ function Get-GraphType {
                 }
             }
 
-            $result = $::.TypeHelper |=> ToPublic $type
+            $defaultUri = if ( $type.Class -eq 'Entity' ) {
+                $::.TypeUriHelper |=> DefaultUriForType $targetContext $type.TypeId
+            }
+
+            $result = $::.TypeHelper |=> ToPublic $type $defaultUri
 
             if ( ! $TransitiveMembers.IsPresent ) {
                 $result | sort-object name

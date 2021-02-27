@@ -49,17 +49,19 @@ will not prompt for credentials but immediately return details about your organi
 
 ### Expanding your (permission) scope
 
-The commands above are trivial demonstrations of Graph. In particular, they only require the Graph permission known as `User.Read`. More interesting explorations of the Graph require that you request additional [permissions](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) when you connect to the Graph.
+The commands above are trivial demonstrations of Graph. In particular, they only require the Graph permission known as `User.Read`. More interesting explorations of the Graph require that you request additional [permissions](https://docs.microsoft.com/en-us/graph/permissions-reference) when you connect to the Graph.
 
-Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive* and your list of personal contacts:
+Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive*, your mail, and your list of personal contacts:
 
 ```powershell
 Connect-GraphApi User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
-This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) whenever you're accessing a new part of the Graph.
+This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference) whenever you're accessing a new part of the Graph.
 
-In addition to the `Get-GraphResource` cmdlet which returns data as a series of flat lists, you can use `Get-GraphResourceWithMetadata` or its alias `gls` to retrieve your personal contacts:
+> Note that there are more than 500 permissions (and counting). If you're not sure which permission you need to request with `Connect-GraphApi`, (i.e. `Files.Read`, `Mail.Read`, etc.), you can use the `Find-GraphPermissions` to find permissions and their descriptions by specifying a search keyword.
+
+Now you can issue commands to read contacts, mail, and files. In addition to the `Get-GraphResource` cmdlet which returns data as a series of flat lists, you can use `Get-GraphResourceWithMetadata` or its alias `gls` to retrieve your personal contacts:
 
 ```powershell
 PS> Get-GraphResourceWithMetadata me/contacts
@@ -82,7 +84,7 @@ Get-GraphResource me/contacts/XMKDFX1
 
 which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphResourceWithMetadata` (alias `gls`) with a `Select` for the `Content` property on the first result:
 
-```
+```powershell
 PS> gls me | select -expandproperty content -first 1
 
 @odata.etag          : W/"EQAAABYAAAD5jm8FcN/LSI12IpUPSDUMAADaa2EQ"
@@ -116,7 +118,7 @@ $mycontacts = gls me/contacts
 
 However, even if you neglect to make such an assignment, the results of the last invoked `Get-*Item` cmdlet is available in the `$LASTGRAPHITEMS` variable:
 
-```
+```powershell
 PS> gls me/drive
 
 Info Type      Preview  Name
@@ -147,7 +149,7 @@ This makes the `Get-GraphResourceWithMetadata` / `gls` and `Get-GraphChildItem` 
 
 You may have noticed that after the first time you invoked `gls`, your PowerShell prompt displayed some additional information:
 
-```
+```powershell
 [starchild@mothership.io] /v1.0:/
 PS>
 ```
@@ -156,7 +158,7 @@ By default, AutoGraphPS automatically adds this to your path on your first use o
 
 With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
 
-```
+```powershell
 gcd me/drive/root/children
 [starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gls
@@ -171,8 +173,7 @@ t +> driveItem Spacetime     13J3DDF
 
 If you'd like to know what's "inside" of Recipes, you can `gcd` and `gls` again:
 
-```
-
+```powershell
 [starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gcd me/drive/root/children/Recipes
 [starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
@@ -204,13 +205,13 @@ Note that as in the file system case, you can save yourself a lot of typing of l
 
 Of course, you can always use absolute Uri's that are independent of your current location, just start the Uri with `/`, e.g.
 
-```
+```powershell
 gls /me/contacts
 ```
 
 which returns the same result regardless of your current location, for which you can also query using `get-graphlocation`, aka `gwd` (like `pwd` in the file system):
 
-```
+```powershell
 gwd
 
 Path
@@ -270,7 +271,7 @@ gls me/contacts -skip 3 -first 3
 
 By default, Graph does not return all properties of an object -- it returns those deemed most likely to be useful without retrieving every field to avoid excessive network traffic. For example, the query below for a given user is missing the `department` property in the response:
 
-```
+```powershell
 ggr /users/starchild@mothership.io
 
 id                : 82f53da9-b996-4227-b268-c20564ceedf7
@@ -287,7 +288,7 @@ displayName       : Starchild Okorafor
 
 To fix this, use `-Property` to project the exact set of fields you're interested in. This has the benefit of allowing you to reduce network consumption as well, which is most useful when handling large result sets:
 
-```
+```powershell
 ggr me -property displayName, department, mail, officeLocation
 
 @odata.context : https://graph.microsoft.com/v1.0/$metadata#users(displayName,department,mail,officeLocation)
@@ -306,19 +307,19 @@ Particularly when retrieving large result sets, it is important to be able to sp
 
 The following example uses the `-Sort` option to retrieve the 10 oldest messages -- note that we use PowerShell's client-side select cmdlet to limit the displayed fields:
 
-```
+```powershell
 ggr /me/messages -first 10 -Sort receivedDateTime | select ReceivedDateTime, Importance, Subject
 ```
 
 However, to retrieve the 10 newest high-importance items, you should specify the `-Descending` option, which means that all fields specified through `OrderBy` will have a descending order by default:
 
-```
+```powershell
 ggr /me/messages -first 10 -Sort receivedDateTime, importance -Descending | select ReceivedDateTime, Importance, Subject
 ```
 
 What if you want to sort using ascending order for one field, and descending for another? You can specify a PowerShell `HashTable` to identify sort directions for specific fields. This lets you find the oldest high-importance items:
 
-```
+```powershell
 ggr /me/messages -first 10 -Sort @{receivedDateTime=$false;importance=$true} | select ReceivedDateTime, Importance, Subject
 ```
 
@@ -342,14 +343,14 @@ The following examples demonstrate common usage of these commands in creating an
   * What properties of the resource are **required** and must be set at creation time? You can find this information in the searchable / browseable Graph API reference; you can use the `Show-GraphHelp` command to quickly access the documentation for a resource if you know its name (e.g. `Show-GraphHelp contact`).
   * What are the other (non-required) properties you'd like to configure? The commands will automatically complete the property name parameters if you've already specified the resource name or URI to help you find them. You can also use `Get-GraphType <resourcename> -Members` to get a list of the property names and their data types.
 * When modifying an existing resource
-  * As in create, what is the name of the resource you want to modify
-  * And alternatively, what is resource's URI, e.g. `users/user@domain.com` for a user, `me/contacts/<contactid>` for a contact
+  * As in create, what is the name of the resource you want to modify?
+  * And alternatively, what is the resource's URI, e.g. `users/user@domain.com` for a user, `me/contacts/<contactid>` for a contact
   * What are the names of the properties you want to modify and what are their types? Just like the create use case, parameter completion, `Get-GraphType -Members` and `Show-GraphHElp` to find out.
 
 With this information, you can use a single command to create or update the resource -- just supply it with
 
-* For create: resource name and required property values OR parent URI and required property values
-* For modify: resource name and ID and the property values to update OR resource URI and the property values
+* For create: resource name and required property values **OR** parent URI and required property values
+* For modify: resource name and ID and the property values to update **OR** resource URI and the property values
 
 Lastly, while in many cases the property values are simple "primitive" types like strings and integers that can be easily expressed as command parameters, they may also themselves be nested "complex" data structures that contain their own properties. If you've obtained the type name of that property from the documentation (remember `Show-GraphHelp`) or `Get-GraphType`, you can specify that name to the `New-GraphObject` command with the `TypeClass Complex` parameter, i.e.:
 
@@ -397,7 +398,7 @@ When the command is issued, a request is made to Graph to create the security gr
 
 Since the value was assigned to the variable `$newGroup`, it can be used in subsequent script operations, or as in the remainder of this example, inspected simply by evaluating it:
 
-```
+```powershell
 PS> $newGroup | select createdDateTime, displayName, mailNickname
 
 createdDateTime      displayName    mailNickname
@@ -717,23 +718,277 @@ $me | Invoke-GraphMethod -methodname sendmail -ParameterObject $sendMailParamete
 
 In this case, we invoke the method `sendMail` on the previously retrieved `$me` object by passing `$me` in the pipeline. The constructed parameters are specified by the `ParameterObject` parameter of `Invoke-GraphMethod`.
 
-### Advanced queries with `-Query`
+### Discovering resources, methods, URIs, and documentation
 
-The `-Query` option lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
+All of the rich Microsoft Graph operations described here, even simple read operations, require you to have *some* minimum amount of knowledge, e.g. the URI or the "type" of the resource you'd like to access. You will find all of the required information in the Microsoft Graph documentation. Fortunately, you don't have to spend your time poring over manuals: *AutoGraph provides the tools that often eliminate the need to leave PowerShell to read documentation, or at least help you find the right docs for your scenario.*
+
+The commands described below are very useful when you know you want to use Microsoft Graph to do *something*, but you're not sure where to start.
+
+#### What is the name of the resource I need?
+
+In the Microsoft Graph documentation, the term "resource" is used to refer to any aspect of the Graph that is addressable by an identifier (whether a URI or non-URI) and that is capable of relating to or being related to by other resources. The OData specification upon which Microsoft Graph is currently defined at the protocol level refers to this same resource concept as an "entity type," and this latter terminology is mostly what you'll find in AutoGraphPS. Either way, resources / entity types are the key concepts exposed by Graph that form a cohesive model within and across the problem domains (e.g. security, communication, document management, etc.) that you understand. Once you understand the resource for your use case, you've unlocked your comprehension of a meaningful chunk of the Graph.
+
+Let's say you want to find a security group that has a specific name. Since you know you want to do something with a "group," you can look for resources related to "group" using the `Find-GraphType` command:
+
+```powershell
+Find-GraphGype group
+
+TypeClass TypeId                               Criteria MatchedTerms
+--------- ------                               -------- ------------
+Entity    microsoft.graph.group                {Name}   {microsoft.graph.calendargroup microsoft.graph.group microso...
+Entity    microsoft.graph.grouplifecyclepolicy {Name}   {microsoft.graph.calendargroup microsoft.graph.group microso...
+Entity    microsoft.graph.schedulinggroup      {Name}   {microsoft.graph.calendargroup microsoft.graph.group microso...
+```
+
+The output of `Find-GraphType` in this case is a list of types deemed "relevant" to the supplied search term `group`. The results are sorted by relevance, so the first item in the list can be treated as most likely to be the one you're looking for. The command contains several parameters that allow you to customize the criteria used to identify matches as well as the "fuzziness" of those matches.
+
+#### Now I know the resource, where are the docs so I can understand what it does?
+
+The `Show-GraphHelp` command launches a web browser with the web page displaying help for a resource specified by URI, an object returned as a response from the Graph API, and also the name of a type, i.e. Graph resource. Since the command takes input from the pipeline, the type can be supplied by the output of the `Find-GraphType` command we demonstrated above:
+
+```powershell
+Find-GraphGype group | Select-Object -First 1 | Show-GraphHelp
+```
+
+This command shows the help page for the first result in the output of the search for `group`, the result for `microsoft.graph.group`. Now you can read about the `group` resource to confirm that it is indeed the resource you need, and also find out more details about the operations that can be performed on the resource.
+
+#### What permissions do I need?
+
+The documentation for the resource *should* contain information describing the permissions you need to perform specific operations on the resource. If you don't already have the web-based documentation for the relevant operation in view, you can look for this information within your PowerShell session via the `Find-GraphPermission` command:
+
+```powershell
+Find-GraphPermission group
+
+Type      ConsentType Name                                    Description
+----      ----------- ----                                    -----------
+Delegated Admin       Group.Read.All                          Allows the app to list groups, and to read their prope...
+Delegated Admin       Group.ReadWrite.All                     Allows the app to create groups and read all group pro...
+AppOnly   Admin       Group.Read.All                          Allows the app to read group properties and membership...
+AppOnly   Admin       Group.ReadWrite.All                     Allows the app to create groups, read all group proper...
+```
+
+Using this output which includes a description of the permission, you can determine which permission applies to your scenario. Do you need write access, or just read? Are you accessing the resource using interactive delegated sign-in, or as part of a non-interactive background application? Once you've used those answers to narrow the list down to the least-privileged permission required for your scenario, you can request that permission using the `Connect-GraphApi` command so that your application is able to access the resource.
+
+#### Can I use PowerShell to look at the resource's documentation instead of a web browser?
+
+Currently, the resource's rich documentation, including examples, is available only the web browser and can be accessed via the `Show-GraphHelp` command. However, in many cases your focus is on understanding the structural properties, methods, or relationships between resources. This information about the types *is* available within PowerShell via several commands: `Get-GraphType`, `Get-GraphMember`, and `Get-GraphMethod`. For example, here is the output of `Get-GraphType` for the `group` resource identified earlier:
+
+```powershell
+Get-GraphType group
+
+TypeId        : microsoft.graph.group
+TypeClass     : Entity
+BaseType      : microsoft.graph.directoryObject
+DefaultUri    : /groups
+Relationships : {@{Parameters=; MethodType=; MemberType=Relationship; IsCollection=True; Name=appRoleAssignments;
+                TypeId=microsoft.graph.appRoleAssignment; ScriptClass=}, @{Parameters=; MethodType=;
+                TypeId=microsoft.graph.directoryObject; ScriptClass=}...}
+Properties    : {@{Parameters=; MethodType=; MemberType=Property; IsCollection=True; Name=assignedLabels;
+                TypeId=microsoft.graph.assignedLabel; ScriptClass=}, @{Parameters=; MethodType=; MemberType=Property;
+                Name=createdDateTime; TypeId=Edm.DateTimeOffset; ScriptClass=}...}
+Methods       : {@{Parameters=; MethodType=Action; MemberType=Method; IsCollection=False; Name=subscribeByMail;
+                MethodType=Action; MemberType=Method; IsCollection=False; Name=resetUnseenCount; TypeId=;
+                ScriptClass=}...}
+```
+
+The resulting object contains information such as the "default" URI, this case `/groups`,  under which instances of the `group` resource may be found. You can use `Select-Object` to project the `Relationships` field that shows the connections with other resources, the `Properties` field which gives the structure of the object, and the `Methods` field which returns all of the methods available to the object.
+
+
+#### Is there an easier way to see the properties?
+
+Yes -- the `Get-GraphMember` command which is similar to the widely utilized core PowerShell command `Get-Member` emits output that provides a streamlined representation of all of the members, including `Property`, `Relationship`, and `Method` members. To view just the structural properties, the `MemberType` parameter can be specified with the value `Property`:
+
+```powershell
+Get-GraphMember -TypeName group -MemberType Property
+
+Name                          MemberType TypeId                                      IsCollection
+----                          ---------- ------                                      ------------
+allowExternalSenders          Property   Edm.Boolean                                        False
+assignedLabels                Property   microsoft.graph.assignedLabel                       True
+assignedLicenses              Property   microsoft.graph.assignedLicense                     True
+...
+
+theme                         Property   Edm.String                                         False
+unseenCount                   Property   Edm.Int32                                          False
+visibility                    Property   Edm.String                                         False
+```
+
+For each property name the data type is given as well as whether it's a collection, and can save you a trip to the web browser.
+
+#### How do I understand the structure of a properties that aren't just strings or numbers?
+
+In the example above, the properties that are named without the `Edm` prefix are actually structured to definitions present in the API schema. They are typically nested structures, and you can simply use `Get-GraphMember` again along with the associated resource name (`TypeId` in acccordance to the output of `Get-GraphMember`) to find it:
+
+```powershell
+Get-GraphMember -TypeName assignedLicense -MemberType Property
+
+Name          MemberType TypeId   IsCollection
+----          ---------- ------   ------------
+disabledPlans Property   Edm.Guid         True
+skuId         Property   Edm.Guid        False
 
 ```
-gls /users -Filter "startsWith(mail, 'p')" -top 20
-gls /users -Query  "`$filter=startsWith(mail, 'p')&`top=20"
+
+This is useful both in understanding what to expect in terms of responses and also what you may need to supply in submitting requests that include these types. Note that simply using `New-GraphObject` to create an "empty" object can allow you to inspect an object representing the resource directly:
+
+```powershell
+$sample = New-GraphObject group -Recurse -SetDefaultValues
+$sample.licenseProcessingState
+
+state
+-----
 ```
 
-Note that `-Query` requires you to understand how to combine multiple query options via '&' and also how to make correct use of PowerShell escape characters so that OData tokens like `$top` which are preceded by the `$` character which is reserved as a variable prefix in PowerShell are taken literally instead of as the value of a PowerShell variable.
+It should be noted that when constructing resources to submit requests that create new resource instances or update them, the commands that do this actually simplify the specification of the structure. It's often unnecessary to know about every single property of a resource. See the earlier examples for `New-GraphItem`, `Set-GraphItemProperty`, and `New-GraphObject` for more details on how you can efficiently specify just the properties required to submit a resource as part of a request to Graph.
 
-While `-Query` may be more complicated to use, when AutoGraphPS's other query options do not support a particular Graph query feature, you still have a way to use Graph's full capabilities.
+#### I want the resource's URI so I can `gcd` to it and `gls` it
 
-For more details on how to construct this parameter, see the [MS Graph REST API documentation for queries](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters).
+If you are using PowerShell to browse resources exposed by the Graph, the documentation will explain the URIs under which you might find them. The `Get-GraphType` command exposes a `DefaultUri` field that provides a possible location where you might find the type, though not all types have a "default" URI:
+
+```powershell
+Get-GraphType group | Select-Object DefaultUri
+
+DefaultUri
+----------
+/groups
+
+gcd /groups
+gls
+```
+
+#### What other resources is it related to?
+The `Get-GraphMember` command's `MemberType` can be specified as `Relationship` to enumerate all of the relationships from this resource to other resources:
+
+```powershell
+Get-GraphMember -TypeName group -MemberType Relationship
+
+Name                     MemberType   TypeId                                          IsCollection
+----                     ----------   ------                                          ------------
+acceptedSenders          Relationship microsoft.graph.directoryObject                         True
+appRoleAssignments       Relationship microsoft.graph.appRoleAssignment                       True
+calendar                 Relationship microsoft.graph.calendar                               False
+
+...
+
+
+threads                  Relationship microsoft.graph.conversationThread                      True
+transitiveMemberOf       Relationship microsoft.graph.directoryObject                         True
+transitiveMembers        Relationship microsoft.graph.directoryObject                         True
+```
+
+#### Does the resource have interesting methods I can call?
+
+You can use `Get-GraphMember` again to view just `Method` members, but the specialized `Get-GraphMethod` command provides more focused output:
+
+```powershell
+Get-GraphMethod -TypenName group
+
+Name                          MethodType ReturnType                                                Parameters
+----                          ---------- ----------                                                ----------
+addFavorite                   Action     @{TypeId=; IsCollection=False}
+assignLicense                 Action     @{TypeId=microsoft.graph.group; IsCollection=False}       {@{Name=addLicenses; TypeId=microsoft.g...
+checkGrantedPermissionsForApp Action     @{TypeId=microsoft.graph.resourceSpecificPermissionGrant;
+removeFavorite                Action     @{TypeId=; IsCollection=False}
+renew                         Action     @{TypeId=; IsCollection=False}
+resetUnseenCount              Action     @{TypeId=; IsCollection=False}
+subscribeByMail               Action     @{TypeId=; IsCollection=False}
+unsubscribeByMail             Action     @{TypeId=; IsCollection=False}
+validateProperties            Action     @{TypeId=; IsCollection=False}                             {@{Name=displayName; TypeId=Edm.String;...
+```
+
+#### What are the parameters for a given method?
+
+When you've identified a useful method, the next question is what parameters do you need to feed it? `Get-GraphMethod` has a `Parameter` option that lists just the parameters for a method:
+
+```powershell
+Get-GraphMethod -TypeName group assignLicense -Parameters
+
+Name           TypeId                          IsCollection
+----           ------                          ------------
+addLicenses    microsoft.graph.assignedLicense         True
+removeLicenses Edm.Guid                                True
+```
+
+#### In summary: now put your knowledge to work!
+
+By making use of these "type" introspection commands, you can easily find your way to detailed web-based documentation when you need it, and otherwise get focused, relevant reference information  within the comfortable and efficient environment of PowerShell.
+
+## Managing and customizing application identities
+
+AutoGraphPS provides commands to manage Azure Active Directory application identities, including the ability to manage permission consent for the applications. These commands are useful for provisioning any application or service for your organization, and may also be used to create new identities for which to execute AutoGraphPS-based scripts. And because application management commands are built-in to the module, AutoGraphPS is a self-contained Graph automation solution; there is no need jump outside to other command-line or graphical tools / portals if you need to provision an application identity dedicated to automation since AutoGraphPS itself can perform the provisioning.
+
+### Provision a new application for interactive AutoGraphPS usage
+
+By default, AutoGraphPS uses a particular multi-tenant application identity to allow you to sign in to your organization and execute all of the AutoGraphPS commands that access the Graph API. This application was provisioned by the maintainer of AutoGraphPS. Alternatively, you may use a different application with AutoGraphPS, one that you have provisioned and over which you have complete and sole control.
+
+The `New-GraphApplication` command provisions a new public client application for interactive sign-in -- the application is granted the specific delegated permissions `User.Read` and `Group.Read.All` in this invocation:
+
+```powershell
+$newApp = New-GraphApplication 'Custom Graph PowerShell App' -DelegatedPermissions User.Read, Group.Read.All -ConsentForAllUsers
+
+Connect-GraphApi -AppId $newApp.AppId
+
+Id         : 86b02091-9a57-43c0-a2c2-bf805b85deda
+AppId      : 32a7262b-492a-4ad2-bb96-2ff8ff6cf680
+Endpoint   : https://graph.microsoft.com/
+User       : natossa@ether.org
+Status     : Online
+
+$groups = Get-GraphResource groups
+```
+
+The `New-GraphApplication` command issued a request through the Graph API to create a new public client AAD application. Anyone in the organization can sign in to the application. Since the optional `ConsentForAllUsers` parameter was also specified, consent has been granted to the application for all users in the organization; they will not get prompted for consent when using it. By default, any delegated permissions specified to the command will be consented only for the user issuing the `New-GraphApplication` command, not the entire organization.
+
+The subsequent use of the `Connect-GraphApi` command with the `AppId` parameter shown above allows users to sign in with this (or any other) application by specifying the application's identifier. Once signed in, AutoGraphPS commands may be issue just as they are when using the default AutoGraphPS application; the commands will be authorized by the Graph API based on the permissions granted to this application at sign-in.
+
+In general, consent can be managed outside of application creation by using commands such as `Set-GraphApplicationConsent`, `Get-GraphApplicationConsent`, and `Remove-GraphapplicationConsent`
+
+### Provision a new application for non-interactive unattended AutoGraphPS usage
+
+The built-in application identity for AutoGraphPS requires a user to sign-in before commands can be issued against the Graph. The requirement for human interaction won't work for fully automated scenarios such as running AutoGraphPS PowerShell scripts as background jobs or in other unattended contexts. To address this, you can use `New-GraphApplication` to provision a confidential client application that authenticates without human intervention:
+
+```powershell
+# In addition to creating the app identity with Graph, this commmand
+# creates a certificate in the local certificate store for unattended
+# authentication
+$newApp = New-GraphApplication 'Daily user information stats background app' -Confidential -ApplicationPermissions User.Read.All
+
+# This command requires no user interaction because a certificate in the local
+# certificate store is being used
+Connect-GraphApi -AppId $newapp.AppId -Confidential -NoninteractiveAppOnlyAuth -TenantId natossa@ether.org
+
+Id         : bfb7167a-e8b3-4238-aff2-9c673e8e8ffb
+AppId      : 3ea110e5-80e1-48a6-b67f-a3c5dc108b96
+Endpoint   : https://graph.microsoft.com/
+User       :
+Status     : Online
+
+$users = Get-GraphResource users
+```
+
+In this example, `New-GraphApplication` creates a new confidential client application identity and provisions it with `User.Read.All`. However, if the AutoGraphPS script is executed from the Windows OS, then by default `New-GraphApplication` **also** creates a certificate in the local certificate store specific to this application and configures AAD to enable that certificate as a credential for the identity.
+
+The example continues by using the newly created application to sign in to Graph using `Connect-GraphApi`. In addition to specifying the new application's identifier using the `AppId` parameter, the `Confidential` parameter must be supplied to direct the command to require credentials for the application itself and not just a user's credentials, AND the `NonInteractiveAppOnlyAuth` parameter must be supplied so that only the application credential is required (no user interaction is desired in this case). Additionally, the `TenantId` parameter must be specified using either the domain name of the tenant as in this case or the the tenant identifer. This allows the command to direct the sign-in to the correct tenant.
+
+`Connect-GraphApi` then searches for a certificate for the application in the local certificate store, and will find the one created by `New-GraphApplication` and use it to authenticate.
+
+After authentication succeeds, the example retrieves all of the users in the tenant by invoking `Get-GraphResource` against the `users` URI.
+
+The following considerations related to non-interactive authentication should be noted:
+  * The automatic certificate provisioning in the local certificate store by `New-GraphApplication` is optional, and indeed only occurs on the Windows platform
+  * The certificates created by `New-GraphApplication` and related commands can be enumerated using the `Find-GraphLocalCertificate` command and filtered by the application identifier.
+  * `New-GraphApplication` allows for certificates from other sources such as files to be specified instead of allowing `New-GraphApplication` to create the certificate. The latter approach is fully supported for non-Windows platforms.
+  * `Set-GraphApplicationCertificate` can be used to update the application credentials outside of the context application creation. This is useful for periodic certificate rotations prior to the expiration of the certificate for instance. In general it can be used set pre-existing certificates as application credentials (fully supported for non-Windows PowerShell environments)
+  * `Remove-GraphApplicatinCertificate` removes the association of a certificate from an application -- this is also useful as part of a certificate rotation process. It does not impact the actual certificate itself, even if it is stored on the local system.
+  * `New-GraphApplicationCertificate` can be used to create a new certificate as an object, in the file system, or in the local certificate store (Windows-only) and sets that certificate as a credential for the application.
+  * As is the case with the applications using delegated permissions, the `Set-GraphApplicationConsent`, `Get-GraphApplicationConsent`, and `Remove-GraphApplication` consent commands may be used to manage application permissions outside of the application creation flow
+  * Certificates used as credentials for applications are secrets and must be treated as such; they must be secured from discovery and made available only on trusted systems for authorized uses.
+
+The parameters of all of these commands allow for additional scenarios beyond those described here, so be sure to explore the commands further in evaluating identity provisioning and sign-in capabilities against your needs.
 
 ## Troubleshooting and debugging
 
+### Diagnosing errors
 Whether it's due to coding defects in scripts or typos during your exploration of the Graph, you'll inevitably encounter errors. The cmdlet `Get-GraphError` will show you the last error returned by the Microsoft Graph API during your last cmdlet invocation:
 
 ```powershell
@@ -792,6 +1047,132 @@ t +> user PFunk 4Life 30285b8b-70ba-42e0-9bd9-fbcee5d1ce64
 
 You can inspect the various properties and object returned by `Get-GraphError` to find additional details that help you debug a failure.
 
+### Logs for exploration and troubleshooting
+
+AutoGraphPS records a log of every request and response to Graph issued by AutoGraphPS commands. To view the contents of the log, invoke the `Get-GraphLog` command. In the example below, `Get-GraphLog` is invoked immediately following an attempt to create a new security group using `New-GraphItem`
+
+```powershell
+$newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled  -Value ReportViewers, 'Report Viewers', $false
+
+Get-GraphLog
+
+RequestTimestamp             StatusCode Method Uri
+----------------             ---------- ------ ---
+2/26/2021 10:08:38 PM -08:00        400 POST   https://graph.microsoft.com/v1.0/groups
+2/26/2021 10:01:07 PM -08:00        204 DELETE https://graph.microsoft.com/v1.0/groups/7330583a-d3e5-494b-800c-8e4b67be8460
+2/26/2021 10:01:07 PM -08:00        200 GET    https://graph.microsoft.com/v1.0/groups/7330583a-d3e5-494b-800c-8e4b67be8460
+2/26/2021 10:00:57 PM -08:00        201 POST   https://graph.microsoft.com/v1.0/groups
+2/26/2021 9:58:56 PM -08:00         200 GET    https://graph.microsoft.com/v1.0/organization
+2/26/2021 9:55:28 PM -08:00         200 GET    https://graph.microsoft.com/v1.0/users?$search=johnson
+2/26/2021 9:47:23 PM -08:00         200 GET    https://graph.microsoft.com/v1.0/groups?$search=ashford
+```
+
+> TIP: You can pipe the output of Get-GraphLog to the Format-GraphLog command and use its `View` parameter to provide output optimized for scenarios such as investigating timing or authentication issues.
+
+The log shows information about the underlying REST protocol request issued by the commands, sorted with the most recent requests first. The `StatusCode` column shows that the most recent request was a failed request because its value of `400` is outside the `2xx` success range. There are many more diagnostic fields such as HTTP request and response headers available outside of the default tabular view for the command -- use the `Get-Member` command on the output of `Get-GraphLog` to learn more.
+
+You can use commands like `Clear-Log` and `Set-GraphLogOption` to manage the log's data and the module's logging behaviors including retention and level of detailed logging:
+
+* By default, AutoGraphPS logs information such as the HTTP request URI, request and response headers, and status code, but omits the request and reponse body to protect the privacy of users and organizations using AutoGraphPS.
+* Headers known to contain secrets such as the `Authorization` header used to communicate the access token are always redacted -- the actual value of the header is never logged
+* To completely disable logging which is enabled by default, use the command `Set-GraphLogOption -LogLevel None`
+* To erase previously logged data, issue the `Clear-Log` command
+* Currently the log persists only in-memory, so when the PowerShell session ends or the AutoGraphPS-SDK module is unloaded, the log contents are completely erased.
+
+The log allows for the full range of protocol debugging and can help diagnose connectivity issues or problems with intermediate gateways between AutoGraphPS and the Graph API service. When used in conjunction with standard network diagnostic tools you'll be able to narrow down just about any issue.
+
+In addition, the logs are a great way to learn about Microsoft Graph at the REST protocol level; with each command, you can see the resulting REST requests and responses to gain an understanding of the Graph API protocol.
+
+#### Get a closer look at errors
+
+In the example above, the most recent command was
+
+```powershell
+$newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled  -Value ReportViewers, 'Report Viewers', $false
+```
+
+which failed with a `400 Bad Request` error. We can get more information on the failure by looking in more detail at the log entry:
+
+```powershell
+Get-GraphLog -first 1 | Format-List *
+
+RequestTimestamp        : 2/27/2021 1:15:23 AM -08:00
+Uri                     : https://graph.microsoft.com/v1.0/groups
+Method                  : POST
+ClientRequestId         : f8e1b815-cd69-4431-b362-554d901c4019
+RequestHeaders          : {Authorization, Content-Type, client-request-id}
+RequestBody             :
+HasRequestBody          : True
+AppId                   : ac70e3e2-a821-4d19-839c-b8af4515254b
+AuthType                : Delegated
+UserObjectId            : a524cd16-58e0-48d3-93be-8cc25be634c1
+UserUpn                 : harrow@dragonking.org
+TenantId                : f2280b9c-8858-49cc-9544-db2e0529c22b
+Permissions             : {directory.accessasuser.all, email, openid, profile...}
+ResourceUri             : groups
+Query                   :
+Version                 : v1.0
+StatusCode              : 400
+ResponseTimestamp       : 2/27/2021 1:15:59 AM -08:00
+ErrorResponse           : {
+                            "error": {
+                              "code": "Request_BadRequest",
+                              "message": "A value is required for property 'securityEnabled' of resource 'Group'.",
+                              "innerError": {
+                                "date": "2021-02-27T09:14:50",
+                                "request-id": "2f2f9077-1c5b-46f1-a7a1-c706924b2ba3",
+                                "client-request-id": "f8e1b815-cd69-4431-b362-554d901c4019"
+                              }
+                            }
+                          }
+ResponseClientRequestId : f8e1b815-cd69-4431-b362-554d901c4019
+ResponseHeaders         : {x-ms-ags-diagnostic, Transfer-Encoding, request-id, Content-Type...}
+ResponseContent         :
+ResponseRawContent      :
+ClientElapsedTime       : 00:00:35.8903225
+LogLevel                : Basic
+```
+
+Note that the `ErrorResponse` field provides the detail needed to resolve the issue: `A value is required for property 'securityEnabled' of resource 'Group'.` The request did not include an explicit value for the `securityEnabled` property of the group; Graph requires this property be specified at creation time. The fix then is simple -- the original command can be modified to include the required property and re-invoked as followed:
+
+```powershell
+$newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled  -Value ReportViewers, 'Report Viewers', $false $true
+```
+
+This modified command now succeeds.
+
+### Enabling full logging
+
+To ensure the privacy of Graph data accessed by AutoGraphPS, by default the module does not log the body of a request or response. These elements of the protocol can contain sensitive information such as the actual contents of a document or e-mail, as well as the title or subject of such communication. This safe default behavior can be overridden when the need arises using the `Set-GraphLogOption` command:
+
+```powershell
+$newGroup = New-GraphItem group -Property mailNickName, mailEnabled, securityEnabled -Value Group7Access,  $false, $true
+
+# This command generates no output because the request body
+# is not emitted to the log by default
+Get-Graphlog -Newest 1 | Select-Object -ExpandProperty RequestBody
+
+# Issue this command to enable full logging of request and response body
+Set-GraphLogOption -LogLevel Full
+
+# Now retry the scenario
+$newGroup = New-GraphItem group -Property mailNickName, mailEnabled, securityEnabled -Value Group7Access,  $false, $true
+
+# Now the JSON request body from the retried command is emitted:
+Get-Graphlog -Newest 1 | Select-Object -ExpandProperty RequestBody
+
+{
+    "mailEnabled":  false,
+    "securityEnabled":  true,
+    "displayName":  "Group 7 Access",
+    "mailNickname":  "Group7Access"
+}
+```
+
+The ability to view the full request and response enhances debugging scenarios, aids users learning about the Graph API protocol, and provides an easy way to generate REST protocol sequences for use in developing non-PowerShell applications that make direct use of REST to access the Graph API.
+
+Full logging enabled by `Set-GraphLogOption` will remain in effect for the duration of the PowerShell session until the `Basic` logging level is restored by another invocation of `Set-GraphLogOption`. Note that changing the log level does not affect the content of previous logs, so to remove any full request or response data in the log, use `Clear-Log` to erase it once it is no longer needed, or simply close the PowerShell session.
+
 ### Diagnostic output via `-verbose`
 All AutoGraphPS cmdlets support the PowerShell standard option `-verbose` and the associated `$VerbosePreference` preference variable. When using cmdlets such as `Get-GraphResource` and `Get-GraphChildItem`, specifying `-verbose` will output not only the `http` verb and `uri` used to access the Graph, but also the request headers and for responses the response body and headers.
 
@@ -802,7 +1183,7 @@ Microsoft Graph requires callers to obtain specific authorization for applicatio
 
 Often, users and developers remedy the error by reading the documentation, and updating the application to request the missing permissions. AutoGraphPS tries to hasten such fixes by surfacing authorization failures with a warning encouring the user to request additional permissions as in the example below where the caller tries to access `me/people` to get information about the people with whom she has been interacting:
 
-```
+```powershell
 PS> gls me/people
 WARNING: Graph endpoint returned 'Unauthorized' accessing 'me/people'. Retry after re-authenticating via the
 'Connect-GraphApi' cmdlet and requesting appropriate permissions. See this location for documentation on
@@ -833,20 +1214,37 @@ Info Type   Preview       Name
 ---- ----   -------       ----
 t +> person Cosmo Jones   X8FF834
 t +> person Minerva Smith X8FF835
-t +> person Rufus Chang   X*FF332
+t +> person Rufus Chang   X8FF332
 ```
 
 ## Advanced commands and concepts
 
-The commands below are described briefly as their usage is (currently) less common. In cases where they prove to cover important scenarios, simpler cmdlets will most likely be added for those uses.
+The concepts and commands below are described briefly as their usage is (currently) less common. In cases where they prove to cover important scenarios, simpler cmdlets will eventually be added for those uses.
 
-### Invoke-GraphRequest -- the universal Graph cmdlet
+### Advanced queries with `-Query`
 
-The `Invoke-GraphRequest` cmdlet supports all of the functionality of `Get-GraphResource`, and exceeds it in a key aspect: where `Get-GraphResource` only enables APIs that support the `GET` `http` method, `Invoke-GraphRequest` supports all http methods, including `PUT`, `POST`, `PATCH`, and `DELETE`.
+The `-Query` parameter for several commands lets you directly specify the Uri query parameters for the Graph call made by AutoGraphPS. It must conform to [OData specifications](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html#_Toc453752360). The option is provided to allow you to overcome limitations in AutoGraphPS's simpler query options. For example the two commands below are equivalent:
 
-This means you can use `Invoke-GraphRequest` for not just read operations as with the `Get-Graph*Item` cmdlets, but write operations as well. Note that the syntax and parameter specification for such cases is cumbersome, so in the future dedicated cmdlets with a simpler syntax will be provided to handle the most common cases where `Invoke-GraphRequest` is today's only solution.
+```powershell
+gls /users -Filter "startsWith(mail, 'p')" -top 20
+gls /users -Query  "`$filter=startsWith(mail, 'p')&`top=20"
+```
 
-#### Write access through `Invoke-GraphRequest`
+Note that `-Query` requires you to understand how to combine multiple query options via '&' and also how to make correct use of PowerShell escape characters so that OData tokens like `$top` which are preceded by the `$` character which is reserved as a variable prefix in PowerShell are taken literally instead of as the value of a PowerShell variable.
+
+While `-Query` may be more complicated to use, when AutoGraphPS's other query options do not support a particular Graph query feature, you still have a way to use Graph's full capabilities.
+
+For more details on how to construct this parameter, see the [MS Graph REST API documentation for queries](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters).
+
+### Invoke-GraphApiRequest -- the universal Graph cmdlet
+
+The `Invoke-GraphApiRequest` cmdlet supports all of the functionality of `Get-GraphResource`, and exceeds it in a key aspect: where `Get-GraphResource` only enables APIs that support the `GET` `http` method, `Invoke-GraphApiRequest` supports all http methods, including `PUT`, `POST`, `PATCH`, and `DELETE`.
+
+This means you can use `Invoke-GraphApiRequest` for not just read operations as with the `Get-Graph*Item` cmdlets, but write operations as well. In fact, *any* behavior supported by Microsoft Graph is accessible through this command. However such invocations are typically far more cumbersome to issue than those of the other dedicated commands which abstract many concepts and automatically generate or interpret complex JSON structure that must be specified explicitly when using `Invoke-GraphApiRequest`.
+
+Still, the generic capability of `Invoke-GraphApiRequest` means that even if `AutoGraphPS` does not expose a specific command for some feature of Microsoft Graph, *you can still use that feature* by doing some research into the REST protocol for the capability and then invoking `Invoke-GraphApiRequest` according to the protocol.
+
+#### Write access through `Invoke-GraphApiRequest`
 
 > Note: The requirements for write operations vary among the different entities exposed by the Graph -- consult the [Microsoft Graph documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/overview) for information on creating, updating, and deleting objects in the Graph.
 
@@ -854,7 +1252,7 @@ In this example, we create a new contact. This will require we specify data in a
 
 ```powershell
 $contactData = @{givenName='Cleopatra Jones';emailAddresses=@(@{name='Work';Address='cleo@soulsonic.org'})}
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+Invoke-GraphApiRequest me/contacts -Method POST -Body $contactData
 ```
 
 This will return the newly created contact object (you can inspect it further by accessing `$LASTGRAPHITEMS[0]`).
@@ -877,7 +1275,7 @@ Fortunately, AutoGraphPS provides the `New-GraphObject` command which correctly 
 ```powershell
 $emailAddress = New-GraphObject -TypeClass Complex emailAddress -Property name, address -Value Work, cleo@soulsonic.org
 $contactData = New-GraphObject contact -Property givenName, emailAddresses -Value 'Cleopatra Jones', @($emailAddress)
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+Invoke-GraphApiRequest me/contacts -Method POST -Body $contactData
 ```
 
 While this command takes 3 lines instead of 2, its lack of `@()` and `@{}` syntax makes its intent more plain. The `Property` parameter allows you to specify which properties of the object you'd like to include. The optional `Value` property lets you specify the value of the property -- each element of the `Value` parameter corresponds to the desired value of the property named by an element at the same position in the list specified to `Property`. The command will keep you honest by throwing an error if you specify a property that does not exist on the object; this error checking is not available with the shorter 2 line version -- rather than finding out your error sooner with an explicit error message, the failure occurs when making the request to Graph, and the error message may not always be explicit about which property is set incorrectly.
@@ -900,7 +1298,7 @@ $contactData = New-GraphObject contact -PropertyTable @{
     emailAddresses = @($emailAddress)
 }
 
-Invoke-GraphRequest me/contacts -Method POST -Body $contactData
+Invoke-GraphApiRequest me/contacts -Method POST -Body $contactData
 ```
 
 This approach, while certainly using more lines than the others, is even more readable and easier to express correctly than the parallel lists.
@@ -911,7 +1309,7 @@ You can use `Get-GraphUriInfo` to get information about whether a given Uri is v
 
 Here are some examples:
 
-```
+```powershell
 # Get basic type information about the uri '/me/drive/root'
 Get-GraphUriInfo /me/drive/root
 
@@ -951,7 +1349,7 @@ Get-GraphUriInfo /me/drive/root | select -expandproperty uri
 
 In the above example, `Get-GraphUriInfo` parsed the Uri in order to generate the returned information. If you were to give a Uri that is not valid for the current graph, you'd receive an error like the one below:
 
-```
+```powershell
 Get-GraphUriInfo /me/idontexist
 Uri '/me/idontexist' not found: no matching child segment 'idontexist' under segment 'me'
 At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps\0.14.0\src\metadata\segmentparser.ps1:140 char:21
@@ -967,7 +1365,7 @@ At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps\0.14.0\src\me
 
 The `Get-GraphUriInfo` cmdlet also allows you to determine the set of parent (predecessor) segments of the Uri, as well as all segments immediately following the Uri, that is the children (successors):
 
-```
+```powershell
 # These are all the segments that precede /me/drive/root
 Get-GraphUriInfo /me/drive/root -Parents
 
@@ -998,7 +1396,7 @@ n  > workbook                 workbook
 ```
 The presence of `workbook` in the list of children suggests that the following Uri is valid, which indeed it is:
 
-```
+```powershell
 /me/drive/root/workbook
 ```
 
@@ -1021,13 +1419,13 @@ As for what it does, the "Type" column indicates that a `GET` for that Uri shoul
 
 `Get-GraphUriInfo` doesn't just parse static Uris, but any that are syntactically valid, i.e.
 
-```
+```powershell
 Get-GraphResource /me/drive/root/children/myfile.txt | fl *
 ```
 
 returns the following whether or not that Uri (and the OneDrive file this particular path represents) exists in the Graph:
 
-```
+```powershell
 ParentPath   : /me/drive/root/children
 Info         : t  >
 Relation     : Data
@@ -1052,11 +1450,11 @@ Preview      :
 PSTypeName   : GraphSegmentDisplayType
 ```
 
-The point of this cmdlet is to let you know what's syntactically valid, not what is actually valid.
+The purpose of this cmdlet is to let you know what's syntactically valid, not what is actually valid.
 
 Note that it will even "make up" hypothetical Uri's for you when `-Children` with the `-IncludeVirtualChildren` option:
 
-```
+```powershell
 Get-GraphResourceWithMetadata /me/drive/root/children -children -IncludeVirtualChildren | select uri
 
 Uri

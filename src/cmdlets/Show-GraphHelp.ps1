@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,81 +13,97 @@
 # limitations under the License.
 
 function Show-GraphHelp {
-    [cmdletbinding(defaultparametersetname='bytypename', positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, parametersetname='bytypename')]
-        [parameter(parametersetname='bytypenamepipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypenamepipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('FullTypeName')]
+        [Alias('TypeId')]
         [String] $ResourceName = $null,
 
         [ValidateSet('Default', 'v1.0', 'beta')]
-        [parameter(position=1)]
         [String] $Version = 'Default',
 
         [parameter(parametersetname='byuri', mandatory=$true)]
         [Uri] $Uri,
 
-        [parameter(parametersetname='bygraphobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [parameter(parametersetname='bygraphobject', valuefrompipeline=$true)]
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         $GraphName,
 
         [switch] $ShowHelpUri,
 
+        [parameter(parametersetname='permissionshelp')]
+        [switch] $PermissionsHelp,
+
+        [parameter(parametersetname='overviewhelp')]
+        [switch] $OverviewHelp,
+
         [switch] $PassThru
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    $graphNameParameter = @{}
+        $graphNameParameter = @{}
 
-    $targetVersion = if ( $GraphName ) {
-        $graphNameParameter = @{GraphName=$GraphName}
-        $graphVersion = ($::.LogicalGraphManager |=> Get |=> GetContext $GraphName).version
-        if ( ! $graphVersion ) {
-            throw "No Graph with the specified name '$GraphName' for the GraphName parameter could be found"
-        }
-        $graphVersion
-    } elseif ( $Version -eq 'Default' ) {
-        $currentVersion = ($::.GraphContext |=> GetCurrent).version
-        if ( $currentVersion -in 'v1.0', 'beta' ) {
-            $currentVersion
+        $targetVersion = if ( $GraphName ) {
+            $graphNameParameter = @{GraphName=$GraphName}
+            $graphVersion = ($::.LogicalGraphManager |=> Get |=> GetContext $GraphName).version
+            if ( ! $graphVersion ) {
+                throw "No Graph with the specified name '$GraphName' for the GraphName parameter could be found"
+            }
+            $graphVersion
+        } elseif ( $Version -eq 'Default' ) {
+            $currentVersion = ($::.GraphContext |=> GetCurrent).version
+            if ( $currentVersion -in 'v1.0', 'beta' ) {
+                $currentVersion
+            } else {
+                write-warning "Unable to locate help for current graph's version '$currentVersion', defaulting to help for 'v1.0'"
+                'v1.0'
+            }
         } else {
-            write-warning "Unable to locate help for current graph's version '$currentVersion', defaulting to help for 'v1.0'"
-            'v1.0'
+            $Version
         }
-    } else {
-        $Version
     }
 
-    $targetTypeName = if ( $ResourceName ) {
-        $ResourceName
-    } elseif ( $Uri -or $GraphItem ) {
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $GraphItem
+    process {
+        $targetTypeName = if ( $ResourceName ) {
+            $ResourceName
+        } elseif ( $Uri -or $GraphItem ) {
+            $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $null $GraphItem
 
-        $uriInfo = $requestInfo.TypeInfo.UriInfo
+            $uriInfo = $requestInfo.TypeInfo.UriInfo
 
-        if ( $uriInfo.Class -in 'Action', 'Function' ) {
-            $uriInfo = Get-GraphUriInfo $uriInfo.ParentPath @graphNameParameter -erroraction stop
+            if ( $uriInfo.Class -in 'Action', 'Function' ) {
+                $uriInfo = Get-GraphUriInfo $uriInfo.ParentPath @graphNameParameter -erroraction stop
+            }
+
+            $uriInfo.FullTypeName
         }
 
-        $uriInfo.FullTypeName
+        $uriTemplate = 'https://developer.microsoft.com/en-us/graph/docs/api-reference/{0}/resources/{1}'
+
+        $docUri = if ( $PermissionsHelp.IsPresent ) {
+            [Uri] 'https://docs.microsoft.com/en-us/graph/permissions-reference'
+        } elseif ( $OverviewHelp.IsPresent ) {
+            [Uri] 'https://docs.microsoft.com/en-us/graph'
+        } elseif ( $targetTypeName ) {
+            $unqualifiedName = $targetTypeName -split '\.' | select -last 1
+            $uriTemplate -f $targetVersion, $unqualifiedName
+        } else {
+            'https://docs.microsoft.com/en-us/graph/overview'
+        }
+
+        if ( ! $ShowHelpUri.IsPresent ) {
+            write-verbose "Accessing documentation with URI '$docUri'"
+            start-process $docUri -passthru:($PassThru.IsPresent)
+        } else {
+            ([Uri] $docUri).tostring()
+        }
     }
 
-    $uriTemplate = 'https://developer.microsoft.com/en-us/graph/docs/api-reference/{0}/resources/{1}'
-
-    $docUri = if ( $targetTypeName ) {
-        $unqualifiedName = $targetTypeName -split '\.' | select -last 1
-        $uriTemplate -f $targetVersion, $unqualifiedName
-    } else {
-        'https://docs.microsoft.com/en-us/graph/overview'
-    }
-
-    if ( ! $ShowHelpUri.IsPresent ) {
-        write-verbose "Accessing documentation with URI '$docUri'"
-        start-process $docUri -passthru:($PassThru.IsPresent)
-    } else {
-        ([Uri] $docUri).tostring()
+    end {
     }
 }
 
