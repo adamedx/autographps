@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -232,9 +232,12 @@ ScriptClass GraphBuilder {
 
     function __GetNamespaceInfoFromQualifiedTypeName($qualifiedTypeName) {
         $nameInfo = $this.dataModel |=> ParseTypeName $qualifiedTypeName $true
+        $namespaceAlias = if ( $nameInfo.Namespace ) {
+            $this.dataModel |=> GetNamespaceAlias $nameInfo.namespace
+        }
         [PSCustomObject] @{
             Namespace = $nameInfo.Namespace
-            NamespaceAlias = $this.dataModel |=> GetNamespaceAlias $nameInfo.namespace
+            NamespaceAlias = $namespaceAlias
         }
     }
 }

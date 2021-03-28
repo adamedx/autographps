@@ -2,7 +2,10 @@
 
 ## To-do items -- prioritized
 
+* With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
+* validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
+* gcd should let you specify alternate criteria to id
 * Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
@@ -1056,3 +1059,68 @@ Other class notes:
 * The new GraphDataModel should return a namespace when returning any schema information
   * We can define a new class, e.g. SchemaElement, that includes schema data and the namespace
 * Everything else must use fully qualified names
+
+### Config files for user experience
+Let's add configuration files as a UX affordance! Here are the high-level requirements:
+
+* Configuration should make it easy to use the non-default appid and other authentication related scenarios
+* Configuration should support multiple tenants
+* We should use concepts and conventions from other command-line tool configuration
+* Configuration should be easy to turn off
+* It should not be too complicated to use
+* It should be transparent -- users should not need to guess if they are impacted
+
+#### More details
+
+
+* What can be configured?
+  All parameters of New-GraphConnection
+* Where is the config located?
+  ~/.autograph/settings.json
+* What is the general format of the file?
+  Tough call between yaml and json, but we'll go with json for now
+  vscode uses camel-casing -- why? Maybe we should also (Graph does).
+* How is it organized?
+  * Profiles: Like VSCode, it will define profiles
+    * Named with a friendly, unique name (not a guid like vscode profiles)
+    * Contains default connection info
+    * Contains ConnectionProfile
+    * Contains log level option
+    * Prompt option
+  * Default profile option
+  * No metadata option?
+* What new commands are needed?
+  First, settings related commands start with "local" for the noun
+  * Get-GraphLocalSettingsLocation
+  * Set-GraphLocalSettingsLocation
+  * Update-GraphLocalSettings? Needed if it's important to avoid module reload
+  * Get-GraphLocalConnectionProfile (including -current)
+* What commands are modified?
+  * New-GraphConnection would take arguments:
+    * Profile \<name\>
+    * NoProfile
+  * Connect-GraphApi would take the same argument
+    * Should profile be the default parameter set? Probably
+* What environment variables?
+  * AUTOGRAPH\_BYPASS\_SETTINGS -- this allows the user to ignore any settings that might be persisted
+  * AUTOGRAPH\_SETTINGS\_FILE -- point at a different settings file
+* How is setting data shared across autographps and autographps-sdk modules?
+  * An internal class, LocalSettings, will cover it
+
+### Color output
+
+Well, there's nothing like adding some color, so long as it's optional. Here are the ideas:
+
+* Use format xml to generate color output
+* Provide a low-level library for generating color strings
+* Looks like even the lowly windows console can support 24-bit ansi escape sequences
+* Provide a default that uses only 16 colors, allow enabling 8-bit and 24-bit support
+* We can have a preference variable
+* Allow customization via themes
+* Here's what we can color
+  * Log output -- use color to indicate success / failure and the http method
+  * Native object output: de-emphasize '@' properties, brighten id, maybe 'name' and 'displayname'
+  * Output of gls:
+    * Collection / not collection
+    * Primitive type vs complex type vs navigation
+    * 
