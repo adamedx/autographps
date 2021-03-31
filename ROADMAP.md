@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Move property reader defintitions to LocalConnectionSpec
-* Change Get-GraphStatistics to Measure-Graph
 * Add -count option to URIs
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
@@ -362,6 +361,7 @@
 * pipeline support for get-graphtype
 * Graph statistics command
 * Allow types to be piped to show-graphhelp from find-graphtype
+* Change Get-GraphStatistics to Measure-Graph
 
 ### Postponed
 

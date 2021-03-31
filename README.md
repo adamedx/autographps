@@ -344,12 +344,12 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphMethod (ggmt)    | Gets information about the methods of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
-| Get-GraphStatistics       | Returns statistics about the types exposed by the Graph API                                             |
 | Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
 | Invoke-GraphApiRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
 | Invoke-GraphMethod        | Executes a method on a given Graph object specified by Type and Id or URI                               |
+| Measure-Graph             | Returns statistics about the types exposed by the Graph API                                             |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
