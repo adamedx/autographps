@@ -65,7 +65,9 @@ if (! $NoNewShell.ispresent ) {
         ''
     }
 
-    $shellArguments = '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
+    # Set the AUTOGRAPH_BYPASS_SETTINGS environment variable so that the local profile configuration has
+    # no impact on the tests
+    $shellArguments = '-noexit', '-command', "set-item env:AUTOGRAPH_BYPASS_SETTINGS `$true; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
 
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(

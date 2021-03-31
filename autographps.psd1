@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.36.0'
+ModuleVersion = '0.37.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.25.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.26.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -247,44 +247,24 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.36.0 Release Notes
+## AutoGraphPS 0.37.0 Release Notes
 
-Adds additional commands to make type inspection more usable.
+Bug fixes and updates to support profiles, color, and other usability improvements
 
 ### New dependencies
 
-* `autographps-sdk 0.25.0`
-  * Including that dependency's update to Microsoft Authentication Library (MSAL) 4.27
+* `autographps-sdk 0.26.0`
 
 ### Breaking changes
 
-* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b. Impact includes the need to re-consent to any desired permissions that were granted to the previous appid.
-* When signing in with an app other than the default appid, personal Microsoft Accounts cannot sign in without specifying `AllowMSA` via `Connect-GraphApi`
-* `New-GraphApplication` now creates single tenant applications by default for public client apps
+* See breaking changes from `autographps-sdk 0.26.0`
 
 ### New features
 
-* Added the following commands:
-  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
-  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
-  * `Find-GraphType`: This command returns the types that match specified criteria. This is useful for finding types that can be used to accomplish tasks in the problem domain represented by the search terms.
-  * `Get-GraphType` now accepts objects from the pipeline.
-* From updated `autographpsd-sdk` dependency:
-  * `Connect-GraphApi` and `New-GraphConnection` support the `AllowMSA` parameter to enable MSA accounts when signing in with an app other than the default app
-  * Objects emitted by `Invoke-GraphApiRequest` and related commands now have a type `GraphResponseObject` included in `PSTypeNames` to enable reliable pipeline binding and eventual improvements in output formatting.
-
-
 ### Fixed defects
 
-* Not all functions under the path /reports and possibly other paths were being detected and thus could not be used with `Invoke-GraphMethod`.
-* For some types, such as driveItem, the output of Get-GraphType would show duplicate methods for methods like getActivityByInterval -- now only one version of the method is returned (a type cannot have two methods with the same name).
-* Get-Graph was returning non-canonical file paths for the LastTypeMetadataSource property when commands like Update-GraphMetadata were used to obtain metadata from a file
-None.
-  * From `autographpsd-sdk` dependency:
-  * [Many scenarios broken for Microsoft Accounts only but not broken for AAD accounts](https://github.com/adamedx/autographps-sdk/issues/53)
-  * Sign-in for single tenant applications was broken
-  * Error response streams were not being retrieved, so detailed errors were missing from Get-GraphLog and other error-surfacing mechanisms
-  * `Get-GraphLog` was emitting errors in the wrong order with oldest first rather than newest first
+* Fixed some crashes caused by namespace aliases
+* Fixed issues handling times with the `Get-Graph` command
 
 '@
     } # End of PSData hashtable

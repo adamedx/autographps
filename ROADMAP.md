@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Move property reader defintitions to LocalConnectionSpec
+* Change Get-GraphStatistics to Measure-Graph
+* Add -count option to URIs
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
