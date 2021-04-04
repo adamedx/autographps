@@ -3,7 +3,7 @@
 ## To-do items -- prioritized
 
 * Move property reader defintitions to LocalConnectionSpec
-* Add -count option to URIs
+* Add -count option to Get-GraphResourceWithMetadata
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
@@ -1123,7 +1123,17 @@ Well, there's nothing like adding some color, so long as it's optional. Here are
 * Here's what we can color
   * Log output -- use color to indicate success / failure and the http method
   * Native object output: de-emphasize '@' properties, brighten id, maybe 'name' and 'displayname'
+  * Hmm, in a 16 color palette, it's hard to find colors that will work regardless of console color scheme
+    * Limited to Cyan, Yellow, Green, and Blue. Red usually means "error," and magenta won't work against a purple background.
   * Output of gls:
-    * Collection / not collection
-    * Primitive type vs complex type vs navigation
-    * 
+    * Info: Hmm, color turns out to not be very useful here since everything in list results has the same "info" and thus same color
+    * Preview? Yes -- this draws attention away from "type" column, which is easy to confuse with "id" for navigation properties or singletons / entity sets
+    * Type: This draws attention from Preview and Id, which should be the real stars
+    * Id: ok, here we background and foreground shades of cyan, yellow, green. Collections have background (like ls in Ubuntu)
+
+### Setting location
+
+* By index
+
+
+* By property

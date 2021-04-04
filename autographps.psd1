@@ -134,6 +134,7 @@ VariablesToExport = @(
         '.\autographps.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
+        '.\src\formats.ps1',
         '.\src\graph.ps1',
         '.\src\client\LocationContext.ps1',
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
@@ -170,12 +171,13 @@ VariablesToExport = @(
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\FunctionParameterHelper.ps1',
-        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
+        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\MemberDisplayType.ps1',
         '.\src\cmdlets\common\MemberParameterCompleter.ps1',
+        '.\src\cmdlets\common\MetaGraphFormatter.ps1',
         '.\src\cmdlets\common\MethodDisplayType.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
@@ -260,6 +262,8 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 * See breaking changes from `autographps-sdk 0.26.0`
 
 ### New features
+
+* Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
 
 ### Fixed defects
 

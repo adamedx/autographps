@@ -33,8 +33,10 @@ limitations under the License.
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
+            <Label>Info</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Type</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Preview</Label>
@@ -42,22 +44,23 @@ limitations under the License.
             <Width>48</Width>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Id</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>Info</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Type</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Preview</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Id</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>

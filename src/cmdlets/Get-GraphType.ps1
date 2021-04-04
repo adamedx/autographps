@@ -25,6 +25,7 @@ function Get-GraphType {
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [Alias('TypeId')]
+        [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true)]

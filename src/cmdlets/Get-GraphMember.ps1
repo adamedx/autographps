@@ -27,6 +27,7 @@ function Get-GraphMember {
         [parameter(parametersetname='fortypename', mandatory=$true)]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('TypeId')]
+        [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='fortypename')]

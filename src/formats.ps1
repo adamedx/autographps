@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-strictmode -version 5
-
-. (import-script metadata/metadata)
-. (import-script typesystem/typesystem)
-. (import-script cmdlets)
-. (import-script aliases)
-. (import-script formats)
+. (import-script cmdlets/common/MetaGraphFormatter)
