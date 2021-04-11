@@ -81,12 +81,13 @@ NestedModules = @(
     'Get-GraphChildItem',
     'Get-GraphItem',
     'Get-GraphItemRelationship',
-    'Get-GraphRelatedItem',
     'Get-GraphItemUri',
-    'Get-GraphResourceWithMetadata',
+    'Get-GraphLastOutput',
     'Get-GraphLocation',
     'Get-GraphMember',
     'Get-GraphMethod',
+    'Get-GraphRelatedItem',
+    'Get-GraphResourceWithMetadata',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
@@ -117,10 +118,11 @@ VariablesToExport = @(
     'GraphPromptColorPreference'
     'GraphVerboseOutputPreference' # From AutoGraphPS-SDK
     'LastGraphItems'               # From AutoGraphPS-SDK
+    'AutoGraphColorModePreference' # From AutoGraphPS-SDK
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'glo', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -145,6 +147,7 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
+        '.\src\cmdlets\Get-GraphLastOutput.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphMember.ps1',
         '.\src\cmdlets\Get-GraphMethod.ps1',

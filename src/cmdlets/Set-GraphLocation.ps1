@@ -15,41 +15,72 @@
 . (import-script ../metadata/SegmentParser)
 . (import-script common/SegmentHelper)
 . (import-script common/GraphUriParameterCompleter)
+. (import-script Get-GraphLastOutput)
 
 function Set-GraphLocation {
-    [cmdletbinding()]
+    [cmdletbinding(defaultparametersetname='path')]
     param(
-        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
-        $UriPath = $null,
+        [parameter(position=0, parametersetname = 'path', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Path')]
+        $Uri = $null,
+
+        [parameter(parametersetname='index', mandatory=$true)]
+        [int] $Index,
+
         [switch] $Force,
-        [switch] $NoAutoMount
+
+        [parameter(parametersetname='path')]
+        [switch] $NoAutoMount,
+
+        [string] $GraphName
     )
 
     Enable-ScriptClassVerbosePreference
 
-    $inputUri = if ( $UriPath -is [String] ) {
-        $UriPath
-    } elseif ( $UriPath | gm -membertype scriptmethod '__ItemContext' ) {
-        ($UriPath |=> __ItemContext | select -expandproperty RequestUri)
-    } elseif ( $UriPath | gm Path ) {
-        $UriPath.path
+    $inputUri = if ( $Uri ) {
+        if ( $Uri -is [String] ) {
+            $Uri
+        } elseif ( $Uri | gm -membertype scriptmethod '__ItemContext' ) {
+            ($Uri |=> __ItemContext | select -expandproperty RequestUri)
+        } elseif ( $Uri | gm Path ) {
+            $Uri.path
+        } else {
+            throw "Uri must be a valid location string or object with a path / Uri"
+        }
     } else {
-        throw "UriPath must be a valid location string or object with a path / Uri"
+        $graphItem = Get-GraphLastOutput -Index $Index
+        $itemId = if ( $graphItem | gm id -erroraction ignore ) {
+            $graphItem.Id
+        }
+
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $null $false $Uri $itemId $graphItem
+
+        if ( $requestInfo.TypeInfo | gm UriInfo -erroraction ignore ) {
+            $requestInfo.TypeInfo.UriInfo.Path
+        } else {
+            throw 'Unable to determine the location of the specified object'
+        }
     }
 
     $ParsedPath = $::.GraphUtilities |=> ParseLocationUriPath $inputUri
 
     $currentContext = $::.GraphContext |=> GetCurrent
 
+    $contextName = if ( $GraphName ) {
+        $GraphName
+    } else {
+        $ParsedPath.ContextName
+    }
+
     $automounted = $false
-    $context = if ( $ParsedPath.ContextName ) {
-        $pathContext = 'LogicalGraphManager' |::> Get |=> GetContext $ParsedPath.ContextName
+    $context = if ( $contextName ) {
+        $pathContext = 'LogicalGraphManager' |::> Get |=> GetContext $contextName
 
         if ( ! $pathContext -and ! $NoAutoMount.IsPresent ) {
             $pathContext = try {
-                write-verbose "Graph name '$($ParsedPath.ContextName)' was specified but no such graph is mounted"
-                write-verbose "Attempting to auto-mount Graph version '$($ParsedPath.ContextName)' using the existing connection"
-                $::.LogicalGraphManager |=> Get |=> NewContext $null $currentContext.connection $ParsedPath.ContextName $ParsedPath.ContextName $true
+                write-verbose "Graph name '$($contextName)' was specified but no such graph is mounted"
+                write-verbose "Attempting to auto-mount Graph version '$($ContextName)' using the existing connection"
+                $::.LogicalGraphManager |=> Get |=> NewContext $null $currentContext.connection $contextName $contextName $true
             } catch {
                 write-verbose "Auto-mount attempt failed with error '$($_.exception.message)'"
             }
@@ -66,7 +97,7 @@ function Set-GraphLocation {
     }
 
     if ( ! $context ) {
-        throw "Cannot set current location using graph '$($ParsedPath.ContextName)' because it is not mounted or there is no current context. Try using the New-Graph cmdlet to mount it."
+        throw "Cannot set current location using graph '$($contextName)' because it is not mounted or there is no current context. Try using the New-Graph cmdlet to mount it."
     }
 
     $parser = new-so SegmentParser $context $null $true
@@ -83,7 +114,7 @@ function Set-GraphLocation {
         $lastUriSegment = $::.SegmentHelper |=> UriToSegments $parser $absolutePath | select -last 1
         $locationClass = ($lastUriSegment.graphElement |=> GetEntity).Type
         if ( ! $::.SegmentHelper.IsValidLocationClass($locationClass) ) {
-            throw "The path '$UriPath' of class '$locationClass' is a method or other invalid location"
+            throw "The path '$Uri' of class '$locationClass' is a method or other invalid location"
         }
         $lastUriSegment
     } else {
@@ -97,5 +128,5 @@ function Set-GraphLocation {
     __AutoConfigurePrompt $context
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphLocation UriPath (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationUri))
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphLocation Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationUri))
 

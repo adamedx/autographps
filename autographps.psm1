@@ -25,6 +25,7 @@ $functions = @(
     'Get-GraphItemUri',
     'Get-GraphChildItem',
     'Get-GraphResourceWithMetadata',
+    'Get-GraphLastOutput',
     'Get-GraphLocation',
     'Get-GraphMember',
     'Get-GraphMethod',
@@ -48,7 +49,7 @@ $functions = @(
     'Update-GraphMetadata'
 )
 
-$aliases = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'ggm', 'ggmt', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+$aliases = @('gcd', 'gg', 'glo', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'ggm', 'ggmt', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # Note that in order to make variables from nested modules
 # accessible without the user directly invoking them,
@@ -58,8 +59,9 @@ $variables = @(
     'GraphAutoPromptPreference'
     'GraphMetadataPreference'
     'GraphPromptColorPreference'
-    'GraphVerboseOutputPreference' # From AutoGraphPS-=SDK
-    'LastGraphItems'               # From AutoGraphPS-=SDK
+    'GraphVerboseOutputPreference' # From AutoGraphPS-SDK
+    'LastGraphItems'               # From AutoGraphPS-SDK
+    'AutoGraphColorModePreference' # From AutoGraphPS-SDK
 )
 
 export-modulemember -function $functions -alias $aliases -variable $variables

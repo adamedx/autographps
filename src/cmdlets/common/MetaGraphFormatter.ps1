@@ -14,36 +14,55 @@
 
 ScriptClass MetaGraphFormatter {
     static {
+        function ResultIndex($result) {
+            if ( $result | gm __ResultIndex -erroraction ignore ) {
+                $result.__ResultIndex()
+            }
+        }
+
         function SegmentInfo($segment) {
-            $segment.Info
+            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $segment.Info
+            }
         }
 
         function SegmentType($segment) {
-            $segment.Type
+            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $segment.Type
+            }
         }
 
         function SegmentPreview($segment) {
-            $::.ColorString.ToColorString($segment.Preview, 11, $null)
+            $preview = if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $segment.Preview
+            } else {
+                $::.SegmentHelper.__GetPreview($segment, '')
+            }
+
+            $::.ColorString.ToColorString($preview, 11, $null)
         }
 
         function SegmentId($segment) {
-            $segmentType = $segment.Info[0]
             $background = $null
+            $foreground = $null
 
-            $foreground = if ( $segmentType -eq 'f' ) {
-                11
-            } elseif ( $segmentType -eq 'a' ) {
-                6
-            } else {
-                if ( $segment.Collection ) {
-                    0
-                    if ( $segmentType -eq 'n' ) {
-                        $background = 10
-                    } else {
-                        $background = 6
-                    }
+            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $segmentType = $segment.Info[0]
+                $foreground = if ( $segmentType -eq 'f' ) {
+                    11
+                } elseif ( $segmentType -eq 'a' ) {
+                    6
                 } else {
-                    10
+                    if ( $segment.Collection ) {
+                        0
+                        if ( $segmentType -eq 'n' ) {
+                            $background = 10
+                        } else {
+                            $background = 6
+                        }
+                    } else {
+                        10
+                    }
                 }
             }
 

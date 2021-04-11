@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Move property reader defintitions to LocalConnectionSpec
 * Add -count option to Get-GraphResourceWithMetadata
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph

@@ -68,7 +68,62 @@ limitations under the License.
       </TableControl>
     </View>
 
-
+    <View>
+      <Name>GraphLastResultType</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphLastResultType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
+             header, which we use to provide the name of the URI being enumerated or requested,
+             the same way that Get-ChildItem shows a directory title for the file system. -->
+        <PropertyName>ParentPath</PropertyName>
+        <Label>Graph Location</Label>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Index</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Info</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Type</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Preview</Label>
+            <!-- Per docs, this should be max column width, but it seems to have no effect in testing. -->
+            <Width>48</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <Alignment>Right</Alignment>
+                <ScriptBlock>$::.MetaGraphFormatter.ResultIndex($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
 
     <View>
       <Name>GraphStatisticsFormatType</Name>

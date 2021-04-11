@@ -23,6 +23,7 @@
 . (import-script cmdlets\Get-GraphItemUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)
 . (import-script cmdlets\Get-GraphChildItem)
+. (import-script cmdlets\Get-GraphLastOutput)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphMember)
 . (import-script cmdlets\Get-GraphMethod)

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 set-alias gcd Set-GraphLocation
+set-alias glo Get-GraphLastOutput
 set-alias gg  Get-Graph
 set-alias ggrel Get-GraphItemRelationship
 set-alias ggreli Get-GraphRelatedItem

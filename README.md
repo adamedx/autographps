@@ -337,6 +337,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem     | Retrieves an entity specified by type and ID or URI |
+| Get-GraphLastOutput (glo) | Retrieves the last output returned from commands like `gls` and associates them with an index           |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
