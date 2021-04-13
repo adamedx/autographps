@@ -76,7 +76,7 @@ ScriptClass GraphBuilder {
 
     function AddEntityTypeVertices($graph, $qualifiedTypeName) {
         $entityType = $this.dataModel |=> GetEntityTypeByName $qualifiedTypeName
-        $nameInfo = __GetNamespaceInfoFromQualifiedTypeName $qualifiedTypeName
+
         if ( $qualifiedTypeName -and $entityType -eq $null ) {
             throw "Type '$qualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
         }
@@ -192,16 +192,33 @@ ScriptClass GraphBuilder {
         $methods | foreach {
             $method = $_
             $sink = if ( $method | gm ReturnType ) {
+                # If there's a return type, it can actually be of any type, not just an entity
+                # type. We'll link this to a vertex for the entity type if it's an entity type, but
+                # if the return type is not an entity, we'll just link it to a single "scalar" vertex,
+                # or the null vertex if there is no return type.
                 $typeName = $method.ReturnType | select -expandproperty Type
+                $parsedName = $::.GraphUtilities |=> ParseTypeName $typeName
+                $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $parsedName.TypeName
 
-                $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
+                # This only returns vertices (i.e. entity types) that have already been seen,
+                # so we may not find it.
+                $typeVertex = $graph |=> TypeVertexFromTypeName $unaliasedName
 
                 if ( $typeVertex -eq $null ) {
-                    try {
-                        __AddEntityTypeVertex $graph $typeName
-                        $typeVertex = $graph |=> TypeVertexFromTypeName $typeName
-                    } catch {
-                            # Possibly an enumeration type, this will just be considered a scalar
+                    # If the return type is not found, then see if such an entity type exists.
+                    # If it doesn't, that means the return type is not an entity, i.e.
+                    # it is a primitive, enumeration, or complex type. In this context,
+                    # we will treat these as "scalar" types -- they are not traversable.
+                    if ( $this.dataModel |=> GetEntityTypeByName $unaliasedName ) {
+                        try {
+                            __AddEntityTypeVertex $graph $unaliasedName
+                            $typeVertex = $graph |=> TypeVertexFromTypeName $unaliasedName
+                        } catch {
+                            # The scheme is malformed such that even though the return type
+                            # is listed in the schema, we could find no vertex. Move on from
+                            # this procesing error, future attempts to traverse the return
+                            # type will not succeeds.
+                        }
                     }
                 }
 
