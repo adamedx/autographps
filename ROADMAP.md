@@ -2,7 +2,11 @@
 
 ## To-do items -- prioritized
 
-* Add -count option to Get-GraphResourceWithMetadata
+* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
+* Color for Get-Graph
+* Color for Create / Update operations?
+* Color for Find-GraphPermission
+* Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
@@ -361,6 +365,7 @@
 * Graph statistics command
 * Allow types to be piped to show-graphhelp from find-graphtype
 * Change Get-GraphStatistics to Measure-Graph
+* Add -count option to Get-GraphResourceWithMetadata
 
 ### Postponed
 
@@ -1129,6 +1134,19 @@ Well, there's nothing like adding some color, so long as it's optional. Here are
     * Preview? Yes -- this draws attention away from "type" column, which is easy to confuse with "id" for navigation properties or singletons / entity sets
     * Type: This draws attention from Preview and Id, which should be the real stars
     * Id: ok, here we background and foreground shades of cyan, yellow, green. Collections have background (like ls in Ubuntu)
+
+#### Color principles
+
+* Use color for the purpose of conveying information efficiently, not gratuitously; overuse dilutes effectiveness and can even make the experience unpleasant
+* Even still, it's ok to use color for fun where it doesn't hurt anything :)
+* Try to have consistency about the meaning of colors in the following areas:
+  * Errors -- this is typically red. There may be "hard" errors that indicate an outage for example, and "softer" errors that can be corrected by the user such as an expired certificate. A state that is surfaced in a command that indicates a bad configuration (again, the expired certificate) but that has not necessarily been exercised and may not have yet caused an error would also fall into the latter category. In these cases, the person seeing the error should take an action of some sort, even if it's just to file a support case.
+  * Emphasis -- in a set of data, what should stand out? Typically a key property such as a display name that clarifies the object's purpose might need to be called out. This would generally be a static determination, not a runtime or conditional coloring based on a variable state.
+  * Enabled -- this is useful for capabilities, e.g. local preferences that can be enabled or disabled.
+  * Contrasting types -- in heterogeneous lists, there may be significantly different actions that can be taken based on the class of the element. E.g. listing the contents of a file system location, where some elements are files, and others are directories that contain other files and provide the extra capability of traversal. These two use cases may warrant contrasting colors to indicate the different classes. Symbolic links in the file system may also warrant specific coloring.
+  * Domain-specific -- of course, in certain areas, there may already be a convention, so if that presentation can be isolated from other use cases, it's ok to adopt a coloring that deviates from the consistently applied approach
+
+A suggested approach: Errors: Red background for hard errors, red foreground for softer errors; Emphasis: Bright Yellow; Enabled: Green, disabled gray; Contrasting types: Use Cyan, Blue, Magenta for top contrasting categories, and use background color for containment capabilities;
 
 ### Setting location
 

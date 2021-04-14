@@ -51,6 +51,8 @@ function Get-GraphResourceWithMetadata {
 
         [Switch] $Descending,
 
+        [switch] $Count,
+
         [switch] $RawContent,
 
         [switch] $AbsoluteUri,
@@ -101,7 +103,7 @@ function Get-GraphResourceWithMetadata {
         $context = $null
 
         $mustWaitForMissingMetadata = (__Preference__MustWaitForMetadata) -and ! $NoRequireMetadata.IsPresent
-        $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
+        $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent -or $Count.IsPresent
 
         $results = @()
         $intermediateResults = @()
@@ -206,6 +208,7 @@ function Get-GraphResourceWithMetadata {
             OrderBy = $OrderBy
             Descending = $Descending
             RawContent=$RawContent
+            Count=$Count
             Headers=$Headers
             First=$pagingResultCount
             Skip=$pscmdlet.pagingparameters.skip

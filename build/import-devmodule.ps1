@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $NoImport, $Path)
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $NoImport, $Path, [switch] $AllowProfile)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -67,7 +67,15 @@ if (! $NoNewShell.ispresent ) {
 
     # Set the AUTOGRAPH_BYPASS_SETTINGS environment variable so that the local profile configuration has
     # no impact on the tests
-    $shellArguments = '-noexit', '-command', "set-item env:AUTOGRAPH_BYPASS_SETTINGS `$true; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
+    # Set the AUTOGRAPH_BYPASS_SETTINGS environment variable so that the local profile configuration has
+    # no impact on the tests
+    $bypassSettings = if ( ! $AllowProfile.IsPresent ) {
+        'set-item env:AUTOGRAPH_BYPASS_SETTINGS $true'
+    } else {
+        ''
+    }
+
+    $shellArguments = '-noexit', '-command', "$bypassSettings; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
 
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(

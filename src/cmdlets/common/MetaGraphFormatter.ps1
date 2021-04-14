@@ -39,34 +39,34 @@ ScriptClass MetaGraphFormatter {
                 $::.SegmentHelper.__GetPreview($segment, '')
             }
 
-            $::.ColorString.ToColorString($preview, 11, $null)
+            $::.ColorString.ToStandardColorString($preview, 'Emphasis1', $null, $null, $null)
         }
 
         function SegmentId($segment) {
-            $background = $null
-            $foreground = $null
+            $highlightValues = $null
+            $coloring = $null
+            $criterion = $null
 
             if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segmentType = $segment.Info[0]
-                $foreground = if ( $segmentType -eq 'f' ) {
-                    11
-                } elseif ( $segmentType -eq 'a' ) {
-                    6
+                $segmentType = [string] $segment.Info[0]
+                $coloring = if ( $segmentType -eq 'f' -or $segmentType -eq 'a' ) {
+                    $highlightValues = @('none', 'a', 'f')
+                    $criterion = $segmentType
+                    'Contrast'
                 } else {
                     if ( $segment.Collection ) {
-                        0
-                        if ( $segmentType -eq 'n' ) {
-                            $background = 10
-                        } else {
-                            $background = 6
-                        }
+                        'Containment'
                     } else {
-                        10
+                        if ( $segmentType -eq 'n' -or $segmentType -eq 's' ) {
+                            'Emphasis1'
+                        } else {
+                            'Emphasis2'
+                        }
                     }
                 }
             }
 
-            $::.ColorString.ToColorString($segment.Id, $foreground, $background)
+            $::.ColorString.ToStandardColorString($segment.Id, $coloring, $criterion, $highlightValues, $null)
         }
     }
 }

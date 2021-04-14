@@ -267,6 +267,9 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 ### New features
 
 * Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
+* `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
+* New `Get-GraphLastOutput` command that returns the last results from previous commands and associates them with an index.
+* The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
 
 ### Fixed defects
 
