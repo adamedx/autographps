@@ -68,5 +68,15 @@ ScriptClass MetaGraphFormatter {
 
             $::.ColorString.ToStandardColorString($segment.Id, $coloring, $criterion, $highlightValues, $null)
         }
+
+        function MetadataStatus($status) {
+            $criterion = switch ( $status ) {
+                'Pending' { 'Warning' }
+                'Failed' { 'Error2' }
+                'Ready' { 'Success' }
+            }
+
+            $::.ColorString.ToStandardColorString($status, 'Scheme', $criterion, $null, 'NotStarted')
+        }
     }
 }

@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
-* Color for Get-Graph
 * Color for Create / Update operations?
 * Color for Find-GraphPermission
 * Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
@@ -366,6 +365,7 @@
 * Allow types to be piped to show-graphhelp from find-graphtype
 * Change Get-GraphStatistics to Measure-Graph
 * Add -count option to Get-GraphResourceWithMetadata
+* Color for Get-Graph
 
 ### Postponed
 

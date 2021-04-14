@@ -74,9 +74,6 @@ limitations under the License.
         <TypeName>GraphLastResultType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
-             header, which we use to provide the name of the URI being enumerated or requested,
-             the same way that Get-ChildItem shows a directory title for the file system. -->
         <PropertyName>ParentPath</PropertyName>
         <Label>Graph Location</Label>
       </GroupBy>
@@ -131,9 +128,6 @@ limitations under the License.
         <TypeName>GraphStatisticsDisplayType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
-             header, which we use to provide the name of the URI being enumerated or requested,
-             the same way that Get-ChildItem shows a directory title for the file system. -->
         <PropertyName>GraphName</PropertyName>
         <Label>Graph Name</Label>
       </GroupBy>
@@ -175,6 +169,110 @@ limitations under the License.
         </ListEntries>
 
       </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphContext</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphContextDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>Name</PropertyName>
+        <Label>Graph Name</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Endpoint</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Endpoint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Version</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>CurrentLocation</Label>
+                <ScriptBlock>$_.CurrentLocation.ToGraphUri($null).ToString()</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AuthEndpoint</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Metadata</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MetadataStatus($_.Metadata)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>CreationTime</Label>
+                <ScriptBlock>$_.CreationTime.ToString('G')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>LastUpdateTime</Label>
+                <ScriptBlock>$_.LastUpdateTime.ToString('G')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastTypeMetadataSource</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphContextOverview</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphContextDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Metadata</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>LastUpdateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Endpoint</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Version</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MetadataStatus($_.Metadata)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$_.LastUpdateTime.ToString('G')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Endpoint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Version</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
     </View>
 
   </ViewDefinitions>
