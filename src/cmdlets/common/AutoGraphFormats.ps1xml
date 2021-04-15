@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- *******************************************************************
-Copyright 2020, Adam Edwards
+Copyright 2021, Adam Edwards
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -223,6 +223,123 @@ limitations under the License.
         </ListEntries>
 
       </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphTypeDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphTypeDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>TypeId</PropertyName>
+        <Label>Graph TypeId</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>TypeClass</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq 'Complex' -or $_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>BaseType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>DefaultUri</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Relationships</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Relationships, 'name')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Properties</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity' -or $_.TypeClass -eq 'Complex'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Properties, 'name')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Enumerations</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Enumeration'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.EnumerationValues($_.Properties)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Methods</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity' -or $_.TypeClass -eq 'Complex'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Methods, 'name')</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphTypeOverview</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphTypeDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeClass</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>BaseType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DefaultUri</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Relationships</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TypeId, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>BaseType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Relationships, 'name')</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
     </View>
 
     <View>

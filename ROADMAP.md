@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Fix error stream pollution in GetNativeSchemaFromGraph
 * Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
 * Color for Create / Update operations?
 * Color for Find-GraphPermission

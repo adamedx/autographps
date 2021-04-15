@@ -78,5 +78,28 @@ ScriptClass MetaGraphFormatter {
 
             $::.ColorString.ToStandardColorString($status, 'Scheme', $criterion, $null, 'NotStarted')
         }
+
+        function TypeClass($typeClass) {
+            $foreColor = switch ($typeClass) {
+                'Entity' { 10 }
+                'Complex' { 9 }
+                'Enumeration' { 13 }
+                'Primitive' { 8 }
+            }
+
+            $::.ColorString.ToColorString($typeClass, $foreColor, $null)
+        }
+
+        function CollectionByProperty($collection, $property) {
+            if ( $collection ) {
+                $collection.$property
+            }
+        }
+
+        function EnumerationValues($enumeration) {
+            if ( $enumeration ) {
+                $enumeration.name.name
+            }
+        }
     }
 }
