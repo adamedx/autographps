@@ -65,7 +65,7 @@ function Get-GraphMethod {
             if ( ! $Parameters.IsPresent ) {
                 new-so MethodDisplayType $method
             } else {
-                $method.Parameters
+                $::.MethodDisplayType |=> ToPublicParameterList $method
             }
         }
     }

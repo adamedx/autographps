@@ -54,6 +54,23 @@ ScriptClass MethodDisplayType {
 
             Update-TypeData -force @displayTypeArguments
         }
+
+        function ToPublicParameterList($method) {
+            if ( $method.parameters ) {
+                $result = $method.parameters | foreach {
+                    $newParameter = [PSCustomObject] @{
+                        MethodName = $method.Name
+                        Name = $_.Name
+                        TypeId = $_.TypeId
+                        IsCollection = $_.IsCollection
+                    }
+                    $newParameter.pstypenames.insert(0, 'MethodParameterType')
+                    $newParameter
+                }
+
+                $result
+            }
+        }
     }
 }
 

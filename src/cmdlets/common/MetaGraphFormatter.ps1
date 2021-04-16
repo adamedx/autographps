@@ -142,5 +142,34 @@ ScriptClass MetaGraphFormatter {
                 $enumeration.name.name
             }
         }
+
+        function MatchedSearchTerms($match, $field) {
+            if ( $match.MatchedTerms ) {
+                $matchedTerms = $match.MatchedTerms | select -first 1
+                $isExact = $match.SearchTerm -in $matchedTerms
+                if ( ! $isExact ) {
+                    foreach ( $typeName in $matchedTerms ) {
+                        if ( $match.SearchTerm -eq ( $typeName -split '\.' | select -last 1 ) ) {
+                            $isExact = $true
+                            break
+                        }
+                    }
+                }
+
+                $coloring = if ( $isExact ) {
+                    'Emphasis1'
+                } else {
+                    'Emphasis2'
+                }
+
+                $value = if ( $field ) {
+                    $match.$field
+                } else {
+                    $matchedTerms
+                }
+
+                $::.ColorString.ToStandardColorString($value, $coloring, $null, $null, $null)
+            }
+        }
     }
 }

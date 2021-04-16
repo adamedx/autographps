@@ -13,19 +13,22 @@
 # limitations under the License.
 
 ScriptClass TypeSearchResultDisplayType {
+    $SearchTerm = $null
     $Relevance = $null
     $TypeClass = $null
     $TypeId = $null
     $Criteria = $null
     $MatchedTerms = $null
     $GraphName = $null
+    $Others = $null
 
     function __initialize($typeMatch, $graphName) {
+        $this.SearchTerm = $typeMatch.SearchTerm
         $this.Relevance = $typeMatch.Score
         $this.TypeClass = $typeMatch.MatchedTypeClass
         $this.TypeId = $typeMatch.MatchedTypeName
-        $this.Criteria = $typeMatch.MatchedTerms.Keys
-        $this.MatchedTerms = $typeMatch.MatchedTerms.Values
+        $this.Criteria = $typeMatch.MatchedTerms.keys
+        $this.MatchedTerms = $typeMatch.MatchedTerms.values
         $this.GraphName = $graphName
     }
 

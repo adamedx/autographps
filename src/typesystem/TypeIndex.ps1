@@ -112,7 +112,7 @@ ScriptClass TypeIndex {
                 foreach ( $matchingType in $entry.targets.keys ) {
                     $matchedTypeClass = $entry.targets[$matchingType]
                     if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
-                        new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass $matchedValues
+                        new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass @($matchingValue)
                     }
                 }
             }
