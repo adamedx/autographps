@@ -123,6 +123,92 @@ limitations under the License.
     </View>
 
     <View>
+      <Name>GraphMember</Name>
+      <ViewSelectedBy>
+        <TypeName>MemberDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>MemberType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>IsCollection</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberName($_.Name, $_.MemberType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>MemberType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsCollection</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphMemberDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>MemberDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <PropertyName>MemberType</PropertyName>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberName($_.Name, $_.MemberType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MemberType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>TypeId</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>IsCollection</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.MemberType -eq 'Method'</ScriptBlock>
+                </ItemSelectionCondition>
+                <Label>MethodType</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.MethodType, 'Contrast', $null, @('none', 'Action', 'Function'), $null)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
       <Name>GraphStatisticsFormatType</Name>
       <ViewSelectedBy>
         <TypeName>GraphStatisticsDisplayType</TypeName>
@@ -242,7 +328,7 @@ limitations under the License.
             <ListItems>
               <ListItem>
                 <Label>TypeClass</Label>
-                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>
@@ -324,7 +410,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.TypeId, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>BaseType</PropertyName>

@@ -79,7 +79,13 @@ ScriptClass MetaGraphFormatter {
             $::.ColorString.ToStandardColorString($status, 'Scheme', $criterion, $null, 'NotStarted')
         }
 
-        function TypeClass($typeClass) {
+        function TypeClass($typeClass, $value) {
+            $targetValue = if ( $value ) {
+                $value
+            } else {
+                $typeClass
+            }
+
             $foreColor = switch ($typeClass) {
                 'Entity' { 10 }
                 'Complex' { 9 }
@@ -87,7 +93,42 @@ ScriptClass MetaGraphFormatter {
                 'Primitive' { 8 }
             }
 
-            $::.ColorString.ToColorString($typeClass, $foreColor, $null)
+            $::.ColorString.ToColorString($targetValue, $foreColor, $null)
+        }
+
+        function MemberTypeId([string] $typeId, [boolean] $isCollection) {
+            $colors = if ( ! $typeId.StartsWith('Edm.') ) {
+                $::.ColorString.GetStandardColors('Emphasis2', $null, $null, $null)
+            }
+
+            $backColor = $null
+            $foreColor = if ( $colors ) {
+                $colors[0]
+            } else {
+                7
+            }
+
+            if ( $isCollection ) {
+                $backColor = if ( $foreColor ) {
+                    $foreColor
+                } else {
+                    7
+                }
+
+                $foreColor = 0
+            }
+
+            $::.ColorString.ToColorString($typeId, $foreColor, $backColor)
+        }
+
+        function MemberName([string] $memberName, [string] $memberType) {
+            $color = switch ( $memberType ) {
+                'Property' { 11 }
+                'Relationship' { 10 }
+                'Method' { 14 }
+            }
+
+            $::.ColorString.ToColorString($memberName, $color, $null)
         }
 
         function CollectionByProperty($collection, $property) {
