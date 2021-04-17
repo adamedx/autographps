@@ -14,6 +14,45 @@
 
 ScriptClass MetaGraphFormatter {
     static {
+        function __initialize {
+            $::.ColorScheme.RegisterColorNames(
+                @(
+                    'TypeClass-Entity'
+                    'TypeClass-Complex'
+                    'TypeClass-Enumeration'
+                    'TypeClass-Primitive'
+                    'MemberType-Property'
+                    'MemberType-Relationship'
+                    'MemberType-Method'
+                    'PrimitiveTypeScalar'
+                    'PrimitiveTypeCollection'
+                    'Consent-Admin'
+                    'Consent-User'
+                ),
+                'autographps'
+            )
+
+            $colorInfo = [PSCustomObject] @{
+                colorMode = '4bit'
+                Colors = [PSCustomObject] @{
+                    'Success' = 10
+                    'Warning' = 11
+                    'Error1' = 1
+                    'Error2' = 9
+                    'REST-Method-POST' = 13
+                    'REST-Method-PUT' = 5
+                    'REST-Method-GET' = 12
+                    'REST-Method-DELETE' = 11
+                    'REST-Method-PATCH' = 3
+                    'Time-Elapsed-Normal' = 10
+                    'Time-Elapsed-Slow' = 11
+                    'Time-Elapsed-ExtraSlow' = 9
+                }
+            }
+
+            $::.ColorString.UpdateColorScheme(@($colorInfo))
+        }
+
         function ResultIndex($result) {
             if ( $result | gm __ResultIndex -erroraction ignore ) {
                 $result.__ResultIndex()
@@ -193,3 +232,5 @@ ScriptClass MetaGraphFormatter {
         }
     }
 }
+
+$::.MetaGraphFormatter |=> __initialize
