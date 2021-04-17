@@ -2,8 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add color scheme to AutoGraphPS
 * Fix error stream pollution in GetNativeSchemaFromGraph
-* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
 * Color for Create / Update operations?
 * Color for Find-GraphPermission
 * Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
@@ -389,6 +389,7 @@
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
 * Make show-graphhelp support pipeline
+* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
 
 ### Abandoned
 

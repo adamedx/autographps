@@ -171,5 +171,25 @@ ScriptClass MetaGraphFormatter {
                 $::.ColorString.ToStandardColorString($value, $coloring, $null, $null, $null)
             }
         }
+
+        function AuthType($authType) {
+            $coloring = if ( $authType -eq 'Delegated' ) {
+                'Emphasis1'
+            } else {
+                'Emphasis2'
+            }
+
+            $::.ColorString.ToStandardColorString($authType, $coloring, $null, $null, $null)
+        }
+
+        function PermissionName($permission, $consentType) {
+            $foreColor = if ( $consentType -eq 'Admin' ) {
+                9
+            } else {
+                10
+            }
+
+            $::.ColorString.ToColorString($permission, $foreColor, $null)
+        }
     }
 }

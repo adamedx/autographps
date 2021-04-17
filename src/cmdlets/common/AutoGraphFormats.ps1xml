@@ -596,9 +596,6 @@ limitations under the License.
     </View>
 
 
-
-    
-
     <View>
       <Name>TypeSearchResult</Name>
       <ViewSelectedBy>
@@ -736,6 +733,94 @@ limitations under the License.
         </TableRowEntries>
 
       </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphPermission</Name>
+      <ViewSelectedBy>
+        <TypeName>__ScriptClassPermissionDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AuthType</PropertyName>
+        <Label>AuthType</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AuthType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ConsentType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Description</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ConsentType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.PermissionName($_.Name, $_.ConsentType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Description</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphPermissionDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>__ScriptClassPermissionDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AuthType</PropertyName>
+        <Label>AuthType</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>AuthType</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConsentType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.PermissionName($_.Name, $_.ConsentType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Description</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
     </View>
 
   </ViewDefinitions>
