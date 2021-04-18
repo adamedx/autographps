@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,19 +22,19 @@
 function Get-GraphChildItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='byuri',  mandatory=$true)]
-        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='byuri',  valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('OfUri')]
         [Alias('GraphUri')]
-        $Uri,
+        [Uri] $Uri,
 
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
         [parameter(parametersetname='bytypecollection', mandatory=$true)]
         [Alias('OfTypeName')]
         [Alias('FullTypeName')]
         [string] $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(parametersetname='bytypeandid', mandatory=$true)]
         [Alias('OfId')]
         [string] $Id,
 
@@ -48,7 +48,7 @@ function Get-GraphChildItem {
         [string[]] $Relationship,
 
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuripipeline', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='bytypecollection')]
         [parameter(parametersetname='byobject')]

@@ -86,21 +86,21 @@ For more details or reference material describing the Graph API URIs, visit the 
 Top-level objects such as `group` or `user` have an `id`. If you know that `id`, you can get information about the actual object using `Get-GraphItem`:
 
 ```powershell
-Get-GraphItem user -Id f7e9d7b6-f92f-4a78-8537-6b78d874936e
+Get-GraphItem user f7e9d7b6-f92f-4a78-8537-6b78d874936e
 
    Graph Location: /users
 
 Info Type Preview      Id
 ---- ---- -------      --
-t +> user Laquan Smith a57f301b-4fc2-4fac-865c-ee4e1af3084d
+t +> user Laquan Smith f7e9d7b6-f92f-4a78-8537-6b78d874936e
 
-Get-GraphItem group -Id a57f301b-4fc2-4fac-865c-ee4e1af3084d
+Get-GraphItem group a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
    Graph Location: /groups
 
 Info Type   Preview        Id
 ---- -----  -------        --
-t +> group  Mathmeticians  57f301b-4fc2-4fac-865c-ee4e1af3084d
+t +> group  Mathmeticians  a57f301b-4fc2-4fac-865c-ee4e1af3084d
 ```
 
 Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
@@ -123,8 +123,8 @@ Note that the output of `Get-GraphItem` is an object that in addition to the pro
 
 ```powershell
 # These all have the same output:
-Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
-Get-GraphItem /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
+Get-GraphItem users f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphItem -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
 Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
 ```
 
@@ -337,18 +337,21 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem     | Retrieves an entity specified by type and ID or URI |
+| Get-GraphItemRelationship (ggrel) | Retrieves a specified subset of relationships from the specified item                           |
 | Get-GraphLastOutput (glo) | Retrieves the last output returned from commands like `gls` and associates them with an index           |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphMember (ggm)     | Gets information about the members of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
 | Get-GraphMethod (ggmt)    | Gets information about the methods of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
+| Get-GraphRelatedItem (gri)| Gets the items related to a specified item through a specified relationship                             |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
 | Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
+| Get-GraphUri (guri)       | Gets the graph URI for the specified type and an optional object identifier                             |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
-| Invoke-GraphApiRequest       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
+| Invoke-GraphApiRequest    | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                      |
 | Invoke-GraphMethod        | Executes a method on a given Graph object specified by Type and Id or URI                               |
 | Measure-Graph             | Returns statistics about the types exposed by the Graph API                                             |
 | New-Graph                 | Mounts a new Graph connection and associated metadata for availability to AutoGraphPS cmdlets           |

@@ -435,7 +435,7 @@ $newUser = New-GraphItem user -Property mailNickname, userPrincipalName, display
 We can see that the user has been successfully created by issuing a request to the Graph to get the new user using a command like the following:
 
 ```powershell
-PS> Get-GraphItem user -Id $newUser.Id
+PS> Get-GraphItem user $newUser.Id
 
    Graph Location: /users
 
@@ -490,7 +490,7 @@ $newGroup | Set-GraphItem -Property displayName, description -Value 'Group 7 Acc
 This changes the group's display name to *Group 7 Access Level* and updates the description as well. This example takes the object to modify from the pipeline. Since this command has analogs of parameters from `New-GraphItem` and `New-GraphObject`, you can also specify commands using the following syntax:
 
 ```powershell
-Set-GraphItem group -Id $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
+Set-GraphItem group $newGroup.Id -Property displayName, description -Value 'Group 7 Access Level', 'All users with Group 7 access'
 ```
 
 And there are still more equivalent syntaxes, using the `PropertyTable` or `TemplateObject` parameters. `PropertyTable` is just a more concise way to specify the `Property` and `Value` parameters via a `HashTable`:
@@ -515,7 +515,7 @@ Group 7 Access Level Just the description
 Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
-$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 
 $existingGroup | gls -ContentOnly | select description, displayName
 
@@ -523,7 +523,7 @@ mailNickname displayName description
 ------------ ----------- -----------
              Unused      Unassinged group
 
-$templateGroup = Get-GraphItem group -Id 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
 
 $existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
@@ -538,7 +538,7 @@ Finally, an object returned from the Graph may be "edited" locally and then resu
 the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
 
 ```powershell
-$existingGroup = Get-GraphItem group -Id 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
 $existingGroup.displayName += ' - ' + [DateTime]::now
 
 $existingGroup | Set-GraphItem
@@ -839,7 +839,7 @@ state
 -----
 ```
 
-It should be noted that when constructing resources to submit requests that create new resource instances or update them, the commands that do this actually simplify the specification of the structure. It's often unnecessary to know about every single property of a resource. See the earlier examples for `New-GraphItem`, `Set-GraphItemProperty`, and `New-GraphObject` for more details on how you can efficiently specify just the properties required to submit a resource as part of a request to Graph.
+It should be noted that when constructing resources to submit requests that create new resource instances or update them, the commands that do this actually simplify the specification of the structure. It's often unnecessary to know about every single property of a resource. See the earlier examples for `New-GraphItem`, `Set-GraphItem`, and `New-GraphObject` for more details on how you can efficiently specify just the properties required to submit a resource as part of a request to Graph.
 
 #### I want the resource's URI so I can `gcd` to it and `gls` it
 

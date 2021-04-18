@@ -2,11 +2,10 @@
 
 ## To-do items -- prioritized
 
-* Add color scheme to AutoGraphPS
+* Add preference support for prompt
+* Color for Get-GraphItemRelationship
 * Fix error stream pollution in GetNativeSchemaFromGraph
 * Color for Create / Update operations?
-* Color for Find-GraphPermission
-* Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
@@ -367,6 +366,9 @@
 * Change Get-GraphStatistics to Measure-Graph
 * Add -count option to Get-GraphResourceWithMetadata
 * Color for Get-Graph
+* Add color scheme to AutoGraphPS
+* Color for Find-GraphPermission
+* Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
 
 ### Postponed
 

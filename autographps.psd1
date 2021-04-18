@@ -122,7 +122,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'glo', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'glo', 'ggrel', 'gri', 'ggu', 'guri', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -263,13 +263,21 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 ### Breaking changes
 
 * See breaking changes from `autographps-sdk 0.26.0`
+* When positional binding is used with the following commands, those positional parameters  no long bind to the `Uri` parameter, but to the `Type` and then `Id`, `Property`, and `Value` parameters. To bind by URI, the `-Uri` parameter must be specified explicitly by name. This any use of these commands with positional binding will now break:
+  * `Get-GraphItem`
+  * `Set-GraphItem`
+  * `Remove-Graphitem`
+* The pipeline parameter binding has been changed for `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` (aka through the `gls` alias), though in general the binding is more permissive and may not break at all or may break in subtle ways
+* The `ggreli` alias for `Get-GraphRelatedItem` is now `gri`
 
 ### New features
 
+* Many commands, including common commands like `gls` now have color support!
 * Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
 * `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
 * New `Get-GraphLastOutput` command that returns the last results from previous commands and associates them with an index.
 * The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
+* The `guri` alias has been added for `Get-GraphUri`
 
 ### Fixed defects
 

@@ -196,10 +196,16 @@ function Get-GraphResourceWithMetadata {
                  $pagingResultCount = $pscmdlet.pagingparameters.first
              }
 
+        $uriArgument = if ( $resolvedUri -and ( $resolvedUri -isnot [Uri] ) -and ( $resolvedUri.TypeId -ne 'null' ) ) {
+            $resolvedUri.GraphUri
+        } else {
+            $specifiedUri
+        }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
-            Uri = if ( $resolvedUri.TypeId -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
+            Uri = $uriArgument
             Query = $Query
             Filter = $targetFilter
             Search = $Search

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
-        $Uri,
+        [Uri] $Uri,
 
         [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid')]
         $Id,
 
         [string[]] $Property,

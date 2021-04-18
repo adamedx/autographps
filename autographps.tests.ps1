@@ -77,7 +77,7 @@ Describe "Autographps application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('gcd', 'glo', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'gls', 'ggm', 'ggmt', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+            $expectedAliases = @('gcd', 'glo', 'gg', 'ggrel', 'gri', 'ggu', 'guri', 'ggci', 'ggi', 'gls', 'ggm', 'ggmt', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 
