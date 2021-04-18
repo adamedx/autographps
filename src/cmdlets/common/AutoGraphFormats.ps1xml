@@ -823,5 +823,93 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphRelationShip</Name>
+      <ViewSelectedBy>
+        <TypeName>RelationshipDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>FromUri</PropertyName>
+        <Label>FromUri</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>GraphName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TargetId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Relationship</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TargetUri</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>GraphName</PropertyName>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <ScriptBlock>$::.ColorString.ToStandardColorString($_.TargetId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <ScriptBlock>$::.ColorString.ToStandardColorString($_.Relationship, 'Scheme', 'MemberType-Relationship', $null, $null)</ScriptBlock>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <PropertyName>TargetUri</PropertyName>
+                </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphRelationshipDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>RelationshipDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>Relationship</PropertyName>
+        <Label>Relationship</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>GraphName</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>TargetId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Relationship</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Relationship, 'Scheme', 'MemberType-Relationship', $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>FromUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.FromUri, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>TargetUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TargetUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
   </ViewDefinitions>
 </Configuration>

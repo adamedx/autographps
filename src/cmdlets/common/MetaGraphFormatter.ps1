@@ -35,18 +35,17 @@ ScriptClass MetaGraphFormatter {
             $colorInfo = [PSCustomObject] @{
                 colorMode = '4bit'
                 Colors = [PSCustomObject] @{
-                    'Success' = 10
-                    'Warning' = 11
-                    'Error1' = 1
-                    'Error2' = 9
-                    'REST-Method-POST' = 13
-                    'REST-Method-PUT' = 5
-                    'REST-Method-GET' = 12
-                    'REST-Method-DELETE' = 11
-                    'REST-Method-PATCH' = 3
-                    'Time-Elapsed-Normal' = 10
-                    'Time-Elapsed-Slow' = 11
-                    'Time-Elapsed-ExtraSlow' = 9
+                    'TypeClass-Entity' = 10
+                    'TypeClass-Complex' = 9
+                    'TypeClass-Enumeration' = 13
+                    'TypeClass-Primitive' = 8
+                    'MemberType-Property' = 6
+                    'MemberType-Relationship' = 10
+                    'MemberType-Method' = 12
+                    'PrimitiveTypeScalar' = 8
+                    'PrimitiveTypeCollection' = 8
+                    'Consent-Admin' = 9
+                    'Consent-User' = 10
                 }
             }
 
@@ -161,13 +160,13 @@ ScriptClass MetaGraphFormatter {
         }
 
         function MemberName([string] $memberName, [string] $memberType) {
-            $color = switch ( $memberType ) {
-                'Property' { 11 }
-                'Relationship' { 10 }
-                'Method' { 14 }
+            $colorName = switch ( $memberType ) {
+                'Property' { 'MemberType-Property' }
+                'Relationship' { 'MemberType-Relationship' }
+                'Method' { 'MemberType-Method' }
             }
 
-            $::.ColorString.ToColorString($memberName, $color, $null)
+            $::.ColorString.ToStandardColorString($memberName, 'Scheme', $colorName, $null, $null)
         }
 
         function CollectionByProperty($collection, $property) {
