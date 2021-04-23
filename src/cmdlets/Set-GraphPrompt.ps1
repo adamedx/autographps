@@ -24,6 +24,9 @@ $__GraphOriginalPrompt = $null
 
 $GraphPromptColorPreference = $null
 
+$__GraphPromptColorSetting = $null
+$__GraphPromptBehaviorSetting = $null
+
 function __GetGraphDefaultPrompt {
     {
         $graph = get-graph ($::.GraphContext |=> GetCurrent).name -erroraction ignore
@@ -70,7 +73,15 @@ function __GetGraphDefaultPrompt {
         }
 
         if ( $connectionOutput -or $locationOutput ) {
-            $promptColor = if ( $GraphPromptColorPreference ) { $GraphPromptColorPreference } else { 'darkgreen' }
+
+            $promptColor = if ( $GraphPromptColorPreference ) {
+                $GraphPromptColorPreference }
+            elseif ( $__GraphPromptColorSetting ) {
+                $__GraphPromptColorSetting
+            } else {
+                'darkgreen'
+            }
+
             write-host -foreground $promptColor "$($connectionOutput)$($connectionStatus)`n$($locationOutput)"
         }
     }
@@ -91,34 +102,20 @@ function __GetGraphPrompt {
     }
 }
 
-function Set-GraphPrompt {
-    [cmdletbinding(positionalbinding=$false)]
-    param (
-        [parameter(parametersetname='Enable')]
-        [switch] $Enabled,
-
-        [parameter(position=0, parametersetname='Enable')]
-        [ScriptBlock] $PromptScript = $null,
-
-        [parameter(parametersetname='Disable')]
-        [switch] $Disabled
-    )
-
-    Enable-ScriptClassVerbosePreference
-
+function __ConfigurePrompt($behavior, $promptScript) {
     $originalPromptValue = try {
         $script:__GraphOriginalPrompt
     } catch {
     }
 
-    if ( $Disabled.IsPresent ) {
+    if ( $behavior -eq 'Disable' ) {
         if ( $originalPromptValue ) {
             set-item function:prompt -value $script:__GraphOriginalPrompt
             $script:__GraphOriginalPrompt = $null
         }
-    } elseif ( $Enabled.IsPresent ) {
-        $script:__GraphCurrentPrompt = if ( $PromptScript ) {
-            $PromptScript
+    } elseif ( $behavior -eq 'Enable' ) {
+        $script:__GraphCurrentPrompt = if ( $promptScript ) {
+            $promptScript
         } else {
             __GetGraphDefaultPrompt
         }
@@ -128,7 +125,22 @@ function Set-GraphPrompt {
         }
 
         set-item function:prompt -value (__GetGraphPrompt)
-    } else {
-        throw [ArgumentException]::new("Neither 'Enabled' or 'Disabled' options was specified for the command")
     }
+}
+
+function Set-GraphPrompt {
+    [cmdletbinding(positionalbinding=$false)]
+    param (
+        [parameter(position=0, mandatory=$true)]
+        [ValidateSet('Auto', 'Enable', 'Disable')]
+        [string] $Behavior,
+
+        [ScriptBlock] $PromptScript = $null
+    )
+
+    Enable-ScriptClassVerbosePreference
+
+    $script:__GraphPromptBehaviorSetting = $Behavior
+
+    __ConfigurePrompt $Behavior $PromptScript
 }
