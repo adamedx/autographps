@@ -229,6 +229,12 @@ ScriptClass MetaGraphFormatter {
 
             $::.ColorString.ToColorString($permission, $foreColor, $null)
         }
+
+        function ColorNameText($colorName, $text) {
+            $backColor = $::.ColorString.GetColorFromName($colorName)
+            $foreColor = $::.ColorString.GetColorContrast($backColor)
+            $::.ColorString.ToColorString($text, $foreColor, $backColor)
+        }
     }
 }
 

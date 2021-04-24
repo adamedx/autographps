@@ -911,5 +911,47 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphProfile</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphProfileSettings</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$color = if ( $_.IsDefault ) { 'Containment' }; $::.ColorString.ToStandardColorString($_.ProfileName, $color, $null, $null, $null)</ScriptBlock>
+        <Label>ProfileName</Label>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Connection</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>IsDefault</Label>
+                <ScriptBlock>$color = if ( $_.IsDefault ) { 'Emphasis2' }; $::.ColorString.ToStandardColorString($_.IsDefault, $color, $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PromptBehavior</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>PromptColor</Label>
+                <ScriptBlock>if ( $_ | gm PromptColor -erroraction ignore ) { $::.MetaGraphFormatter.ColorNameText($_.PromptColor, $_.PromptColor) }</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
+    </View>
+
   </ViewDefinitions>
 </Configuration>
