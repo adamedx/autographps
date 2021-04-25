@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add preference support for prompt
 * Color for Get-GraphItemRelationship
 * Fix error stream pollution in GetNativeSchemaFromGraph
 * Color for Create / Update operations?
@@ -392,6 +391,7 @@
 * Get-GraphType should take a URI
 * Make show-graphhelp support pipeline
 * Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
+* Add preference support for prompt
 
 ### Abandoned
 

@@ -36,9 +36,11 @@ ScriptClass GraphLocalSettings {
                 Required = $false
                 Updater = {
                     $currentProfile = $::.LocalProfile |=> GetCurrentProfile
-                    $settingValue = $currentProfile.GetSetting('PromptBehavior')
-                    if ( $settingValue -in 'Auto', 'Enable', 'Disable' ) {
-                        . $::.GraphLocalSettings.setPreferenceScript __GraphPromptBehaviorSetting $settingValue
+                    if ( $currentProfile ) {
+                        $settingValue = $currentProfile.GetSetting('PromptBehavior')
+                        if ( $settingValue -in 'Auto', 'Enable', 'Disable' ) {
+                            . $::.GraphLocalSettings.setPreferenceScript __GraphPromptBehaviorSetting $settingValue
+                        }
                     }
                 }
             }
@@ -48,9 +50,11 @@ ScriptClass GraphLocalSettings {
                 Required = $false
                 Updater = {
                     $currentProfile = $::.LocalProfile |=> GetCurrentProfile
-                    $settingValue = $currentProfile.GetSetting('PromptColor')
-                    if ( $settingValue -in [System.ConsoleColor].GetEnumNames() ) {
-                        . $::.GraphLocalSettings.setPreferenceScript __GraphPromptColorSetting $settingValue
+                    if ( $currentProfile ) {
+                        $settingValue = $currentProfile.GetSetting('PromptColor')
+                        if ( $settingValue -in [System.ConsoleColor].GetEnumNames() ) {
+                            . $::.GraphLocalSettings.setPreferenceScript __GraphPromptColorSetting $settingValue
+                        }
                     }
                 }
             }

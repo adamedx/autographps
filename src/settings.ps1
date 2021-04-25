@@ -14,4 +14,4 @@
 
 . (import-script client/GraphLocalSettings)
 
-$::.LocalProfile.ReloadProfileSettings($false)
+$::.LocalProfile |=> ReloadProfileSettings

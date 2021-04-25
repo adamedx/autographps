@@ -280,6 +280,7 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 * New `Get-GraphLastOutput` command that returns the last results from previous commands and associates them with an index.
 * The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
 * The `guri` alias has been added for `Get-GraphUri`
+* The output of `Get-GraphMember`, `Get-GraphType`, and `Get-GraphMethod` is now grouped
 
 ### Fixed defects
 
