@@ -35,6 +35,7 @@ function Get-GraphItem {
         [parameter(position=1, parametersetname='bytypeandid')]
         $Id,
 
+        [Alias('Select')]
         [string[]] $Property,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]

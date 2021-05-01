@@ -38,6 +38,7 @@ function Get-GraphChildItem {
         [Alias('OfId')]
         [string] $Id,
 
+        [Alias('Select')]
         [string[]] $Property,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]

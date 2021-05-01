@@ -51,6 +51,10 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Uri
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Select (new-so TypeUriParameterCompleter Property)
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource OrderBy (new-so TypeUriParameterCompleter Property)
+
+
 
 
 

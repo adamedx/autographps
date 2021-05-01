@@ -271,9 +271,20 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
   * `Remove-Graphitem`
 * The pipeline parameter binding has been changed for `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` (aka through the `gls` alias), though in general the binding is more permissive and may not break at all or may break in subtle ways
 * The `ggreli` alias for `Get-GraphRelatedItem` is now `gri`
+* The `Set-GraphPrompt` command no longer as the `Enabled` and `Disabled` parameters
+  * Instead, the new `Behavior` parameter which is also a positional parameter supports the values `Disable` and `Enable` which correspond to setting the `Disabled` and `Enabled` parameters of the previous version of this command. The default value is `Auto`, which allows the prompt behavior to be controlled by the module according to the current location managed by `Set-GraphLocation`.
 
 ### New features
 
+* Configuration (enabled by autographps-sdk): the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
+  * The following settings specific to this module are now configurable from the `settings.json` file:
+    * `PromptBehavior`: Set this to the same values as the `Behavior` parameter of `Set-GraphPrompt` to control the behavior of the prompt
+    * `PromptColor`: Sets the color of the prompt -- supports the same values and behaviors as the `GraphPromptColorPreference` perference variable
+  * From autographps-sdk: The following commands related to the proflie settings feature have been added:
+    * `Get-GraphProfileSettings`
+    * `Select-GraphProfileSettings`
+    * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
+    * `Remove-GraphConnection`: remove named connections
 * Many commands, including common commands like `gls` now have color support!
 * Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
 * `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
@@ -281,6 +292,7 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 * The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
 * The `guri` alias has been added for `Get-GraphUri`
 * The output of `Get-GraphMember`, `Get-GraphType`, and `Get-GraphMethod` is now grouped
+* Fix broken `Members` value for the `Criteria` parameter of `Find-GraphType`
 
 ### Fixed defects
 

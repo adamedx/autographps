@@ -25,8 +25,6 @@ enum TypeSearchCriterion {
     Member
 }
 
-
-
 function Find-GraphType {
     [cmdletbinding(positionalbinding=$false)]
     [OutputType('GraphTypeDisplayType')]

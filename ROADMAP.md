@@ -2,13 +2,14 @@
 
 ## To-do items -- prioritized
 
-* Color for Get-GraphItemRelationship
+* Fix issues where commands like gls fail if no id is returned
+* Add -all / nopaging support for `gls` ?
+* Add -all / nopaging support for 'get-graphrelateditem'?
 * Fix error stream pollution in GetNativeSchemaFromGraph
 * Color for Create / Update operations?
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
-* gcd should let you specify alternate criteria to id
 * Commands to manage open extensions
 * Fix ambiguous new object problem
 * Add DefaultUriForType to Get-GraphType
@@ -367,31 +368,33 @@
 * Color for Get-Graph
 * Add color scheme to AutoGraphPS
 * Color for Find-GraphPermission
+* Color for Get-GraphItemRelationship
+* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
 * Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
+* gcd should let you specify alternate criteria to id
+* Add command completion for the expand and orderby parameters for get-graphresource
+* Add select alias for get-graph* commands
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
+* Make show-graphhelp support pipeline
+* Rename graphscope to graphname on get-graphuriinfo
+* Rename propertylist in new-graphitem, new-graphobject to propertymap
+* Fix gls of the result of gls to return the same thing, not the entityset
+* Add -filter to get-graphitem
+* Add preference support for prompt
 
 ### Postponed
 
-* transform schema, version objects to hashtables
 * Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
 * Make content column actually add the columns
-* Add -filter to get-graphitem
-* Add -filter to get-graphschema
 * Add hint of additional records
 * Add continue feature?
 * Test Release
 * Get a fix from sdk for scope helper in find-graphpermissions
-* Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
-* Fix gls of the result of gls to return the same thing, not the entityset
 * Fix TypeMember to be more like MemberDisplayType
-* Rename graphscope to graphname on get-graphuriinfo
-* Show-GraphHelp should take a uri
-* Get-GraphType should take a URI
-* Make show-graphhelp support pipeline
-* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
-* Add preference support for prompt
 
 ### Abandoned
 
@@ -405,6 +408,8 @@
 * Move some data to info, possibly show rwx
 * Should Get-GraphResource be Get-GraphContent?
   * No :) -- made a Get-GraphContent alias though
+* transform schema, version objects to hashtables
+* Add -filter to get-graphschema
 
 #### Stdposh improvements
 
