@@ -12,11 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-strictmode -version 5
-
-. (import-script metadata/metadata)
-. (import-script typesystem/typesystem)
-. (import-script cmdlets)
-. (import-script settings)
-. (import-script aliases)
-. (import-script formats)
+. (import-script cmdlets/common/MetaGraphFormatter)

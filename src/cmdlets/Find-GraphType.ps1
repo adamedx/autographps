@@ -25,8 +25,6 @@ enum TypeSearchCriterion {
     Member
 }
 
-
-
 function Find-GraphType {
     [cmdletbinding(positionalbinding=$false)]
     [OutputType('GraphTypeDisplayType')]
@@ -75,7 +73,7 @@ function Find-GraphType {
     $targetCriteria = [ordered] @{}
 
     foreach ( $criterion in $Criteria ) {
-        if ( $criterion -eq 'Members' ) {
+        if ( $criterion -eq 'Member' ) {
             'Property', 'NavigationProperty', 'Method' | foreach {
                 $targetCriteria[$_] = $true
             }

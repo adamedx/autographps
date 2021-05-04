@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,12 @@ function __Preference__MustWaitForMetadata {
 }
 
 $__GraphAutoPromptPreferenceValues = @(
-    'Manual',
-    'Auto'
+    'Auto',
+    'Enable',
+    'Disable'
 )
 
-$GraphAutoPromptPreference = 'Auto'
+$GraphAutoPromptPreference = $null
 
 function __AutoConfigurePrompt($context) {
     $originalPrompt = try {
@@ -43,16 +44,28 @@ function __AutoConfigurePrompt($context) {
     } catch {
     }
 
-    if ( $GraphAutoPromptPreference -eq 'Auto' ) {
+    $currentSetting = if ( $GraphAutoPromptPreference ) {
+        $GraphAutoPromptPreference
+    } elseif ( $__GraphPromptBehaviorSetting ) {
+        $__GraphPromptBehaviorSetting
+    } else {
+        'Auto'
+    }
+
+    if ( $currentSetting -eq 'Auto' ) {
         if ( ( $context.connection |=> IsConnected ) -or ! ( $context.location |=> IsRoot ) ) {
             if ( ! $originalPrompt ) {
-                Set-GraphPrompt -Enable
+                __ConfigurePrompt Enable
             }
         } else {
             if ( $originalPrompt ) {
-                Set-GraphPrompt -Disable
+                __ConfigurePrompt Disable
             }
         }
+    } elseif ( $currentSetting -eq 'Enable' ) {
+        __ConfigurePrompt Enable
+    } elseif ( $currentSetting -eq 'Disable' ) {
+        __ConfigurePrompt Disable
     }
 }
 

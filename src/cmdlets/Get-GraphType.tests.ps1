@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -203,8 +203,8 @@ Describe 'The Get-GraphType command' {
         # this speeds things up -- initializing a separate context (presumably in
         # a different file) would duplicate the slow initialization speed required
         # for these tests.
-        It "Should get the correct statistics from Get-GraphStatistics" {
-            $statistics = Get-GraphStatistics
+        It "Should get the correct statistics from Measure-Graph" {
+            $statistics = Measure-Graph
 
             $statistics.ComplexPropertyCount | Should Be 1145
             $statistics.ComplexTypeCount | Should Be 327
@@ -217,8 +217,8 @@ Describe 'The Get-GraphType command' {
             $statistics.GraphName | Should Be 'v1.0'
         }
 
-        It "Should get the correct detailed statistics from Get-GraphStatistics when the -Detailed parameter is specified" {
-            $statistics = Get-GraphStatistics -Detailed
+        It "Should get the correct detailed statistics from Measure-Graph when the -Detailed parameter is specified" {
+            $statistics = Measure-Graph -Detailed
 
             $statistics.ComplexPropertyCount | Should Be 1145
             $statistics.ComplexTypeCount | Should Be 327

@@ -1,7 +1,7 @@
 Why AutoGraphPS (fka PoshGraph)?
 ================================
 
-Many developers' first experience of the The Microsoft Graph is mediated through Graph Explorer. This web-based tool makes the abstract Graph API into something tangible to be navigated and manipulated as one would casually use a web browser.
+Many developers' first experience of the The Microsoft Graph is mediated through [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). This web-based tool makes the abstract Graph API into something tangible to be navigated and manipulated as one would casually use a web browser.
 
 Missing from Graph Explorer, however, is a facility for automation. That's the need filled by this project. AutoGraphPS is the programmable Graph Explorer designed for developers and system administrators. It's designed for both exploration AND automation.
 
@@ -9,10 +9,10 @@ Missing from Graph Explorer, however, is a facility for automation. That's the n
 
 Of the small number of tools focused on the Graph itself, there are none that support both human-oriented browsing AND automation. Such a tool would likely satisfy the "wish list" of characteristics below:
 
-  * Universality -- acts on the entirety of the Graph, not just a particular subset
-  * Integrated auth -- easy to use auth\*
+  * Universal -- acts on the entirety of the Graph, not just a particular subset
+  * Integrated auth -- easy to use auth\*, no need to dive into auth protocols
   * Intuitive -- user interface that presents a simple but powerful conceptual model of the Graph to humans
-  * Approachability -- requires no documentation to learn about not just the tool, but the Graph itself
+  * Approachable -- requires no documentation to learn about not just the tool, but the Graph itself
   * Instructive -- progressively exposes you to more of the Graph, its features, and the tool's features as you use it
   * Scalable -- easy to use for the simplest Graph scenarios and also the most advanced
   * Command-line interface -- meet developers where they are
@@ -29,9 +29,9 @@ AutoGraphPS is a single app that provides "all of the above."
 
 The project's goals are:
 
-  * Default UX for the graph: Be the human UX for sysadmins and developers to access the graph
-  * Zero-doc Graph onboarding: Learn about the Graph itself by installing the tool and reading no documentation
-  * PowerShell Graph SDK: Be the Graph SDK for PowerShell automation and applications
+  * Default UX for the Graph: Provide a human UX for DevOps engineers, including sysadmins and developers, to interactively access and experience the Graph
+  * Zero-doc Graph onboarding: Teach users about the Graph API by using the Graph itself as opposed to starting with documentation
+  * PowerShell Graph DevOps SDK: Provide a DevOps programming interface to the Graph for PowerShell-based automation and applications
 
 ## Design choices
 
@@ -106,8 +106,8 @@ Other PowerShell cmdlets such as the `convertto-*` and `convertfrom-*` cmdlets e
 
 Beyond the standard cmdlets included in PowerShell itself, repositories such as PowerShell Gallery and Nuget.Org provide a wide range of open source PowerShell modules that extend PowerShell. These libraries enable more than just scripting -- in concert with AutoGraphPS full-scale applicaitons may be built with AutoGraphPS. Such modules can also extend the user experience provided by AutoGraphPS through richer formatting or query facilities.
 
-### The missing PowerShell SDK for Graph
-Given that PowerShell as a language has the same expressibilty and concepts as Javascript, Ruby, et. al., each of which have respective Graph SDKs, it makes sense to ask where the equivalent Graph SDK cand be found for Graph. AutoGraphPS is that SDK, and because it uses a simple layering on top of the Graph API, it is a robust experience that does not require PowerShell users to constantly update to the latest version of AutoGraphPS to use new Graph features.
+### The missing PowerShell Programming Gateway for the Graph protocol
+Given that PowerShell as a language has the same expressibilty and concepts as Javascript, Ruby, et. al., each of which have respective Graph SDKs, it makes sense to ask where a similar developer interface may be found for Graph. AutoGraphPS is that programming surface, and because it uses a simple layering on top of the Graph API, it is a robust experience that does not require PowerShell users to constantly update to the latest version of AutoGraphPS to use new Graph features.
 
 ### Powered by PowerShell
 
@@ -143,12 +143,19 @@ There are, then, some obvious next steps for the project in terms of both featur
 * More tests to enable contributions from more than just the original maintainer
 * Cmdlet help
 * Performance enhancements
-* Write (i.e. `PUT`) operations on the Graph
-* Entity object construction
-* Graph API method invocation with parameter passing
-* Keyword search on entities and locations in the Graph
 * Extension of the file system metaphore for move, copy, and similar semantics
 * New projects to provide domain-specific cmdlets built on AutoGraphPS (e.g. file management, email, etc.)
 * AutoGraphPS equivalents for other languages -- Python anyone?
 
 These are suggestions. Ultimately for the project to move beyond a proof of concept, it is the community that must provide the guidance and source contributions that make AutoGraphPS a truly useful gateway to the Graph.
+
+# Appendix
+
+## Completed improvements
+
+The following items were noted as upcoming improvements as part of the earlier *Where Next* section and have now been completed and removed from that list:
+
+* Write (i.e. `PUT`) operations on the Graph
+* Entity object construction
+* Graph API method invocation with parameter passing
+* Keyword search on entities and locations in the Graph

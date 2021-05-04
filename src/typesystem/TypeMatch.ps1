@@ -42,7 +42,7 @@ ScriptClass TypeMatch {
     }
 
     function AddCriterion([string] $criterionName, $isExactMatch) {
-        $this.Criteria.Add($criterionName, [PSCustomObject] @{Name=$criterionName;IsExactMatch =$isExactMatch})
+        $this.Criteria.Add($criterionName, [PSCustomObject] @{Name=$criterionName;IsExactMatch=$isExactMatch})
         __UpdateScore
     }
 

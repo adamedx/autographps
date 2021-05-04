@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.36.0'
+ModuleVersion = '0.37.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.25.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.26.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -81,17 +81,18 @@ NestedModules = @(
     'Get-GraphChildItem',
     'Get-GraphItem',
     'Get-GraphItemRelationship',
-    'Get-GraphRelatedItem',
     'Get-GraphItemUri',
-    'Get-GraphResourceWithMetadata',
+    'Get-GraphLastOutput',
     'Get-GraphLocation',
     'Get-GraphMember',
     'Get-GraphMethod',
-    'Get-GraphStatistics',
+    'Get-GraphRelatedItem',
+    'Get-GraphResourceWithMetadata',
     'Get-GraphType',
     'Get-GraphUri',
     'Get-GraphUriInfo',
     'Invoke-GraphMethod',
+    'Measure-Graph',
     'New-Graph',
     'New-GraphItem',
     'New-GraphItemRelationship',
@@ -117,10 +118,11 @@ VariablesToExport = @(
     'GraphPromptColorPreference'
     'GraphVerboseOutputPreference' # From AutoGraphPS-SDK
     'LastGraphItems'               # From AutoGraphPS-SDK
+    'AutoGraphColorModePreference' # From AutoGraphPS-SDK
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('gcd', 'gg', 'ggrel', 'ggreli', 'ggu', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
+    AliasesToExport = @('gcd', 'gg', 'glo', 'ggrel', 'gri', 'ggu', 'guri', 'ggci', 'ggi', 'ggm', 'ggmt', 'gls', 'gwd', 'gni', 'grm', 'gsi', 'igm', 'ngo', 'ngp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -134,8 +136,11 @@ VariablesToExport = @(
         '.\autographps.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
+        '.\src\formats.ps1',
         '.\src\graph.ps1',
+        '.\src\settings.ps1',
         '.\src\client\LocationContext.ps1',
+        '.\src\client\GraphLocalSettings.ps1',
         '.\src\cmdlets\Add-GraphRelatedItem.ps1',
         '.\src\cmdlets\Find-GraphType.ps1',
         '.\src\cmdlets\Find-GraphPermission.ps1',
@@ -144,16 +149,17 @@ VariablesToExport = @(
         '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphItemRelationship.ps1',
         '.\src\cmdlets\Get-GraphItemUri.ps1',
+        '.\src\cmdlets\Get-GraphLastOutput.ps1',
         '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphMember.ps1',
         '.\src\cmdlets\Get-GraphMethod.ps1',
         '.\src\cmdlets\Get-GraphRelatedItem.ps1',
         '.\src\cmdlets\Get-GraphResourceWithMetadata.ps1',
-        '.\src\cmdlets\Get-GraphStatistics.ps1',
         '.\src\cmdlets\Get-GraphType.ps1',
         '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphUriInfo.ps1',
         '.\src\cmdlets\Invoke-GraphMethod.ps1',
+        '.\src\cmdlets\Measure-Graph.ps1',
         '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\New-GraphItem.ps1',
         '.\src\cmdlets\New-GraphItemRelationship.ps1',
@@ -170,12 +176,13 @@ VariablesToExport = @(
         '.\src\cmdlets\common\AutoGraphFormats.ps1xml',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\FunctionParameterHelper.ps1',
-        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphParameterCompleter.ps1',
+        '.\src\cmdlets\common\GraphStatisticsDisplayType.ps1',
         '.\src\cmdlets\common\GraphUriParameterCompleter.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
         '.\src\cmdlets\common\MemberDisplayType.ps1',
         '.\src\cmdlets\common\MemberParameterCompleter.ps1',
+        '.\src\cmdlets\common\MetaGraphFormatter.ps1',
         '.\src\cmdlets\common\MethodDisplayType.ps1',
         '.\src\cmdlets\common\MethodNameParameterCompleter.ps1',
         '.\src\cmdlets\common\MethodParameterParameterCompleter.ps1',
@@ -247,44 +254,53 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.36.0 Release Notes
+## AutoGraphPS 0.37.0 Release Notes
 
-Adds additional commands to make type inspection more usable.
+Bug fixes and updates to support profiles, color, and other usability improvements
 
 ### New dependencies
 
-* `autographps-sdk 0.25.0`
-  * Including that dependency's update to Microsoft Authentication Library (MSAL) 4.27
+* `autographps-sdk 0.26.0`
 
 ### Breaking changes
 
-* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b. Impact includes the need to re-consent to any desired permissions that were granted to the previous appid.
-* When signing in with an app other than the default appid, personal Microsoft Accounts cannot sign in without specifying `AllowMSA` via `Connect-GraphApi`
-* `New-GraphApplication` now creates single tenant applications by default for public client apps
+* See breaking changes from `autographps-sdk 0.26.0`
+* The `Get-GraphStatistics` command has been renamed to `Measure-Graph`
+* When positional binding is used with the following commands, those positional parameters  no long bind to the `Uri` parameter, but to the `Type` and then `Id`, `Property`, and `Value` parameters. To bind by URI, the `-Uri` parameter must be specified explicitly by name. This any use of these commands with positional binding will now break:
+  * `Get-GraphItem`
+  * `Set-GraphItem`
+  * `Remove-Graphitem`
+* The pipeline parameter binding has been changed for `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` (aka through the `gls` alias), though in general the binding is more permissive and may not break at all or may break in subtle ways
+* The `ggreli` alias for `Get-GraphRelatedItem` is now `gri`
+* The `Set-GraphPrompt` command no longer as the `Enabled` and `Disabled` parameters
+  * Instead, the new `Behavior` parameter which is also a positional parameter supports the values `Disable` and `Enable` which correspond to setting the `Disabled` and `Enabled` parameters of the previous version of this command. The default value is `Auto`, which allows the prompt behavior to be controlled by the module according to the current location managed by `Set-GraphLocation`.
 
 ### New features
 
-* Added the following commands:
-  * `Get-GraphMember`: This command gets the members (e.g. *properties*, *methods*, or *relationships*) of a Graph object's type or an explicitly specified type name. The command is an analog to the `Get-Member` command of PowerShell, but focused on the types of the Graph.
-  * `Get-GraphMethod`: This command gets the methods of a Graph object's type or an explicitly specified type name. The output includes the return type (if any) of the method and the named parameters of the method and their types.
-  * `Find-GraphType`: This command returns the types that match specified criteria. This is useful for finding types that can be used to accomplish tasks in the problem domain represented by the search terms.
-  * `Get-GraphType` now accepts objects from the pipeline.
-* From updated `autographpsd-sdk` dependency:
-  * `Connect-GraphApi` and `New-GraphConnection` support the `AllowMSA` parameter to enable MSA accounts when signing in with an app other than the default app
-  * Objects emitted by `Invoke-GraphApiRequest` and related commands now have a type `GraphResponseObject` included in `PSTypeNames` to enable reliable pipeline binding and eventual improvements in output formatting.
-
+* Configuration (enabled by autographps-sdk): the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
+  * The following settings specific to this module are now configurable from the `settings.json` file:
+    * `PromptBehavior`: Set this to the same values as the `Behavior` parameter of `Set-GraphPrompt` to control the behavior of the prompt
+    * `PromptColor`: Sets the color of the prompt -- supports the same values and behaviors as the `GraphPromptColorPreference` perference variable
+  * From autographps-sdk: The following commands related to the proflie settings feature have been added:
+    * `Get-GraphProfileSettings`
+    * `Select-GraphProfileSettings`
+    * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
+    * `Remove-GraphConnection`: remove named connections
+* Many commands have improved terminal output formatting for both table and list formats
+* Many commands, including common commands like `gls` now have color support!
+* Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
+* `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
+* New `Get-GraphLastOutput` command that returns the last results from previous commands and associates them with an index.
+* The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
+* The `guri` alias has been added for `Get-GraphUri`
+* The output of `Get-GraphMember`, `Get-GraphType`, and `Get-GraphMethod` is now grouped
+* Fix broken `Members` value for the `Criteria` parameter of `Find-GraphType`
 
 ### Fixed defects
 
-* Not all functions under the path /reports and possibly other paths were being detected and thus could not be used with `Invoke-GraphMethod`.
-* For some types, such as driveItem, the output of Get-GraphType would show duplicate methods for methods like getActivityByInterval -- now only one version of the method is returned (a type cannot have two methods with the same name).
-* Get-Graph was returning non-canonical file paths for the LastTypeMetadataSource property when commands like Update-GraphMetadata were used to obtain metadata from a file
-None.
-  * From `autographpsd-sdk` dependency:
-  * [Many scenarios broken for Microsoft Accounts only but not broken for AAD accounts](https://github.com/adamedx/autographps-sdk/issues/53)
-  * Sign-in for single tenant applications was broken
-  * Error response streams were not being retrieved, so detailed errors were missing from Get-GraphLog and other error-surfacing mechanisms
-  * `Get-GraphLog` was emitting errors in the wrong order with oldest first rather than newest first
+* Fixed some crashes caused by namespace aliases
+* Fixed issues handling times with the `Get-Graph` command
+* Fixed invalid return types for non-entity types for actions and functions
 
 '@
     } # End of PSData hashtable

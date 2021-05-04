@@ -2,6 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Fix issues where commands like gls fail if no id is returned
+* Add -all / nopaging support for `gls` ?
+* Add -all / nopaging support for 'get-graphrelateditem'?
+* Fix error stream pollution in GetNativeSchemaFromGraph
+* Color for Create / Update operations?
+* With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
+* validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
 * Commands to manage open extensions
 * Fix ambiguous new object problem
@@ -356,28 +363,38 @@
 * pipeline support for get-graphtype
 * Graph statistics command
 * Allow types to be piped to show-graphhelp from find-graphtype
+* Change Get-GraphStatistics to Measure-Graph
+* Add -count option to Get-GraphResourceWithMetadata
+* Color for Get-Graph
+* Add color scheme to AutoGraphPS
+* Color for Find-GraphPermission
+* Color for Get-GraphItemRelationship
+* Color for Get-GraphMember, Get-GraphMethod, Get-GraphType, Find-GraphType
+* Grouping for Get-GraphMember, Get-GraphMethod, Get-GraphType
+* gcd should let you specify alternate criteria to id
+* Add command completion for the expand and orderby parameters for get-graphresource
+* Add select alias for get-graph* commands
+* Show-GraphHelp should take a uri
+* Get-GraphType should take a URI
+* Make show-graphhelp support pipeline
+* Rename graphscope to graphname on get-graphuriinfo
+* Rename propertylist in new-graphitem, new-graphobject to propertymap
+* Fix gls of the result of gls to return the same thing, not the entityset
+* Add -filter to get-graphitem
+* Add preference support for prompt
 
 ### Postponed
 
-* transform schema, version objects to hashtables
 * Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
 * Make content column actually add the columns
-* Add -filter to get-graphitem
-* Add -filter to get-graphschema
 * Add hint of additional records
 * Add continue feature?
 * Test Release
 * Get a fix from sdk for scope helper in find-graphpermissions
-* Rename propertylist in new-graphitem, new-graphobject to propertymap
 * Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
-* Fix gls of the result of gls to return the same thing, not the entityset
 * Fix TypeMember to be more like MemberDisplayType
-* Rename graphscope to graphname on get-graphuriinfo
-* Show-GraphHelp should take a uri
-* Get-GraphType should take a URI
-* Make show-graphhelp support pipeline
 
 ### Abandoned
 
@@ -391,6 +408,8 @@
 * Move some data to info, possibly show rwx
 * Should Get-GraphResource be Get-GraphContent?
   * No :) -- made a Get-GraphContent alias though
+* transform schema, version objects to hashtables
+* Add -filter to get-graphschema
 
 #### Stdposh improvements
 
@@ -1056,3 +1075,91 @@ Other class notes:
 * The new GraphDataModel should return a namespace when returning any schema information
   * We can define a new class, e.g. SchemaElement, that includes schema data and the namespace
 * Everything else must use fully qualified names
+
+### Config files for user experience
+Let's add configuration files as a UX affordance! Here are the high-level requirements:
+
+* Configuration should make it easy to use the non-default appid and other authentication related scenarios
+* Configuration should support multiple tenants
+* We should use concepts and conventions from other command-line tool configuration
+* Configuration should be easy to turn off
+* It should not be too complicated to use
+* It should be transparent -- users should not need to guess if they are impacted
+
+#### More details
+
+
+* What can be configured?
+  All parameters of New-GraphConnection
+* Where is the config located?
+  ~/.autograph/settings.json
+* What is the general format of the file?
+  Tough call between yaml and json, but we'll go with json for now
+  vscode uses camel-casing -- why? Maybe we should also (Graph does).
+* How is it organized?
+  * Profiles: Like VSCode, it will define profiles
+    * Named with a friendly, unique name (not a guid like vscode profiles)
+    * Contains default connection info
+    * Contains ConnectionProfile
+    * Contains log level option
+    * Prompt option
+  * Default profile option
+  * No metadata option?
+* What new commands are needed?
+  First, settings related commands start with "local" for the noun
+  * Get-GraphLocalSettingsLocation
+  * Set-GraphLocalSettingsLocation
+  * Update-GraphLocalSettings? Needed if it's important to avoid module reload
+  * Get-GraphLocalConnectionProfile (including -current)
+* What commands are modified?
+  * New-GraphConnection would take arguments:
+    * Profile \<name\>
+    * NoProfile
+  * Connect-GraphApi would take the same argument
+    * Should profile be the default parameter set? Probably
+* What environment variables?
+  * AUTOGRAPH\_BYPASS\_SETTINGS -- this allows the user to ignore any settings that might be persisted
+  * AUTOGRAPH\_SETTINGS\_FILE -- point at a different settings file
+* How is setting data shared across autographps and autographps-sdk modules?
+  * An internal class, LocalSettings, will cover it
+
+### Color output
+
+Well, there's nothing like adding some color, so long as it's optional. Here are the ideas:
+
+* Use format xml to generate color output
+* Provide a low-level library for generating color strings
+* Looks like even the lowly windows console can support 24-bit ansi escape sequences
+* Provide a default that uses only 16 colors, allow enabling 8-bit and 24-bit support
+* We can have a preference variable
+* Allow customization via themes
+* Here's what we can color
+  * Log output -- use color to indicate success / failure and the http method
+  * Native object output: de-emphasize '@' properties, brighten id, maybe 'name' and 'displayname'
+  * Hmm, in a 16 color palette, it's hard to find colors that will work regardless of console color scheme
+    * Limited to Cyan, Yellow, Green, and Blue. Red usually means "error," and magenta won't work against a purple background.
+  * Output of gls:
+    * Info: Hmm, color turns out to not be very useful here since everything in list results has the same "info" and thus same color
+    * Preview? Yes -- this draws attention away from "type" column, which is easy to confuse with "id" for navigation properties or singletons / entity sets
+    * Type: This draws attention from Preview and Id, which should be the real stars
+    * Id: ok, here we background and foreground shades of cyan, yellow, green. Collections have background (like ls in Ubuntu)
+
+#### Color principles
+
+* Use color for the purpose of conveying information efficiently, not gratuitously; overuse dilutes effectiveness and can even make the experience unpleasant
+* Even still, it's ok to use color for fun where it doesn't hurt anything :)
+* Try to have consistency about the meaning of colors in the following areas:
+  * Errors -- this is typically red. There may be "hard" errors that indicate an outage for example, and "softer" errors that can be corrected by the user such as an expired certificate. A state that is surfaced in a command that indicates a bad configuration (again, the expired certificate) but that has not necessarily been exercised and may not have yet caused an error would also fall into the latter category. In these cases, the person seeing the error should take an action of some sort, even if it's just to file a support case.
+  * Emphasis -- in a set of data, what should stand out? Typically a key property such as a display name that clarifies the object's purpose might need to be called out. This would generally be a static determination, not a runtime or conditional coloring based on a variable state.
+  * Enabled -- this is useful for capabilities, e.g. local preferences that can be enabled or disabled.
+  * Contrasting types -- in heterogeneous lists, there may be significantly different actions that can be taken based on the class of the element. E.g. listing the contents of a file system location, where some elements are files, and others are directories that contain other files and provide the extra capability of traversal. These two use cases may warrant contrasting colors to indicate the different classes. Symbolic links in the file system may also warrant specific coloring.
+  * Domain-specific -- of course, in certain areas, there may already be a convention, so if that presentation can be isolated from other use cases, it's ok to adopt a coloring that deviates from the consistently applied approach
+
+A suggested approach: Errors: Red background for hard errors, red foreground for softer errors; Emphasis: Bright Yellow; Enabled: Green, disabled gray; Contrasting types: Use Cyan, Blue, Magenta for top contrasting categories, and use background color for containment capabilities;
+
+### Setting location
+
+* By index
+
+
+* By property

@@ -55,30 +55,36 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
             }
         }
 
-        It "Should bind to the typeandid parameter set when type, id, and property are specified as named" {
+        It "Should bind to the typeandid parameter set when typename, id, and property are specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
                 Get-GraphItemTest -typename type1 -id id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
             }
         }
 
-        It "Should bind to the typeandid parameter set when type, id, and property are specified as named" {
+        It "Should bind to the typeandid parameter set when typename is positional and id, property are specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                Get-GraphItemTest -typename type1 -id id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
+                Get-GraphItemTest type1 -id id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
             }
         }
 
-        It "Should bind to the byuri parameter set when the first parameter is positional and no id parameter is specified" {
+        It "Should bind to the typeandid parameter set when typename and id parameters are positional and property is specified as named" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = Get-GraphItemTest me -property propname
-
-                $bindingInfo.ParameterSetName | Should Be 'byuri'
-                $bindingInfo.BoundParameters['Uri'] | Should Be 'me'
+                Get-GraphItemTest type1 id -property propname | select -expandproperty ParameterSetName | should be 'bytypeandid'
             }
         }
 
+        It "Should bind to the byuri parameter set when the Uri parameter is specified" {
+            $parameterSetTestsFinished | Should Not Be $null
+            if ( ! $parameterSetTestsFinished ) {
+                $bindingInfo = Get-GraphItemTest -Uri me -property propname
+
+                $bindingInfo.ParameterSetName | Should Be 'byUri'
+                $bindingInfo.BoundParameters['Uri'] | Should Be me
+            }
+        }
 
         It "Should bind to the byobject parameterset when an unwrapped object is specified to the pipeline and the property parameter s specified by name" {
             $parameterSetTestsFinished | Should Not Be $null

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- *******************************************************************
-Copyright 2020, Adam Edwards
+Copyright 2021, Adam Edwards
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,8 +33,10 @@ limitations under the License.
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
+            <Label>Info</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Type</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Preview</Label>
@@ -42,22 +44,23 @@ limitations under the License.
             <Width>48</Width>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Id</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>Info</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Type</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Preview</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Id</PropertyName>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -65,6 +68,311 @@ limitations under the License.
       </TableControl>
     </View>
 
+    <View>
+      <Name>GraphLastResultType</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphLastResultType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>ParentPath</PropertyName>
+        <Label>Graph Location</Label>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Index</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Info</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Type</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Preview</Label>
+            <!-- Per docs, this should be max column width, but it seems to have no effect in testing. -->
+            <Width>48</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <Alignment>Right</Alignment>
+                <ScriptBlock>$::.MetaGraphFormatter.ResultIndex($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphMember</Name>
+      <ViewSelectedBy>
+        <TypeName>MemberDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>MemberType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>IsCollection</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberName($_.Name, $_.MemberType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>MemberType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsCollection</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphMemberDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>MemberDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <PropertyName>MemberType</PropertyName>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberName($_.Name, $_.MemberType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MemberType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>TypeId</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>IsCollection</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.MemberType -eq 'Method'</ScriptBlock>
+                </ItemSelectionCondition>
+                <Label>MethodType</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.MethodType, 'Contrast', $null, @('none', 'Action', 'Function'), $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.MemberType -eq 'Method'</ScriptBlock>
+                </ItemSelectionCondition>
+                <Label>Parameters</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Parameters, 'Name')</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+    <View>
+      <Name>GraphMethod</Name>
+      <ViewSelectedBy>
+        <TypeName>MethodDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>MethodType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ReturnType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>IsCollection</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Contrast', $_.MethodType, @('Action', 'Function'), $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>MethodType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_.ReturnType ) { $::.MetaGraphFormatter.MemberTypeId($_.ReturnType.TypeId, $_.ReturnType.IsCollection) }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_.ReturnType ) { $_.ReturnType.Iscollection }</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphMethodDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>MethodDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>MethodType</PropertyName>
+        <Label>MethodType</Label>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Contrast', $_.MethodType, @('Action', 'Function'), $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Parameters</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Parameters, 'Name')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MethodType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>ReturnType</Label>
+                <ScriptBlock>if ( $_.ReturnType ) { $::.MetaGraphFormatter.MemberTypeId($_.ReturnType.TypeId, $_.ReturnType.IsCollection) }</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>IsCollection</Label>
+                <ScriptBlock>if ( $_.ReturnType ) { $_.ReturnType.Iscollection }</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>MethodParameterTable</Name>
+      <ViewSelectedBy>
+        <TypeName>MethodParameterType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>MethodName</PropertyName>
+        <Label>Method</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>ParameterName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>IsCollection</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsCollection</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>MethodParameterList</Name>
+      <ViewSelectedBy>
+        <TypeName>MethodParameterType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>MethodName</PropertyName>
+        <Label>Method</Label>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>ParameterName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>TypeId</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MemberTypeId($_.TypeId, $_.IsCollection)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>IsCollection</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
 
 
     <View>
@@ -73,9 +381,6 @@ limitations under the License.
         <TypeName>GraphStatisticsDisplayType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
-             header, which we use to provide the name of the URI being enumerated or requested,
-             the same way that Get-ChildItem shows a directory title for the file system. -->
         <PropertyName>GraphName</PropertyName>
         <Label>Graph Name</Label>
       </GroupBy>
@@ -117,6 +422,541 @@ limitations under the License.
         </ListEntries>
 
       </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphContext</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphContextDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>Name</PropertyName>
+        <Label>Graph Name</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Endpoint</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Endpoint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Version</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>CurrentLocation</Label>
+                <ScriptBlock>$_.CurrentLocation.ToGraphUri($null).ToString()</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AuthEndpoint</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Metadata</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MetadataStatus($_.Metadata)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>CreationTime</Label>
+                <ScriptBlock>$_.CreationTime.ToString('G')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>LastUpdateTime</Label>
+                <ScriptBlock>$_.LastUpdateTime.ToString('G')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LastTypeMetadataSource</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphTypeDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphTypeDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>TypeId</PropertyName>
+        <Label>Graph TypeId</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>TypeClass</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq 'Complex' -or $_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>BaseType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>DefaultUri</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Relationships</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Relationships, 'name')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Properties</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity' -or $_.TypeClass -eq 'Complex'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Properties, 'name')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Enumerations</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Enumeration'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.EnumerationValues($_.Properties)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Methods</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.TypeClass -eq'Entity' -or $_.TypeClass -eq 'Complex'</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Methods, 'name')</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphTypeOverview</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphTypeDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeClass</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>BaseType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DefaultUri</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Relationships</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TypeId, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>BaseType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Relationships, 'name')</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>TypeSearchResult</Name>
+      <ViewSelectedBy>
+        <TypeName>TypeSearchResultDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>TypeClass</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TypeId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Criteria</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>MatchedTerms</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MatchedSearchTerms($_, 'TypeId')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Criteria</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MatchedSearchTerms($_, $null)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>TypeSearchDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>TypeSearchResultDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>SearchTerm</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.SearchTerm, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>GraphName</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>TypeClass</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.TypeClass($_.TypeClass, $_.TypeClass)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>TypeId</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MatchedSearchTerms($_, 'TypeId')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Relevance</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Criteria</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>MatchedTerms</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.MatchedSearchTerms($_, $null)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+
+    <View>
+      <Name>GraphContextOverview</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphContextDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Metadata</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>LastUpdateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Endpoint</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Version</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.MetadataStatus($_.Metadata)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$_.LastUpdateTime.ToString('G')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Endpoint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Version</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphPermission</Name>
+      <ViewSelectedBy>
+        <TypeName>__ScriptClassPermissionDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AuthType</PropertyName>
+        <Label>AuthType</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AuthType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ConsentType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Description</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ConsentType</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.PermissionName($_.Name, $_.ConsentType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Description</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphPermissionDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>__ScriptClassPermissionDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AuthType</PropertyName>
+        <Label>AuthType</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>AuthType</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConsentType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.PermissionName($_.Name, $_.ConsentType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Description</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphRelationShip</Name>
+      <ViewSelectedBy>
+        <TypeName>RelationshipDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>FromUri</PropertyName>
+        <Label>FromUri</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>GraphName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TargetId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Relationship</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>TargetUri</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>GraphName</PropertyName>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <ScriptBlock>$::.ColorString.ToStandardColorString($_.TargetId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <ScriptBlock>$::.ColorString.ToStandardColorString($_.Relationship, 'Scheme', 'MemberType-Relationship', $null, $null)</ScriptBlock>
+                </TableColumnItem>
+                <TableColumnItem>
+                  <PropertyName>TargetUri</PropertyName>
+                </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphRelationshipDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>RelationshipDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>Relationship</PropertyName>
+        <Label>Relationship</Label>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>GraphName</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>TargetId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Relationship</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Relationship, 'Scheme', 'MemberType-Relationship', $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>FromUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.FromUri, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>TargetUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TargetUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphProfile</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphProfileSettings</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$color = if ( $_.IsDefault ) { 'Containment' }; $::.ColorString.ToStandardColorString($_.ProfileName, $color, $null, $null, $null)</ScriptBlock>
+        <Label>ProfileName</Label>
+      </GroupBy>
+
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Connection</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>IsDefault</Label>
+                <ScriptBlock>$color = if ( $_.IsDefault ) { 'Emphasis2' }; $::.ColorString.ToStandardColorString($_.IsDefault, $color, $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AutoConnect</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>NoBrowserSigninUI</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PromptBehavior</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>PromptColor</Label>
+                <ScriptBlock>if ( $_ | gm PromptColor -erroraction ignore ) { $::.MetaGraphFormatter.ColorNameText($_.PromptColor, $_.PromptColor) }</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
     </View>
 
   </ViewDefinitions>

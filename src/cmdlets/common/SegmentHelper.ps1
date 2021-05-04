@@ -174,6 +174,7 @@ ScriptClass SegmentHelper {
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
+                TypeId = $fullTypeName
                 Id = $itemId
                 Namespace = $requestSegment.Namespace
                 AbsoluteUri = $typeInfo.AbsoluteUri
@@ -246,6 +247,7 @@ ScriptClass SegmentHelper {
                 Collection = $false
                 Class = 'EntityType'
                 Type = $typeComponents[$typeComponents.length - 1]
+                TypeId = $fullTypeName
                 Id = $itemId
                 Namespace = $namespace
                 AbsoluteUri = $absoluteUri

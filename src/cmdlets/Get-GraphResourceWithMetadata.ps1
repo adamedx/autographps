@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ function Get-GraphResourceWithMetadata {
 
         [Switch] $Descending,
 
+        [switch] $Count,
+
         [switch] $RawContent,
 
         [switch] $AbsoluteUri,
@@ -101,7 +103,7 @@ function Get-GraphResourceWithMetadata {
         $context = $null
 
         $mustWaitForMissingMetadata = (__Preference__MustWaitForMetadata) -and ! $NoRequireMetadata.IsPresent
-        $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent
+        $responseContentOnly = $RawContent.IsPresent -or $ContentOnly.IsPresent -or $Count.IsPresent
 
         $results = @()
         $intermediateResults = @()
@@ -194,10 +196,16 @@ function Get-GraphResourceWithMetadata {
                  $pagingResultCount = $pscmdlet.pagingparameters.first
              }
 
+        $uriArgument = if ( $resolvedUri -and ( $resolvedUri -isnot [Uri] ) -and ( $resolvedUri.TypeId -ne 'null' ) ) {
+            $resolvedUri.GraphUri
+        } else {
+            $specifiedUri
+        }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
-            Uri = if ( $resolvedUri.TypeId -ne 'null' ) { $resolvedUri.GraphUri } else { $specifiedUri }
+            Uri = $uriArgument
             Query = $Query
             Filter = $targetFilter
             Search = $Search
@@ -206,6 +214,7 @@ function Get-GraphResourceWithMetadata {
             OrderBy = $OrderBy
             Descending = $Descending
             RawContent=$RawContent
+            Count=$Count
             Headers=$Headers
             First=$pagingResultCount
             Skip=$pscmdlet.pagingparameters.skip

@@ -53,7 +53,7 @@ ScriptClass PermissionHelper {
             [PSCustomObject] @{
                 PSTypeName = $this.PermissionDisplayTypeName
                 Id = $permissionData.Id
-                Type = $this.typeMap[$permissionData.Type]
+                AuthType = $this.typeMap[$permissionData.Type]
                 ConsentType = $permissionData.consentType
                 Name = $permissionData.Name
                 Description = $permissionData.description

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,28 +23,28 @@
 function Set-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         $Uri,
 
-        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [Alias('FullTypeName')]
         [string] $TypeName,
 
-        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', mandatory=$true)]
         [string] $Id,
 
         [parameter(parametersetname='byobject')]
         [parameter(parametersetname='byuri')]
         [parameter(parametersetname='byuripipeline')]
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(position=2, parametersetname='bytypeandid')]
         [string[]] $Property,
 
         [parameter(parametersetname='byobject')]
         [parameter(parametersetname='byuri')]
         [parameter(parametersetname='byuripipeline')]
-        [parameter(parametersetname='bytypeandid')]
+        [parameter(position=3, parametersetname='bytypeandid')]
         [object[]] $Value,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]

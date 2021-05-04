@@ -20,13 +20,14 @@ function Get-GraphMember {
     [cmdletbinding(positionalbinding=$false)]
     [OutputType('GraphTypeDisplayType')]
     param(
-        [parameter(position=0)]
+        [parameter(position=1)]
         [Alias('MemberName')]
         [string[]] $Name,
 
-        [parameter(parametersetname='fortypename', mandatory=$true)]
+        [parameter(position=0, parametersetname='fortypename', mandatory=$true)]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('TypeId')]
+        [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='fortypename')]

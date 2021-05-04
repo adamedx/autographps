@@ -23,14 +23,15 @@
 . (import-script cmdlets\Get-GraphItemUri)
 . (import-script cmdlets\Get-GraphResourceWithMetadata)
 . (import-script cmdlets\Get-GraphChildItem)
+. (import-script cmdlets\Get-GraphLastOutput)
 . (import-script cmdlets\Get-GraphLocation)
 . (import-script cmdlets\Get-GraphMember)
 . (import-script cmdlets\Get-GraphMethod)
-. (import-script cmdlets\Get-GraphStatistics)
 . (import-script cmdlets\Get-GraphType)
 . (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\Get-GraphUriInfo)
 . (import-script cmdlets\Invoke-GraphMethod)
+. (import-script cmdlets\Measure-Graph)
 . (import-script cmdlets\New-Graph)
 . (import-script cmdlets\New-GraphMethodParameterObject)
 . (import-script cmdlets\Remove-Graph)
@@ -49,6 +50,10 @@
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Select (new-so TypeUriParameterCompleter Property)
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource OrderBy (new-so TypeUriParameterCompleter Property)
+
 
 
 

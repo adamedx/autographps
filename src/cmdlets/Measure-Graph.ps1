@@ -18,7 +18,7 @@
 . (import-script ../typesystem/TypeSearcher)
 . (import-script common/GraphStatisticsDisplayType)
 
-function Get-GraphStatistics {
+function Measure-Graph {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(parametersetname='byname', valuefrompipelinebypropertyname=$true, position=0)]
@@ -51,4 +51,4 @@ function Get-GraphStatistics {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphStatistics Name (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Measure-Graph Name (new-so GraphParameterCompleter)

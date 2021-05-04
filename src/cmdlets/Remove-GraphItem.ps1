@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@
 function Remove-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
-        [parameter(position=0, parametersetname='byuri', mandatory=$true)]
+        [parameter(parametersetname='byuri', mandatory=$true)]
         [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         [Uri] $Uri,
 
-        [parameter(parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 

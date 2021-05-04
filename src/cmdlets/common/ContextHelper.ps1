@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ ScriptClass ContextHelper {
             $scopes = $userInfo.scopes
 
             $timeData = $context |=> GetState $::.GraphManager.TimeStateKey
+            $creationTime = if ( $timeData ) { $timeData.CreatedTime }
+            $lastUpdateTime = if ( $timeData ) { $timeData.UpdatedTime }
 
             # Seems like ScriptClass constants have a strange behavior when used as a typename here.
             # To work around this, use ToString()
@@ -49,8 +51,8 @@ ScriptClass ContextHelper {
                 AuthType = $context.connection.identity.app.authtype
                 UserId = $userId
                 Scopes = $scopes
-                CreationTime = $timeData.CreatedTime
-                LastUpdateTime = $timeData.UpdatedTime
+                CreationTime = $creationTime
+                LastUpdateTime = $lastUpdateTime
                 LastTypeMetadataSource = $context |=> GetState $::.GraphManager.MetadataSourceStateKey
                 Details = $context
             }
