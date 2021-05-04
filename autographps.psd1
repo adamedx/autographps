@@ -265,6 +265,7 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 ### Breaking changes
 
 * See breaking changes from `autographps-sdk 0.26.0`
+* The `Get-GraphStatistics` command has been renamed to `Measure-Graph`
 * When positional binding is used with the following commands, those positional parameters  no long bind to the `Uri` parameter, but to the `Type` and then `Id`, `Property`, and `Value` parameters. To bind by URI, the `-Uri` parameter must be specified explicitly by name. This any use of these commands with positional binding will now break:
   * `Get-GraphItem`
   * `Set-GraphItem`
@@ -285,6 +286,7 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
     * `Select-GraphProfileSettings`
     * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
     * `Remove-GraphConnection`: remove named connections
+* Many commands have improved terminal output formatting for both table and list formats
 * Many commands, including common commands like `gls` now have color support!
 * Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
 * `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
@@ -298,6 +300,7 @@ Bug fixes and updates to support profiles, color, and other usability improvemen
 
 * Fixed some crashes caused by namespace aliases
 * Fixed issues handling times with the `Get-Graph` command
+* Fixed invalid return types for non-entity types for actions and functions
 
 '@
     } # End of PSData hashtable
