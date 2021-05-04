@@ -69,12 +69,12 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
             }
         }
 
-        It "Should bind to the byuri parameter set when the first parameter is positional and no id parameter is specified" {
+        It "Should bind to the bytypeandid parameter set when the first parameter is positional and no id parameter is specified" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
                 $bindingInfo = Get-GraphItemTest me -property propname
 
-                $bindingInfo.ParameterSetName | Should Be 'byuri'
+                $bindingInfo.ParameterSetName | Should Be 'bytypeandid'
                 $bindingInfo.BoundParameters['Uri'] | Should Be 'me'
             }
         }
