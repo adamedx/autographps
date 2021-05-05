@@ -5,7 +5,7 @@
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=main)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=main)
 
-**AutoGraphPS** is a PowerShell-based CLI for exploring the [Microsoft Graph](https://graph.microsoft.io/). It can be thought of as a CLI analog to the browser-based [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
+**AutoGraphPS** is a PowerShell scripting and automation experience for the [Microsoft Graph API](https://graph.microsoft.io/), a programmable [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
 * OneDrive
@@ -22,6 +22,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux and MacOS, PowerShell 6.1.2 and higher are supported.
 
 ## Installation
+
 AutoGraphPS is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps); run the following command to install the latest stable release of AutoGraphPS into your user profile:
 
 ```powershell
@@ -29,7 +30,8 @@ Install-Module AutoGraphPS -scope currentuser
 ```
 
 ## Usage
-Once you've installed, you can use an AutoGraphPS cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+
+Once you've installed the module, you can use an AutoGraphPS cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> Get-GraphResource me
@@ -48,7 +50,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets, or follow along below for a quick tour.
 
 ### How do I use it?
 
@@ -123,7 +125,7 @@ Note that the output of `Get-GraphItem` is an object that in addition to the pro
 
 ```powershell
 # These all have the same output:
-Get-GraphItem users f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
+Get-GraphItem user f7e9d7b6-f92f-4a78-8537-6b78d874936e | select -ExpandProperty Content
 Get-GraphItem -Uri /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e -ContentOnly
 Get-GraphResource /users/f7e9d7b6-f92f-4a78-8537-6b78d874936e
 ```
@@ -136,12 +138,12 @@ Run the command below to grant permissions that allow AutoGraphPS to read your *
 
 ```powershell
 # You only have to do this once, not each time you use AutoGraphPS
-Connect-GraphApi User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
+Connect-GraphApi -Permissions User.Read, Mail.Read, Contacts.Read, Calendars.Read, Files.Read
 ```
 
 Now traverse the Graph via the `gcd` alias to "move" to a new Uri current location in the Graph. This is analgous to the usage of "cd" to change to a new current working directory in file-system oriented shells like `bash` and PowerShell:
 
-```
+```powershell
 gcd me
 [starchild@mothership.io] /v1.0:/me
 PS>
@@ -151,7 +153,7 @@ Notice the update to your prompt showing your authenticated identity and your ne
 
 Now you can use the `gls` alias as you would `ls` in the file system relative to your current location. Here's how you can read your email:
 
-```
+```powershell
 [starchild@mothership.io] /v1.0:/me
 PS> gls messages
 ```
@@ -173,16 +175,18 @@ gls /
 ```
 
 Finally, here's one to enumerate your OneDrive files
-```
+```powershell
 [starchild@mothership.io] /v1.0:/me
 PS> gcd drive/root/children
 [starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gls
 
+   Graph Location: /v1.0:/me/drive/root/children
+
 Info Type      Preview       Name
 ---- ----      -------       ----
 t +> driveItem Recipes       13J3XD#
-t +> driveItem Pyramid.js    13J3KD2
+t +> driveItem Games         13J3KD2
 ```
 
 #### Don't forget write operations
@@ -294,7 +298,7 @@ Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
 ```powershell
 # You could also issue the command 'new-graph beta' to mount beta explicitly
-gcd /beta:/ # This sets the current location and implicitly mounts the 'beta' API version
+gcd /beta: # This sets the current location and implicitly mounts the 'beta' API version
 ```
 
 And that brings us to this **Warning**: *AutoGraphPS takes some time to get fully ready for each API version.* When you first execute commands like `gls` and `gcd`,, some information about the structure of the Graph may be incomplete. In these cases you should see a "warning" message. You can also Use the `gg` alias to see the status of your mounted API versions, i.e. `Ready`, `Pending`, etc., which can take a few minutes to reach the desired `Ready` state. Eventually the warning will no longer occur and the cmdlets will return full information after the background metadata processing completes.
@@ -313,7 +317,30 @@ AutoGraphPS is your PowerShell interface to the Microsoft Graph REST API. In wha
 
 There are probably many more uses for AutoGraphPS, as wide-ranging as the Graph itself.
 
-## Reference
+## Configuration and preferences
+
+The module allows for customization through conventional PowerShell preference variables as a configuration file. In general, when a behavior may be specified by both a preference variable and a setting from the configuration file, the preference variable behavior takes precedence, making it easy to change a behavior at runtime without redefining profiles.
+
+### Preference variables
+
+The following preference variables are defined by the module:
+
+* `GraphAutoPromptPreference`: specifies whether the PowerShell prompt should be automatically updated by the module to reflect information about the current Graph location as seen by `Get-GraphLocation`. Set this to one of the valid values of `Behavior` parameter of `Set-GraphPrompt`
+* `GraphMetadataPreference`: determines whether commands that require Graph API metadata must wait for metadata to be retrieved and processed before attempting to execute the command. The value `Wait` causes the command to wait for processing to complete and notifies the user that the command is waiting. This is the default value. `Silently` wait has the same behavior except the user is given no notification. The `Ignore` value causes the command to proceed with execution even if there is no updated metadata, which may cause it to fail.
+* `GraphPromptColorPreference`: specifies the color of the text added to the PowerShell prompt by the module. Valid values can be any color value used in commands like `Write-Host` which expose parameters like `ForeGroundColor` conform to the same set of color values.
+
+### Settings file
+
+AutoGraphPS supports the use of a local settings configuration file at the location `~/.autographps/settings.json`. The format and behavior of the settings file is described in the [AutoGraphPS settings documentation](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md).
+
+This particular module implements the following settings **in addition to those supported by AutoGraphPS-SDK**:
+
+* `PromptBehavior`: This setting has the same allowed values and associated semantics as the `GraphAutoPromptPreference` preference variable
+* `PromptColor`: This setting has the same allowed values and associated semantics as the `GraphPromptColorPreference` preference variable
+
+The full list of configurable settings is described by the [AutoGraphPS settings documentation](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md).
+
+## Command reference
 
 The full list of cmdlets is given below; they go well beyond simply reading information from the Graph. As this library is in the early stages of development, that list is likely to evolve significantly along with their usage. Additional documentation will be provided for them as their status solidifies.
 
@@ -321,11 +348,12 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 
 | Cmdlet (alias)            | Description                                                                                             |
 |---------------------------|---------------------------------------------------------------------------------------------------------|
+| Add-GraphRelatedItem      | Creates a new resource to an existing resource using a relationship property of the existing resource -- this can be used to create a new and it to an existing group through the group's `member` relationship for instance |
 | Clear-GraphLog            | Clear the log of REST requests to Graph made by the module's commands                                   |
-| Connect-GraphApi          | Establishes authentication and authorization context used across cmdlets for the current graph          |
+| Connect-GraphApi (conga)  | Establishes authentication and authorization context used across cmdlets for the current graph          |
 | Disconnect-GraphApi       | Clears authentication and authorization context used across cmdlets for the current graph               |
-| Find-GraphPermissions     | Given a search string, `Find-GraphPermissions` lists permissions with names that contain that string    |
 | Find-GraphLocalCertificate  | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph |
+| Find-GraphPermission     | Given a search string, `Find-GraphPermissions` lists permissions with names that contain that string    |
 | Find-GraphType            | Given simple search terms returns a set of types relevant to those terms sorted by relevance            |
 | Format-GraphLog (fgl)       | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests |
 | Get-Graph (gg)            | Gets the current list of versioned Graph service endpoints available to AtuoGraphPS                     |
@@ -334,16 +362,19 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
 | Get-GraphChildItem (ggci) | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
-| Get-GraphConnectionInfo   | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
+| Get-GraphConnection                  | Gets information about all named connections and the current connection                      |
+| Get-GraphConnectionInfo (gcon) | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
-| Get-GraphItem     | Retrieves an entity specified by type and ID or URI |
+| Get-GraphItem (ggi)       | Retrieves an entity specified by type and ID or URI |
 | Get-GraphItemRelationship (ggrel) | Retrieves a specified subset of relationships from the specified item                           |
 | Get-GraphLastOutput (glo) | Retrieves the last output returned from commands like `gls` and associates them with an index           |
 | Get-GraphLocation (gwd)   | Retrieves the current location in the Uri hierarchy for the current graph                               |
 | Get-GraphLog (ggl)        | Gets the local log of all requests to Graph made by this module                                         |
+| Get-GraphLastOutput       | Gets the value or indexed elmeent of the `$LASTGRAPHITEMS` variable, i.e. the objects returned by the previous invocation of commands like Get-GraphResource or Get-GraphResourceWithMetadata and associates them with an index that can be used with commansd like `Set-GraphLocation` |
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphMember (ggm)     | Gets information about the members of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
 | Get-GraphMethod (ggmt)    | Gets information about the methods of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
+| Get-GraphProfileSettings | Gets the list of profiles defined in the [settings file](###Settings file) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
 | Get-GraphRelatedItem (gri)| Gets the items related to a specified item through a specified relationship                             |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
@@ -358,16 +389,21 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | New-GraphApplication      | Creates an Azure AD application configured to authenticate to Microsoft Graph                           |
 | New-GraphApplicationCertificate | Creates a new certificate in the local certificate store and configures its public key on an application |
 | New-GraphConnection       | Creates an authenticated connection using advanced identity customizations for accessing a Graph        |
+| New-GraphItem     | Creates an instance of the specified entity type in the Graph given a set of properties |
+| New-GraphItemRelationship | Links a target resource to a source resource using the specified relationship property of the source -- this can be used to add a user to a group through the group's `member` relationship for instance |
+| New-GraphLocalCertificate | Creates a certificate in the local device's certificate store that may be used as a credential for the specified application |
 | New-GraphMethodParameter  | Creates a local representation of a Graph type for the specified parameter of a specified Graph method  |
 | New-GraphObject           | Creates a local representation of a type defined by the Graph API that can be specified in the body of write requests in commands such as `Invoke-GraphApiRequest` |
-| New-GraphItem     | Creates an instance of the specified entity type in the Graph given a set of properties |
 | Register-GraphApplication | Creates a registration in the tenant for an existing Azure AD application    |
 | Remove-Graph              | Unmounts a Graph previously mounted by `NewGraph`                                                       |
 | Remove-GraphApplication   | Deletes an Azure AD application                                                                         |
 | Remove-GraphApplicationCertificate | Removes a public key from the application for a certificate allowed to authenticate as that application |
 | Remove-GraphApplicationConsent | Removes consent grants for an Azure AD application                                                 |
-| Remove-GraphItem  | Removes an entity specified by type and ID or URI |
-| Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
+| Remove-GraphConnection    | Removes a named graph connection                                                                        |
+| Remove-GraphItem          | Removes an entity specified by type and ID or URI |
+| Remove-GraphItemRelationship | Removes the relationship between a source resource and a target resource without modifying the resources themselves |
+| Remove-GraphResource      | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
+| Select-GraphProfileSettings | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](###Settings file). |
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Set-GraphItem     | Updates properties of a given Graph entity with the specified values |
@@ -391,7 +427,7 @@ All functionality of AAD Graph is currently available through Microsoft Graph it
 
 ### More about how it works
 
-If you'd like a behind the scenes look at the implementation of AutoGraphPS, take a look at the following article:
+If you'd like a behind the scenes look at the implementation of AutoGraphPS, see the following article:
 
 * [Microsoft Graph via PowerShell](https://adamedx.github.io/softwarengineering/2018/08/09/Microsoft-Graph-via-PowerShell.html)
 
@@ -447,7 +483,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2020 Adam Edwards
+Copyright:: Copyright (c) 2021 Adam Edwards
 
 License:: Apache License, Version 2.0
 
