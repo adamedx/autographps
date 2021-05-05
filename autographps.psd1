@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.37.0'
+ModuleVersion = '0.37.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.26.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.26.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -258,9 +258,13 @@ PrivateData = @{
 
 Bug fixes and updates to support profiles, color, and other usability improvements
 
+### 0.37.1 update
+
+* Update autographps-sdk to 0.26.1 to take fix at module update
+
 ### New dependencies
 
-* `autographps-sdk 0.26.0`
+* `autographps-sdk 0.26.1`
 
 ### Breaking changes
 
