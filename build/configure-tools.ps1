@@ -140,7 +140,9 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
 
         # Installs runtime and SDK
         write-verbose 'Installing new .net version...'
-        (& $dotNetInstallerPath $versionArgument $minimumVersionString) | write-verbose
+        write-verbose 'Executing command:'
+        write-verbose "    '$dotNetInstallerPath $versionArgument $minimumVersionString' | invoke-expression"
+        "$dotNetInstallerPath $versionArgument $minimumVersionString" | invoke-expression | write-verbose
 
         $dotNetToolFinalVerification = (get-command dotnet -erroraction ignore) -ne $null
 
