@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.37.1'
+ModuleVersion = '0.37.2'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.26.1';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.26.2';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -254,57 +254,25 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.37.0 Release Notes
+## AutoGraphPS 0.37.2 Release Notes
 
-Bug fixes and updates to support profiles, color, and other usability improvements
-
-### 0.37.1 update
-
-* Update autographps-sdk to 0.26.1 to take fix at module update
+Minor regressions fixes / additional bug fixes
 
 ### New dependencies
 
-* `autographps-sdk 0.26.1`
+None.
 
 ### Breaking changes
 
-* See breaking changes from `autographps-sdk 0.26.0`
-* The `Get-GraphStatistics` command has been renamed to `Measure-Graph`
-* When positional binding is used with the following commands, those positional parameters  no long bind to the `Uri` parameter, but to the `Type` and then `Id`, `Property`, and `Value` parameters. To bind by URI, the `-Uri` parameter must be specified explicitly by name. This any use of these commands with positional binding will now break:
-  * `Get-GraphItem`
-  * `Set-GraphItem`
-  * `Remove-Graphitem`
-* The pipeline parameter binding has been changed for `Get-GraphChildItem` and `Get-GraphResourceWithMetadata` (aka through the `gls` alias), though in general the binding is more permissive and may not break at all or may break in subtle ways
-* The `ggreli` alias for `Get-GraphRelatedItem` is now `gri`
-* The `Set-GraphPrompt` command no longer as the `Enabled` and `Disabled` parameters
-  * Instead, the new `Behavior` parameter which is also a positional parameter supports the values `Disable` and `Enable` which correspond to setting the `Disabled` and `Enabled` parameters of the previous version of this command. The default value is `Auto`, which allows the prompt behavior to be controlled by the module according to the current location managed by `Set-GraphLocation`.
+None.
 
 ### New features
 
-* Configuration (enabled by autographps-sdk): the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
-  * The following settings specific to this module are now configurable from the `settings.json` file:
-    * `PromptBehavior`: Set this to the same values as the `Behavior` parameter of `Set-GraphPrompt` to control the behavior of the prompt
-    * `PromptColor`: Sets the color of the prompt -- supports the same values and behaviors as the `GraphPromptColorPreference` perference variable
-  * From autographps-sdk: The following commands related to the proflie settings feature have been added:
-    * `Get-GraphProfileSettings`
-    * `Select-GraphProfileSettings`
-    * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
-    * `Remove-GraphConnection`: remove named connections
-* Many commands have improved terminal output formatting for both table and list formats
-* Many commands, including common commands like `gls` now have color support!
-* Output of `Get-GraphResourceWithMetadata` / `gls` can now be piped to `Get-GraphMember` and `Get-GraphType`.
-* `Get-GraphResourceWithMetadata` / `gls` supports a `Count` parameter that returns just the count of items that would be returned
-* New `Get-GraphLastOutput` command that returns the last results from previous commands and associates them with an index.
-* The `Set-GraphLocation` command, aka `gcd` supports a new `Index` parameter that refers to the item with that index returned by `Get-GraphLastOutput`; by specifying this index, the command can change the current location to the location of the result with that index. This is useful for
-* The `guri` alias has been added for `Get-GraphUri`
-* The output of `Get-GraphMember`, `Get-GraphType`, and `Get-GraphMethod` is now grouped
-* Fix broken `Members` value for the `Criteria` parameter of `Find-GraphType`
+None.
 
 ### Fixed defects
 
-* Fixed some crashes caused by namespace aliases
-* Fixed issues handling times with the `Get-Graph` command
-* Fixed invalid return types for non-entity types for actions and functions
+* Fixed failure of `Remove-GraphItem` for some scenarios
 
 '@
     } # End of PSData hashtable
