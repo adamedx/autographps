@@ -142,6 +142,9 @@ limitations under the License.
           <TableColumnHeader>
             <Label>IsCollection</Label>
           </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DefiningTypeId</Label>
+          </TableColumnHeader>
         </TableHeaders>
 
         <TableRowEntries>
@@ -158,6 +161,9 @@ limitations under the License.
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>IsCollection</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_.DefiningTypeId ) { $::.MetaGraphFormatter.MemberTypeId($_.DefiningTypeId, $false) }</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -208,6 +214,10 @@ limitations under the License.
                 <Label>Parameters</Label>
                 <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Parameters, 'Name')</ScriptBlock>
               </ListItem>
+              <ListItem>
+                <Label>DefiningTypeId</Label>
+                <ScriptBlock>if ( $_.DefiningTypeId ) { $::.MetaGraphFormatter.MemberTypeId($_.DefiningTypeId, $false) }</ScriptBlock>
+              </ListItem>
             </ListItems>
           </ListEntry>
         </ListEntries>
@@ -236,6 +246,9 @@ limitations under the License.
           <TableColumnHeader>
             <Label>IsCollection</Label>
           </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DefiningTypeId</Label>
+          </TableColumnHeader>
         </TableHeaders>
 
         <TableRowEntries>
@@ -252,6 +265,9 @@ limitations under the License.
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>if ( $_.ReturnType ) { $_.ReturnType.Iscollection }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_.DefiningTypeId ) { $::.MetaGraphFormatter.MemberTypeId($_.DefiningTypeId, $false) }</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -292,6 +308,10 @@ limitations under the License.
               <ListItem>
                 <Label>IsCollection</Label>
                 <ScriptBlock>if ( $_.ReturnType ) { $_.ReturnType.Iscollection }</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>DefiningTypeId</Label>
+                <ScriptBlock>if ( $_.DefiningTypeId ) { $::.MetaGraphFormatter.MemberTypeId($_.DefiningTypeId, $false) }</ScriptBlock>
               </ListItem>
             </ListItems>
           </ListEntry>

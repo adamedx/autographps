@@ -17,6 +17,7 @@ ScriptClass MethodDisplayType {
     $MethodType = $null
     $ReturnType = $null
     $Parameters = $null
+    $DefiningTypeId = $null
 
     function __initialize($typeMethod) {
         $this.Name = $typeMethod.Name
@@ -26,6 +27,7 @@ ScriptClass MethodDisplayType {
             IsCollection = $typeMethod.IsCollection
         }
         $this.Parameters = $typeMethod.Parameters
+        $this.DefiningTypeId = $typeMethod.DefiningTypeId
     }
 
     static {

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ ScriptClass MethodInfo {
     $MethodType = $null
     $Parameters = $null
     $ReturnTypeInfo = $null
+    $DefiningTypeId = $null
 
-    function __initialize($graph, $methodBindingSchema, $methodType) {
+    function __initialize($graph, $methodBindingSchema, $methodType, $definingTypeId) {
         if ( $methodType -eq 'Action' ) {
             $this.MethodType = 'Action'
         } elseif ( $methodType -eq 'Function' ) {
@@ -28,6 +29,7 @@ ScriptClass MethodInfo {
         }
 
         $this.Name = $methodBindingSchema.Name
+        $this.DefiningTypeId = $definingTypeId
 
         $unaliasedReturnType = $null
         $typeInfo = $null

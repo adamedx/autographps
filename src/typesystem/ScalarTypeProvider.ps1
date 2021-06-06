@@ -127,6 +127,8 @@ ScriptClass ScalarTypeProvider {
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
 
+            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
+
             $_.Schema.member | foreach {
                 $memberData = [PSCustomObject] @{
                     Type = 'Edm.String'
@@ -136,7 +138,7 @@ ScriptClass ScalarTypeProvider {
                 # TODO: The 'name' field is being misused here -- a previous implementation relied on this structure
                 # being in the name field. Now that we are using TypeMember instead of an arbitrary structure, we can
                 # just let consumers use the MemberData field and let name just be a name.
-                $propertyValue = new-so TypeMember ([PSCUstomObject] @{Name=$_.name;Value=$_.value}) 'Edm.String' $false Enumeration $memberData
+                $propertyValue = new-so TypeMember ([PSCUstomObject] @{Name=$_.name;Value=$_.value}) 'Edm.String' $false Enumeration $memberData $typeId
                 $properties.Add($_.name, $propertyValue)
             }
 
@@ -144,8 +146,6 @@ ScriptClass ScalarTypeProvider {
             $defaultValue = if ( $enumerationValues.count -gt 0 ) {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }
-
-            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
 
             $definition = new-so TypeDefinition $typeId Enumeration $_.Schema.name $_.Namespace $null $enumerationValues $defaultValue $null $false $_.Schema
             $enumerationDefinitions.Add($typeId.tolower(), $definition)

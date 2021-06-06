@@ -53,7 +53,7 @@ ScriptClass CompositeTypeProvider {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
                 $unaliasedPropertyTypeName = $this.base.graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
-                new-so TypeMember $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property
+                new-so TypeMember $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property $null $typeid
             }
         }
 
@@ -61,7 +61,7 @@ ScriptClass CompositeTypeProvider {
             foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
                 $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $navigationproperty.Type
                 $unaliasedNavigationPropertyTypeName = $this.base.graph |=> UnAliasQualifiedName $navigationInfo.TypeFullName
-                new-so TypeMember $navigationproperty.Name $unaliasedNavigationPropertyTypeName $navigationInfo.IsCollection NavigationProperty
+                new-so TypeMember $navigationproperty.Name $unaliasedNavigationPropertyTypeName $navigationInfo.IsCollection NavigationProperty $null $typeId
             }
         }
 
@@ -69,8 +69,8 @@ ScriptClass CompositeTypeProvider {
 
         $methods = if ( $methodSchemas ) {
             foreach ( $methodSchema in $methodSchemas ) {
-                $memberData = new-so MethodInfo $this.base.graph $methodSchema.NativeSchema $methodSchema.MethodType
-                new-so TypeMember $methodSchema.NativeSchema.Name $null $false Method $memberData
+                $memberData = new-so MethodInfo $this.base.graph $methodSchema.NativeSchema $methodSchema.MethodType $typeId
+                new-so TypeMember $methodSchema.NativeSchema.Name $null $false Method $memberData $typeId
             }
         }
 

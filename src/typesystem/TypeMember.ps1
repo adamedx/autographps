@@ -18,12 +18,14 @@ ScriptClass TypeMember {
     $IsCollection = $false
     $MemberType = $null
     $MemberData = $null
+    $DefiningTypeId = $null
 
-    function __initialize($name, $typeId, [bool] $isCollection, $memberType, $memberData) {
+    function __initialize($name, $typeId, [bool] $isCollection, $memberType, $memberData, $definingTypeId) {
         $this.Name = $name
         $this.MemberData = $memberData
         $this.TypeId = $typeId
         $this.IsCollection = $isCollection
+        $this.DefiningTypeId = $definingTypeId
         $this.MemberType = if ( $memberType -eq $null -or $MemberType -in 'Property' ) {
             'Property'
         } elseif ( $memberType -eq 'Method' ) {
