@@ -22,6 +22,8 @@ function Get-GraphMethod {
     [OutputType('MethodDisplayType')]
     param(
         [parameter(position=0, parametersetname='fortypename', mandatory=$true)]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('TypeId')]
         $TypeName,
 
         [parameter(position=1)]
@@ -29,11 +31,12 @@ function Get-GraphMethod {
         [string] $Name,
 
         [parameter(parametersetname='uri', mandatory=$true)]
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         $Uri,
 
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='forobject')]
+        [parameter(parametersetname='uri')]
         $GraphName,
 
         [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]

@@ -42,7 +42,6 @@ function Get-GraphMember {
 
         [parameter(parametersetname='uri')]
         [parameter(parametersetname='forobject')]
-        [parameter(parametersetname='fortypename')]
         [parameter(parametersetname='foritempipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,

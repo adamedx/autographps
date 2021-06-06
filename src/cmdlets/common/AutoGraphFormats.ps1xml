@@ -538,6 +538,9 @@ limitations under the License.
                 </ItemSelectionCondition>
                 <ScriptBlock>$::.MetaGraphFormatter.CollectionByProperty($_.Methods, 'name')</ScriptBlock>
               </ListItem>
+              <ListItem>
+                <PropertyName>GraphName</PropertyName>
+              </ListItem>
             </ListItems>
           </ListEntry>
         </ListEntries>

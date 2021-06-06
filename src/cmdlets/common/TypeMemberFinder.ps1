@@ -23,19 +23,17 @@ ScriptClass TypeMemberFinder {
             $type = $typeManager |=> FindTypeDefinition Unknown $fullyQualifiedTypeName $true $true
 
             if ( $type ) {
-                FindMembersByType $type $memberType $memberName $memberFilter
+                FindMembersByType $typeManager $type $memberType $memberName $memberFilter
             } elseif ( $badTypeMessage ) {
                 throw $badTypeMessage
             }
         }
 
-        function FindMembersByType($type, $memberType, $memberName, $memberFilter) {
-            $result = $::.TypeHelper |=> ToPublic $type
-
+        function FindMembersByType($typeManager, $type, $memberType, $memberName, $memberFilter) {
             $fieldMap = [ordered] @{
-                Property = 'Properties'
-                Relationship = 'Relationships'
-                Method = 'Methods'
+                Property = 'Property'
+                Relationship = 'NavigationProperty'
+                Method = 'Method'
             }
 
             $orderedMemberFields = if ( $memberType ) {
@@ -45,7 +43,9 @@ ScriptClass TypeMemberFinder {
             }
 
             foreach ( $memberField in $orderedMemberFields ) {
-                $members = $result.$memberField | where {
+                $allMembers = $typeManager |=> GetTypeDefinitionTransitiveProperties $type $memberfield
+
+                $matchingMembers = $allMembers | where {
                     if ( $memberName ) {
                         $_.Name -in $memberName
                     } elseif ( $memberFilter ) {
@@ -60,7 +60,9 @@ ScriptClass TypeMemberFinder {
                     }
                 }
 
-                $members | sort-object name
+                $matchingMembers | sort-object name | foreach {
+                    new-so MemberDisplayType $_
+                }
             }
         }
     }

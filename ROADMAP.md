@@ -2,9 +2,8 @@
 
 ## To-do items -- prioritized
 
-* fix formatting of get-graphmethod to swap columns
+* Fix parameter completion for uri parameters for method commands
 * Invoke-GraphMethod should take pipeline input for native objects
-* Invoke-GraphMethod does not handle inherited types
 * Invoke-GraphMethod does not seem to handle parameter and value parallel lists well
 * Invoke-GraphMethod shows an error with Compare-Object when using parameterobject
 * Fix issues where commands like gls fail if no id is returned
@@ -388,6 +387,7 @@
 * Add -filter to get-graphitem
 * Add preference support for prompt
 * Fix get-graphmethod -uri to not need graphname
+* Fix Invoke-GraphMethod does not handle inherited types
 
 ### Postponed
 
@@ -401,6 +401,7 @@
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix parameter completion for multiple type classes
 * Fix TypeMember to be more like MemberDisplayType
+* fix formatting of get-graphmethod to swap columns
 
 ### Abandoned
 

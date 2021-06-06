@@ -37,7 +37,7 @@ ScriptClass TypeHelper {
             __RegisterDisplayType
         }
 
-        function ToPublic( $privateObject, $defaultUri ) {
+        function ToPublic( $privateObject, $defaultUri, $context ) {
             $properties = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Properties)).Result
             $relationships = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Relationships)).Result
             $methods = ($::.MemberDisplayType |=> ToDisplayableMemberList $privateObject.($this.displayProperties.Methods)).Result
@@ -56,6 +56,7 @@ ScriptClass TypeHelper {
                 Relationships = $relationships
                 Properties = $properties
                 Methods = $methods
+                GraphName = $context
             }
 
             $result.psobject.typenames.add($this. DisplayTypeName)
