@@ -114,7 +114,7 @@ function Get-GraphType {
                 $::.TypeUriHelper |=> DefaultUriForType $targetContext $type.TypeId
             }
 
-            $result = $::.TypeHelper |=> ToPublic $type $defaultUri
+            $result = $::.TypeHelper |=> ToPublic $type $defaultUri $targetContext.Name
 
             if ( ! $TransitiveMembers.IsPresent ) {
                 $result | sort-object name

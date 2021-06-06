@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -201,9 +201,9 @@ function Invoke-GraphMethod {
             throw 'Unable to determine the method Uri from the parameters specified.'
         }
 
-        $owningType = Get-GraphType $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
+        $transitiveMethods = Get-GraphMethod -TypeName $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
 
-        $method = $owningType.Methods | where Name -eq $targetMethodName
+        $method = $transitiveMethods | where Name -eq $targetMethodName
 
         if ( ! $method ) {
             if ( $targetUri -or $GraphItem ) {
@@ -257,7 +257,7 @@ function Invoke-GraphMethod {
                 }
 
                 $errorMessage = @"
-Unable to invoke method '$targetMethodName' on type '$($owningType.TypeId)' with {0} parameters. This was due to:
+Unable to invoke method '$targetMethodName' on type '$($targetTypeName)' with {0} parameters. This was due to:
  
 {1}{2}
  
