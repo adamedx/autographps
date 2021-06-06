@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix get-graphmethod -uri to not need graphname
 * fix formatting of get-graphmethod to swap columns
 * Invoke-GraphMethod should take pipeline input for native objects
 * Invoke-GraphMethod does not handle inherited types
@@ -388,6 +387,7 @@
 * Fix gls of the result of gls to return the same thing, not the entityset
 * Add -filter to get-graphitem
 * Add preference support for prompt
+* Fix get-graphmethod -uri to not need graphname
 
 ### Postponed
 

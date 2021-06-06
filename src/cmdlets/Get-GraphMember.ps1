@@ -41,13 +41,13 @@ function Get-GraphMember {
         $Uri,
 
         [parameter(parametersetname='forobject')]
-        [parameter(parametersetname='uri')]
+        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='fortypename')]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]
-        $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [switch] $FullyQualifiedTypeName,
 
