@@ -2,8 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Member output commands should provide the option to show direct or transitive members
-* Fix parameter completion for uri parameters for method commands
 * Invoke-GraphMethod should take pipeline input for native objects
 * Invoke-GraphMethod does not seem to handle parameter and value parallel lists well
 * Invoke-GraphMethod shows an error with Compare-Object when using parameterobject
@@ -392,6 +390,8 @@
 * Member output commands should indicate what type the member was inherited from
 * Make typesystem based mostly on datamodel, not graph
 * Get-GraphUriInfo, Invoke-GraphMethod don't support inherited methods
+* Fix '$false' values being ignored by Invoke-GraphMethod
+* Fix parameter completion for uri parameters for method commands
 
 ### Postponed
 
@@ -421,6 +421,7 @@
   * No :) -- made a Get-GraphContent alias though
 * transform schema, version objects to hashtables
 * Add -filter to get-graphschema
+* Member output commands should provide the option to show direct or transitive members
 
 #### Stdposh improvements
 

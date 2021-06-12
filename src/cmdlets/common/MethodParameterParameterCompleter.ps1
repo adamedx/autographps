@@ -35,6 +35,7 @@ ScriptClass MethodParameterParameterCompleter {
 
         if ( $targetContext ) {
             $typeManager = $::.TypeManager |=> Get $targetContext
+
             $targetTypeName = if ( $uriParam ) {
                 $fullyQualified = $true
                 $graphNameArgument = if ( $graphName ) { @{GraphName=$graphName} } else { @{} }
@@ -52,14 +53,10 @@ ScriptClass MethodParameterParameterCompleter {
                 $typeName
             }
 
-            $type = if ( $targetTypeName ) {
-                $typeManager |=> FindTypeDefinition Unknown $targetTypeName $fullyQualified $false
-            }
-
-            $parameterNames = if ( $type ) {
-                $method = $type.methods | where name -eq $methodName
+            $parameterNames = if ( $targetTypeName ) {
+                $method = $::.TypeMemberFinder |=> FindMembersByTypeName $targetContext $targetTypeName Method $methodName $null $null
                 if ( $method ) {
-                    $method.MemberData.Parameters.Name
+                    $method.Parameters.Name
                 }
             }
 
