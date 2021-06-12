@@ -33,10 +33,10 @@ ScriptClass MethodNameParameterCompleter {
             $typeManager = $::.TypeManager |=> Get $targetContext
             $isFullyQualified = $fullyQualified -or ( $typeName.Contains('.') )
 
-            $type = $typeManager |=> FindTypeDefinition Unknown $typeName $isFullyQualified $false
-            if ( $type ) {
-                $methods = $type.methods
-                $methods.name | where { $_.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase) }
+            $methods = $::.TypeMemberFinder |=> FindMembersByTypeName $targetContext $typeName Method $null $null $null
+
+            if ( $methods ) {
+                $methods.Name | where { $_.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase) }
             }
         }
     }

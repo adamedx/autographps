@@ -125,14 +125,16 @@ function Invoke-GraphMethod {
 
         $valueLength = 0
 
-        if ( $Value ) {
-            $valueLength = $Value.length
+        if ( $PSBoundParameters.ContainsKey('Value') ) {
+            $valueLength = ($Value | measure-object).count
         }
 
-        if ( $Parameter -and $Parameter.length -ne $valueLength ) {
-            throw [ArgumentException]::new("$($Parameter.length) parameters were specified by the Parameter argument, but an unequal number of values, $valueLength, was specified through the Value argument.")
+        if ( $Parameter ) {
+            $parameterCount = ($Parameter | measure-object).Count
+            if ( $parameterCount -ne $valueLength ) {
+                throw [ArgumentException]::new("$($parameterCount) parameters were specified by the Parameter argument, but an unequal number of values, $valueLength, was specified through the Value argument.")
+            }
         }
-
     }
 
     process {
@@ -289,7 +291,10 @@ The complete set of valid parameters is '{3}'.
             # cases rather than not having a type at all, the worst case is that we are forced to assume the least-derived
             # type, which is a situation of information loss but not of incorrectness.
             if ( ! $NoMetadata.IsPresent -and $_ -and ( $_.gettype().fullname -eq 'System.Management.Automation.PSCustomObject' ) ) {
-                $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
+                # Handle the strange case where we get an empty result, but the response is not empty
+                if ( ! ( $_ | gm '@odata.context' -erroraction ignore ) -or ! ( $_ | gm 'value' -erroraction ignore ) -or ! ( $_.value -eq $null ) ) {
+                    $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
+                }
             } else {
                 $_
             }
@@ -300,7 +305,7 @@ The complete set of valid parameters is '{3}'.
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod TypeName (new-so TypeParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod MethodName (new-so MethodUriParameterCompleter MethodName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod Parameter (new-so MethodUriParameterCompleter ParameterName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod OrderBy (new-so TypeUriParameterCompleter Property)
