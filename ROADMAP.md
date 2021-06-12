@@ -391,6 +391,7 @@
 * Fix get-graphmethod -uri to not need graphname
 * Fix Invoke-GraphMethod does not handle inherited types
 * Member output commands should indicate what type the member was inherited from
+* Make typesystem based mostly on datamodel, not graph
 
 ### Postponed
 

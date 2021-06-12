@@ -210,7 +210,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
 
         function __GetSchema($endpoint, $apiVersion) {
             $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
-            write-progress -id 1 -activity $metadataactivity -status "In progress"
+            Write-Progress -id 1 -activity $metadataactivity -status "Downloading"
 
             $graphEndpoint = new-so GraphEndpoint Public MSGraph $endpoint http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
@@ -224,7 +224,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
                 throw
             }
 
-            write-progress -id 1 -activity $metadataactivity -status "Complete" -completed
+            Write-Progress -id 1 -activity $metadataactivity -status "Download complete" -completed
             $schema
         }
     }

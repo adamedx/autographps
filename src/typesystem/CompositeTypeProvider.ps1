@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,16 +51,16 @@ ScriptClass CompositeTypeProvider {
 
         $properties = if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
             foreach ( $propertySchema in $nativeSchema.Schema.Property ) {
-                $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $propertySchema.Type
-                $unaliasedPropertyTypeName = $this.base.graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
+                $typeInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($nativeSchema.namespace, $propertySchema.Type)
+                $unaliasedPropertyTypeName = $this.base.graph.UnaliasQualifiedName($typeInfo.TypeFullName)
                 new-so TypeMember $propertySchema.Name $unaliasedPropertyTypeName $typeInfo.IsCollection Property $null $typeid
             }
         }
 
         $navigationProperties = if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
             foreach ( $navigationProperty in $nativeSchema.Schema.NavigationProperty ) {
-                $navigationInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $nativeSchema.namespace $navigationproperty.Type
-                $unaliasedNavigationPropertyTypeName = $this.base.graph |=> UnAliasQualifiedName $navigationInfo.TypeFullName
+                $navigationInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($nativeSchema.namespace, $navigationproperty.Type)
+                $unaliasedNavigationPropertyTypeName = $this.base.graph.UnAliasQualifiedName($navigationInfo.TypeFullName)
                 new-so TypeMember $navigationproperty.Name $unaliasedNavigationPropertyTypeName $navigationInfo.IsCollection NavigationProperty $null $typeId
             }
         }
@@ -75,14 +75,14 @@ ScriptClass CompositeTypeProvider {
         }
 
         $qualifiedBaseTypeName  = if ( $nativeSchema.Schema | gm BaseType -erroraction ignore) {
-            $this.base.graph |=> UnAliasQualifiedName $nativeSchema.Schema.BaseType
+            $this.base.graph.UnAliasQualifiedName($nativeSchema.Schema.BaseType)
         }
 
         new-so TypeDefinition $typeId $foundTypeClass $nativeSchema.Schema.name $nativeSchema.namespace $qualifiedBaseTypeName $properties $null $null $true $nativeSchema.Schema $navigationProperties $methods
     }
 
     function GetSortedTypeNames($typeClass) {
-        $this.scriptclass |=> ValidateTypeClass $typeClass
+        $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Entity' {
@@ -138,27 +138,13 @@ ScriptClass CompositeTypeProvider {
     }
 
     function GetMethodSchemasForType($qualifiedTypeName) {
-        $methodSchemas = $this.base.graph |=> GetMethodsForType $qualifiedTypeName
+        $methodSchemas = $this.base.graph.GetMethodsForType($qualifiedTypeName)
 
         if ( $methodSchemas ) {
-            $typeVertex = try {
-                # We currently only do this because we don't have information about whether
-                # the method is an action or function -- othewise, we could skip this step altogether.
-                $this.base.graph |=> GetTypeVertex $qualifiedTypeName
-            } catch {
-                write-verbose "Methods found for type '$qualifiedTypeName', but no type exists -- discovery for non-entity types not yet implemented"
-                return
-            }
-
             foreach ( $methodSchema in $methodSchemas ) {
-                $edge = $typeVertex.outgoingEdges[$methodSchema.name]
-
-                if ( $edge -and $edge.transition.type -in 'Action', 'Function' ) {
-                    $methodType = $edge.transition.type
-                    [PSCustomObject] @{
-                        MethodType = $methodType
-                        NativeSchema = $methodSchema
-                    }
+                [PSCustomObject] @{
+                    MethodType = $methodSchema.Type
+                    NativeSchema = $methodSchema.Schema
                 }
             }
         }
@@ -182,7 +168,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
-        $unaliasedTypeName = $this.base.graph |=> UnAliasQualifiedName $qualifiedTypeName
+        $unaliasedTypeName = $this.base.graph.UnAliasQualifiedName($qualifiedTypeName)
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
             # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
             # are known not to work due to a defect fixed in PowerShell 7.0
@@ -207,32 +193,45 @@ ScriptClass CompositeTypeProvider {
     }
 
     function __UpdateTypeIndex($index, $schemas, $typeClass) {
-        write-progress -id 1 -activity "Updating search index '$($index.IndexedField)' for type class '$typeClass'" -status 'In progress'
+        $schemaCount = ($schemas.keys | measure-object).count
+
+        $schemasProcessed = 0
+
+        $activityMessage = "Updating search index '$($index.IndexedField)' for type class '$typeClass'"
+
+        Write-Progress -id 1 -activity $activityMessage
+
         foreach ( $typeId in $schemas.Keys ) {
             $nativeSchema = $schemas[$typeId]
 
+            if ( $schemasProcessed++ % 10 -eq 0 ) {
+                $percent = ( $schemasProcessed / $schemaCount ) * 100
+                Write-Progress -id 1 -activity $activityMessage -PercentComplete $percent
+            }
+
             switch ( $index.IndexedField ) {
-                'Name' {  $index |=> Add $typeId $typeId $typeClass }
+                'Name' {  $index.Add($typeId, $typeId, $typeClass) }
                 'Property' {
                     if ( $nativeSchema.Schema | gm property -erroraction ignore ) {
                         foreach ( $property in $nativeSchema.Schema.property ) {
-                            $index |=> Add $property.Name $typeId $typeClass
+                            $index.Add($property.Name, $typeId, $typeClass)
                         }
                     }
                 }
                 'NavigationProperty' {
                     if ( $nativeSchema.Schema | gm navigationproperty -erroraction ignore ) {
                         foreach ( $navigationProperty in $nativeSchema.Schema.navigationproperty ) {
-                            $index |=> Add $navigationProperty.Name $typeId $typeClass
+                            $index.Add($navigationProperty.Name, $typeId, $typeClass)
                         }
                     }
                 }
                 'Method' {
                     $methodSchemas = GetMethodSchemasForType $typeId
                     if ( $methodSchemas ) {
-                        write-progress -id 2 -activity "Updating search index 'method' for type '$typeId'" -status 'In progress'
+                        $methodSchemaCount = ($methodSchemas | measure-object).count
+                        Write-Progress -id 2 -activity "Updating search index 'method' with $methodSchemaCount schema(s)for type '$typeId'" -ParentId 1
                         foreach ( $nativeMethodSchema in $methodSchemas.NativeSchema ) {
-                            $index |=> Add $nativeMethodSchema.Name $typeId $typeClass
+                            $index.Add($nativeMethodSchema.Name, $typeId, $typeClass)
                         }
                     }
                 }
@@ -241,6 +240,7 @@ ScriptClass CompositeTypeProvider {
                 }
             }
         }
+        Write-Progress -id 1 -activity $activityMessage -Completed
     }
 
     static {
@@ -257,7 +257,7 @@ ScriptClass CompositeTypeProvider {
         }
 
         function ValidateTypeClass($typeClass) {
-            $::.TypeProvider |=> ValidateTypeClass $this $typeClass
+            $::.TypeProvider.ValidateTypeClass($this, $typeClass)
         }
     }
 }

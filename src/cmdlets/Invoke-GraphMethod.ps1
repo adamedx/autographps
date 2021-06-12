@@ -288,7 +288,7 @@ The complete set of valid parameters is '{3}'.
             # for entity types or their structural properties, but only due to polymorphism, and of course in those
             # cases rather than not having a type at all, the worst case is that we are forced to assume the least-derived
             # type, which is a situation of information loss but not of incorrectness.
-            if ( ! $NoMetadata.IsPresent ) {
+            if ( ! $NoMetadata.IsPresent -and $_ -and ( $_.gettype().fullname -eq 'System.Management.Automation.PSCustomObject' ) ) {
                 $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
             } else {
                 $_

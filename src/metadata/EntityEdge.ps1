@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ ScriptClass EntityEdge {
     $name = $null
 
     function __initialize($source, $sink, $transition) {
-        if ( $source |=> IsNull ) {
+        if ( $source.IsNull() ) {
             throw "An edge with a null source is not valid"
         }
 
-        if ( $sink |=> IsRoot ) {
+        if ( $sink.IsRoot() ) {
             throw "'Root' vertex may not be a sink / destination of any edge"
         }
 
@@ -49,7 +49,7 @@ ScriptClass EntityEdge {
     }
 
     function GetResultTypeData {
-        $this.sink |=> GetResultTypeData
+        $this.sink.GetResultTypeData()
     }
 
     function GetEntity {

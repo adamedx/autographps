@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,10 +85,10 @@ ScriptClass GraphDataModel {
         if ( $this.methodBindings -eq $null ) {
             $this.methodBindings = @{}
             $actions = GetActions
-            __AddMethodBindingsFromMethodSchemas $actions
+            __AddMethodBindingsFromMethodSchemas $actions Action
 
             $functions = GetFunctions
-            __AddMethodBindingsFromMethodSchemas $functions
+            __AddMethodBindingsFromMethodSchemas $functions Function
         }
 
         $bindings = $this.methodBindings[$typeName]
@@ -104,6 +104,7 @@ ScriptClass GraphDataModel {
     }
 
     function GetComplexTypes($typeName) {
+        Write-Progress -id 2 -activity "Reading complex types"
         foreach ( $model in $this.apiModels.Values ) {
             if ( $model.Schema | gm ComplexType -erroraction ignore ) {
                 $complexTypeSchemas = if ( $typeName ) {
@@ -117,45 +118,51 @@ ScriptClass GraphDataModel {
                 }
             }
         }
+        Write-Progress -id 2 -activity "Reading complex types" -Completed
     }
 
     function GetEntitySets {
-        Write-Progress -id 1 -activity "Reading entity sets"
+        Write-Progress -id 2 -activity "Reading entity sets"
         foreach ( $model in $this.apiModels.Values ) {
             if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
                 __QualifySchemaClass EntitySet $model.namespace $model.Schema.EntityContainer
             }
         }
+        Write-Progress -id 2 -activity "Reading entity sets" -Completed
     }
 
     function GetSingletons {
-        Write-Progress -id 1 -activity "Reading singletons"
+        Write-Progress -id 2 -activity "Reading singletons"
         foreach ( $model in $this.apiModels.Values ) {
             if ( $model.Schema | gm EntityContainer -erroraction ignore ) {
                 __QualifySchemaClass Singleton $model.namespace $model.Schema.EntityContainer
             }
         }
+        Write-Progress -id 2 -activity "Reading singletons" -Completed
     }
 
     function GetEnumTypes {
-        Write-Progress -id 1 -activity "Reading enumerated types"
+        Write-Progress -id 2 -activity "Reading enumerated types"
         foreach ( $model in $this.apiModels.Values ) {
                 __QualifySchemaClass EnumType $model.namespace $model.Schema
         }
+        Write-Progress -id 2 -activity "Reading enumerated types" -Completed
     }
 
     function GetActions {
-        Write-Progress -id 1 "Reading actions"
+        Write-Progress -id 2 "Reading actions"
         foreach ( $model in $this.apiModels.Values ) {
             __QualifySchemaClass Action $model.namespace $model.Schema
         }
+        Write-Progress -id 2 "Reading actions" -Completed
     }
 
     function GetFunctions {
-        Write-Progress -id 1 "Reading functions"
+        Write-Progress -id 2 "Reading functions"
         foreach ( $model in $this.apiModels.Values ) {
             __QualifySchemaClass Function $model.namespace $model.Schema
         }
+        Write-Progress -id 2 "Reading functions" -Completed
     }
 
     function UnqualifyTypeName($qualifiedTypeName) {
@@ -238,7 +245,7 @@ ScriptClass GraphDataModel {
         }
     }
 
-    function __AddMethodBindingsFromMethodSchemas($methodSchemas) {
+    function __AddMethodBindingsFromMethodSchemas($methodSchemas, $methodType) {
         if ( $methodSchemas ) {
             # Assume that the first parameter is actually the binding parameter -- it is usually,
             # but not always, named 'bindingParameter'
@@ -251,14 +258,14 @@ ScriptClass GraphDataModel {
                     }
 
                     if ( $bindingParameter ) {
-                        __AddMethodBinding $bindingParameter.type $nativeSchema
+                        __AddMethodBinding $bindingParameter.type $nativeSchema $methodType
                     }
                 }
             }
         }
     }
 
-    function __AddMethodBinding($typeName, $methodSchema) {
+    function __AddMethodBinding($typeName, $methodSchema, $methodType) {
         $unaliasedName = UnaliasQualifiedName $typeName
         if ( $this.methodBindings[$unaliasedName] -eq $null ) {
             $this.methodBindings[$unaliasedName] = @{Distinct=@{};All=@()}
@@ -274,7 +281,7 @@ ScriptClass GraphDataModel {
         # which is the one that has the parameters, is the "real" instance, the first
         # is some strange schema generation artifact, possibly one that is ignored by
         # Microsoft Graph in some sort of "last writer wins" behavior.
-        $this.methodBindings[$unaliasedName]['Distinct'][$methodSchema.Name] = $methodSchema
-        $this.methodBindings[$unaliasedName]['All'] += $methodSchema
+        $this.methodBindings[$unaliasedName]['Distinct'][$methodSchema.Name] = @{Type=$methodType;Schema=$methodSchema}
+        $this.methodBindings[$unaliasedName]['All'] += @{Type=$methodType;Schema=$methodSchema}
     }
 }

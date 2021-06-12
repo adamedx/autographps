@@ -52,7 +52,9 @@ ScriptClass TypeManager {
 
         if ( $hasProperties -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             if ( ! $prototype ) {
+
                 $type = FindTypeDefinition $typeClass $typeId $true $true
+
                 $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
                 $result = $builder |=> ToObject $isCollection
                 $prototype = $result.Value
@@ -124,7 +126,7 @@ ScriptClass TypeManager {
                 $isExactMatch = $qualifiedTypeName -eq $result.MatchedTypeName
 
                 if ( $isExactMatch ) {
-                    $result |=> SetExactMatch Name
+                    $result.SetExactMatch('Name')
                     break
                 }
             }
@@ -204,7 +206,7 @@ ScriptClass TypeManager {
 
             while ( $baseTypeId ) {
                 $baseTypeProvider = __GetTypeProvider $typeClass $this.graph
-                $baseType = $baseTypeProvider |=> GetTypeDefinition Unknown $baseTypeId
+                $baseType = $baseTypeProvider.GetTypeDefinition('Unknown', $baseTypeId)
 
                 $requiredTypes += $baseType
 
@@ -337,8 +339,8 @@ ScriptClass TypeManager {
         if ( $isFullyQualified ) {
             $this.graph |=> UnaliasQualifiedName $typeName
         } else {
-            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
-            $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
+            $typeNamespace = $::.TypeProvider.GetDefaultNamespace($typeClass, $this.graph)
+            $::.TypeSchema.GetQualifiedTypeName($typeNamespace, $typeName)
         }
     }
 

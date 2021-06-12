@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ ScriptClass EntityVertex {
     $type = $null
     $outgoingEdges = $null
     $typeName = $null
+    $baseTypeName = $null
     $flags = 0
 
     function __initialize($entity) {
@@ -30,8 +31,9 @@ ScriptClass EntityVertex {
             $this.outgoingEdges = @{}
             $this.type = $entity.type
             $this.name = $entity.Name
-            $this.id = $entity |=> GetEntityId
+            $this.id = $entity.GetEntityId()
             $this.typeName = $entity.typedata.TypeName
+            $this.baseTypeName = $entity.typedata.baseTypeName
         } else {
             $this.type = 'Null'
             $this.name = 'Null'
