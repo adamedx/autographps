@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Get-GraphUriInfo, Invoke-GraphMethod don't support inherited methods
 * Member output commands should provide the option to show direct or transitive members
 * Fix parameter completion for uri parameters for method commands
 * Invoke-GraphMethod should take pipeline input for native objects
@@ -392,6 +391,7 @@
 * Fix Invoke-GraphMethod does not handle inherited types
 * Member output commands should indicate what type the member was inherited from
 * Make typesystem based mostly on datamodel, not graph
+* Get-GraphUriInfo, Invoke-GraphMethod don't support inherited methods
 
 ### Postponed
 
