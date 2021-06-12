@@ -55,6 +55,9 @@ function Get-GraphResourceWithMetadata {
 
         [switch] $RawContent,
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
         [switch] $AbsoluteUri,
 
         [switch] $IncludeAll,
@@ -202,6 +205,15 @@ function Get-GraphResourceWithMetadata {
             $specifiedUri
         }
 
+        $selectArgument = if ( $Select ) {
+            if ( $Select -notcontains 'id' -and ! $RawContent.IsPresent -and ! $Count.IsPresent ) {
+                'id'
+                foreach ( $property in $Select ) {
+                    $property
+                }
+            }
+        }
+
         $requestArguments = @{
             # Handle the case of resolvedUri being incomplete because of missing data -- just
             # try to use the original URI
@@ -209,7 +221,7 @@ function Get-GraphResourceWithMetadata {
             Query = $Query
             Filter = $targetFilter
             Search = $Search
-            Select = $Select
+            Select = $SelectArgument
             Expand = $Expand
             OrderBy = $OrderBy
             Descending = $Descending
@@ -220,6 +232,7 @@ function Get-GraphResourceWithMetadata {
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
             Connection = $context.connection
+            ConsistencyLevel = $ConsistencyLevel
             # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
             # for the current module and not the module we are calling into, we explicitly set
             # verbose for a command from outside this module
