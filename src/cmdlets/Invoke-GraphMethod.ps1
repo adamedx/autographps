@@ -63,8 +63,8 @@ function Invoke-GraphMethod {
         [Alias('Body')]
         [PSCustomObject] $ParameterObject,
 
-        [parameter(parametersetname='byobject', mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='byuri')]
