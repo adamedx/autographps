@@ -42,9 +42,11 @@ ScriptClass GraphBuilder {
 
     function InitializeGraph($graph) {
         $metadataActivity = "Building graph version '$($this.version)' for endpoint '$($this.graphEndpoint)'"
-        Write-Progress -id 1 -activity $metadataActivity
+        Write-Progress -id 2 -activity $metadataActivity -ParentId 1
 
         __AddRootVertices $graph
+
+        Write-Progress -id 2 -activity $metadataActivity -Completed -ParentId 1
     }
 
     function __AddEntityTypeVertex($graph, $typeName) {
@@ -71,11 +73,11 @@ ScriptClass GraphBuilder {
 
     function __AddVertex($graph, $schema, $vertexType, $namespace, $namespaceAlias) {
         $entity = new-so Entity $schema $namespace
-        $graph |=> AddVertex $entity
+        $graph.AddVertex($entity)
     }
 
     function AddEntityTypeVertices($graph, $qualifiedTypeName) {
-        $entityType = $this.dataModel |=> GetEntityTypeByName $qualifiedTypeName
+        $entityType = $this.dataModel.GetEntityTypeByName($qualifiedTypeName)
 
         if ( $qualifiedTypeName -and $entityType -eq $null ) {
             throw "Type '$qualifiedTypeName' does not exist in the schema for the graph at endpoint '$($graph.endpoint)' with API version '$($graph.apiversion)'"
@@ -99,15 +101,15 @@ ScriptClass GraphBuilder {
 
         foreach ( $transition in $transitions ) {
             # Look for the existing type in the graph itself
-            $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $transition.typedata.typename
-            $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
+            $unaliasedName = $this.dataModel.UnAliasQualifiedName($transition.typedata.typename)
+            $sink = $graph.TypeVertexFromTypeName($unaliasedName)
             if ( ! $sink ) {
                 # If we don't find the existing type, try to get it from the model instead
-                $sinkSchema = $this.dataModel |=> GetEntityTypeByName $unAliasedName
+                $sinkSchema = $this.dataModel.GetEntityTypeByName($unAliasedName)
                 if ( $sinkSchema ) {
                     # We've found the type, now add it to the graph
                     __AddEntityTypeVertex $graph $unaliasedName
-                    $sink = $graph |=> TypeVertexFromTypeName $unaliasedName
+                    $sink = $graph.TypeVertexFromTypeName($unaliasedName)
                 } else {
                     write-verbose "Unable to find schema for '$($transition.type)', $($transition.typedata.typename)"
                 }
@@ -115,7 +117,7 @@ ScriptClass GraphBuilder {
 
             if ( $sink ) {
                 $edge = new-so EntityEdge $sourceVertex $sink $transition
-                $sourceVertex |=> AddEdge $edge
+                $sourceVertex.AddEdge($edge)
             } else {
                 write-verbose "Unable to find entity type for '$($transition.type)', $($transition.typedata.typename) = '$unaliasedName', skipping"
             }
@@ -133,7 +135,7 @@ ScriptClass GraphBuilder {
         }
 
         $qualifiedTypeName = $vertex.entity.typedata.typename
-        $unqualifiedTypeName = $this.dataModel |=> UnqualifyTypeName $qualifiedTypeName
+        $unqualifiedTypeName = $this.dataModel.UnqualifyTypeName($qualifiedTypeName)
         Write-Progress -id 1 -activity "Adding edges for '$($vertex.name)'"
 
         __AddEdgesToEntityTypeVertex $graph $vertex
@@ -151,7 +153,7 @@ ScriptClass GraphBuilder {
         }
 
         $entityName = ($source.entity.typeData).TypeName
-        $typeVertex = $graph |=> TypeVertexFromTypeName $entityName
+        $typeVertex = $graph.TypeVertexFromTypeName($entityName)
 
         if ( $typeVertex -eq $null ) {
             throw "Unable to find an entity type for singleton '$($_.name)' and '$entityName'"
@@ -160,7 +162,7 @@ ScriptClass GraphBuilder {
         AddEdgesToVertex $graph $typeVertex $true
 
         $edges = $typeVertex.outgoingEdges.values | foreach {
-            if ( ( $_ | gm transition ) -ne $null ) {
+            if ( ( $_ | gm transition -erroraction ignore ) -ne $null ) {
                 $_
             }
         }
@@ -169,7 +171,7 @@ ScriptClass GraphBuilder {
             $sink = $_.sink
             $transition = $_.transition
             $edge = new-so EntityEdge $source $sink $transition
-            $source |=> AddEdge $edge
+            $source.AddEdge($edge)
         }
 
         $source.SetFlags([BuildFlags]::CopiedToSingleton)
@@ -182,14 +184,14 @@ ScriptClass GraphBuilder {
         }
 
         $sourceTypeName = $sourceVertex.entity.typeData.TypeName
-        $methods = $this.dataModel |=> GetMethodBindingsForType $sourceTypeName
+        $methodBindings = $this.dataModel.GetMethodBindingsForType($sourceTypeName)
 
-        if ( ! $methods ) {
+        if ( ! $methodBindings ) {
             write-verbose "Vertex ($sourceVertex.name) has no methods, skipping method addition"
             return
         }
 
-        $methods | foreach {
+        $methodBindings.Schema | foreach {
             $method = $_
             $sink = if ( $method | gm ReturnType ) {
                 # If there's a return type, it can actually be of any type, not just an entity
@@ -197,22 +199,22 @@ ScriptClass GraphBuilder {
                 # if the return type is not an entity, we'll just link it to a single "scalar" vertex,
                 # or the null vertex if there is no return type.
                 $typeName = $method.ReturnType | select -expandproperty Type
-                $parsedName = $::.GraphUtilities |=> ParseTypeName $typeName
-                $unaliasedName = $this.dataModel |=> UnAliasQualifiedName $parsedName.TypeName
+                $parsedName = $::.GraphUtilities.ParseTypeName($typeName)
+                $unaliasedName = $this.dataModel.UnAliasQualifiedName($parsedName.TypeName)
 
                 # This only returns vertices (i.e. entity types) that have already been seen,
                 # so we may not find it.
-                $typeVertex = $graph |=> TypeVertexFromTypeName $unaliasedName
+                $typeVertex = $graph.TypeVertexFromTypeName($unaliasedName)
 
                 if ( $typeVertex -eq $null ) {
                     # If the return type is not found, then see if such an entity type exists.
                     # If it doesn't, that means the return type is not an entity, i.e.
                     # it is a primitive, enumeration, or complex type. In this context,
                     # we will treat these as "scalar" types -- they are not traversable.
-                    if ( $this.dataModel |=> GetEntityTypeByName $unaliasedName ) {
+                    if ( $this.dataModel.GetEntityTypeByName($unaliasedName) ) {
                         try {
                             __AddEntityTypeVertex $graph $unaliasedName
-                            $typeVertex = $graph |=> TypeVertexFromTypeName $unaliasedName
+                            $typeVertex = $graph.TypeVertexFromTypeName($unaliasedName)
                         } catch {
                             # The scheme is malformed such that even though the return type
                             # is listed in the schema, we could find no vertex. Move on from
@@ -237,20 +239,20 @@ ScriptClass GraphBuilder {
     }
 
     function __AddMethod($targetVertex, $methodSchema, $returnTypeVertex) {
-        if ( ! ($targetVertex |=> EdgeExists($methodSchema.name)) ) {
+        if ( ! ($targetVertex.EdgeExists($methodSchema.name)) ) {
             $nameInfo = __GetNamespaceInfoFromQualifiedTypeName $targetVertex.typeName
             $methodEntity = new-so Entity $methodSchema $nameInfo.Namespace
             $edge = new-so EntityEdge $targetVertex $returnTypeVertex $methodEntity
-            $targetVertex |=> AddEdge $edge
+            $targetVertex.AddEdge($edge)
         } else {
             write-verbose "Skipped add of edge $($methodSchema.name) to $($returnTypeVertex.id) from vertex $($targetVertex.id) because it already exists."
         }
     }
 
     function __GetNamespaceInfoFromQualifiedTypeName($qualifiedTypeName) {
-        $nameInfo = $this.dataModel |=> ParseTypeName $qualifiedTypeName $true
+        $nameInfo = $this.dataModel.ParseTypeName($qualifiedTypeName, $true)
         $namespaceAlias = if ( $nameInfo.Namespace ) {
-            $this.dataModel |=> GetNamespaceAlias $nameInfo.namespace
+            $this.dataModel.GetNamespaceAlias($nameInfo.namespace)
         }
         [PSCustomObject] @{
             Namespace = $nameInfo.Namespace

@@ -36,8 +36,8 @@ ScriptClass MethodInfo {
 
         if ( ( $methodBindingSchema | gm ReturnType -erroraction ignore ) -and
              ( $methodBindingSchema.ReturnType | gm Type -erroraction ignore ) ) {
-                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $methodBindingSchema.ReturnType.Type
-                 $unaliasedReturnType = $graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
+                 $typeInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($null, $methodBindingSchema.ReturnType.Type)
+                 $unaliasedReturnType = $graph.UnaliasQualifiedName($typeInfo.TypeFullName)
 
                  $this.ReturnTypeInfo = [PSCustomObject] @{
                      TypeId = $unaliasedReturnType
@@ -53,8 +53,8 @@ ScriptClass MethodInfo {
         $bindingParameter = $true
         $this.Parameters = foreach ( $parameter in $methodBindingSchema.Parameter ) {
             if ( $parameter.name -ne 'bindingParameter' -and ! $bindingParameter ) {
-                $parameterTypeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $parameter.type
-                $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameterTypeInfo.TypeFullName
+                $parameterTypeInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($null, $parameter.type)
+                $unaliasedParameterType = $graph.UnaliasQualifiedName($parameterTypeInfo.TypeFullName)
 
                 [PSCustomObject] @{
                     Name = $parameter.name
@@ -65,5 +65,6 @@ ScriptClass MethodInfo {
 
             $bindingParameter = $false
         }
+
     }
 }

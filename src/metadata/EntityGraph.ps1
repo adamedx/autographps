@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ ScriptClass EntityGraph {
     }
 
     function UnaliasQualifiedName($typeName) {
-        $this.dataModel |=> UnaliasQualifiedName $typeName
+        $this.dataModel.UnaliasQualifiedName($typeName)
     }
 
     function GetEnumTypes {
@@ -110,28 +110,49 @@ ScriptClass EntityGraph {
     }
 
     function GetMethodsForType($qualifiedTypeName) {
-        $this.dataModel |=> GetMethodBindingsForType $qualifiedTypeName
+        $this.dataModel.GetMethodBindingsForType($qualifiedTypeName)
+    }
+
+    function __AddInheritedEdgesToTypeVertex($typeVertex) {
+        $baseTypeName = $typeVertex.baseTypeName
+
+        while ( $baseTypeName -and $baseTypeName -ne 'graph.entity' -and $baseTypeName -ne 'microsoft.graph.entity' ) {
+            $unaliasedBaseTypeName = UnaliasQualifiedName $baseTypeName
+            $baseTypeVertex = GetTypeVertex $unaliasedBaseTypeName
+            $baseTypeName = if ( $baseTypeVertex ) {
+                foreach ( $edge in $baseTypeVertex.outgoingEdges.values ) {
+                    $newEdge = new-so EntityEdge $baseTypeVertex $edge.sink $edge.transition
+                    if ( ! ( $typeVertex.EdgeExists($newEdge.name) ) ) {
+                        $typeVertex.AddEdge($newEdge)
+                    }
+                }
+                $baseTypeVertex.baseTypeName
+            }
+        }
     }
 
     function __UpdateVertex($vertex) {
         if ( ! (__IsVertexComplete $vertex) ) {
-            Write-Progress -id 1 -activity "Update vertex '$($vertex.name)'"
+            Write-Progress -id 2 -activity "Updating vertex '$($vertex.name)'" -ParentId 1
             if ( $vertex.entity.type -eq 'Singleton' -or $vertex.entity.type -eq 'EntitySet' ) {
                 __AddTypeVertex $vertex.entity.typedata.typename
             }
             __AddTypeForVertex $vertex
-            Write-Progress -id 1 -activity "Vertex '$($vertex.name)' successfully update" -completed
+            Write-Progress -id 2 -activity "Vertex '$($vertex.name)' successfully updated" -completed
         }
     }
 
     function __AddTypeForVertex($vertex) {
-        $this.builder |=> AddEdgesToVertex $this $vertex $true
+        $this.builder.AddEdgesToVertex($this, $vertex, $true)
+        __AddInheritedEdgesToTypeVertex $vertex
     }
 
     function __AddTypeVertex($qualifiedTypeName) {
         $vertex = TypeVertexFromTypeName $qualifiedTypeName
         if ( ! $vertex ) {
-            $this.builder |=> AddEntityTypeVertices $this $qualifiedTypeName
+            $this.builder.AddEntityTypeVertices($this, $qualifiedTypeName)
+            $newTypeVertex = TypeVertexFromTypeName $qualifiedTypeName
+            __AddInheritedEdgesToTypeVertex $newTypeVertex
         }
     }
 

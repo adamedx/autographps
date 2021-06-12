@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ ScriptClass ScalarTypeProvider {
     }
 
     function GetTypeDefinition($typeClass, $typeId) {
-        $this.scriptclass |=> ValidateTypeClass $typeClass
+        $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Primitive' {
@@ -47,12 +47,12 @@ ScriptClass ScalarTypeProvider {
     }
 
     function GetSortedTypeNames($typeClass) {
-        $this.scriptclass |=> ValidateTypeClass $typeClass
+        $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Primitive' {
                 if ( ! $this.primitiveNames ) {
-                    $this.primitiveNames = $this.primitiveDefinitions.keys | sort
+                    $this.primitiveNames = $this.primitiveDefinitions.keys | sort-object
                 }
                 $this.primitiveNames
                 break
@@ -98,14 +98,24 @@ ScriptClass ScalarTypeProvider {
             $nameIndex = $indexes | where IndexedField -eq Name
             $propertyIndex = $indexes | where IndexedField -eq Property
 
-            if ( $nameIndex -or $propertyIndex ) {
-                $indexNames = @()
-                $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
-                $indexNameDescription = $indexNames -join ','
-                write-progress -id 1 -activity "Updating search indexes '$indexNameDescription' for enumeration types" -status 'In progress'
+            if ( ! $nameIndex -and ! $propertyIndex ) {
+                return
             }
 
+            $indexNames = @()
+            $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
+            $indexNameDescription = $indexNames -join ','
+
+            $activityMessage = "Updating search index(es) '$indexNameDescription' for enumeration types"
+
+            $enumerationCount = ($this.enumerationDefinitions.Keys | measure-object).count
+            $enumerationsProcessed = 0
+
             foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
+                if ( $enumerationsProcessed++ % 10 ) {
+                    $percent = ( $enumerationsProcessed / $enumerationCount ) * 100
+                    Write-Progress -id 1 -activity $activityMessage -PercentComplete $percent
+                }
                 $enumerationDefinition = $this.enumerationDefinitions[$typeId]
                 if( $nameIndex ) {
                     $nameIndex |=> Add $typeId $typeId Enumeration
@@ -113,10 +123,12 @@ ScriptClass ScalarTypeProvider {
 
                 if ( $propertyIndex ) {
                     foreach ( $property in $enumerationDefinition.Properties ) {
-                        $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
+                        $propertyIndex.Add($property.Name.Name, $typeId, 'Enumeration')
                     }
                 }
             }
+
+            Write-Progress -id 1 -activity $activityMessage -Completed
         }
     }
 
@@ -127,7 +139,7 @@ ScriptClass ScalarTypeProvider {
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
 
-            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
+            $typeId = $this.base.graph.UnaliasQualifiedName($_.QualifiedName)
 
             $_.Schema.member | foreach {
                 $memberData = [PSCustomObject] @{
@@ -217,10 +229,6 @@ ScriptClass ScalarTypeProvider {
             $typePrefix -eq $primitivePrefix
         }
 
-        function ValidateTypeClass($typeClass) {
-            $::.TypeProvider |=> ValidateTypeClass $this $typeClass
-        }
-
         function GetSupportedTypeClasses {
             @('Primitive', 'Enumeration')
         }
@@ -234,7 +242,7 @@ ScriptClass ScalarTypeProvider {
         }
 
         function ValidateTypeClass($typeClass) {
-            $::.TypeProvider |=> ValidateTypeClass $this $typeClass
+            $::.TypeProvider.ValidateTypeClass($this, $typeClass)
         }
     }
 }
