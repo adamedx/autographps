@@ -2,17 +2,12 @@
 
 ## To-do items -- prioritized
 
-* Fix issues where commands like gls fail if no id is returned
-* Add -all / nopaging support for `gls` ?
-* Add -all / nopaging support for 'get-graphrelateditem'?
-* Fix error stream pollution in GetNativeSchemaFromGraph
 * Color for Create / Update operations?
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
 * Add 'graph' search index: find by navigation property type (rather than name), i.e. types referring to this type
 * Commands to manage open extensions
 * Fix ambiguous new object problem
-* Add DefaultUriForType to Get-GraphType
 * Generate odata context uri's: http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358910
 * Make set-graphitem parameters more strict when MergeGraphItemWithPropertyTable is specified
 * Consider renaming MergeGraphItemWithPropertyTable in Set-GraphItem or making it only work when PropertyTable is specified
@@ -27,9 +22,7 @@
 * Add progress for pipeline operations
 * Can we use requires to load assemblies in autographps? Probably not, as we need to pick the right platform, unless we do some strange tricks
 * Wrapper for ggci to only support "global" types
-* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type) -- seems like we somehow did this in GraphUtilities?
 * Use https://github.com/PowerShell/platyPS to generate markdown help
-* Format-GraphItem
 * Make new-graphitem return specific error message when you try to create an item by type only that does not have an entityset
 * Get-GraphToken should show current token scopes
 * Experiment with Format-GraphItem and color
@@ -44,7 +37,6 @@
 * clean up error stream
 * Allow OData cast in URIs for get-graphchilditem, output of ggu
 * Preserve identity when mounting graphs
-* Add `$value` support.
 * Move app to new tenant (or create a new one)
 
 * EntityAccess
@@ -305,6 +297,7 @@
 * Add Property as a positional parameter of gls
 * Let get-graphchilditem take a type without an id
 * Rename writeoperationparametercompleter to something generic unrelated to writes
+* Add-GraphItemReference
 * Fix parametersets for add-graphitemreference and set-graphitemproperty
 * Add Expand support to Get-GraphChildItem, Get-GraphItem, Get-GraphResourceWithMetadata
 * Add First and skip
@@ -354,6 +347,7 @@
 * Add methods to Get-GraphType
 * Add Uri support to get-graphtype, new-graphmethodparameterobject
 * Fix memberdata aspect of member
+* Use @odata.type when it is present (apparently when type is ambiguous because a collection can contain any type) -- seems like we somehow did this in GraphUtilities?
 * Add method invocation via Invoke-GraphMethod
 * Add method parameter validation to invoke-graphmethod
 * Rename GraphObject to GraphItem
@@ -376,6 +370,7 @@
 * Add select alias for get-graph* commands
 * Show-GraphHelp should take a uri
 * Get-GraphType should take a URI
+* Add DefaultUriForType to Get-GraphType
 * Make show-graphhelp support pipeline
 * Rename graphscope to graphname on get-graphuriinfo
 * Rename propertylist in new-graphitem, new-graphobject to propertymap
@@ -388,7 +383,13 @@
 * Make typesystem based mostly on datamodel, not graph
 * Get-GraphUriInfo, Invoke-GraphMethod don't support inherited methods
 * Fix '$false' values being ignored by Invoke-GraphMethod
+* Invoke-GraphMethod should take pipeline input for native objects
+* Fix parameter completion for multiple type classes
 * Fix parameter completion for uri parameters for method commands
+* Fix issues where commands like gls fail if no id is returned
+* Add -Count, -all support for `gls` ?
+* Add -Count, -First support for 'get-graphrelateditem'
+* Fix error stream pollution in GetNativeSchemaFromGraph
 
 ### Postponed
 
@@ -398,12 +399,9 @@
 * Add continue feature?
 * Test Release
 * Get a fix from sdk for scope helper in find-graphpermissions
-* Add-GraphItemReference
 * Fix qualified / vs. unqualified names in metadata classes
-* Fix parameter completion for multiple type classes
 * Fix TypeMember to be more like MemberDisplayType
 * fix formatting of get-graphmethod to swap columns
-* Invoke-GraphMethod should take pipeline input for native objects
 
 ### Abandoned
 
@@ -420,6 +418,8 @@
 * transform schema, version objects to hashtables
 * Add -filter to get-graphschema
 * Member output commands should provide the option to show direct or transitive members
+* Format-GraphItem
+* Add `$value` support to gls.
 
 #### Stdposh improvements
 

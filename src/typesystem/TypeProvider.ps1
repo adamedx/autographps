@@ -23,11 +23,11 @@ ScriptClass TypeProvider {
         $this.graph = $graph
     }
 
-    function GetTypeDefinition($typeClass, $typeId) {
+    function GetTypeDefinition($typeClass, $typeId, $ignoreIfNotFound) {
         if ( ! $this.derived ) {
             throw "Abstract class '$($this.scriptclass.classname)' may not be directly instantiated"
         }
-        $this.derived |=> GetTypeDefinition $typeClass $typeId
+        $this.derived |=> GetTypeDefinition $typeClass $typeId $ignoreIfNotFound
     }
 
     function GetSortedTypeNames($typeClass) {

@@ -32,12 +32,19 @@ ScriptClass CompositeTypeProvider {
         }
     }
 
-    function GetTypeDefinition($typeClass, $typeId) {
+    function GetTypeDefinition($typeClass, $typeId, $ignoreNotFound) {
         if ( $typeClass -ne 'Entity' -and $typeClass -ne 'Complex' -and $typeClass -ne 'Unknown' ) {
             throw "The '$($this.scriptclass.classname)' type provider does not support type class '$typeClass'"
         }
 
         $nativeSchema = GetNativeSchemaFromGraph $typeId $typeClass
+
+        if ( ! $nativeSchema ) {
+            if ( $ignoreNotFound ) {
+                return
+            }
+            throw "Unable to find type '$typeId' of typeclass '$typeClass"
+        }
 
         $foundTypeClass = if ( $typeClass -ne 'Unknown' ) {
             $typeClass
@@ -119,7 +126,7 @@ ScriptClass CompositeTypeProvider {
         if ( ! $this.complexTypeTable ) {
             $complexTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
             $complexTypeSchemas = $this.base.graph |=> GetComplexTypes
-            UpdateTypeTable $complexTypeTable $complexTypeSchemas
+            UpdateTypeTable $complexTypeTable $complexTypeSchemas $true
             $this.complexTypeTable = $complexTypeTable
         }
 
@@ -130,7 +137,7 @@ ScriptClass CompositeTypeProvider {
         if ( ! $this.entityTypeTable ) {
             $entityTypeTable = [System.Collections.Generic.SortedList[String, Object]]::new()
             $entityTypeSchemas = $this.base.graph |=> GetEntityTypes
-            UpdateTypeTable $entityTypeTable $entityTypeSchemas
+            UpdateTypeTable $entityTypeTable $entityTypeSchemas $true
             $this.entityTypeTable = $entityTypeTable
         }
 
@@ -150,10 +157,13 @@ ScriptClass CompositeTypeProvider {
         }
      }
 
-    function UpdateTypeTable($typeTable, $typeSchemas) {
+    function UpdateTypeTable($typeTable, $typeSchemas, $ignoreExisting) {
         foreach ( $schema in $typeSchemas ) {
-            $qualifiedTypeName = $schema.QualifiedName
-            $typeTable.Add($qualifiedTypeName.tolower(), $schema)
+            $qualifiedTypeName = $schema.QualifiedName.tolower()
+            if ( ! $ignoreExisting -or ! $typeTable[$qualifiedTypeName] ) {
+                $qualifiedTypeName = $schema.QualifiedName
+                $typeTable.Add($qualifiedTypeName.tolower(), $schema)
+            }
         }
     }
 
@@ -170,19 +180,11 @@ ScriptClass CompositeTypeProvider {
     function GetNativeSchemaFromGraph($qualifiedTypeName, $typeClass) {
         $unaliasedTypeName = $this.base.graph.UnAliasQualifiedName($qualifiedTypeName)
         $nativeSchema = if ( $typeClass -eq 'Entity' -or $typeClass -eq 'Unknown' ) {
-            # Using try / catch here and below because erroractionpreference ignore / silentlyconitnue
-            # are known not to work due to a defect fixed in PowerShell 7.0
-            try {
-                GetTypeByName Entity $unaliasedTypeName
-            } catch {
-            }
+            GetTypeByName Entity $unaliasedTypeName
         }
 
         if ( ! $nativeSchema -and ( $typeClass -eq 'Complex' -or $typeClass -eq 'Unknown' ) ) {
-            $nativeSchema = try {
-                GetTypeByName Complex $unaliasedTypeName
-            } catch {
-            }
+            $nativeSchema = GetTypeByName Complex $unaliasedTypeName
         }
 
         if ( ! $nativeSchema ) {

@@ -31,16 +31,16 @@ ScriptClass ScalarTypeProvider {
         LoadPrimitiveTypeDefinitions
     }
 
-    function GetTypeDefinition($typeClass, $typeId) {
+    function GetTypeDefinition($typeClass, $typeId, $ignoreIfNotFound) {
         $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Primitive' {
-                GetPrimitiveDefinition $typeId
+                GetPrimitiveDefinition $typeId $ignoreIfNotFound
                 break
             }
             'Enumeration' {
-                GetEnumerationDefinition $typeId
+                GetEnumerationDefinition $typeId $ignoreIfNotFound
                 break
             }
         }
@@ -189,18 +189,24 @@ ScriptClass ScalarTypeProvider {
         }
     }
 
-    function GetEnumerationDefinition($typeId) {
+    function GetEnumerationDefinition($typeId, $ignoreIfNotFound) {
         $definition = $this.enumerationDefinitions[$typeId.tolower()]
 
         if ( ! $definition ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "Enumeration type '$typeId' does not exist"
         }
 
         $definition
     }
 
-    function GetPrimitiveDefinition($typeId) {
+    function GetPrimitiveDefinition($typeId, $ignoreIfNotFound) {
         if ( ! ( $this.scriptclass |=> IsPrimitiveType $typeId ) ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "Type '$typeId' is not a primitive type"
         }
 
@@ -210,6 +216,9 @@ ScriptClass ScalarTypeProvider {
         $nativeSchema = $this.primitiveDefinitions[$unqualifiedName]
 
         if ( ! $nativeSchema ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "No primitive type '$typeId' exists"
         }
 

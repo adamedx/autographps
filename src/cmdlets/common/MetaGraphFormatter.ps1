@@ -213,9 +213,9 @@ ScriptClass MetaGraphFormatter {
 
         function AuthType($authType) {
             $coloring = if ( $authType -eq 'Delegated' ) {
-                'Emphasis1'
-            } else {
                 'Emphasis2'
+            } else {
+                'Emphasis1'
             }
 
             $::.ColorString.ToStandardColorString($authType, $coloring, $null, $null, $null)
