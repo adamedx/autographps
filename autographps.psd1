@@ -269,10 +269,19 @@ Bug fixes and dependency updates
 ### New features
 
 * See new features for AutoGraphPS-SDK 0.27.0
+* DefiningType now added to `Get-GraphMethod`, `Get-GraphMember` to show which type the member was inherited from
+* Native objects can be passed via pipeline to Invoke-GraphMethod to invoke their methods
+* `Get-GraphResourceWithMetadata (gls)` now supports a `Count` parameter like `Get-GraphResource`
+* Add `Count` and `First` parameters for `Get-GraphRelatedItem`
 
 ### Fixed defects
 
-* Fixed failure of `Remove-GraphItem` for some scenarios
+* Fixed failure of `Remove-GraphItem` for some scenarios (e.g. me/contacts)
+* `Invoke-GraphMethod`, `Get-GraphMethod`, `Get-GraphUriInfo` did not support inherited methods
+* Fixed regression where `Get-GraphMethod`, `Get-GraphMember` needed `GraphName` parameter
+* When $false was passed as a parameter value for `Invoke-GraphMethod` via the value parameter it was treated as if the parameter had not been supplied and the command would fail
+* Fixed parameter completion failing for parameter values when the Uri parameter was supplied to Invoke-GraphMethod.
+* Fixed error stream pollution when executing some type related commands (e.g. `Find-GraphType`)
 
 '@
     } # End of PSData hashtable
