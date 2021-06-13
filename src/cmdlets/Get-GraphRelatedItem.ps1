@@ -51,6 +51,13 @@ function Get-GraphRelatedItem {
         [parameter(parametersetname='typedobjectandproperty')]
         $GraphName,
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
+        [switch] $Count,
+
+        [int32] $First,
+
         [switch] $ContentOnly,
 
         [switch] $FullyQualifiedTypeName,
@@ -101,8 +108,10 @@ function Get-GraphRelatedItem {
     }
 
     end {
-        $graphNameArgument = if ( $GraphName ) { @{GraphName=$GraphName} } else { @{} }
-        $relationshipUris | Get-GraphResourceWithMetadata @graphNameArgument -ContentOnly:$($ContentOnly.IsPresent) -ErrorAction $requestErrorAction
+        $variableArguments = @{ConsistencyLevel=$ConsistencyLevel;Count=$Count}
+        if ( $GraphName ) { $variableArguments.Add('GraphName', $GraphName) }
+        if ( $First ) { $variableArguments.Add('GraphName', $First) }
+        $relationshipUris | Get-GraphResourceWithMetadata @variableArguments -ContentOnly:$($ContentOnly.IsPresent) -All -ErrorAction $requestErrorAction
     }
 }
 

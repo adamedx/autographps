@@ -163,7 +163,7 @@ ScriptClass TypeManager {
 
             if ( ! $definition ) {
                 try {
-                    $definition = GetTypeDefinition $class $typeId
+                    $definition = GetTypeDefinition $class $typeId $false ( ! $errorIfNotFound )
                 } catch {
                     if ( $errorIfNotFound ) {
                         if ( $typeClass -eq 'Unknown' ) {
@@ -189,7 +189,7 @@ ScriptClass TypeManager {
         $definition
     }
 
-    function GetTypeDefinition($typeClass, $typeId, $skipRequiredTypes) {
+    function GetTypeDefinition($typeClass, $typeId, $skipRequiredTypes, $ignoreIfNotFound) {
         $definition = $this.definitions[$typeId]
 
         if ( ! $definition ) {
@@ -198,7 +198,11 @@ ScriptClass TypeManager {
             }
 
             $typeProvider = __GetTypeProvider $typeClass $this.graph
-            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId
+            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId $ignoreIfNotFound
+
+            if ( ! $type -and $ignoreIfNotFound ) {
+                return
+            }
 
             $requiredTypes = @($type)
 
