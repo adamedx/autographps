@@ -26,6 +26,7 @@ function Get-GraphMember {
 
         [parameter(position=0, parametersetname='fortypename', mandatory=$true)]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='foritempipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('TypeId')]
         [Alias('FullTypeName')]
         $TypeName,
@@ -36,18 +37,17 @@ function Get-GraphMember {
         $TypeClass = 'Any',
 
         [parameter(parametersetname='uri', mandatory=$true)]
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         $Uri,
 
-        [parameter(parametersetname='forobject')]
         [parameter(parametersetname='uri')]
-        [parameter(parametersetname='fortypename')]
+        [parameter(parametersetname='forobject')]
+        [parameter(parametersetname='foritempipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]
-        $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [switch] $FullyQualifiedTypeName,
 

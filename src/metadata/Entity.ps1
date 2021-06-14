@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,12 +52,16 @@ ScriptClass Entity {
 
         if ( ! $typeData ) {
             $isCollection = $false
+            $baseTypeName = $null
             $typeName = switch ($this.type) {
                 'Singleton' {
                     $schema.type
                 }
                 'EntityType' {
-                    $::.Entity |=> QualifyName $this.namespace $schema.name
+                    $baseTypeName = if ( $schema | gm basetype -erroraction ignore ) {
+                        $schema.basetype
+                    }
+                    $::.Entity.QualifyName($this.namespace, $schema.name)
                 }
                 'EntitySet' {
                     $isCollection = $true
@@ -79,7 +83,7 @@ ScriptClass Entity {
                     throw "Unknown entity type $($this.type) for entity name $($this.name)"
                 }
             }
-            $typeData = [PSCustomObject]@{TypeName=$typeName;IsCollection=$isCollection}
+            $typeData = [PSCustomObject]@{TypeName=$typeName;IsCollection=$isCollection;BaseTypeName=$baseTypeName}
         }
 
         $typeData

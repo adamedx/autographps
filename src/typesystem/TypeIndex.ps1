@@ -51,7 +51,7 @@ ScriptClass TypeIndex {
             $this.index.Add($lookupValue, $entry)
         }
 
-        $entry |=> AddTarget $typeId $typeClass
+        $entry.AddTarget($typeId, $typeClass)
 
         if ( $this.typeClassAggregates.ContainsKey($typeClass.tostring()) ) {
             $this.typeClassAggregates[$typeClass.tostring()] += 1

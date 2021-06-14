@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,28 +31,28 @@ ScriptClass ScalarTypeProvider {
         LoadPrimitiveTypeDefinitions
     }
 
-    function GetTypeDefinition($typeClass, $typeId) {
-        $this.scriptclass |=> ValidateTypeClass $typeClass
+    function GetTypeDefinition($typeClass, $typeId, $ignoreIfNotFound) {
+        $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Primitive' {
-                GetPrimitiveDefinition $typeId
+                GetPrimitiveDefinition $typeId $ignoreIfNotFound
                 break
             }
             'Enumeration' {
-                GetEnumerationDefinition $typeId
+                GetEnumerationDefinition $typeId $ignoreIfNotFound
                 break
             }
         }
     }
 
     function GetSortedTypeNames($typeClass) {
-        $this.scriptclass |=> ValidateTypeClass $typeClass
+        $this.scriptclass.ValidateTypeClass($typeClass)
 
         switch ( $typeClass ) {
             'Primitive' {
                 if ( ! $this.primitiveNames ) {
-                    $this.primitiveNames = $this.primitiveDefinitions.keys | sort
+                    $this.primitiveNames = $this.primitiveDefinitions.keys | sort-object
                 }
                 $this.primitiveNames
                 break
@@ -98,14 +98,24 @@ ScriptClass ScalarTypeProvider {
             $nameIndex = $indexes | where IndexedField -eq Name
             $propertyIndex = $indexes | where IndexedField -eq Property
 
-            if ( $nameIndex -or $propertyIndex ) {
-                $indexNames = @()
-                $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
-                $indexNameDescription = $indexNames -join ','
-                write-progress -id 1 -activity "Updating search indexes '$indexNameDescription' for enumeration types" -status 'In progress'
+            if ( ! $nameIndex -and ! $propertyIndex ) {
+                return
             }
 
+            $indexNames = @()
+            $nameIndex, $propertyIndex | where { $_ -ne $null } | foreach { $indexNames += $_.IndexedField }
+            $indexNameDescription = $indexNames -join ','
+
+            $activityMessage = "Updating search index(es) '$indexNameDescription' for enumeration types"
+
+            $enumerationCount = ($this.enumerationDefinitions.Keys | measure-object).count
+            $enumerationsProcessed = 0
+
             foreach ( $typeId in $this.enumerationDefinitions.Keys ) {
+                if ( $enumerationsProcessed++ % 10 ) {
+                    $percent = ( $enumerationsProcessed / $enumerationCount ) * 100
+                    Write-Progress -id 1 -activity $activityMessage -PercentComplete $percent
+                }
                 $enumerationDefinition = $this.enumerationDefinitions[$typeId]
                 if( $nameIndex ) {
                     $nameIndex |=> Add $typeId $typeId Enumeration
@@ -113,10 +123,12 @@ ScriptClass ScalarTypeProvider {
 
                 if ( $propertyIndex ) {
                     foreach ( $property in $enumerationDefinition.Properties ) {
-                        $propertyIndex |=> Add $property.Name.Name $typeId Enumeration
+                        $propertyIndex.Add($property.Name.Name, $typeId, 'Enumeration')
                     }
                 }
             }
+
+            Write-Progress -id 1 -activity $activityMessage -Completed
         }
     }
 
@@ -127,6 +139,8 @@ ScriptClass ScalarTypeProvider {
         $nativeSchemas | foreach {
             $properties = [ordered] @{}
 
+            $typeId = $this.base.graph.UnaliasQualifiedName($_.QualifiedName)
+
             $_.Schema.member | foreach {
                 $memberData = [PSCustomObject] @{
                     Type = 'Edm.String'
@@ -136,7 +150,7 @@ ScriptClass ScalarTypeProvider {
                 # TODO: The 'name' field is being misused here -- a previous implementation relied on this structure
                 # being in the name field. Now that we are using TypeMember instead of an arbitrary structure, we can
                 # just let consumers use the MemberData field and let name just be a name.
-                $propertyValue = new-so TypeMember ([PSCUstomObject] @{Name=$_.name;Value=$_.value}) 'Edm.String' $false Enumeration $memberData
+                $propertyValue = new-so TypeMember ([PSCUstomObject] @{Name=$_.name;Value=$_.value}) 'Edm.String' $false Enumeration $memberData $typeId
                 $properties.Add($_.name, $propertyValue)
             }
 
@@ -144,8 +158,6 @@ ScriptClass ScalarTypeProvider {
             $defaultValue = if ( $enumerationValues.count -gt 0 ) {
                 $enumerationValues | select -first 1 | select -expandproperty name | select -expandproperty name
             }
-
-            $typeId = $this.base.graph |=> UnaliasQualifiedName $_.QualifiedName
 
             $definition = new-so TypeDefinition $typeId Enumeration $_.Schema.name $_.Namespace $null $enumerationValues $defaultValue $null $false $_.Schema
             $enumerationDefinitions.Add($typeId.tolower(), $definition)
@@ -177,18 +189,24 @@ ScriptClass ScalarTypeProvider {
         }
     }
 
-    function GetEnumerationDefinition($typeId) {
+    function GetEnumerationDefinition($typeId, $ignoreIfNotFound) {
         $definition = $this.enumerationDefinitions[$typeId.tolower()]
 
         if ( ! $definition ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "Enumeration type '$typeId' does not exist"
         }
 
         $definition
     }
 
-    function GetPrimitiveDefinition($typeId) {
+    function GetPrimitiveDefinition($typeId, $ignoreIfNotFound) {
         if ( ! ( $this.scriptclass |=> IsPrimitiveType $typeId ) ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "Type '$typeId' is not a primitive type"
         }
 
@@ -198,6 +216,9 @@ ScriptClass ScalarTypeProvider {
         $nativeSchema = $this.primitiveDefinitions[$unqualifiedName]
 
         if ( ! $nativeSchema ) {
+            if ( $ignoreIfNotFound ) {
+                return
+            }
             throw "No primitive type '$typeId' exists"
         }
 
@@ -217,10 +238,6 @@ ScriptClass ScalarTypeProvider {
             $typePrefix -eq $primitivePrefix
         }
 
-        function ValidateTypeClass($typeClass) {
-            $::.TypeProvider |=> ValidateTypeClass $this $typeClass
-        }
-
         function GetSupportedTypeClasses {
             @('Primitive', 'Enumeration')
         }
@@ -234,7 +251,7 @@ ScriptClass ScalarTypeProvider {
         }
 
         function ValidateTypeClass($typeClass) {
-            $::.TypeProvider |=> ValidateTypeClass $this $typeClass
+            $::.TypeProvider.ValidateTypeClass($this, $typeClass)
         }
     }
 }

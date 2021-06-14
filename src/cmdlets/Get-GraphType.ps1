@@ -21,51 +21,28 @@ function Get-GraphType {
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0, parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='optionallyqualifiedmembersonly', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='fullyqualified', mandatory=$true)]
-        [parameter(position=0, parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [Alias('TypeId')]
         [Alias('FullTypeName')]
         $TypeName,
 
         [parameter(parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true)]
-        [parameter(parametersetname='optionallyqualifiedmembersonly', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='fullyqualified')]
-        [parameter(parametersetname='fullyqualifiedmembersonly')]
         [parameter(parametersetname='list')]
         [ValidateSet('Any', 'Primitive', 'Enumeration', 'Complex', 'Entity')]
         $TypeClass = 'Any',
 
         [parameter(parametersetname='optionallyqualified')]
-        [parameter(parametersetname='optionallyqualifiedmembersonly')]
         $Namespace,
 
         [parameter(parametersetname='uri', mandatory=$true)]
-        [parameter(parametersetname='urimembersonly', mandatory=$true)]
         $Uri,
 
         [parameter(valuefrompipelinebypropertyname=$true)]
         $GraphName,
 
         [parameter(parametersetname='fullyqualified', mandatory=$true)]
-        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
         [switch] $FullyQualifiedTypeName,
-
-        [parameter(parametersetname='optionallyqualifiedmembersonly', mandatory=$true)]
-        [parameter(parametersetname='fullyqualifiedmembersonly', mandatory=$true)]
-        [parameter(parametersetname='urimembersonly', mandatory=$true)]
-        [switch] $TransitiveMembers,
-
-        [parameter(position=1, parametersetname='optionallyqualifiedmembersonly')]
-        [parameter(position=1, parametersetname='fullyqualifiedmembersonly')]
-        [parameter(parametersetname='urimembersonly')]
-        [string] $MemberFilter,
-
-        [parameter(position=2, parametersetname='optionallyqualifiedmembersonly')]
-        [parameter(position=2, parametersetname='fullyqualifiedmembersonly')]
-        [parameter(parametersetname='urimembersonly')]
-        [ValidateSet('Property', 'Relationship', 'Method')]
-        [string] $MemberType,
 
         [parameter(parametersetname='list', mandatory=$true)]
         [switch] $ListNames
@@ -114,33 +91,9 @@ function Get-GraphType {
                 $::.TypeUriHelper |=> DefaultUriForType $targetContext $type.TypeId
             }
 
-            $result = $::.TypeHelper |=> ToPublic $type $defaultUri
+            $result = $::.TypeHelper |=> ToPublic $type $defaultUri $targetContext.Name
 
-            if ( ! $TransitiveMembers.IsPresent ) {
-                $result | sort-object name
-            } else {
-                $fieldMap = [ordered] @{
-                    Property = 'Properties'
-                    Relationship = 'Relationships'
-                    Method = 'Methods'
-                }
-
-                $orderedMemberFields = if ( $MemberType ) {
-                    , $fieldMap[$MemberType]
-                } else {
-                    $fieldMap.values
-                }
-
-                foreach ( $memberField in $orderedMemberFields ) {
-                    $members = if ( ! $MemberFilter ) {
-                        $result.$MemberField
-                    } else {
-                        $result.$MemberField | where { $_.Name -like "*$($MemberFilter)*" }
-                    }
-
-                    $members | sort-object name
-                }
-            }
+            $result | sort-object name
         }
     }
 

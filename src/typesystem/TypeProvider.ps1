@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ ScriptClass TypeProvider {
         $this.graph = $graph
     }
 
-    function GetTypeDefinition($typeClass, $typeId) {
+    function GetTypeDefinition($typeClass, $typeId, $ignoreIfNotFound) {
         if ( ! $this.derived ) {
             throw "Abstract class '$($this.scriptclass.classname)' may not be directly instantiated"
         }
-        $this.derived |=> GetTypeDefinition $typeClass $typeId
+        $this.derived |=> GetTypeDefinition $typeClass $typeId $ignoreIfNotFound
     }
 
     function GetSortedTypeNames($typeClass) {
@@ -64,7 +64,7 @@ ScriptClass TypeProvider {
             Entity = 'CompositeTypeProvider'
         }
 
-        function GetDefaultNamespace([GraphTypeClass] $typeClass, $graph) {
+        function GetDefaultNamespace($typeClass = 'Unknown', $graph) {
             $providerModel = GetProviderForClass $typeClass
             $providerModel |::> GetDefaultNamespace $typeClass $graph
         }
@@ -73,11 +73,11 @@ ScriptClass TypeProvider {
             @($this.REQUIRED_ENUM_AS_PRIMITIVE_TYPE)
         }
 
-        function GetProviderForClass([GraphTypeClass] $typeClass) {
+        function GetProviderForClass($typeClass = 'Unknown') {
             $this.providerModels[$typeClass.tostring()]
         }
 
-        function ValidateTypeClass($derivedClass, [GraphTypeClass] $typeClass) {
+        function ValidateTypeClass($derivedClass, $typeClass = 'Unknown') {
             $supportedClasses = $derivedClass |=> GetSupportedTypeClasses
 
             if ( ! ( $typeClass -in $supportedClasses ) ) {

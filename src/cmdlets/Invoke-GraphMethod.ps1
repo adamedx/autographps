@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ function Invoke-GraphMethod {
         [Alias('Body')]
         [PSCustomObject] $ParameterObject,
 
-        [parameter(parametersetname='byobject', mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='byuri')]
@@ -125,14 +125,16 @@ function Invoke-GraphMethod {
 
         $valueLength = 0
 
-        if ( $Value ) {
-            $valueLength = $Value.length
+        if ( $PSBoundParameters.ContainsKey('Value') ) {
+            $valueLength = ($Value | measure-object).count
         }
 
-        if ( $Parameter -and $Parameter.length -ne $valueLength ) {
-            throw [ArgumentException]::new("$($Parameter.length) parameters were specified by the Parameter argument, but an unequal number of values, $valueLength, was specified through the Value argument.")
+        if ( $Parameter ) {
+            $parameterCount = ($Parameter | measure-object).Count
+            if ( $parameterCount -ne $valueLength ) {
+                throw [ArgumentException]::new("$($parameterCount) parameters were specified by the Parameter argument, but an unequal number of values, $valueLength, was specified through the Value argument.")
+            }
         }
-
     }
 
     process {
@@ -201,9 +203,9 @@ function Invoke-GraphMethod {
             throw 'Unable to determine the method Uri from the parameters specified.'
         }
 
-        $owningType = Get-GraphType $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
+        $transitiveMethods = Get-GraphMethod -TypeName $targetTypeName -GraphName $requestInfo.Context.Name -erroraction stop
 
-        $method = $owningType.Methods | where Name -eq $targetMethodName
+        $method = $transitiveMethods | where Name -eq $targetMethodName
 
         if ( ! $method ) {
             if ( $targetUri -or $GraphItem ) {
@@ -257,7 +259,7 @@ function Invoke-GraphMethod {
                 }
 
                 $errorMessage = @"
-Unable to invoke method '$targetMethodName' on type '$($owningType.TypeId)' with {0} parameters. This was due to:
+Unable to invoke method '$targetMethodName' on type '$($targetTypeName)' with {0} parameters. This was due to:
  
 {1}{2}
  
@@ -288,8 +290,11 @@ The complete set of valid parameters is '{3}'.
             # for entity types or their structural properties, but only due to polymorphism, and of course in those
             # cases rather than not having a type at all, the worst case is that we are forced to assume the least-derived
             # type, which is a situation of information loss but not of incorrectness.
-            if ( ! $NoMetadata.IsPresent ) {
-                $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
+            if ( ! $NoMetadata.IsPresent -and $_ -and ( $_.gettype().fullname -eq 'System.Management.Automation.PSCustomObject' ) ) {
+                # Handle the strange case where we get an empty result, but the response is not empty
+                if ( ! ( $_ | gm '@odata.context' -erroraction ignore ) -or ! ( $_ | gm 'value' -erroraction ignore ) -or ! ( $_.value -eq $null ) ) {
+                    $::.SegmentHelper |=> ToPublicSegmentFromGraphResponseObject $requestInfo.Context $_
+                }
             } else {
                 $_
             }
@@ -300,7 +305,7 @@ The complete set of valid parameters is '{3}'.
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod TypeName (new-so TypeUriParameterCompleter TypeName)
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod TypeName (new-so TypeParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod MethodName (new-so MethodUriParameterCompleter MethodName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod Parameter (new-so MethodUriParameterCompleter ParameterName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphMethod OrderBy (new-so TypeUriParameterCompleter Property)

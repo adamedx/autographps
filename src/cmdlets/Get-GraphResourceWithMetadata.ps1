@@ -55,6 +55,11 @@ function Get-GraphResourceWithMetadata {
 
         [switch] $RawContent,
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
+        [switch] $All,
+
         [switch] $AbsoluteUri,
 
         [switch] $IncludeAll,
@@ -188,18 +193,19 @@ function Get-GraphResourceWithMetadata {
             $targetFilter = $::.QueryTranslationHelper |=> GetSimpleMatchFilter $context $resolvedUri.FullTypeName $SimpleMatch
         }
 
-        $pagingResultCount = 20
-
-        if ( ( $pscmdlet.pagingparameters.First -ne $null ) -and
-             ( $pscmdlet.pagingparameters.First -gt 0 ) -and
-             ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue ) ) {
-                 $pagingResultCount = $pscmdlet.pagingparameters.first
-             }
-
         $uriArgument = if ( $resolvedUri -and ( $resolvedUri -isnot [Uri] ) -and ( $resolvedUri.TypeId -ne 'null' ) ) {
             $resolvedUri.GraphUri
         } else {
             $specifiedUri
+        }
+
+        $selectArgument = if ( $Select ) {
+            if ( $Select -notcontains 'id' -and ! $RawContent.IsPresent -and ! $Count.IsPresent ) {
+                'id'
+                foreach ( $property in $Select ) {
+                    $property
+                }
+            }
         }
 
         $requestArguments = @{
@@ -209,17 +215,19 @@ function Get-GraphResourceWithMetadata {
             Query = $Query
             Filter = $targetFilter
             Search = $Search
-            Select = $Select
+            Select = $SelectArgument
             Expand = $Expand
             OrderBy = $OrderBy
             Descending = $Descending
             RawContent=$RawContent
             Count=$Count
             Headers=$Headers
-            First=$pagingResultCount
+            First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
             Connection = $context.connection
+            ConsistencyLevel = $ConsistencyLevel
+            All = $All
             # Due to a defect in ScriptClass where verbose output of ScriptClass work only shows
             # for the current module and not the module we are calling into, we explicitly set
             # verbose for a command from outside this module

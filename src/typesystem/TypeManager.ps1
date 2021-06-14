@@ -52,7 +52,9 @@ ScriptClass TypeManager {
 
         if ( $hasProperties -or ! ( HasCacheKey $typeId $setDefaultValues $recursive ) ) {
             if ( ! $prototype ) {
+
                 $type = FindTypeDefinition $typeClass $typeId $true $true
+
                 $builder = new-so GraphObjectBuilder $this $type $setDefaultValues $recursive $propertyFilter $valueList $propertyList $skipPropertyCheck
                 $result = $builder |=> ToObject $isCollection
                 $prototype = $result.Value
@@ -124,7 +126,7 @@ ScriptClass TypeManager {
                 $isExactMatch = $qualifiedTypeName -eq $result.MatchedTypeName
 
                 if ( $isExactMatch ) {
-                    $result |=> SetExactMatch Name
+                    $result.SetExactMatch('Name')
                     break
                 }
             }
@@ -161,7 +163,7 @@ ScriptClass TypeManager {
 
             if ( ! $definition ) {
                 try {
-                    $definition = GetTypeDefinition $class $typeId
+                    $definition = GetTypeDefinition $class $typeId $false ( ! $errorIfNotFound )
                 } catch {
                     if ( $errorIfNotFound ) {
                         if ( $typeClass -eq 'Unknown' ) {
@@ -187,7 +189,7 @@ ScriptClass TypeManager {
         $definition
     }
 
-    function GetTypeDefinition($typeClass, $typeId, $skipRequiredTypes) {
+    function GetTypeDefinition($typeClass, $typeId, $skipRequiredTypes, $ignoreIfNotFound) {
         $definition = $this.definitions[$typeId]
 
         if ( ! $definition ) {
@@ -196,7 +198,11 @@ ScriptClass TypeManager {
             }
 
             $typeProvider = __GetTypeProvider $typeClass $this.graph
-            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId
+            $type = $typeProvider |=> GetTypeDefinition $typeClass $typeId $ignoreIfNotFound
+
+            if ( ! $type -and $ignoreIfNotFound ) {
+                return
+            }
 
             $requiredTypes = @($type)
 
@@ -204,7 +210,7 @@ ScriptClass TypeManager {
 
             while ( $baseTypeId ) {
                 $baseTypeProvider = __GetTypeProvider $typeClass $this.graph
-                $baseType = $baseTypeProvider |=> GetTypeDefinition Unknown $baseTypeId
+                $baseType = $baseTypeProvider.GetTypeDefinition('Unknown', $baseTypeId)
 
                 $requiredTypes += $baseType
 
@@ -337,8 +343,8 @@ ScriptClass TypeManager {
         if ( $isFullyQualified ) {
             $this.graph |=> UnaliasQualifiedName $typeName
         } else {
-            $typeNamespace = $::.TypeProvider |=> GetDefaultNamespace $typeClass $this.graph
-            $::.TypeSchema |=> GetQualifiedTypeName $typeNamespace $typeName
+            $typeNamespace = $::.TypeProvider.GetDefaultNamespace($typeClass, $this.graph)
+            $::.TypeSchema.GetQualifiedTypeName($typeNamespace, $typeName)
         }
     }
 

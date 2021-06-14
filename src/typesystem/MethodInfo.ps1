@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ ScriptClass MethodInfo {
     $MethodType = $null
     $Parameters = $null
     $ReturnTypeInfo = $null
+    $DefiningTypeId = $null
 
-    function __initialize($graph, $methodBindingSchema, $methodType) {
+    function __initialize($graph, $methodBindingSchema, $methodType, $definingTypeId) {
         if ( $methodType -eq 'Action' ) {
             $this.MethodType = 'Action'
         } elseif ( $methodType -eq 'Function' ) {
@@ -28,14 +29,15 @@ ScriptClass MethodInfo {
         }
 
         $this.Name = $methodBindingSchema.Name
+        $this.DefiningTypeId = $definingTypeId
 
         $unaliasedReturnType = $null
         $typeInfo = $null
 
         if ( ( $methodBindingSchema | gm ReturnType -erroraction ignore ) -and
              ( $methodBindingSchema.ReturnType | gm Type -erroraction ignore ) ) {
-                 $typeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $methodBindingSchema.ReturnType.Type
-                 $unaliasedReturnType = $graph |=> UnaliasQualifiedName $typeInfo.TypeFullName
+                 $typeInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($null, $methodBindingSchema.ReturnType.Type)
+                 $unaliasedReturnType = $graph.UnaliasQualifiedName($typeInfo.TypeFullName)
 
                  $this.ReturnTypeInfo = [PSCustomObject] @{
                      TypeId = $unaliasedReturnType
@@ -51,8 +53,8 @@ ScriptClass MethodInfo {
         $bindingParameter = $true
         $this.Parameters = foreach ( $parameter in $methodBindingSchema.Parameter ) {
             if ( $parameter.name -ne 'bindingParameter' -and ! $bindingParameter ) {
-                $parameterTypeInfo = $::.TypeSchema |=> GetNormalizedPropertyTypeInfo $null $parameter.type
-                $unaliasedParameterType = $graph |=> UnaliasQualifiedName $parameterTypeInfo.TypeFullName
+                $parameterTypeInfo = $::.TypeSchema.GetNormalizedPropertyTypeInfo($null, $parameter.type)
+                $unaliasedParameterType = $graph.UnaliasQualifiedName($parameterTypeInfo.TypeFullName)
 
                 [PSCustomObject] @{
                     Name = $parameter.name
@@ -63,5 +65,6 @@ ScriptClass MethodInfo {
 
             $bindingParameter = $false
         }
+
     }
 }

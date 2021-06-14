@@ -5,13 +5,19 @@
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=main)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=main)
 
-**AutoGraphPS** is a PowerShell scripting and automation experience for the [Microsoft Graph API](https://graph.microsoft.io/), a programmable [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS enables powerful command-line access to the Microsoft Graph REST API gateway. The Graph exposes a growing list of services such as
+**AutoGraphPS** is a PowerShell scripting and automation experience for the [Microsoft Graph API](https://graph.microsoft.io/), a programmable [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
-* Azure Active Directory (AAD)
-* OneDrive
-* Exchange / Outlook
-* SharePoint
-* And many more!
+
+* PowerShell pipeline idiom
+* Simpliifed request building
+
+* URI Navigation: https://github.com/dotnet/HttpRepl
+* Browser for resources types
+* Tab completion
+* API documentation discovery
+* Permission finder
+* API request logging
+* Color output
 
 If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omits the UX affordances found in this module.
 
@@ -362,8 +368,8 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphApplicationConsent       | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                 |
 | Get-GraphChildItem (ggci) | Retrieves in tabular format the list of entities for a given Uri AND child segments of the Uri          |
-| Get-GraphConnection                  | Gets information about all named connections and the current connection                      |
-| Get-GraphConnectionInfo (gcon) | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
+| Get-GraphConnection (gcon)           | Gets information about all named connections and the current connection                      |
+| Get-GraphCurrentConnection (gcur) | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)      | Retrieves detailed errors returned from Graph in execution of the last command                          |
 | Get-GraphItem (ggi)       | Retrieves an entity specified by type and ID or URI |
 | Get-GraphItemRelationship (ggrel) | Retrieves a specified subset of relationships from the specified item                           |
@@ -374,7 +380,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphLogOption        | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged |
 | Get-GraphMember (ggm)     | Gets information about the members of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
 | Get-GraphMethod (ggmt)    | Gets information about the methods of a Graph object's given type or an explicitly specified type, similar to the standard PowerShell Get-Member command |
-| Get-GraphProfileSettings | Gets the list of profiles defined in the [settings file](###Settings file) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
+| Get-GraphProfile                     | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
 | Get-GraphRelatedItem (gri)| Gets the items related to a specified item through a specified relationship                             |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
@@ -403,7 +409,9 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Remove-GraphItem          | Removes an entity specified by type and ID or URI |
 | Remove-GraphItemRelationship | Removes the relationship between a source resource and a target resource without modifying the resources themselves |
 | Remove-GraphResource      | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                      |
-| Select-GraphProfileSettings | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](###Settings file). |
+| Select-GraphConnection (scon) | Sets the named connection used by default for commands in the current Graph                         |
+| Select-GraphProfile       | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
+| Set-GraphApplicationCertificate      | Given the specified certificate or certificate path sets the application's certificates                                             |
 | Set-GraphApplicationConsent       | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Set-GraphItem     | Updates properties of a given Graph entity with the specified values |

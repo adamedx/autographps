@@ -89,6 +89,7 @@ ScriptClass GraphObjectBuilder {
     # here is to instead return an object that contains the return value.
     function ToObject([bool] $isCollection = $false) {
         $this.currentLevel = 0
+
         $value = GetPropertyValue $this.typeDefinition $isCollection $false $null
 
         # Returning the value inside this structure ensures that PowerShell
@@ -159,7 +160,7 @@ ScriptClass GraphObjectBuilder {
                 }
             }
 
-            $typeProperties = $this.typeManager |=> GetTypeDefinitionTransitiveProperties $typeDefinition
+            $typeProperties = $this.typeManager.GetTypeDefinitionTransitiveProperties($typeDefinition)
 
             foreach ( $property in $typeProperties ) {
                 $propertyInfo = if ( ( $this.currentLevel -eq 1 ) -and $this.propertyFilter ) {
@@ -175,7 +176,7 @@ ScriptClass GraphObjectBuilder {
                         continue
                     }
 
-                    $propertyTypeDefinition = $this.typeManager |=> FindTypeDefinition Unknown $property.typeId $true
+                    $propertyTypeDefinition = $this.typeManager.FindTypeDefinition('Unknown', $property.typeId, $true)
 
                     if ( ! $propertyTypeDefinition ) {
                         throw "Unable to find type '$($property.typeId)' for property $($property.name) of type $($typeDefinition.typeId)"

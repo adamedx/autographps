@@ -194,10 +194,11 @@ ScriptClass MetaGraphFormatter {
                     }
                 }
 
-                $coloring = if ( $isExact ) {
-                    'Emphasis1'
-                } else {
-                    'Emphasis2'
+                $colors = $::.ColorString.GetStandardColors('Emphasis2', $null, $null, $null)
+
+                if ( $isExact ) {
+                    $colors[1] = $colors[0]
+                    $colors[0] = $::.ColorString.GetColorContrast($colors[1])
                 }
 
                 $value = if ( $field ) {
@@ -206,15 +207,15 @@ ScriptClass MetaGraphFormatter {
                     $matchedTerms
                 }
 
-                $::.ColorString.ToStandardColorString($value, $coloring, $null, $null, $null)
+                $::.ColorString.ToColorString($value, $colors[0], $colors[1])
             }
         }
 
         function AuthType($authType) {
             $coloring = if ( $authType -eq 'Delegated' ) {
-                'Emphasis1'
-            } else {
                 'Emphasis2'
+            } else {
+                'Emphasis1'
             }
 
             $::.ColorString.ToStandardColorString($authType, $coloring, $null, $null, $null)
@@ -222,9 +223,9 @@ ScriptClass MetaGraphFormatter {
 
         function PermissionName($permission, $consentType) {
             $foreColor = if ( $consentType -eq 'Admin' ) {
-                9
+                13
             } else {
-                10
+                $null
             }
 
             $::.ColorString.ToColorString($permission, $foreColor, $null)

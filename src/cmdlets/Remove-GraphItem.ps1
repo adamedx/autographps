@@ -72,14 +72,27 @@ function Remove-GraphItem {
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
-        $objects = Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
+        $objects = if ( $GraphItem ) {
+            $GraphItem
+        } elseif ( $Filter ) {
+            Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
+        }
 
-        foreach ( $targetObject in $objects ) {
-            if ( ! ( $targetObject | gm id -erroraction ignore ) ) {
-                break
+        $targetUris = if ( $objects ) {
+            foreach ( $targetObject in $objects ) {
+                if ( ! ( $targetObject | gm id -erroraction ignore ) ) {
+                    break
+                }
+
+                $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject $targetObject.Id
             }
+        } elseif ( $Uri )  {
+            $Uri
+        } else {
+            $requestInfo.Uri
+        }
 
-            $targetUri = $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject
+        foreach ( $targetUri in $targetUris ) {
             Invoke-GraphApiRequest $targetUri -Method DELETE -erroraction stop -connection $requestInfo.Context.Connection | out-null
         }
     }
@@ -89,6 +102,4 @@ function Remove-GraphItem {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)
-
-
 

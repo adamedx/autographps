@@ -18,26 +18,29 @@
 . (import-script common/MemberParameterCompleter)
 
 function Get-GraphMethod {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='forobject')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='uri')]
     [OutputType('MethodDisplayType')]
     param(
-        [parameter(position=0)]
+        [parameter(position=0, parametersetname='fortypename', mandatory=$true)]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('TypeId')]
+        $TypeName,
+
+        [parameter(position=1)]
         [Alias('MethodName')]
         [string] $Name,
 
-        [parameter(parametersetname='fortypename', mandatory=$true)]
-        $TypeName,
-
         [parameter(parametersetname='uri', mandatory=$true)]
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         $Uri,
 
-        [parameter(parametersetname='uripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='fortypenamepipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='forobject')]
+        [parameter(parametersetname='uri')]
         $GraphName,
 
         [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]
-        $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [switch] $FullyQualifiedTypeName,
 

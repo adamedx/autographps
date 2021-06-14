@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,13 +18,22 @@ set-strictmode -version 2
 
 . (join-path $psscriptroot ../../test/common/CompareCustomObject.ps1)
 
-function GetAllObjects {
+function GetAllObjects($typeTimes) {
     'Complex', 'Enumeration', 'Primitive', 'Entity' | foreach {
         $typeClass = $_
         Get-GraphType -list -typeclass $typeClass | foreach {
-            $objectJson = New-GraphObject -TypeClass $typeClass $_ -json -setdefaultvalues -recurse
-            if ( ! $objectJson -and ( $typeClass -ne 'Primitive' -and $_ -ne 'Binary' ) ) {
-                throw "Unable to create a new object of type '$_' of typeclass '$typeClass'"
+            $objectCreationBlock = {
+                $objectJson = New-GraphObject -TypeClass $typeClass $_ -json -setdefaultvalues -recurse
+                if ( ! $objectJson -and ( $typeClass -ne 'Primitive' -and $_ -ne 'Binary' ) ) {
+                    throw "Unable to create a new object of type '$_' of typeclass '$typeClass'"
+                }
+            }
+
+            if ( $typeTimes ) {
+                $objectCreationTime = measure-command $objectCreationBlock
+                $typeTimes.Add($_, $objectCreationTime)
+            } else {
+                . $objectCreationBlock
             }
         }
     }
@@ -33,8 +42,13 @@ function GetAllObjects {
 Describe 'The New-GraphObject command' {
     Context 'When invoked using v1 metadata with a single namespace' {
         BeforeAll {
+            [System.GC]::Collect(2, [System.GCcollectionMode]::forced, $true, $true)
             $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/v1metadata-ns-alias-2020-01-22.xml" -force -wait -warningaction silentlycontinue
+        }
+
+        AfterAll {
+            [System.GC]::Collect(2, [System.GCcollectionMode]::forced, $true, $true)
         }
 
         It 'Should emit an array object for a given property even when the array specified by the value parameter has only one element when the type of the property is an array' {
@@ -129,8 +143,13 @@ Describe 'The New-GraphObject command' {
 
     Context 'When invoked using beta metadata with namespace aliases and multiple namepaces' {
         BeforeAll {
+            [System.GC]::Collect(2, [System.GCcollectionMode]::forced, $true, $true)
             $progresspreference = 'silentlycontinue'
             Update-GraphMetadata -Path "$psscriptroot/../../test/assets/betametadata-ns-alias-multi-namespace-2020-03-25.xml" -force -wait -warningaction silentlycontinue
+        }
+
+        AfterAll {
+            [System.GC]::Collect(2, [System.GCcollectionMode]::forced, $true, $true)
         }
 
         It "Should be able to get an object in the 'microsoft.graph' namespace" {
@@ -185,8 +204,13 @@ Describe 'The New-GraphObject command' {
             }
         }
 
-        It 'Should be able to return all objects in the beta metadata' {
-            { GetAllObjects } | Should Not Throw
+        It 'Should be able to return all objects in the beta metadata in under 25 minutes' {
+            # Use global here so the times are available for post-test debugging
+            $global:__test_typeTimes = [ordered] @{}
+            { GetAllObjects $__test_typeTimes } | Should Not Throw
+
+            $executionTimeMinutes = $__test_typeTimes.getenumerator() | select -expandproperty value | Measure-Object TotalMinutes -Sum | select -expandproperty sum
+            $executionTimeMinutes | Should BeLessThan 25
         }
     }
 }

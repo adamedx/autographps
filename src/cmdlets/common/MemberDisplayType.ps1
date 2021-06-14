@@ -19,12 +19,14 @@ ScriptClass MemberDisplayType {
     $MemberType = $null
     $Parameters = $null
     $MethodType = $null
+    $DefiningTypeId = $null
 
     function __initialize($typeMember) {
         $this.Name = $typeMember.Name
         $this.MemberType = $typeMember.MemberType
         $this.TypeId = $typeMember.TypeId
         $this.IsCollection = $typeMember.IsCollection
+        $this.DefiningTypeId = $typeMember.DefiningTypeId
 
         if ( $typeMember.MemberType -eq 'Method' ) {
             $this.MethodType = $typeMember.MemberData.MethodType
