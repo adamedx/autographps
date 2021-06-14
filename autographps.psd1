@@ -256,7 +256,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.38.0 Release Notes
 
-Bug fixes and dependency updates
+New app certificate features from a dependency update, bug fixes and minor features.
 
 ### New dependencies
 
@@ -265,6 +265,7 @@ Bug fixes and dependency updates
 ### Breaking changes
 
 * See breaking changes for AutoGraphPS-SDK 0.27.0
+* `Get-GraphType` no longer supports the `TransitiveMembers` parameter and related parameters; the equivalent functionality is already available by inspecting properties of the returned value or through the `Get-GraphMember` command.
 
 ### New features
 
