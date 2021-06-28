@@ -5,19 +5,14 @@
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-CI?branchName=main)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=5&branchName=main)
 
-**AutoGraphPS** is a PowerShell scripting and automation experience for the [Microsoft Graph API](https://graph.microsoft.io/), a programmable [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+**AutoGraphPS** is a PowerShell scripting and automation experience for the [Microsoft Graph API](https://graph.microsoft.io/), a programmable [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer). AutoGraphPS's enhancements to your run-of-the-mill REST UX allow you to:
 
-
-* PowerShell pipeline idiom
-* Simpliifed request building
-
-* URI Navigation: https://github.com/dotnet/HttpRepl
-* Browser for resources types
-* Tab completion
-* API documentation discovery
-* Permission finder
-* API request logging
-* Color output
+* Explore the API with an `ls-cd-cat` idiom similar to [HttpRepl](https://github.com/dotnet/HttpRepl)
+* Experience the joy of tab-completion and color throughout your Graph journey
+* Find Graph APIs (*types*) and permissions by searching for API names / keywords
+* Easily find API documentation from your shell
+* Build requests with auto-completion and validation for property names and parameters instead of reading documentation
+* Detailed success and error logging of Graph API requests with flexible views
 
 If you're an application developer, DevOps engineer, system administrator, or enthusiast power user, AutoGraphPS was made just for you. If you're building Graph-based applications in PowerShell, consider using the lighter-weight [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) which contains a smaller kernel of Graph cmdlets focused on automation and omits the UX affordances found in this module.
 
