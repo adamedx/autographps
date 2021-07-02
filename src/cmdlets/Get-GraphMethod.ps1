@@ -62,11 +62,37 @@ function Get-GraphMethod {
             }
         }
 
+        $targetType = $TypeName
+
+        $isMethodUri = $false
+
+        if ( $Uri ) {
+            $uriInfo = Get-GraphUriInfo -Uri $Uri
+            $isMethodUri = $uriInfo.Class -in 'Action', 'Function'
+            if ( $isMethodUri ) {
+                if ( $Name ) {
+                    throw [ArgumentException]::new('The Graph location URI parameter specified a method, so the method Name parameter may not also be specified')
+                }
+                $forwardedParameters['Uri'] = $uriInfo.ParentPath
+                $forwardedParameters['Name'] = $uriInfo.Name
+                $forwardedParameters.Add('StrictUri', [System.Management.Automation.SwitchParameter]::new($true))
+            }
+        }
+
+        if ( $GraphItem ) {
+            $objectUriInfo = Get-GraphUriInfo -GraphItem $GraphItem
+            $targetType = $objectUriInfo.__ItemMetadata().TypeId
+        }
+
         $methods = Get-GraphMember @forwardedParameters
+
+        if ( $isMethodUri ) {
+            $targetType = $methods.DefiningTypeId
+        }
 
         foreach ( $method in $methods ) {
             if ( ! $Parameters.IsPresent ) {
-                new-so MethodDisplayType $method
+                new-so MethodDisplayType $method $targetType
             } else {
                 $::.MethodDisplayType |=> ToPublicParameterList $method
             }

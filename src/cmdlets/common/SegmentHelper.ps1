@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,24 @@
 
 . (import-script ..\..\common\PreferenceHelper)
 
+add-type -TypeDefinition @'
+    namespace AutoGraph.Model {
+        public class GraphObject {
+            public GraphObject(object metadata) {
+                this.__itemMetadata = metadata;
+            }
+
+            public object __ItemMetadata() { return this.__itemMetadata; }
+
+            object __itemMetadata;
+        }
+    }
+'@
+
 ScriptClass SegmentHelper {
     static {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
+        const MetadataMethodName __ItemMetadata
 
         function __initialize {
             # NOTE: There are one or more ps1xml files that defines display formats for this type based on
@@ -165,7 +180,7 @@ ScriptClass SegmentHelper {
 
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
-            [PSCustomObject] @{
+            $result = [PSCustomObject] @{
                 PSTypeName = $requestSegment.pstypename.tostring()
                 ParentPath = $requestSegment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
@@ -189,6 +204,12 @@ ScriptClass SegmentHelper {
                 Details = $null
                 Content = $graphItem
                 Preview = $this.__GetPreview($graphItem, $itemId)
+            }
+
+            if ( $fullTypeName -and $graphItem ) {
+                GetNewObjectWithMetadata $graphItem $result
+            } else {
+                $result
             }
         }
 
@@ -238,7 +259,7 @@ ScriptClass SegmentHelper {
 
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
-            [PSCustomObject] @{
+            $result = [PSCustomObject] @{
                 PSTypeName = ($this.SegmentDisplayTypeName.tostring())
                 ParentPath = $null
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
@@ -263,6 +284,12 @@ ScriptClass SegmentHelper {
                 Content = $graphObject
                 Preview = $this.__GetPreview($graphObject, $itemId)
             }
+
+            if ( $fullTypeName -and $graphObject ) {
+                GetNewObjectWithMetadata $graphObject $result
+            } else {
+                $result
+            }
         }
 
         function AddContent($publicSegment, $content) {
@@ -281,6 +308,25 @@ ScriptClass SegmentHelper {
             $publicSegment.content = $content
             $publicSegment.Preview = $this.__GetPreview($content, $publicSegment.name)
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
+        }
+
+        function GetNewObjectWithMetadata($graphItem, $segmentMetadata) {
+            $wrappedObject = [AutoGraph.Model.GraphObject]::new($segmentMetadata)
+
+            foreach ( $property in $graphItem.psobject.properties ) {
+                $wrappedObject.psobject.properties.Add($property, $true)
+            }
+
+            $itemContext = $graphItem.psobject.methods | where Name -eq __ItemContext
+
+            if ( $itemContext ) {
+                $wrappedObject.psobject.methods.Add($itemContext[0], $true)
+            }
+
+            $wrappedObject.pstypenames.insert(0, 'GraphResponseObject')
+            $wrappedObject.pstypenames.insert(0, 'AutoGraph.Entity')
+            $wrappedObject.pstypenames.insert(0, "AutoGraph.Entity.$($segmentMetadata.TypeId)")
+            $wrappedObject
         }
 
         function __GetPreview($content, $defaultValue) {

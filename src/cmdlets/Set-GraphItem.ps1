@@ -48,7 +48,7 @@ function Set-GraphItem {
         [object[]] $Value,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byobject')]
         [parameter(parametersetname='byuri')]
@@ -133,7 +133,7 @@ function Set-GraphItem {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
-        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop' | out-null
     }
 
     end {}

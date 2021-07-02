@@ -39,12 +39,12 @@ function Get-GraphItem {
         [string[]] $Property,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         $PropertyFilter,

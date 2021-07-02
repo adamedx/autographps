@@ -18,8 +18,9 @@ ScriptClass MethodDisplayType {
     $ReturnType = $null
     $Parameters = $null
     $DefiningTypeId = $null
+    $RequestedType = $null
 
-    function __initialize($typeMethod) {
+    function __initialize($typeMethod, $requestedType) {
         $this.Name = $typeMethod.Name
         $this.MethodType = $typeMethod.MethodType
         $this.ReturnType = [PSCUstomObject] @{
@@ -28,6 +29,7 @@ ScriptClass MethodDisplayType {
         }
         $this.Parameters = $typeMethod.Parameters
         $this.DefiningTypeId = $typeMethod.DefiningTypeId
+        $this.RequestedType = $requestedType
     }
 
     static {

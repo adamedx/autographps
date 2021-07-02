@@ -48,7 +48,7 @@ function Remove-GraphItemRelationship {
         [parameter(position=0, parametersetname='typedobjectandpropertytouri', mandatory=$true)]
         [parameter(position=0, parametersetname='typedobjectandpropertytoobject', mandatory=$true)]
         [Alias('FromItem')]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphRespnoseObject')] $GraphItem,
 
         [string] $OverrideTargetTypeName,
 
@@ -58,11 +58,11 @@ function Remove-GraphItemRelationship {
         [Alias('ToId')]
         [string] $TargetId,
 
-        [parameter(parametersetname='uriandpropertytoobject', mandatory=$true)]
-        [parameter(parametersetname='typedobjectandpropertytoobject', mandatory=$true)]
-        [parameter(parametersetname='typeandpropertytoobject', mandatory=$true)]
+        [parameter(parametersetname='uriandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typedobjectandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(parametersetname='typeandpropertytoobject', valuefrompipeline=$true, mandatory=$true)]
         [Alias('ToItem')]
-        [PSCustomObject] $TargetObject,
+        [PSTypeName('GraphResponseObject')] $TargetObject,
 
         [parameter(parametersetname='uriandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='typeandpropertytouri', valuefrompipelinebypropertyname=$true, mandatory=$true)]

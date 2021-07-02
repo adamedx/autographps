@@ -2,6 +2,12 @@
 
 ## To-do items -- prioritized
 
+* Consider removing Add-GraphRelatedItem
+* Get-GraphUriInfo should only return metadata, not decorated objects
+* Fix add-newgraphitemrelationship
+* Add -ToType option to gcd
+* Allow uri completion for methods in new-graphparameterobject, get-graphmethod, any other related method commands
+* Address MTA issue with posh-git
 * Color for Create / Update operations?
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
@@ -402,6 +408,7 @@
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix TypeMember to be more like MemberDisplayType
 * fix formatting of get-graphmethod to swap columns
+* Fix get-graphuriinfo to handle decorated objects
 
 ### Abandoned
 

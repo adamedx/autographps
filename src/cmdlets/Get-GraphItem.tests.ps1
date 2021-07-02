@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,12 +47,16 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
         BeforeAll {
             GetParameterTestFunction Get-GraphItem | new-item function:Get-GraphItemTest
             $contentObject = [PSCustomObject] @{Id='objectid'}
-            $standardObject = [PSCustomObject] @{
+            $metadataObject = [PSCustomObject] @{
+                GraphUri = '/users/objectid'
                 Id = 'objectid'
                 Content = $contentObject
                 FullTypeName = 'sometypename'
                 GraphName = 'somegraph'
             }
+
+            $metadataObject.pstypenames.insert(0, 'GraphSegmentDisplayType')
+            $contentObject.pstypenames.insert(0, 'GraphResponseObject')
         }
 
         It "Should bind to the typeandid parameter set when typename, id, and property are specified as named" {
@@ -86,7 +90,7 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
             }
         }
 
-        It "Should bind to the byobject parameterset when an unwrapped object is specified to the pipeline and the property parameter s specified by name" {
+        It "Should bind to the byobject parameterset when GraphResponseOjbect is specified to the pipeline and the property parameter s specified by name" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
                 $bindingInfo = $contentObject | Get-GraphItemTest -property propname
@@ -96,13 +100,14 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
             }
         }
 
-        It "Should bind to the byobject parameterset when a wrapped object is specified to the pipeline and the property parameter is specified by name" {
+        It "Should bind to the uribypipeline parameterset when a metadata-only GraphSegmentDisplayType object is specified to the pipeline and the property parameter is specified by name" {
             $parameterSetTestsFinished | Should Not Be $null
             if ( ! $parameterSetTestsFinished ) {
-                $bindingInfo = $standardObject | Get-GraphItemTest -property propname
+                $bindingInfo = $metadataObject | Get-GraphItemTest -property propname
 
-                $bindingInfo.parametersetname | Should Be 'byobject'
-                $bindingInfo.BoundParameters['GraphItem'].Id | Should Be $standardObject.Id
+                $bindingInfo.parametersetname | Should Be 'byuripipeline'
+                $bindingInfo.BoundParameters['Uri'] | Should Be $metadataObject.GraphUri
+                $bindingInfo.BoundParameters['GraphName'] | Should Be $metadataObject.GraphName
             }
         }
 
@@ -120,6 +125,4 @@ Describe 'The Get-GraphItem command parameterbinding behavior' -tag parameterbin
         }
     }
 }
-
-
 

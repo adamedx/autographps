@@ -52,27 +52,27 @@ ScriptClass MetaGraphFormatter {
             $::.ColorString.UpdateColorScheme(@($colorInfo))
         }
 
-        function ResultIndex($result) {
-            if ( $result | gm __ResultIndex -erroraction ignore ) {
-                $result.__ResultIndex()
-            }
-        }
-
         function SegmentInfo($segment) {
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Info
+            $metadata = __GetMetadataFromObject $segment
+
+            if ( $metadata ) {
+                $metadata.Info
             }
         }
 
         function SegmentType($segment) {
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Type
+            $metadata = __GetMetadataFromObject $segment
+
+            if ( $metadata ) {
+                $metadata.Type
             }
         }
 
         function SegmentPreview($segment) {
-            $preview = if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Preview
+            $metadata = __GetMetadataFromObject $segment
+
+            $preview = if ( $metadata ) {
+                $metadata.Preview
             } else {
                 $::.SegmentHelper.__GetPreview($segment, '')
             }
@@ -81,18 +81,20 @@ ScriptClass MetaGraphFormatter {
         }
 
         function SegmentId($segment) {
+            $metadata = __GetMetadataFromObject $segment
+
             $highlightValues = $null
             $coloring = $null
             $criterion = $null
 
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segmentType = [string] $segment.Info[0]
+            if ( $metadata ) {
+                $segmentType = [string] $metadata.Info[0]
                 $coloring = if ( $segmentType -eq 'f' -or $segmentType -eq 'a' ) {
                     $highlightValues = @('none', 'a', 'f')
                     $criterion = $segmentType
                     'Contrast'
                 } else {
-                    if ( $segment.Collection ) {
+                    if ( $metadata.Collection ) {
                         'Containment'
                     } else {
                         if ( $segmentType -eq 'n' -or $segmentType -eq 's' ) {
@@ -235,6 +237,14 @@ ScriptClass MetaGraphFormatter {
             $backColor = $::.ColorString.GetColorFromName($colorName)
             $foreColor = $::.ColorString.GetColorContrast($backColor)
             $::.ColorString.ToColorString($text, $foreColor, $backColor)
+        }
+
+        function __GetMetadataFromObject($graphObject) {
+            if ( $graphObject | gm __ItemMetadata -MemberType Method -erroraction ignore ) {
+                $graphObject.__ItemMetadata()
+            } elseif ( $graphObject.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $graphObject
+            }
         }
     }
 }

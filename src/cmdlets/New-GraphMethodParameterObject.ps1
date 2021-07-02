@@ -24,6 +24,7 @@ function New-GraphMethodParameterObject {
         [parameter(parametersetname='bytype', position=0, mandatory=$true)]
         $TypeName,
 
+        [parameter(parametersetname='byobject', position=1, mandatory=$true)]
         [parameter(parametersetname='bytype', position=1, mandatory=$true)]
         [parameter(parametersetname='byuri', position=1)]
         [string] $MethodName,
@@ -32,7 +33,7 @@ function New-GraphMethodParameterObject {
         [Uri] $Uri,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         $GraphName,
 
@@ -57,29 +58,28 @@ function New-GraphMethodParameterObject {
 
     $targetMethodName = $MethodName
 
-    $targetTypeName = if ( $TypeName ) {
-        $TypeName
-    } else {
-        $graphNameArgument = if ( $GraphName ) { @{GraphName=$GraphName} } else { @{} }
-        $isFullyQualifiedTypeName = $true
-        $uriInfo = Get-GraphUriInfo $Uri -erroraction stop @graphNameArgument
-        if ( $uriInfo.Class -in 'Action', 'Function' ) {
-            $targetMethodName = $uriInfo.Name
-            $typeUriInfo = Get-GraphUriInfo $uriInfo.ParentPath -erroraction stop @graphNameArgument
-            $typeUriInfo.FullTypeName
-        } elseif ( $targetMethodName ) {
-            $uriInfo.FullTypeName
-        } else {
-            throw [ArgumentException]::new("The URI '$Uri' is not a method but the MethodName parameter was not specified -- please specify a method URI or include the MethodName parameter and retry the command")
-        }
-    }
+    $commandParameters = @{}
 
-    $type = Get-GraphType -TypeName $targetTypeName -TypeClass Any -FullyQualifiedTypeName:$isFullyQualifiedTypeName -erroraction stop
+    foreach ( $commandParameter in
+              'GraphItem',
+              'GraphName',
+              'Uri',
+              'MethodName',
+              'TypeName',
+              'FullyQualifiedTypeName' ) {
+                  if ( $PSBoundParameters.ContainsKey($commandParameter) ) {
+                      $commandParameters.Add($commandParameter, $PSBoundParameters[$commandParameter])
+                  }
+              }
 
-    $method = $type.methods | where name -eq $targetMethodName
+    $method = Get-GraphMethod @commandParameters
 
     if ( ! $method ) {
-        throw [ArgumentException]::new("The method '$MethodName' does not exist for the type '$($type.TypeId)'")
+        throw [ArgumentException]::new("The specified method does not exist for the Graph location, type, or object")
+    }
+
+    if ( ( $method | measure-object ).count -gt 1 ) {
+        throw "Unexpected error -- multiple methods matching the specified criteria were found"
     }
 
     $parameterObject = @{}

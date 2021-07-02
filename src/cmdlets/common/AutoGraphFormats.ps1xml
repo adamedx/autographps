@@ -69,6 +69,56 @@ limitations under the License.
     </View>
 
     <View>
+      <Name>GraphItem</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <!-- This GroupBy tag causes an extra row of output to be displayed above the table
+             header, which we use to provide the name of the URI being enumerated or requested,
+             the same way that Get-ChildItem shows a directory title for the file system. -->
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+        <Label>Graph Location</Label>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Info</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Type</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Preview</Label>
+            <!-- Per docs, this should be max column width, but it seems to have no effect in testing. -->
+            <Width>48</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_.__ItemMetadata())</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_.__ItemMetadata())</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_.__ItemMetadata())</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_.__ItemMetadata())</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
       <Name>GraphLastResultType</Name>
       <ViewSelectedBy>
         <TypeName>GraphLastResultType</TypeName>
@@ -102,19 +152,19 @@ limitations under the License.
             <TableColumnItems>
               <TableColumnItem>
                 <Alignment>Right</Alignment>
-                <ScriptBlock>$::.MetaGraphFormatter.ResultIndex($_)</ScriptBlock>
+                <PropertyName>Index</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentInfo($_.Content)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentType($_.Content)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentPreview($_.Content)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.SegmentId($_.Content)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -127,7 +177,10 @@ limitations under the License.
       <ViewSelectedBy>
         <TypeName>MemberDisplayType</TypeName>
       </ViewSelectedBy>
-
+      <GroupBy>
+        <Label>MemberType</Label>
+        <ScriptBlock>"$($_.MemberType) ($($_.RequestedType))"</ScriptBlock>
+      </GroupBy>
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
@@ -179,7 +232,8 @@ limitations under the License.
       </ViewSelectedBy>
 
       <GroupBy>
-        <PropertyName>MemberType</PropertyName>
+        <Label>MemberType</Label>
+        <ScriptBlock>"$($_.MemberType) ($($_.RequestedType))"</ScriptBlock>
       </GroupBy>
 
       <ListControl>
@@ -232,6 +286,11 @@ limitations under the License.
         <TypeName>MethodDisplayType</TypeName>
       </ViewSelectedBy>
 
+      <GroupBy>
+        <PropertyName>RequestedType</PropertyName>
+        <Label>TypeId</Label>
+      </GroupBy>
+
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
@@ -281,9 +340,10 @@ limitations under the License.
       <ViewSelectedBy>
         <TypeName>MethodDisplayType</TypeName>
       </ViewSelectedBy>
+
       <GroupBy>
-        <PropertyName>MethodType</PropertyName>
-        <Label>MethodType</Label>
+        <PropertyName>RequestedType</PropertyName>
+        <Label>TypeId</Label>
       </GroupBy>
 
       <ListControl>

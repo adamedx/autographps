@@ -43,7 +43,7 @@ function Get-GraphChildItem {
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [Alias('OfObject')]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [Alias('WithRelationship')]
         [string[]] $Relationship,

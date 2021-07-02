@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
         }
 
         $mockScript = @"
-            `$ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=``"https://graph.microsoft.com/v1.0/me``"}")
-            `$responseOBject = '{$meResponseDataExpected}' | convertfrom-json
+            `$ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=``"https://graph.microsoft.com/v1.0/me``";IsEntity=```$true;IsDelta=```$false;IsCollectionMember=```$false;TypelessGraphUri=``"/Users``"}")
+            `$responseObject = '{$meResponseDataExpected}' | convertfrom-json
             `$responseObject | add-member -membertype scriptmethod -name __ItemContext -value `$ItemContextScript
             `$responseObject
 "@
@@ -57,8 +57,8 @@ Describe 'The Get-GraphResourceWithMetadata cmdlet' {
 
         It 'Should return an object with the expected user principal when given the argument me' {
             $meResponse = Get-GraphResourceWithMetadata me 3> $null
-            $meResponse.content.userPrincipalName | Should Be $expectedUserPrincipalName
-            $meResponse.Preview | Should Be 'Search Man'
+            $meResponse.userPrincipalName | Should Be $expectedUserPrincipalName
+            $meResponse.__ItemMetadata().Preview | Should Be 'Search Man'
         }
     }
 }

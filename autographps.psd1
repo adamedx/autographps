@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.38.0'
+ModuleVersion = '0.39.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.27.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.28.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -254,35 +254,25 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.38.0 Release Notes
+## AutoGraphPS 0.39.0 Release Notes
 
-New app certificate features from a dependency update, bug fixes and minor features.
+Improved support for customizing display output
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.27.0
+* AutoGraphPS-SDK 0.28.0
 
 ### Breaking changes
 
-* See breaking changes for AutoGraphPS-SDK 0.27.0
-* `Get-GraphType` no longer supports the `TransitiveMembers` parameter and related parameters; the equivalent functionality is already available by inspecting properties of the returned value or through the `Get-GraphMember` command.
+None.
 
 ### New features
 
-* See new features for AutoGraphPS-SDK 0.27.0
-* DefiningType now added to `Get-GraphMethod`, `Get-GraphMember` to show which type the member was inherited from
-* Native objects can be passed via pipeline to Invoke-GraphMethod to invoke their methods
-* `Get-GraphResourceWithMetadata (gls)` now supports a `Count` parameter like `Get-GraphResource`
-* Add `Count` and `First` parameters for `Get-GraphRelatedItem`
+None.
 
 ### Fixed defects
 
-* Fixed failure of `Remove-GraphItem` for some scenarios (e.g. me/contacts)
-* `Invoke-GraphMethod`, `Get-GraphMethod`, `Get-GraphUriInfo` did not support inherited methods
-* Fixed regression where `Get-GraphMethod`, `Get-GraphMember` needed `GraphName` parameter
-* When $false was passed as a parameter value for `Invoke-GraphMethod` via the value parameter it was treated as if the parameter had not been supplied and the command would fail
-* Fixed parameter completion failing for parameter values when the Uri parameter was supplied to Invoke-GraphMethod.
-* Fixed error stream pollution when executing some type related commands (e.g. `Find-GraphType`)
+None.
 
 '@
     } # End of PSData hashtable

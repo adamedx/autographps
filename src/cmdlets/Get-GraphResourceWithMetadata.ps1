@@ -326,7 +326,8 @@ function Get-GraphResourceWithMetadata {
 
             $result = if ( ! $ignoreMetadata -and (! $RawContent.ispresent -and (! $resolvedUri.Collection -or $DetailedChildren.IsPresent) ) ) {
                 if ( ! $responseContentOnly ) {
-                    $restResult | Get-GraphUriInfo -GraphName $context.name
+                    $uriMetadata = $restResult | Get-GraphUriInfo -GraphName $context.name
+                    $::.SegmentHelper.GetNewObjectWithMetadata($restResult, $uriMetadata.__ItemMetadata())
                 } else {
                     $restResult
                 }

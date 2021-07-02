@@ -12,25 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass __GraphIndexedResult {
-    $__Index = $null
-}
-
 function Get-GraphLastOutput {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='all')]
     param(
         [parameter(position=0, parametersetname='index', mandatory=$true)]
-        [int]
-        $Index,
+        [int] $Index,
 
         [parameter(parametersetname='last', mandatory=$true)]
-
-        [int]
-        $Last,
+        [int] $Last,
 
         [parameter(parametersetname='first', mandatory=$true)]
-        [int]
-        $First,
+        [int] $First,
+
+        [Switch] $ContentOnly,
 
         [ArgumentCompleter({
         param ( $commandName,
@@ -64,6 +58,7 @@ function Get-GraphLastOutput {
         $lastIndex = $resultCount - 1
 
         if ( $parameterset -eq 'index' ) {
+            $explicitIndex = $true
             $startIndex = $Index
             $lastIndex = $Index
         } elseif ( $parameterset -eq 'last' ) {
@@ -75,10 +70,7 @@ function Get-GraphLastOutput {
         }
 
         $isContent = ! $lastResults[0].pstypenames.contains('GraphSegmentDisplayType')
-
-        $propertySelection = if ( $Property ) {
-            @{Property = ( @('Index') + $Property )}
-        }
+        $singleElement = ( $lastIndex - $startIndex ) -le 1
 
         for ( $currentResult = $startIndex; $currentResult -le $lastIndex; $currentResult++ ) {
             $content = if ( $isContent -or ! ( $lastResults[0] | gm content -erroraction ignore ) -or ! ( $lastResults[0].Content ) ) {
@@ -87,18 +79,24 @@ function Get-GraphLastOutput {
                 $lastResults[$currentResult].Content
             }
 
-            $output = $content.psobject.copy()
-
-            if ( ! $Property ) {
-                $output | Add-Member -Name __ResultIndex -MemberType ScriptMethod -Value ([ScriptBlock]::Create($currentResult.tostring()))
-
-                $output.pstypenames.insert(0, 'GraphLastResultType')
+            $output = if ( ! $Property ) {
+                $content
             } else {
-                $output = $output | select-object @propertySelection
-                $output.Index = $currentResult
+                $content | select-object @Property
             }
 
-            $output
+            $result = if ( ! $ContentOnly.IsPresent -and ! $singleElement ) {
+                $indexedObject = [PSCustomObject] @{
+                    Index = $currentResult
+                    Content = $output
+                }
+                $indexedObject.pstypenames.insert(0, 'GraphLastResultType')
+                $indexedObject
+            } else {
+                $output
+            }
+
+            $result
         }
     }
 }

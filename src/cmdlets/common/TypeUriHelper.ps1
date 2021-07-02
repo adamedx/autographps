@@ -73,6 +73,10 @@ ScriptClass TypeUriHelper {
                     }
                 }
 
+                if ( ! $objectUri ) {
+                    throw 'Unable to determine the Graph URI for the specified object'
+                }
+
                 $objectUri.tostring()
             }
         }
@@ -136,10 +140,22 @@ ScriptClass TypeUriHelper {
         }
 
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject, $ignoreTypeIfObjectPresent, $targetUriOptional) {
-            $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
+            $metadata = if ( $typedGraphObject -and ( $typedGraphObject | gm __ItemMetadata -erroraction ignore ) ) {
+                $typedGraphObject.__ItemMetadata()
+            }
+
+            $targetGraphName = if ( $metadata ) {
+                $metadata.Graphname
+            } else {
+                $graphName
+            }
+
+            $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $targetGraphName
 
             $targetUri = if ( $uri ) {
                 $::.GraphUtilities |=> ToGraphRelativeUri $uri $targetContext
+            } elseif ( $metadata ) {
+                $metadata.GraphUri
             }
 
             $targetTypeInfo = if ( $typeName -and ( ! $typedGraphObject -or $ignoreTypeIfObjectPresent ) ) {
@@ -163,18 +179,18 @@ ScriptClass TypeUriHelper {
                     FullTypeName = $resolvedType.typeId
                     IsCollection = $true
                 }
-            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of typedgraphobject over uri
+            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of metadata (i.e. typedGraphObject) over uri
                 TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
-                if (  $::.SegmentHelper |=> IsGraphSegmentType $typedGraphObject ) {
+                if ( $metadata -and $::.SegmentHelper.IsGraphSegmentType($metadata) ) {
                     # This is already a fully described object -- no need to make expensive
                     # calls to parse metadata and understand the object
-                    $objectUri = $typedGraphObject.GraphUri
+                    $objectUri = $metadata.GraphUri
                     $targetUri = $objectUri
                     [PSCustomObject] @{
-                        FullTypeName = $typedGraphObject.FullTypeName
-                        IsCollection = $typedGraphObject.Collection
-                        UriInfo = $typedGraphObject
+                        FullTypeName = $metadata.FullTypeName
+                        IsCollection = $metadata.Collection
+                        UriInfo = $metadata
                     }
                 } else {
                     # We need to analyze information about the object using its uri since we
