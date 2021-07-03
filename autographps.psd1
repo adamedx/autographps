@@ -264,15 +264,15 @@ Improved support for customizing display output
 
 ### Breaking changes
 
-None.
+* Objects returned by `Get-GraphResourceWithMetadata`, `Get-GraphItem`, `Get-GraphChildItem` return the structure of the Graph object they came from -- if they aren't from the graph (i.e. just metadata) then they will have the structure of metadata objects just as they did before this change.
 
 ### New features
 
-None.
+* `Set-GraphLocation` aka `gcd` now supports the `ToType` parameter which allows you to change the default location for the specified type.
 
 ### Fixed defects
 
-None.
+* Removed some non-determinism in parsing of paths -- commands now always use the specified GraphName parameter to fully resolve the path, and otherwise if a URI does not contain the Graph in the path, the default context is used. Previously in some cases a relative URI would result in an attempt to find the "best" matching Graph, which would depend on which graphs were mounted and in what order.
 
 '@
     } # End of PSData hashtable

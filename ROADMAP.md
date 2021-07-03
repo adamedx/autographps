@@ -4,8 +4,6 @@
 
 * Consider removing Add-GraphRelatedItem
 * Get-GraphUriInfo should only return metadata, not decorated objects
-* Fix add-newgraphitemrelationship
-* Add -ToType option to gcd
 * Allow uri completion for methods in new-graphparameterobject, get-graphmethod, any other related method commands
 * Address MTA issue with posh-git
 * Color for Create / Update operations?
@@ -396,6 +394,7 @@
 * Add -Count, -all support for `gls` ?
 * Add -Count, -First support for 'get-graphrelateditem'
 * Fix error stream pollution in GetNativeSchemaFromGraph
+* Add -ToType option to gcd
 
 ### Postponed
 
