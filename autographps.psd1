@@ -63,7 +63,7 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
+FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/common/CustomFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
@@ -199,6 +199,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeUriHelper.ps1',
         '.\src\cmdlets\common\TypeUriParameterCompleter.ps1',
+        '.\src\common\CustomFormats.ps1xml',
         '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
@@ -269,6 +270,7 @@ Improved support for customizing display output
 ### New features
 
 * `Set-GraphLocation` aka `gcd` now supports the `ToType` parameter which allows you to change the default location for the specified type.
+* Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are User and Group. Types other than those will be displayed with the default table view formatting.
 
 ### Fixed defects
 

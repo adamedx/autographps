@@ -2,6 +2,16 @@
 
 ## To-do items -- prioritized
 
+* Add files custom formats
+* Add channel, conversation display formats
+* Support external tenants, specific tenant in profiles
+* Remove methods from gls auto-complete
+* Add command to sdk to display permissions
+* Add custom display preference
+* Make an explicit command for obtaining metadata
+* Use friendlier time format
+* In sdk make item index a method when adding to last items
+* Fix datetimes in application in sdk
 * Consider removing Add-GraphRelatedItem
 * Get-GraphUriInfo should only return metadata, not decorated objects
 * Allow uri completion for methods in new-graphparameterobject, get-graphmethod, any other related method commands

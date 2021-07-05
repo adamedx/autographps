@@ -323,14 +323,24 @@ ScriptClass SegmentHelper {
                 $wrappedObject.psobject.methods.Add($itemContext[0], $true)
             }
 
+            # When an item is returned as part of a heterogeneous collection, it should have
+            # an '@odata.type'. In this case, to ensure that table formatting is sensible,
+            # we lower the priority of the type so that it uses a more generic type that
+            # shows less specific but common information for any type.
+            $specificTypeIndex = if ( $graphItem | gm '@odata.type' -erroraction ignore ) {
+                1
+            } else {
+                0
+            }
+
             $wrappedObject.pstypenames.insert(0, 'GraphResponseObject')
             $wrappedObject.pstypenames.insert(0, 'AutoGraph.Entity')
-            $wrappedObject.pstypenames.insert(0, "AutoGraph.Entity.$($segmentMetadata.TypeId)")
+            $wrappedObject.pstypenames.insert($specificTypeIndex, "AutoGraph.Entity.$($segmentMetadata.TypeId)")
             $wrappedObject
         }
 
         function __GetPreview($content, $defaultValue) {
-            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Id, bodyPreview
+            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Topic, Id, bodyPreview
             if ( $previewProperties.Name ) {
                 $previewProperties.Name
             } elseif ( $previewProperties.DisplayName ) {
@@ -341,6 +351,8 @@ ScriptClass SegmentHelper {
                 $previewProperties.FileName
             } elseif ( $previewProperties.Subject ) {
                 $previewProperties.Subject
+            } elseif ( $previewProperties.Topic ) {
+                $previewProperties.Topic
             } elseif ( $previewProperties.bodyPreview ) {
                 $previewproperties.bodyPreview
             } elseif ( $previewProperties.Id ) {
