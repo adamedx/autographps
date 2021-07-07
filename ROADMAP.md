@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add favorites, cd to favorites
+* Support organizational contacts formatting
 * Add files custom formats
 * Add channel, conversation display formats
 * Support external tenants, specific tenant in profiles

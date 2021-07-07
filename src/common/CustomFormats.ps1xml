@@ -121,7 +121,7 @@ limitations under the License.
 
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.GroupType($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.GroupType($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -256,16 +256,16 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.ContactEmailAddress($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.ContactEmailAddress($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>if ( $_ | gm DisplayName -erroraction ignore ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null) }</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.ContactPhone($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.ContactPhone($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.ContactAddress($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.ContactAddress($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -306,24 +306,22 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.MessageTime($_, 'receivedDateTime')</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.MessageTime($_, 'receivedDateTime')</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.MessageEmailAddress($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.MessageEmailAddress($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.MessageSubject($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.MessageSubject($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.MessageAudience($_)</ScriptBlock>
+                <ScriptBlock>$::.CustomFormatter.MessageAudience($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
         </TableRowEntries>
       </TableControl>
     </View>
-
-
 
   </ViewDefinitions>
 </Configuration>

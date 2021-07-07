@@ -200,6 +200,7 @@ VariablesToExport = @(
         '.\src\cmdlets\common\TypeUriHelper.ps1',
         '.\src\cmdlets\common\TypeUriParameterCompleter.ps1',
         '.\src\common\CustomFormats.ps1xml',
+        '.\src\common\CustomFormatter.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
