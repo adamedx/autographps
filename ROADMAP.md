@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Add favorites, cd to favorites
+* Add de-emphasis
+* Add favorites, cd to favorites defined in profile
 * Support organizational contacts formatting
 * Add files custom formats
 * Add channel, conversation display formats

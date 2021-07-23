@@ -14,6 +14,8 @@
 
 ScriptClass CustomFormatter {
     static {
+        const DAY_TICKS ([TimeSpan]::new(1,0,0,0).Ticks)
+
         function GroupType($group) {
             $groupType = @()
 
@@ -111,7 +113,7 @@ ScriptClass CustomFormatter {
         }
 
         function MessageAudience($message) {
-            if ( $message | gm 'ToRecipients' -erroraction ignore ) {
+            $result = if ( $message | gm 'ToRecipients' -erroraction ignore ) {
                 $recipients = $message.toRecipients | foreach {
                     __MessageAddress $_
                 }
@@ -128,6 +130,8 @@ ScriptClass CustomFormatter {
                     $firstRecipient + $countDisplay
                 }
             }
+
+            $::.ColorString.ToColorString('', 0, 0) + $result
         }
 
         function MessageSubject($message) {
@@ -141,8 +145,14 @@ ScriptClass CustomFormatter {
                     ! $message.IsRead
                 }
 
+                $truncatedSubject = if ( $message.Subject.Length -gt 48 ) {
+                    $message.Subject.SubString(0, 48 - 3) + '...'
+                } else {
+                    $message.Subject
+                }
+
                 if ( $isHighPriority ) {
-                    $augmentedSubject = "! " + $message.Subject
+                    $augmentedSubject = "! " + $truncatedSubject
                     if ( $isUnread ) {
                         $priorityColor = $::.ColorString.GetStandardColors('Scheme', 'Error1', $null, $null)
                         $contrast = $::.ColorString.GetColorContrast($priorityColor[0])
@@ -151,23 +161,36 @@ ScriptClass CustomFormatter {
                         $::.ColorString.ToStandardColorString($augmentedSubject, 'Scheme', 'Error1', $null, $null)
                     }
                 } elseif ( $isUnread ) {
-                    $::.ColorString.ToStandardColorString($message.Subject, 'Emphasis2', $null, $null, $null)
+                    $::.ColorString.ToStandardColorString($truncatedSubject, 'Emphasis2', $null, $null, $null)
                 } else {
-                    $message.Subject
+                    $::.ColorString.ToColorString($truncatedSubject, 8, $null)
                 }
             }
         }
 
         function MessageTime($message, $timeField) {
-            if ( $message | gm $timeField -erroraction ignore ) {
+            $dayIndex = $null
+
+            $timeOutput = if ( $message | gm $timeField -erroraction ignore ) {
                 $parsedTime = [DateTime]::new(0)
 
                 if ( [DateTime]::tryparse($message.$timeField, [ref] $parsedTime) ) {
-                    $parsedTime.ToString("ddd yyyy-MM-dd HH:mm")
+                    $parsedTime.ToString("yyyy-MM-dd HH:mm ddd")
+                    $dayIndex = [Math]::Floor( $parsedTime.Ticks / $DAY_TICKS )
                 } else {
                     $message.$timeField
                 }
             }
+
+            $colorValue = if ( $dayIndex ) {
+                if ( $dayIndex % 2 ) {
+                    'Emphasis2'
+                } else {
+                    'Emphasis1'
+                }
+            }
+
+            $::.ColorString.ToStandardColorString($timeOutput, $colorValue, $null, $null, $null)
         }
 
         function __MessageAddress($messageAddress) {

@@ -299,7 +299,7 @@ limitations under the License.
             <Label>Subject</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>ToRecipients</Label>
+            <Label>To Recipients</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
