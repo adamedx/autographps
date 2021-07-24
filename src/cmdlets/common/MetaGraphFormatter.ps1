@@ -28,6 +28,16 @@ ScriptClass MetaGraphFormatter {
                     'PrimitiveTypeCollection'
                     'Consent-Admin'
                     'Consent-User'
+                    'Message-HighPriority'
+                    'Message-Unread'
+                    'Message-Read'
+                    'DriveItem-OldItem'
+                    'DriveItem-MediumAgeItem',
+                    'DriveItem-RecentItem',
+                    'DriveItem-VeryRecentItem'
+                    'DriveItem-Large',
+                    'DriveItem-Gigantic'
+                    'DriveItem-Empty'
                 ),
                 'autographps'
             )
@@ -46,6 +56,16 @@ ScriptClass MetaGraphFormatter {
                     'PrimitiveTypeCollection' = 8
                     'Consent-Admin' = 9
                     'Consent-User' = 10
+                    'Message-HighPriority' = 1
+                    'Message-Unread' = 14
+                    'Message-Read' = 8
+                    'DriveItem-OldItem' = 8
+                    'DriveItem-MediumAgeItem' = 14
+                    'DriveItem-RecentItem' = 15
+                    'DriveItem-VeryRecentItem' = 11
+                    'DriveItem-Large' = 12
+                    'DriveItem-Gigantic' = 9
+                    'DriveItem-Empty' = 8
                 }
             }
 

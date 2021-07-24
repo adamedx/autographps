@@ -28,6 +28,14 @@ limitations under the License.
        <TypeName>Autograph.Entity.microsoft.graph.eventMessageRequest</TypeName>
       </Types>
     </SelectionSet>
+
+    <SelectionSet>
+      <Name>GraphDriveTypes</Name>
+      <Types>
+       <TypeName>Autograph.Entity.microsoft.graph.driveItem</TypeName>
+      </Types>
+    </SelectionSet>
+
   </SelectionSets>
 
   <ViewDefinitions>
@@ -273,8 +281,6 @@ limitations under the License.
       </TableControl>
     </View>
 
-
-
     <View>
       <Name>GraphMessage</Name>
 
@@ -316,6 +322,51 @@ limitations under the License.
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.CustomFormatter.MessageAudience($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphDriveItem</Name>
+
+      <ViewSelectedBy>
+        <SelectionSetName>GraphDriveTypes</SelectionSetName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>CreatedBy</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>LastModifiedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Size</Label>
+            <Alignment>Right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemAuthor($_, 'createdBy')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemTime($_, 'lastModifiedDateTime')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemSize($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemName($_)</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>

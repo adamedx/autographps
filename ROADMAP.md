@@ -2,9 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Add auto-complete based on lastgraphitems
 * Add de-emphasis
 * Add favorites, cd to favorites defined in profile
-* Support organizational contacts formatting
 * Add files custom formats
 * Add channel, conversation display formats
 * Support external tenants, specific tenant in profiles
@@ -421,6 +421,7 @@
 * Fix TypeMember to be more like MemberDisplayType
 * fix formatting of get-graphmethod to swap columns
 * Fix get-graphuriinfo to handle decorated objects
+* Support organizational contacts formatting
 
 ### Abandoned
 

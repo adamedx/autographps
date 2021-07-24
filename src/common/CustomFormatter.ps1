@@ -16,6 +16,17 @@ ScriptClass CustomFormatter {
     static {
         const DAY_TICKS ([TimeSpan]::new(1,0,0,0).Ticks)
 
+        $typesWithHeterogeneousFormatter = @{
+            'Autograph.Entity.microsoft.graph.message' = 'Autograph.Entity.microsoft.graph.message'
+            'Autograph.Entity.microsoft.graph.eventMessage' = 'Autograph.Entity.microsoft.graph.message'
+            'Autograph.Entity.microsoft.graph.eventMessageResponse' = 'Autograph.Entity.microsoft.graph.message'
+            'Autograph.Entity.microsoft.graph.eventMessageRequest' = 'Autograph.Entity.microsoft.graph.message'
+        }
+
+        function SupportsHeterogeneousFormatter([string] $typeName) {
+            $this.typesWithHeterogeneousFormatter[$typeName] -ne $null
+        }
+
         function GroupType($group) {
             $groupType = @()
 
@@ -145,25 +156,19 @@ ScriptClass CustomFormatter {
                     ! $message.IsRead
                 }
 
-                $truncatedSubject = if ( $message.Subject.Length -gt 48 ) {
-                    $message.Subject.SubString(0, 48 - 3) + '...'
-                } else {
-                    $message.Subject
-                }
+                $truncatedSubject = __Truncate $message.Subject 48
 
                 if ( $isHighPriority ) {
                     $augmentedSubject = "! " + $truncatedSubject
                     if ( $isUnread ) {
-                        $priorityColor = $::.ColorString.GetStandardColors('Scheme', 'Error1', $null, $null)
-                        $contrast = $::.ColorString.GetColorContrast($priorityColor[0])
-                        $::.ColorString.ToColorString($augmentedSubject, $contrast, $priorityColor[0])
+                        __GetInvertedStandardColorString $augmentedSubject 'Scheme' 'Message-HighPriority'
                     } else {
-                        $::.ColorString.ToStandardColorString($augmentedSubject, 'Scheme', 'Error1', $null, $null)
+                        $::.ColorString.ToStandardColorString($augmentedSubject, 'Scheme', 'Message-HighPriority', $null, $null)
                     }
                 } elseif ( $isUnread ) {
-                    $::.ColorString.ToStandardColorString($truncatedSubject, 'Emphasis2', $null, $null, $null)
+                    $::.ColorString.ToStandardColorString($truncatedSubject, 'Scheme', 'Message-Unread', $null, $null)
                 } else {
-                    $::.ColorString.ToColorString($truncatedSubject, 8, $null)
+                    $::.ColorString.ToStandardColorString($truncatedSubject, 'Scheme', 'Message-Read', $null, $null)
                 }
             }
         }
@@ -193,6 +198,88 @@ ScriptClass CustomFormatter {
             $::.ColorString.ToStandardColorString($timeOutput, $colorValue, $null, $null, $null)
         }
 
+
+        function DriveItemTime($driveItem, $timeField) {
+            if ( $driveItem | gm $timeField -erroraction ignore ) {
+                $parsedTime = [DateTime]::new(0)
+
+                $time = if ( [DateTime]::tryparse($driveItem.$timeField, [ref] $parsedTime) ) {
+                    $parsedTime.ToString("yyyy-MM-dd HH:mm")
+                } else {
+                    $driveItem.$timeField
+                }
+
+                $fileAge = [DateTime]::now - $parsedTime
+
+                $colorValue = if ( $fileAge.TotalDays -gt 730 ) {
+                    'DriveItem-OldItem'
+                } elseif ( $fileAge.TotalDays -gt 90 ) {
+                    'DriveItem-MediumAgeItem'
+                } elseif ( $fileAge.TotalDays -gt 30 ) {
+                    'DriveItem-RecentItem'
+                } else {
+                    'DriveItem-VeryRecentItem'
+                }
+
+                $::.ColorString.ToStandardColorString($time, 'Scheme', $colorValue, $null, $null)
+            }
+        }
+
+        function DriveItemAuthor($driveItem, $authorField) {
+            $result = if ( $driveItem | gm $authorField ) {
+                $author = $driveItem.$authorField
+
+                $authorName = if ( $author | gm -erroraction ignore user ) {
+                    $userFields = 'email', 'displayName', 'id'
+
+                    foreach ( $field in $userFields ) {
+                        if ( ( $author.user | gm $field -erroraction ignore ) -and $author.user.$field ) {
+                            $author.user.$field
+                            break
+                        }
+                    }
+                }
+
+                if ( $authorName ) {
+                    $authorName
+                } else {
+                    $author.ToString()
+                }
+            }
+
+            if ( $result ) {
+                __Truncate $result 30
+            }
+        }
+
+        function DriveItemSize($driveItem) {
+            if ( $driveItem | gm size ) {
+                $colorValue = if ( $driveItem.size -ge 100000000 ) {
+                    'DriveItem-Gigantic'
+                } elseif ( $driveItem.size -ge 10000000 ) {
+                    'DriveItem-Large'
+                } elseif ( $driveItem.size -eq 0 ) {
+                    'DriveItem-Empty'
+                }
+
+                $::.ColorString.ToStandardColorString($driveItem.size, 'Scheme', $colorValue, $null, $null)
+            }
+        }
+
+        function DriveItemName($driveItem) {
+            if ( $driveItem | gm Name ) {
+                $isContainer = ( $driveItem | gm folder -erroraction ignore ) -ne $null
+
+                $name = __Truncate $driveItem.name 40 6
+
+                if ( $isContainer ) {
+                    $::.ColorString.ToSTandardColorString($name, 'Containment', $null, $null)
+                } else {
+                    $::.ColorString.ToSTandardColorString($name, 'Emphasis2', $null, $null)
+                }
+            }
+        }
+
         function __MessageAddress($messageAddress) {
             if ( $messageAddress -and ( $messageAddress | gm emailAddress -erroraction ignore ) ) {
                 if ( $messageAddress.emailAddress | gm name -erroraction ignore ) {
@@ -201,6 +288,30 @@ ScriptClass CustomFormatter {
                     $messageAddress.emailAddress.Address
                 }
             }
+        }
+
+        function __Truncate([string] $text, [int32] $length, [int32] $suffixLength = 0) {
+            if ( $text.length -le $length ) {
+                $text
+            } else {
+                $textSegmentLength = $length - $suffixLength - 3
+
+                $textSegment = $text.substring(0, $textSegmentLength) + '...'
+
+                $suffix = if ( $suffixLength ) {
+                    $text.substring($text.length - $suffixLength, $suffixLength)
+                } else {
+                    ''
+                }
+
+                $textSegment + $suffix
+            }
+        }
+
+        function __GetInvertedStandardColorString([string] $text, [string] $coloring, $criterion, [object[]] $highlightedValues, $disabledValue) {
+            $mainColor = $::.ColorString.GetStandardColors($coloring, $criterion, $highlightedValues, $disabledValue)
+            $contrast = $::.ColorString.GetColorContrast($mainColor[0])
+            $::.ColorString.ToColorString($text, $contrast, $mainColor[0])
         }
     }
 }
