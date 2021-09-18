@@ -95,16 +95,20 @@ function Get-GraphUriInfo {
         $currentDepth = $currentItem[0] + 1
         $currentUri = $currentItem[1]
 
-        $graphCurrentItem = if ($GraphItem) {
+        $graphCurrentItem = if ( $GraphItem ) {
             $currentUri
         }
 
         $uriSource = $currentUri
+
+        $responseObject = $graphItem
+
         $inputUri = if ( $graphCurrentItem ) {
-            if ( $graphCurrentItem | gm -membertype Method __ItemMetadata -erroraction ignore ) {
+            if ( $graphCurrentItem | gm -membertype ScriptMethod __ItemMetadata -erroraction ignore ) {
                 $metadata = $graphCurrentItem.__ItemMetadata()
                 $context = $::.LogicalGraphManager.Get().GetContext($metadata.GraphName)
                 $metadata.GraphUri
+                $responseObject = $null
             } else {
                 $uriFromResponse = $::.GraphUtilities.GetAbstractUriFromResponseObject($graphCurrentItem, $true, $null)
 
@@ -134,7 +138,7 @@ function Get-GraphUriInfo {
             $parsedLocation.GraphRelativeUri
         }
 
-        $parser = new-so SegmentParser $context $null ($graphItem -ne $null)
+        $parser = new-so SegmentParser $context $null ( $graphItem -ne $null )
 
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
@@ -149,7 +153,8 @@ function Get-GraphUriInfo {
             return @()
         }
 
-        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
+        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri $responseObject
+
         $lastSegment = $segments | select -last 1
 
         $segmentTable = $null

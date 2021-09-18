@@ -262,6 +262,7 @@ limitations under the License.
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
+            <Wrap/>
             <TableColumnItems>
               <TableColumnItem>
                 <ScriptBlock>$::.CustomFormatter.ContactEmailAddress($_)</ScriptBlock>

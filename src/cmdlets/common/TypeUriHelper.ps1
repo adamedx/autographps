@@ -49,11 +49,22 @@ ScriptClass TypeUriHelper {
                 $responseObject.GraphUri.tostring()
             } else {
                 # Try to parse the odata context
-                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
+
+                $itemContext = if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                    $responseObject.__ItemContext()
+                }
+
+                # The IsCollectionMember property of itemContext cannot always be trusted -- for our use case
+                # we ignore this for entities. TODO: Address this in the context itself so we can actually trust the property
+                $assumeNotCollectionMember = if ( $itemContext ) {
+                    $itemContext.IsEntity -and $itemContext.IsCollectionMember
+                }
+
+                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId $assumeNotCollectionMember
 
                 # If the odata context is not parseable for some reason, fall back to older logic
-                if ( ! $objectUri -and ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) ) {
-                    $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
+                if ( ! $objectUri -and $itemContext ) {
+                    $requestUri = $::.GraphUtilities |=> ParseGraphUri $itemContext.RequestUri $targetContext
                     $objectUri = $requestUri.GraphRelativeUri
                     $uriInfo = if ( $resourceId ) {
                         Get-GraphUriInfo $objectUri
@@ -217,8 +228,20 @@ ScriptClass TypeUriHelper {
                                 # The object was probably obtained via POST or by enumerating an object collection,
                                 # so we'll just assume it's safe to concatenate the id. However, once the corner cases
                                 # are corrected in the object decoration, we should update to reliable logic.
-                                $correctedUri = $objectUri, $id -join '/'
-                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                                $itemContext = if ( $typedGraphObject | Get-Member -MemberType ScriptMethod __ItemContext -erroraction ignore ) {
+                                    $typedGraphObject.__ItemContext()
+                                }
+
+                                $assumeNotCollectionMember = if ( $itemContext ) {
+                                    $itemContext.IsEntity -and $itemContext.IsCollectionMember
+                                }
+
+                                # Detect the case where we have a navigation to a single entity (not a collection
+                                # that contained this element)
+                                if ( ! $assumeNotCollectionMember ) {
+                                    $correctedUri = $objectUri, $id -join '/'
+                                    $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                                }
                             }
                         }
 

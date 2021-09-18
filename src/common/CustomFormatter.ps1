@@ -40,11 +40,6 @@ ScriptClass CustomFormatter {
             $groupType -join ', '
         }
 
-        function ContactEmail($contact) {
-            if ( $contact | gm emailAddresses -erroraction ignore ) {
-            }
-        }
-
         function ContactPhone($contact) {
             $type = $null
 

@@ -60,7 +60,7 @@ ScriptClass SegmentHelper {
             )
         }
 
-        function UriToSegments($parser, [Uri] $uri) {
+        function UriToSegments($parser, [Uri] $uri, $responseObject) {
             $graphUri = if ( $uri.IsAbsoluteUri ) {
                 $graphRelativeUri = ''
                 for ( $uriIndex = 2; $uriIndex -lt $uri.segments.length; $uriIndex++ ) {
@@ -71,7 +71,25 @@ ScriptClass SegmentHelper {
                 $uri
             }
 
-            $parser |=> SegmentsFromUri $graphUri
+            $ambiguousCardinality = if ( $responseObject ) {
+                if ( ! ( $responseObject | Get-Member -MemberType ScriptMethod __ItemContext -erroraction Ignore ) ) {
+                    throw 'The specified object is not a valid Graph response object'
+                }
+
+                # In the case of a URI returned from Graph, we make this computation because
+                # we can't tell the difference between me/photo and me/contacts, the first
+                # of which is a navigation to a single entity, the latter to a collection, and when you construct
+                # a URI for the first, no additional id is needed, but one is needed for the second. Above, we assumed
+                # the second case. Subsequent parsing will let us know if we need to re-interpret the URI. For now,
+                # detect a hint that this re-interpretation may be necessary.
+                $itemContext = $responseObject.__ItemContext()
+                $itemContext.IsEntity -and $itemContext.IsCollectionMember
+            }
+
+            # The last parameter ensures that in the ambiguous case where we can't distinguish between
+            # navigations to a collection (me/contacts) or a single entity (me/photo), we just ignore
+            # the last segment if that cannot be parsed. See comments above on ambiguousCardinality.
+            $parser |=> SegmentsFromUri $graphUri $ambiguousCardinality
         }
 
         function IsGraphSegmentType($object) {

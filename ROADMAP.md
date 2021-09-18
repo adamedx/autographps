@@ -2,6 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Fix get-graphuriinfo to correctly use pipeline
+* Fix gls /me/photo which seems to be broken by msa context uri under users?
+* Add custom list formats for graph service principal and application
+* fix invoke-graphmethod -uri ?
+* Uri parameter for new-graphobject?
+* Address default parameters on set-graphitem -- should -property and -value by required by name when objects are piped in?
+* Investigate SelectionSet formatting that handles heterogeneous types
 * Add auto-complete based on lastgraphitems
 * Add de-emphasis
 * Add favorites, cd to favorites defined in profile
@@ -9,7 +16,7 @@
 * Add channel, conversation display formats
 * Support external tenants, specific tenant in profiles
 * Remove methods from gls auto-complete
-* Add command to sdk to display permissions
+* Add command to sdk to display current permissions
 * Add custom display preference
 * Make an explicit command for obtaining metadata
 * Use friendlier time format
@@ -408,6 +415,7 @@
 * Add -Count, -First support for 'get-graphrelateditem'
 * Fix error stream pollution in GetNativeSchemaFromGraph
 * Add -ToType option to gcd
+* Fix '/users/11fc6abe-2494-483c-9589-5514589cb3bd/photo/360X360 not found: no children found for 'photo'"" also for AAD and not just MSA?
 
 ### Postponed
 
