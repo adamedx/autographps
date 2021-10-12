@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Fix get-graphuriinfo to correctly use pipeline
-* Fix gls /me/photo which seems to be broken by msa context uri under users?
 * Add custom list formats for graph service principal and application
 * fix invoke-graphmethod -uri ?
 * Uri parameter for new-graphobject?
@@ -416,6 +415,7 @@
 * Fix error stream pollution in GetNativeSchemaFromGraph
 * Add -ToType option to gcd
 * Fix '/users/11fc6abe-2494-483c-9589-5514589cb3bd/photo/360X360 not found: no children found for 'photo'"" also for AAD and not just MSA?
+* Fix gls /me/photo which seems to be broken by msa context uri under users?
 
 ### Postponed
 

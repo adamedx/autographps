@@ -258,25 +258,36 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.39.0 Release Notes
 
-Improved support for customizing display output
+Improved support for customizing display output, dependency updates for improved authentication experiences
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.28.0
+* AutoGraphPS-SDK 0.28.0 (including MSAL 4.35.0)
 
 ### Breaking changes
 
 * Objects returned by `Get-GraphResourceWithMetadata`, `Get-GraphItem`, `Get-GraphChildItem` return the structure of the Graph object they came from -- if they aren't from the graph (i.e. just metadata) then they will have the structure of metadata objects just as they did before this change.
+* Some commands access pipeline objects differently
 
 ### New features
 
 * `Set-GraphLocation` aka `gcd` now supports the `ToType` parameter which allows you to change the default location for the specified type.
-* Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are User and Group. Types other than those will be displayed with the default table view formatting.
+* Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are listed below. Types other than those will be displayed with the default table view formatting:
+    * application
+    * contact
+    * eventMessage
+    * eventMessageRequest
+    * eventMessageResponse
+    * driveItem
+    * group
+    * message
+    * organization
+    * user
 
 ### Fixed defects
 
+* Inherited methods not accessible to Invoke-GraphMethod
 * Removed some non-determinism in parsing of paths -- commands now always use the specified GraphName parameter to fully resolve the path, and otherwise if a URI does not contain the Graph in the path, the default context is used. Previously in some cases a relative URI would result in an attempt to find the "best" matching Graph, which would depend on which graphs were mounted and in what order.
-
 '@
     } # End of PSData hashtable
 
