@@ -62,6 +62,8 @@ function Get-GraphItemRelationship {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true

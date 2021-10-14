@@ -338,6 +338,11 @@ limitations under the License.
         <SelectionSetName>GraphDriveTypes</SelectionSetName>
       </ViewSelectedBy>
 
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>

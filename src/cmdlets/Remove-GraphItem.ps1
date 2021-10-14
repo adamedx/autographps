@@ -66,6 +66,8 @@ function Remove-GraphItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
@@ -82,7 +84,7 @@ function Remove-GraphItem {
                     break
                 }
 
-                $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject $targetObject.Id
+                $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject
             }
         } elseif ( $Uri )  {
             $Uri

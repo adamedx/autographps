@@ -71,9 +71,11 @@ function Get-GraphRelatedItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true v
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true
 
         $requestErrorAction = $ErrorActionPreference
 

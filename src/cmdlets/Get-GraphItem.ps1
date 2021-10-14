@@ -98,6 +98,8 @@ function Get-GraphItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
@@ -156,5 +158,4 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem OrderBy (new
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-
 

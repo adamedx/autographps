@@ -56,13 +56,11 @@ ScriptClass TypeUriHelper {
 
                 # The IsCollectionMember property of itemContext cannot always be trusted -- for our use case
                 # we ignore this for entities. TODO: Address this in the context itself so we can actually trust the property
-                $assumeNotCollectionMember = if ( $itemContext ) {
-                    $itemContext.IsEntity -and $itemContext.IsCollectionMember
+                $objectUri = if ( ! $itemContext -or ! ( $itemContext.IsEntity -and $itemContext.IsCollectionMember ) ) {
+                    $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
                 }
 
-                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId $assumeNotCollectionMember
-
-                # If the odata context is not parseable for some reason, fall back to older logic
+                # If the odata context is not parseable for some reason or we do not trust it, fall back to older and slower logic
                 if ( ! $objectUri -and $itemContext ) {
                     $requestUri = $::.GraphUtilities |=> ParseGraphUri $itemContext.RequestUri $targetContext
                     $objectUri = $requestUri.GraphRelativeUri
