@@ -28,6 +28,12 @@ ScriptClass QueryTranslationHelper {
 
                     $valueArgument = if ( $propertyValue -is [string] ) {
                         "'$propertyValue'"
+                    } elseif ( $propertyValue -is [boolean] ) {
+                        if ( $propertyValue ) {
+                            'true'
+                        } else {
+                            'false'
+                        }
                     } else {
                         $propertyValue
                     }
