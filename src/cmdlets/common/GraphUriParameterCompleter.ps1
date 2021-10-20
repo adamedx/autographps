@@ -53,6 +53,14 @@ ScriptClass GraphUriParameterCompleter {
 
         $parentUri = $uriString.substring(0, $uriString.length - $lastword.length).trimend('/')
 
+        if ( ! $parentUri ) {
+            if ( $uriString.StartsWith('/') ) {
+                $parentUri = '/'
+            } else {
+                $parentUri = '.'
+            }
+        }
+
         $candidateUris = Get-GraphUriInfo $parentUri -children -includevirtualchildren:$includeVirtual -LocatableChildren:(!$nonLocatable) -ignoremissingmetadata
 
         $fullParent = $null
