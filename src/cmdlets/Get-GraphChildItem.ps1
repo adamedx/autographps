@@ -140,13 +140,11 @@ function Get-GraphChildItem {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Uri (new-so GraphUriParameterCompleter LocationUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem TypeName (new-so TypeUriParameterCompleter TypeName $false)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Property (new-so TypeUriParameterCompleter Property $false)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphChildItem GraphName (new-so GraphParameterCompleter)
-
-
 
