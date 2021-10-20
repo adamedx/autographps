@@ -39,12 +39,12 @@ function Get-GraphItem {
         [string[]] $Property,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byuri')]
-        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='byobject')]
+        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         $PropertyFilter,
@@ -98,6 +98,8 @@ function Get-GraphItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
@@ -155,6 +157,5 @@ $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Property (ne
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem GraphName (new-so GraphParameterCompleter)
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationOrMethodUri ))
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationUri ))
 

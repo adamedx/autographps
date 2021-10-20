@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,24 @@
 
 . (import-script ..\..\common\PreferenceHelper)
 
+add-type -TypeDefinition @'
+    namespace AutoGraph.Model {
+        public class GraphObject {
+            public GraphObject(object metadata) {
+                this.__itemMetadata = metadata;
+            }
+
+            public object __ItemMetadata() { return this.__itemMetadata; }
+
+            object __itemMetadata;
+        }
+    }
+'@
+
 ScriptClass SegmentHelper {
     static {
         const SegmentDisplayTypeName 'GraphSegmentDisplayType'
+        const MetadataMethodName __ItemMetadata
 
         function __initialize {
             # NOTE: There are one or more ps1xml files that defines display formats for this type based on
@@ -45,7 +60,7 @@ ScriptClass SegmentHelper {
             )
         }
 
-        function UriToSegments($parser, [Uri] $uri) {
+        function UriToSegments($parser, [Uri] $uri, $responseObject) {
             $graphUri = if ( $uri.IsAbsoluteUri ) {
                 $graphRelativeUri = ''
                 for ( $uriIndex = 2; $uriIndex -lt $uri.segments.length; $uriIndex++ ) {
@@ -56,7 +71,25 @@ ScriptClass SegmentHelper {
                 $uri
             }
 
-            $parser |=> SegmentsFromUri $graphUri
+            $ambiguousCardinality = if ( $responseObject ) {
+                if ( ! ( $responseObject | Get-Member -MemberType ScriptMethod __ItemContext -erroraction Ignore ) ) {
+                    throw 'The specified object is not a valid Graph response object'
+                }
+
+                # In the case of a URI returned from Graph, we make this computation because
+                # we can't tell the difference between me/photo and me/contacts, the first
+                # of which is a navigation to a single entity, the latter to a collection, and when you construct
+                # a URI for the first, no additional id is needed, but one is needed for the second. Above, we assumed
+                # the second case. Subsequent parsing will let us know if we need to re-interpret the URI. For now,
+                # detect a hint that this re-interpretation may be necessary.
+                $itemContext = $responseObject.__ItemContext()
+                $itemContext.IsEntity -and $itemContext.IsCollectionMember
+            }
+
+            # The last parameter ensures that in the ambiguous case where we can't distinguish between
+            # navigations to a collection (me/contacts) or a single entity (me/photo), we just ignore
+            # the last segment if that cannot be parsed. See comments above on ambiguousCardinality.
+            $parser |=> SegmentsFromUri $graphUri $ambiguousCardinality
         }
 
         function IsGraphSegmentType($object) {
@@ -165,7 +198,7 @@ ScriptClass SegmentHelper {
 
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
-            [PSCustomObject] @{
+            $result = [PSCustomObject] @{
                 PSTypeName = $requestSegment.pstypename.tostring()
                 ParentPath = $requestSegment.Path
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
@@ -189,6 +222,12 @@ ScriptClass SegmentHelper {
                 Details = $null
                 Content = $graphItem
                 Preview = $this.__GetPreview($graphItem, $itemId)
+            }
+
+            if ( $fullTypeName -and $graphItem ) {
+                GetNewObjectWithMetadata $graphItem $result
+            } else {
+                $result
             }
         }
 
@@ -238,7 +277,7 @@ ScriptClass SegmentHelper {
 
             # Using ToString() here to work around a strange behavior where
             # PSTypeName does not cause type conversion
-            [PSCustomObject] @{
+            $result = [PSCustomObject] @{
                 PSTypeName = ($this.SegmentDisplayTypeName.tostring())
                 ParentPath = $null
                 Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
@@ -263,6 +302,12 @@ ScriptClass SegmentHelper {
                 Content = $graphObject
                 Preview = $this.__GetPreview($graphObject, $itemId)
             }
+
+            if ( $fullTypeName -and $graphObject ) {
+                GetNewObjectWithMetadata $graphObject $result
+            } else {
+                $result
+            }
         }
 
         function AddContent($publicSegment, $content) {
@@ -283,8 +328,43 @@ ScriptClass SegmentHelper {
             $publicSegment.Info = $this.__GetInfoField($false, $true, 'EntityType', $true)
         }
 
+        function GetNewObjectWithMetadata($graphItem, $segmentMetadata) {
+            $wrappedObject = [AutoGraph.Model.GraphObject]::new($segmentMetadata)
+
+            foreach ( $property in $graphItem.psobject.properties ) {
+                $wrappedObject.psobject.properties.Add($property, $true)
+            }
+
+            $itemContext = $graphItem.psobject.methods | where Name -eq __ItemContext
+
+            if ( $itemContext ) {
+                $wrappedObject.psobject.methods.Add($itemContext[0], $true)
+            }
+
+            $itemTypeName = "AutoGraph.Entity.$($segmentMetadata.TypeId)"
+
+            # When an item is returned as part of a heterogeneous collection, it should have
+            # an '@odata.type'. In this case, to ensure that table formatting is sensible,
+            # we lower the priority of the type so that it uses a more generic type that
+            # shows less specific but common information for any type.
+            $specificTypeIndex = if ( $graphItem | gm '@odata.type' -erroraction ignore ) {
+                if ( $::.CustomFormatter.SupportsHeterogeneousFormatter($itemTypeName) ) {
+                    0
+                } else {
+                    1
+                }
+            } else {
+                0
+            }
+
+            $wrappedObject.pstypenames.insert(0, 'GraphResponseObject')
+            $wrappedObject.pstypenames.insert(0, 'AutoGraph.Entity')
+            $wrappedObject.pstypenames.insert($specificTypeIndex, $itemTypeName)
+            $wrappedObject
+        }
+
         function __GetPreview($content, $defaultValue) {
-            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Id, bodyPreview
+            $previewProperties = $content | select Name, DisplayName, Title, FileName, Subject, Topic, Id, bodyPreview
             if ( $previewProperties.Name ) {
                 $previewProperties.Name
             } elseif ( $previewProperties.DisplayName ) {
@@ -295,6 +375,8 @@ ScriptClass SegmentHelper {
                 $previewProperties.FileName
             } elseif ( $previewProperties.Subject ) {
                 $previewProperties.Subject
+            } elseif ( $previewProperties.Topic ) {
+                $previewProperties.Topic
             } elseif ( $previewProperties.bodyPreview ) {
                 $previewproperties.bodyPreview
             } elseif ( $previewProperties.Id ) {

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ function Get-GraphRelatedItem {
 
         [parameter(parametersetname='typedobjectandproperty', valuefrompipeline=$true, mandatory=$true)]
         [Alias('FromItem')]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='uripipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='uriandproperty')]
@@ -71,9 +71,11 @@ function Get-GraphRelatedItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
-        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true v
+        $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true
 
         $requestErrorAction = $ErrorActionPreference
 

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,21 @@
 . (import-script ../metadata/GraphManager)
 
 function Update-GraphMetadata {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='GraphTarget')]
     param(
-        $GraphInfo,
-
-        [parameter(parametersetname='Path', mandatory=$true)]
+        [parameter(position=0, parametersetname='Path', mandatory=$true)]
         $Path = $null,
 
+        [parameter(valuefrompipelinebypropertyname=$true, parametersetname='GraphTarget')]
+        [Alias('Name')]
+        [String]
+        $GraphName,
+
         [parameter(parametersetname='Data', valuefrompipeline=$true)]
-        $SchemaData,
+        [String] $SchemaData,
 
         [switch] $Force,
+
         [switch] $Wait
     )
 
@@ -33,10 +37,12 @@ function Update-GraphMetadata {
 
     $metadata = if ( $Path ) {
         [xml] (get-content $Path | out-string)
+    } elseif ( $SchemaData ) {
+        [xml] $SchemaData
     }
 
-    $context = if ( $GraphInfo ) {
-        $::.LogicalGraphManager |=> Get |=> GetContext $GraphInfo.Name
+    $context = if ( $GraphName ) {
+        $::.LogicalGraphManager |=> Get |=> GetContext $GraphName
     } else {
         $::.GraphContext |=> GetCurrent
     }

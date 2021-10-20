@@ -61,7 +61,7 @@ ScriptClass TypeMemberFinder {
                 }
 
                 $matchingMembers | sort-object name | foreach {
-                    new-so MemberDisplayType $_
+                    new-so MemberDisplayType $_ $type.TypeId
                 }
             }
         }

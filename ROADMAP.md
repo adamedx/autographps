@@ -2,6 +2,29 @@
 
 ## To-do items -- prioritized
 
+* Fix get-graphuriinfo to correctly use pipeline
+* Add custom list formats for graph service principal and application
+* fix invoke-graphmethod -uri ?
+* Uri parameter for new-graphobject?
+* Address default parameters on set-graphitem -- should -property and -value by required by name when objects are piped in?
+* Investigate SelectionSet formatting that handles heterogeneous types
+* Add auto-complete based on lastgraphitems
+* Add de-emphasis
+* Add favorites, cd to favorites defined in profile
+* Add files custom formats
+* Add channel, conversation display formats
+* Support external tenants, specific tenant in profiles
+* Remove methods from gls auto-complete
+* Add command to sdk to display current permissions
+* Add custom display preference
+* Make an explicit command for obtaining metadata
+* Use friendlier time format
+* In sdk make item index a method when adding to last items
+* Fix datetimes in application in sdk
+* Consider removing Add-GraphRelatedItem
+* Get-GraphUriInfo should only return metadata, not decorated objects
+* Allow uri completion for methods in new-graphparameterobject, get-graphmethod, any other related method commands
+* Address MTA issue with posh-git
 * Color for Create / Update operations?
 * With-GraphProperty command to support builder pattern: New-GraphObject | With-GraphProperty
 * validate graph connection with current graph
@@ -390,6 +413,9 @@
 * Add -Count, -all support for `gls` ?
 * Add -Count, -First support for 'get-graphrelateditem'
 * Fix error stream pollution in GetNativeSchemaFromGraph
+* Add -ToType option to gcd
+* Fix '/users/11fc6abe-2494-483c-9589-5514589cb3bd/photo/360X360 not found: no children found for 'photo'"" also for AAD and not just MSA?
+* Fix gls /me/photo which seems to be broken by msa context uri under users?
 
 ### Postponed
 
@@ -402,6 +428,8 @@
 * Fix qualified / vs. unqualified names in metadata classes
 * Fix TypeMember to be more like MemberDisplayType
 * fix formatting of get-graphmethod to swap columns
+* Fix get-graphuriinfo to handle decorated objects
+* Support organizational contacts formatting
 
 ### Abandoned
 

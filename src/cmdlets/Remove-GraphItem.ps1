@@ -25,7 +25,6 @@ function Remove-GraphItem {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='byuri')]
     param(
         [parameter(parametersetname='byuri', mandatory=$true)]
-        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('GraphUri')]
         [Uri] $Uri,
 
@@ -38,13 +37,12 @@ function Remove-GraphItem {
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='byobjectandfilter', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='byobject')]
         [parameter(parametersetname='byobjectandfilter')]
         [parameter(parametersetname='bytypeandid')]
         [parameter(parametersetname='bytypeandfilter')]
-        [parameter(parametersetname='byuripipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $GraphName,
 
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
@@ -68,6 +66,8 @@ function Remove-GraphItem {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
@@ -84,7 +84,7 @@ function Remove-GraphItem {
                     break
                 }
 
-                $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject $targetObject.Id
+                $::.TypeUriHelper |=> GetUriFromDecoratedObject $requestInfo.Context $targetObject
             }
         } elseif ( $Uri )  {
             $Uri

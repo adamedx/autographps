@@ -51,6 +51,9 @@ function Get-GraphMember {
 
         [switch] $FullyQualifiedTypeName,
 
+        [parameter(parametersetname='uri')]
+        [switch] $StrictUri,
+
         [string] $MemberFilter,
 
         [ValidateSet('Property', 'Relationship', 'Method')]
@@ -72,6 +75,12 @@ function Get-GraphMember {
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $isFullyQualified $Uri $null $GraphItem $false $true
 
+        $isMethod = $Uri -and $requestInfo.TypeInfo.UriInfo.Class -in 'Action', 'Function'
+
+        if ( $StrictUri.IsPresent -and ( $isMethod -or $requestInfo.TypeInfo.UriInfo.Collection ) ) {
+            throw [ArgumentException]::new('The StrictUri parameter was specified and the Graph location URI is not a valid target for member enumeration because it does not resolve not an instance of a Graph resource (entity)')
+        }
+
         $targetContext = $requestInfo.Context
 
         $badTypeMessage = if ( $TypeName ) {
@@ -80,7 +89,10 @@ function Get-GraphMember {
             "Unexpected error: the specified URI '$Uri' could not be resolved to any type in graph '$($targetContext.name)'"
         }
 
-        $::.TypeMemberFinder |=> FindMembersByTypeName $targetContext $requestInfo.TypeName $MemberType $Name $MemberFilter $badTypeMessage
+        # TODO: Remove the 'scalar' concept altogether
+        if ( $requestInfo.TypeName -ne 'scalar' ) {
+            $::.TypeMemberFinder |=> FindMembersByTypeName $targetContext $requestInfo.TypeName $MemberType $Name $MemberFilter $badTypeMessage
+        }
     }
 
     end {

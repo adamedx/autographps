@@ -28,6 +28,16 @@ ScriptClass MetaGraphFormatter {
                     'PrimitiveTypeCollection'
                     'Consent-Admin'
                     'Consent-User'
+                    'Message-HighPriority'
+                    'Message-Unread'
+                    'Message-Read'
+                    'DriveItem-OldItem'
+                    'DriveItem-MediumAgeItem',
+                    'DriveItem-RecentItem',
+                    'DriveItem-VeryRecentItem'
+                    'DriveItem-Large',
+                    'DriveItem-Gigantic'
+                    'DriveItem-Empty'
                 ),
                 'autographps'
             )
@@ -46,33 +56,43 @@ ScriptClass MetaGraphFormatter {
                     'PrimitiveTypeCollection' = 8
                     'Consent-Admin' = 9
                     'Consent-User' = 10
+                    'Message-HighPriority' = 1
+                    'Message-Unread' = 14
+                    'Message-Read' = 8
+                    'DriveItem-OldItem' = 8
+                    'DriveItem-MediumAgeItem' = 14
+                    'DriveItem-RecentItem' = 15
+                    'DriveItem-VeryRecentItem' = 11
+                    'DriveItem-Large' = 12
+                    'DriveItem-Gigantic' = 9
+                    'DriveItem-Empty' = 8
                 }
             }
 
             $::.ColorString.UpdateColorScheme(@($colorInfo))
         }
 
-        function ResultIndex($result) {
-            if ( $result | gm __ResultIndex -erroraction ignore ) {
-                $result.__ResultIndex()
-            }
-        }
-
         function SegmentInfo($segment) {
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Info
+            $metadata = __GetMetadataFromObject $segment
+
+            if ( $metadata ) {
+                $metadata.Info
             }
         }
 
         function SegmentType($segment) {
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Type
+            $metadata = __GetMetadataFromObject $segment
+
+            if ( $metadata ) {
+                $metadata.Type
             }
         }
 
         function SegmentPreview($segment) {
-            $preview = if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segment.Preview
+            $metadata = __GetMetadataFromObject $segment
+
+            $preview = if ( $metadata ) {
+                $metadata.Preview
             } else {
                 $::.SegmentHelper.__GetPreview($segment, '')
             }
@@ -81,18 +101,20 @@ ScriptClass MetaGraphFormatter {
         }
 
         function SegmentId($segment) {
+            $metadata = __GetMetadataFromObject $segment
+
             $highlightValues = $null
             $coloring = $null
             $criterion = $null
 
-            if ( $segment.pstypenames -contains 'GraphSegmentDisplayType' ) {
-                $segmentType = [string] $segment.Info[0]
+            if ( $metadata ) {
+                $segmentType = [string] $metadata.Info[0]
                 $coloring = if ( $segmentType -eq 'f' -or $segmentType -eq 'a' ) {
                     $highlightValues = @('none', 'a', 'f')
                     $criterion = $segmentType
                     'Contrast'
                 } else {
-                    if ( $segment.Collection ) {
+                    if ( $metadata.Collection ) {
                         'Containment'
                     } else {
                         if ( $segmentType -eq 'n' -or $segmentType -eq 's' ) {
@@ -235,6 +257,180 @@ ScriptClass MetaGraphFormatter {
             $backColor = $::.ColorString.GetColorFromName($colorName)
             $foreColor = $::.ColorString.GetColorContrast($backColor)
             $::.ColorString.ToColorString($text, $foreColor, $backColor)
+        }
+
+        function GroupType($group) {
+            $groupType = @()
+
+            @{SecurityEnabled = 'Security'; MailEnabled = 'Mail'}.GetEnumerator() | foreach {
+                if ( ( $group | gm $_.Name -erroraction ignore ) -and
+                     $group.($_.Name) ) {
+                         $groupType += $_.Value
+                     }
+            }
+
+            $groupType -join ', '
+        }
+
+        function ContactEmail($contact) {
+            if ( $contact | gm emailAddresses -erroraction ignore ) {
+            }
+        }
+
+        function ContactPhone($contact) {
+            $type = $null
+
+            $phone = if ( ( $contact | gm mobilePhone -erroraction ignore ) -and $contact.mobilePhone ) {
+                $type = 'Mobile'
+                $contact.mobilePhone
+            } elseif ( ( $contact | gm businessPhones -erroraction ignore ) -and $contact.businessPhones ) {
+                $type = 'Work'
+                $contact.businessPhones | select -first 1
+            } elseif ( ( $contact | gm homePhones -erroraction ignore ) -and $contact.homePhones ) {
+                $type = 'Home'
+                $contact.homePhones | select -first 1
+            }
+
+            if ( $type ) {
+                $type + ": " + $phone
+            }
+        }
+
+        function ContactAddress($contact) {
+            $addressTypes = [ordered] @{
+                Work = 'businessAddress'
+                Home = 'homeAddress'
+            }
+
+            foreach ( $addressType in $addressTypes.GetEnumerator() ) {
+                if ( ( $contact | gm $addressType.Value -erroraction ignore ) -and $contact.($addressType.Value) ) {
+                    $address = $contact.($addressType.Value)
+                    if ( ! ( $address.psobject.properties | measure-object ).count ) {
+                        continue
+                    }
+
+                    $addressDisplay = if ( $address | gm Street ) {
+                        $address.Street
+                    } elseif ( ( $address | gm City ) -or ( $address | gm State ) ) {
+                        $components = @()
+                        if ( $address | gm City ) {
+                            $components += $address.City
+                        }
+
+                        if ( $address | gm State ) {
+                            $components += $address.State
+                        }
+
+                        $components -join ', '
+                    } elseif ( $address | gm countryOrRegion ) {
+                        $address.countryOrRegion
+                    } elseif ( $address | gm postalCode ) {
+                        $address.postalCode
+                    }
+
+                    if ($addressDisplay ) {
+                        $addressType.Name + ": " + $addressDisplay
+                        break
+                    }
+                }
+            }
+        }
+
+        function ContactEmailAddress($contact) {
+            $email = if ( $contact | gm emailAddresses -erroraction ignore ) {
+                $contact.emailAddresses |
+                  where { $_ -ne $null -and $_ -ne '' } |
+                  select -first 1 |
+                  select -expandproperty address
+            }
+
+            if ( $email ) {
+                $::.ColorString.ToStandardColorString($email, 'Emphasis1', $null, $null, $null)
+            }
+        }
+
+        function MessageEmailAddress($message) {
+            if ( $message | gm 'From' -erroraction ignore ) {
+                __MessageAddress $message.From
+            }
+        }
+
+        function MessageAudience($message) {
+            if ( $message | gm 'ToRecipients' -erroraction ignore ) {
+                $recipients = $message.toRecipients | foreach {
+                    __MessageAddress $_
+                }
+
+                $count = ( $recipients | measure-object ).count
+
+                $countDisplay = if ( $count -gt 1 ) {
+                    " + $($count - 1)"
+                }
+
+                $firstRecipient = $recipients | where { $_ -ne $null } | select -first 1
+
+                if ( $firstRecipient ) {
+                    $firstRecipient + $countDisplay
+                }
+            }
+        }
+
+        function MessageSubject($message) {
+            if ( $message | gm Subject -erroraction ignore ) {
+                $isHighPriority = if ( $message | gm importance -erroraction ignore ) {
+                    $message.Importance -eq 'High'
+                }
+
+                $isUnread = if ( ( $message | gm importance -erroraction ignore ) -and
+                                 ( $message | gm IsRead -erroraction ignore ) ) {
+                    ! $message.IsRead
+                }
+
+                if ( $isHighPriority ) {
+                    $augmentedSubject = "! " + $message.Subject
+                    if ( $isUnread ) {
+                        $priorityColor = $::.ColorString.GetStandardColors('Scheme', 'Error1', $null, $null)
+                        $contrast = $::.ColorString.GetColorContrast($priorityColor[0])
+                        $::.ColorString.ToColorString($augmentedSubject, $contrast, $priorityColor[0])
+                    } else {
+                        $::.ColorString.ToStandardColorString($augmentedSubject, 'Scheme', 'Error1', $null, $null)
+                    }
+                } elseif ( $isUnread ) {
+                    $::.ColorString.ToStandardColorString($message.Subject, 'Emphasis2', $null, $null, $null)
+                } else {
+                    $message.Subject
+                }
+            }
+        }
+
+        function MessageTime($message, $timeField) {
+            if ( $message | gm $timeField -erroraction ignore ) {
+                $parsedTime = [DateTime]::new(0)
+
+                if ( [DateTime]::tryparse($message.$timeField, [ref] $parsedTime) ) {
+                    $parsedTime.ToString("ddd yyyy-MM-dd HH:mm")
+                } else {
+                    $message.$timeField
+                }
+            }
+        }
+
+        function __MessageAddress($messageAddress) {
+            if ( $messageAddress -and ( $messageAddress | gm emailAddress -erroraction ignore ) ) {
+                if ( $messageAddress.emailAddress | gm name -erroraction ignore ) {
+                    $messageAddress.emailAddress.Name
+                } elseif ( $messageAddress.emailAddress | gm address -erroraction ignore ) {
+                    $messageAddress.emailAddress.Address
+                }
+            }
+        }
+
+        function __GetMetadataFromObject($graphObject) {
+            if ( $graphObject | gm __ItemMetadata -MemberType Method -erroraction ignore ) {
+                $graphObject.__ItemMetadata()
+            } elseif ( $graphObject.pstypenames -contains 'GraphSegmentDisplayType' ) {
+                $graphObject
+            }
         }
     }
 }

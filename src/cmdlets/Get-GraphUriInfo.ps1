@@ -55,17 +55,13 @@ function Get-GraphUriInfo {
         [parameter(parametersetname='FromObjectParents', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObjectChildren', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObject', valuefrompipeline=$true, mandatory=$true)]
-        [PSCustomObject[]]$GraphItems
+        [PSCustomObject] $GraphItem
     )
 
     Enable-ScriptClassVerbosePreference
 
-    # This is not very honest -- we're using valuefrompipeline, but
-    # only to signal the presence of input -- we use $input because
-    # unless you use BEGIN, END, PROCESS blocks, you can't actually
-    # iterate the parameter -- $input is a way around that
-    $inputs = if ( $graphItems ) {
-        $input
+    $inputs = if ( $graphItem ) {
+        $graphItem
     } else {
         $Uri
     }
@@ -99,31 +95,50 @@ function Get-GraphUriInfo {
         $currentDepth = $currentItem[0] + 1
         $currentUri = $currentItem[1]
 
-        $graphItem = if ($GraphItems) {
+        $graphCurrentItem = if ( $GraphItem ) {
             $currentUri
         }
 
         $uriSource = $currentUri
-        $inputUri = if ( $graphItem ) {
-            $unparsedUri = if ( $graphItem | gm -membertype scriptmethod '__ItemContext' -erroraction ignore ) {
-                [Uri] ($graphItem |=> __ItemContext | select -expandproperty RequestUri)
-            } elseif ( $graphItem | gm uri -erroraction ignore ) {
-                $uriSource = $graphItem.uri
-                [Uri] $uriSource
-            } else{
-                throw "Object type does not support Graph URI source"
-            }
 
-            $parsedUri = $::.GraphUtilities |=> ParseGraphRelativeLocation $unparsedUri
-            $context = $parsedUri.Context
-            $parsedUri.GraphRelativeUri
+        $responseObject = $graphItem
+
+        $inputUri = if ( $graphCurrentItem ) {
+            if ( $graphCurrentItem | gm -membertype ScriptMethod __ItemMetadata -erroraction ignore ) {
+                $metadata = $graphCurrentItem.__ItemMetadata()
+                $context = $::.LogicalGraphManager.Get().GetContext($metadata.GraphName)
+                $metadata.GraphUri
+                $responseObject = $null
+            } else {
+                $uriFromResponse = $::.GraphUtilities.GetAbstractUriFromResponseObject($graphCurrentItem, $true, $null)
+
+                if ( ! $uriFromResponse ) {
+                    throw 'The specified object was not a valid Graph response object'
+                }
+
+                # Allow the caller to supply a context
+                if ( ! $context ) {
+                    $context = 'GraphContext' |::> GetCurrent
+                }
+                $uriFromResponse
+            }
         } else {
+            # TODO: Remove usage of ParseGraphRelativeLocation or update it -- turns out that if you
+            # provide an absolute URI, it has non-deterministic behavior. :( Also, even for relative URIs
+            # it assumes the default context which means you end up with this as the context even
+            # though it wasn't specified in the URI. This is harmless unless the GraphName was specified
+            # to this command, in which case it gets ignored.
             $parsedLocation = $::.GraphUtilities |=> ParseGraphRelativeLocation $currentUri
-            $context = $parsedLocation.Context
+            if ( $parsedLocation.Context -and ! $GraphName) {
+                # TODO: remove check for GraphName -- we are allowing specification of a URI with
+                # a graph name in it to be overridden -- this is the lesser of two bad choices. We
+                # can remove this capability once ParseGraphRelativeLocation is fixed.
+                $context = $parsedLocation.Context
+            }
             $parsedLocation.GraphRelativeUri
         }
 
-        $parser = new-so SegmentParser $context $null ($graphItems -ne $null)
+        $parser = new-so SegmentParser $context $null ( $graphItem -ne $null )
 
         write-verbose "Uri '$uriSource' translated to '$inputUri'"
 
@@ -138,7 +153,8 @@ function Get-GraphUriInfo {
             return @()
         }
 
-        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri
+        $segments = $::.SegmentHelper |=> UriToSegments $parser $inputUri $responseObject
+
         $lastSegment = $segments | select -last 1
 
         $segmentTable = $null
@@ -147,11 +163,11 @@ function Get-GraphUriInfo {
             $segments | foreach { $segmentTable.Add($_.graphElement, $_) }
         }
 
-        $instanceId = if ( $GraphItem ) {
+        $instanceId = if ( $graphCurrentItem ) {
             $typeData = ($lastSegment.graphElement |=> GetEntity).typedata
             if ( $typeData.IsCollection ) {
-                if ( $graphItem | gm -membertype noteproperty id -erroraction ignore) {
-                    $graphItem.id
+                if ( $graphcurrentItem | gm -membertype noteproperty id -erroraction ignore) {
+                    $graphcurrentItem.id
                 } else {
                     $null
                 }
@@ -180,19 +196,23 @@ function Get-GraphUriInfo {
             } else {
                 # Create a new public segment since we are going to modify it
                 $instanceSegment = ($::.SegmentHelper |=> ToPublicSegment $parser $idSegment $lastPublicSegment).psobject.copy()
-                if ( $graphItem ) {
-                    $::.SegmentHelper.AddContent($instanceSegment, $graphItem)
+                if ( $graphCurrentItem ) {
+                    $::.SegmentHelper.AddContent($instanceSegment, $graphCurrentItem)
+                    $::.SegmentHelper.GetNewObjectWithMetadata($graphCurrentItem, $instanceSegment)
+                } else {
+                    $instanceSegment
                 }
-                $instanceSegment
             }
 
             $additionalSegments | foreach {
-                if ( ! $segmentTable -or $segmentTable[$_.graphElement] ) {
-                    if ( $::.SegmentHelper.IsValidLocationClass($_.Class) -and ( $_.class -ne 'EntityType' ) ) {
-                        $nextUris.Enqueue(@($currentDepth, $_.GraphUri))
+                $metadata = $_.__ItemMetadata()
+                if ( ! $segmentTable -or $segmentTable[$metadata.graphElement] ) {
+
+                    if ( $::.SegmentHelper.IsValidLocationClass($metadata.Class) -and ( $metadata.class -ne 'EntityType' ) ) {
+                        $nextUris.Enqueue(@($currentDepth, $metadata.GraphUri))
                     }
                 } else {
-                    write-verbose "$($_.id) already exists in hierarchy $($_.GraphUri)"
+                    write-verbose "$($_.id) already exists in hierarchy $($metadata.graphUri)"
                 }
             }
 
@@ -200,13 +220,14 @@ function Get-GraphUriInfo {
         } elseif ( $Children.ispresent ) {
             $childSegments = $parser |=> GetChildren $lastSegment $validLocationClasses | sort-object Name
         } else {
-            if ( $GraphItem ) {
+            if ( $graphCurrentItem ) {
                 # Create a new public segment since we are going to modify it
                 $lastOutputSegment = ($results | select -last 1).psobject.copy()
-                $::.SegmentHelper.AddContent($lastOutputSegment, $graphItem)
+                $::.SegmentHelper.AddContent($lastOutputSegment, $graphCurrentItem)
+                $objectWithMetadata = $::.SegmentHelper.GetNewObjectWithMetadata($graphCurrentItem, $lastOutputSegment)
                 # Replace the segment in the collection with a new one
                 # This is a rather convoluted approach :( -- needs a rewrite
-                $results[$results.length - 1] = $lastOutputSegment
+                $results[$results.length - 1] = $objectWithMetadata
             }
         }
 

@@ -46,7 +46,8 @@ function Get-GraphItemUri {
 
         [parameter(parametersetname='fromObject', mandatory=$true)]
         [parameter(parametersetname='fromObjectAndRelationship', mandatory=$true)]
-        [PSCustomObject] $FromObject,
+        [Alias('GraphItem')]
+        [PSTypeName('GraphResponseObject')] $FromObject,
 
         [string] $OverrideRelatedItemType,
 

@@ -92,7 +92,7 @@ ScriptClass SegmentParser {
         $filteredResults
     }
 
-    function SegmentsFromUri([Uri] $uri) {
+    function SegmentsFromUri([Uri] $uri, $noFailOnExtraSegment) {
         __initializeGraph
 
         $unescapedPath = [Uri]::UnescapeDataString($uri.tostring()).trim()
@@ -116,8 +116,7 @@ ScriptClass SegmentParser {
         $segments = @(new-so GraphSegment $::.EntityVertex.RootVertex $null $null)
         $lastSegment = $segments[0]
 
-        $segmentStrings | foreach {
-            $targetSegmentName = $_
+        foreach ( $targetSegmentName in $segmentStrings ) {
             $cachedSegment = if ($this.UriCache) {
                 $this.uriCache |=> GetSegmentFromParent $lastSegment $targetSegmentName
             }
@@ -129,7 +128,15 @@ ScriptClass SegmentParser {
             }
 
             if ( ! $currentSegments -and ($currentSegments -isnot [object[]]) ) {
-                throw "Uri '$($Uri.tostring()) not found: no children found for '$($lastSegment.name)'"
+                if ( ! $noFailOnExtraSegment ) {
+                    throw "Uri '$($Uri.tostring()) not found: no children found for '$($lastSegment.name)'"
+                } else {
+                    # In this case, we just return the segments we already parsed -- we'll ignore the last segment
+                    # This is added for cases where context information has incorrectly identified the uri
+                    # as referring to a navigation to a collection when in fact it is a single entity, so the
+                    # last id segment is actually unnecessary
+                    break
+                }
             }
 
             $matchingSegment = $null

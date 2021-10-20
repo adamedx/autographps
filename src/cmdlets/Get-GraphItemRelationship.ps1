@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,13 +42,12 @@ function Get-GraphItemRelationship {
 
         [parameter(parametersetname='typedobjectandproperty', valuefrompipeline=$true, mandatory=$true)]
         [Alias('FromItem')]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(parametersetname='uripipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='uriandproperty')]
         [parameter(parametersetname='typeandproperty')]
-        [parameter(parametersetname='typedobjectandproperty')]
-        $GraphName,
+        [string] $GraphName,
 
         [switch] $FullyQualifiedTypeName,
 
@@ -63,6 +62,8 @@ function Get-GraphItemRelationship {
     process {
         $targetId = if ( $Id ) {
             $Id
+        } elseif ( $GraphItem -and ( $GraphItem | get-member id -erroraction ignore ) ) {
+            $GraphItem.Id
         }
 
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem $true
@@ -116,7 +117,7 @@ function Get-GraphItemRelationship {
 
         foreach ( $result in $relationshipResults ) {
             foreach ( $relatedItem in $result.RelatedItems ) {
-                $relatedItemUri = ( $relatedItem.Content | Get-GraphUri -UnqualifiedUri  -erroraction silentlycontinue )[0]
+                $relatedItemUri = ( $relatedItem | Get-GraphUri -UnqualifiedUri  -erroraction silentlycontinue )[0]
                 new-so RelationshipDisplayType $requestInfo.Context.Name $result.RelationshipInfo.Name $result.RelationshipInfo.FromUri $relatedItemUri $relatedItem.id
             }
         }

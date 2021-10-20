@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,10 @@ function Set-GraphLocation {
         [parameter(parametersetname='index', mandatory=$true)]
         [int] $Index,
 
+        [parameter(parametersetname='totype', mandatory=$true)]
+        [Alias('ToType')]
+        [string] $TypeName,
+
         [switch] $Force,
 
         [parameter(parametersetname='path')]
@@ -37,7 +41,13 @@ function Set-GraphLocation {
 
     Enable-ScriptClassVerbosePreference
 
-    $inputUri = if ( $Uri ) {
+    $inputUri = if ( $TypeName ) {
+        $typeInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $false $null $null $null
+        if ( ! $typeInfo.Uri ) {
+            throw "Unable to find a default location for the specified type '$TypeName'"
+        }
+        $typeInfo.Uri
+    } elseif( $Uri ) {
         if ( $Uri -is [String] ) {
             $Uri
         } elseif ( $Uri | gm -membertype scriptmethod '__ItemContext' ) {
@@ -129,4 +139,5 @@ function Set-GraphLocation {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphLocation Uri (new-so GraphUriParameterCompleter ([GraphUriCompletionType]::LocationUri))
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphLocation TypeName (new-so TypeUriParameterCompleter TypeName)
 

@@ -35,7 +35,7 @@ function New-GraphItemRelationship {
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetid', mandatory=$true)]
         [parameter(position=0, parametersetname='typedobjectandpropertytotargetobject', mandatory=$true)]
         [Alias('FromItem')]
-        [PSCustomObject] $GraphItem,
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(position=2, parametersetname='typeandpropertytotargetid', mandatory=$true)]
         [parameter(position=2, parametersetname='typeandpropertytotargetobject', mandatory=$true)]
@@ -62,7 +62,7 @@ function New-GraphItemRelationship {
         [parameter(parametersetname='typedobjectandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='uriandpropertytotargetobject', valuefrompipeline=$true, mandatory=$true)]
         [Alias('ToItem')]
-        [object] $TargetObject,
+        [PSTypeName('GraphResponseObject')] $TargetObject,
 
         [parameter(parametersetname='uriandpropertytotargeturi', mandatory=$true)]
         [parameter(parametersetname='uriandpropertytotargetid', mandatory=$true)]
@@ -146,7 +146,7 @@ function New-GraphItemRelationship {
     end {
         $targetIndex = 0
         foreach ( $referenceRequest in $references ) {
-            Invoke-GraphApiRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop'
+            Invoke-GraphApiRequest $fromUri -Method POST -Body $referenceRequest -connection $sourceInfo.RequestInfo.Context.connection -version $sourceInfo.RequestInfo.Context.Version -erroraction 'stop' | out-null
             $referenceTarget = $targets[$targetIndex++]
             $referenceId = $referenceTarget.ToString() -split '/' | select -last 1
             new-so RelationshipDisplayType $sourceInfo.requestInfo.Context.Name $targetRelationship $sourceItemUri $referenceTarget $referenceId

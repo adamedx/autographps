@@ -93,17 +93,18 @@ Get-GraphItem user f7e9d7b6-f92f-4a78-8537-6b78d874936e
 
    Graph Location: /users
 
-Info Type Preview      Id
----- ---- -------      --
-t +> user Laquan Smith f7e9d7b6-f92f-4a78-8537-6b78d874936e
+Id                                   DisplayName  Job Title UserPrincipalName
+--                                   -----------  --------- -----------------
+f7e9d7b6-f92f-4a78-8537-6b78d874936e Laquan Smith Directory lsmith@dragon.org
+
 
 Get-GraphItem group a57f301b-4fc2-4fac-865c-ee4e1af3084d
 
    Graph Location: /groups
 
-Info Type   Preview        Id
----- -----  -------        --
-t +> group  Mathmeticians  a57f301b-4fc2-4fac-865c-ee4e1af3084d
+Id                                   DisplayName   MailNickName Enabled for
+--                                   -----------   ------------ -----------
+a57f301b-4fc2-4fac-865c-ee4e1af3084d Mathmeticians math         Security
 ```
 
 Note that the header of the output gives the hint that you could construct the URI for that type and id combination by appending the `id` as a segment to the URI given by `Graph Location:`. Since `Get-GraphItem` supports a `Uri` parameter, that URI can be specified rather than the type and id parameters. This is the same URI as that used with `Get-GraphResource`, though the output of the two commands is different:
@@ -184,15 +185,15 @@ PS> gls
 
    Graph Location: /v1.0:/me/drive/root/children
 
-Info Type      Preview       Name
----- ----      -------       ----
-t +> driveItem Recipes       13J3XD#
-t +> driveItem Games         13J3KD2
+CreatedBy           LastModifiedDateTime       Size Name
+---------           --------------------       ---- ----
+cosmo@soulsonic.org 2017-10-24 21:36         612440 Recipes
+cosmo@soulsonic.org 2008-12-21 07:51     3411429771 Games
 ```
 
 #### Don't forget write operations
 
-Yes, you can perform write-operations! Commands like `New-GraphItem`, `Set-GraphItem`, and `Remove-GraphItem` allow you to make changes to data in the Graph.
+Yes, you can perform write operations! Commands like `New-GraphItem`, `Set-GraphItem`, and `Remove-GraphItem` allow you to make changes to data in the Graph.
 
 #### Create a new item with New-GraphItem
 
@@ -415,18 +416,9 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Set-GraphPrompt           | Adds connection and location context to the PowerShell prompt or disables it                            |
 | Show-GraphHelp            | Given the name of a Graph resource (e.g. 'user', 'group', etc.) launches a web browser focused on documentation for it |
 | Test-Graph                | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                  |
+| Test-GraphSettings        | Validates whether AutoGraph settings specified as a file, JSON content, or in deserialized form are valid                                               |
 | Unregister-GraphApplication | Removes consent and service principal entries for the application from the tenant                     |
 | Update-GraphMetadata      | Downloads the the latest `$metadata` for a Graph and updates local Uri and type information accordingly |
-
-### Limited support for Azure Active Directory (AAD) Graph
-
-Some AutoGraphPS cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
-
-```powershell
-Get-GraphResource me -aadgraph
-```
-
-All functionality of AAD Graph is currently available through Microsoft Graph itself, so the use of the direct AAD Graph endpoint is no longer necessary. The AAD Graph functionality in this tool is provided mostly for informational purposes and is likely to be removed in future versions of this module.
 
 ### More about how it works
 
@@ -467,16 +459,18 @@ This will download dependencies, build the AutoGraphPS module, and launch a new 
 
 This should return something like the following:
 
-    ADSiteName : wst
-    Build      : 1.0.9736.8
-    DataCenter : west us
-    Host       : agsfe_in_29
-    PingUri    : https://graph.microsoft.com/ping
-    Ring       : 4
-    ScaleUnit  : 000
-    Slice      : slicea
-    TimeLocal  : 2/6/2018 6:05:09 AM
-    TimeUtc    : 2/6/2018 6:05:09 AM
+```powershell
+TestUri                : https://graph.microsoft.com/v1.0/$metadata
+ServerTimestamp        : 10/14/2021 04:01:45 +00:00
+ClientElapsedTime (ms) : 15.6793
+RequestId              : 74745fab-7184-46f0-b577-3549ee054115
+DataCenter             : West US 2
+Ring                   : 1
+RoleInstance           : CO1PEPF000007E4
+ScaleUnit              : 000
+Slice                  : E
+NonfatalStatus         : 405
+```
 
 If you need to launch another console with AutoGraphPS, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
 

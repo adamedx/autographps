@@ -17,7 +17,7 @@
 . (import-script common/TypeParameterCompleter)
 
 function Get-GraphType {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='optionallyqualified')]
+    [cmdletbinding(positionalbinding=$false)]
     [OutputType('GraphTypeDisplayType')]
     param(
         [parameter(position=0, parametersetname='optionallyqualified', valuefrompipelinebypropertyname=$true, mandatory=$true)]
@@ -37,6 +37,9 @@ function Get-GraphType {
 
         [parameter(parametersetname='uri', mandatory=$true)]
         $Uri,
+
+        [parameter(parametersetname='forobject', valuefrompipeline=$true, mandatory=$true)]
+        [PSTypeName('GraphResponseObject')] $GraphItem,
 
         [parameter(valuefrompipelinebypropertyname=$true)]
         $GraphName,
@@ -62,12 +65,15 @@ function Get-GraphType {
                 'Unknown'
             }
 
-            $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
+            $isFullyQualified = $FullyQualifiedTypeName.IsPresent -or ($GraphItem -ne $null) -or ( $TypeName -and ( $TypeClass -ne 'Primitive' -and $TypeName.Contains('.') ) )
 
             $typeManager = $::.TypeManager |=> Get $targetContext
 
             $targetTypeName = if ( $TypeName ) {
                 $TypeName
+            } elseif ( $GraphItem ) {
+                $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $null $null $false $null $null $GraphItem
+                $requestInfo.TypeInfo.FullTypeName
             } else {
                 $uriInfo = Get-GraphUriInfo $Uri -GraphName $targetContext.Name -erroraction stop
                 $isFullyQualified = $true

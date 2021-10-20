@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.38.0'
+ModuleVersion = '0.39.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -63,11 +63,11 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml')
+FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/common/CustomFormats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.27.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.28.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -199,6 +199,8 @@ VariablesToExport = @(
         '.\src\cmdlets\common\TypePropertyParameterCompleter.ps1',
         '.\src\cmdlets\common\TypeUriHelper.ps1',
         '.\src\cmdlets\common\TypeUriParameterCompleter.ps1',
+        '.\src\common\CustomFormats.ps1xml',
+        '.\src\common\CustomFormatter.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\metadata\metadata.ps1',
@@ -254,36 +256,38 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.38.0 Release Notes
+## AutoGraphPS 0.39.0 Release Notes
 
-New app certificate features from a dependency update, bug fixes and minor features.
+Improved support for customizing display output, dependency updates for improved authentication experiences
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.27.0
+* AutoGraphPS-SDK 0.28.0 (including MSAL 4.35.0)
 
 ### Breaking changes
 
-* See breaking changes for AutoGraphPS-SDK 0.27.0
-* `Get-GraphType` no longer supports the `TransitiveMembers` parameter and related parameters; the equivalent functionality is already available by inspecting properties of the returned value or through the `Get-GraphMember` command.
+* Objects returned by `Get-GraphResourceWithMetadata`, `Get-GraphItem`, `Get-GraphChildItem` return the structure of the Graph object they came from -- if they aren't from the graph (i.e. just metadata) then they will have the structure of metadata objects just as they did before this change.
+* Some commands access pipeline objects differently
 
 ### New features
 
-* See new features for AutoGraphPS-SDK 0.27.0
-* DefiningType now added to `Get-GraphMethod`, `Get-GraphMember` to show which type the member was inherited from
-* Native objects can be passed via pipeline to Invoke-GraphMethod to invoke their methods
-* `Get-GraphResourceWithMetadata (gls)` now supports a `Count` parameter like `Get-GraphResource`
-* Add `Count` and `First` parameters for `Get-GraphRelatedItem`
+* `Set-GraphLocation` aka `gcd` now supports the `ToType` parameter which allows you to change the default location for the specified type.
+* Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are listed below. Types other than those will be displayed with the default table view formatting:
+    * application
+    * contact
+    * eventMessage
+    * eventMessageRequest
+    * eventMessageResponse
+    * driveItem
+    * group
+    * message
+    * organization
+    * user
 
 ### Fixed defects
 
-* Fixed failure of `Remove-GraphItem` for some scenarios (e.g. me/contacts)
-* `Invoke-GraphMethod`, `Get-GraphMethod`, `Get-GraphUriInfo` did not support inherited methods
-* Fixed regression where `Get-GraphMethod`, `Get-GraphMember` needed `GraphName` parameter
-* When $false was passed as a parameter value for `Invoke-GraphMethod` via the value parameter it was treated as if the parameter had not been supplied and the command would fail
-* Fixed parameter completion failing for parameter values when the Uri parameter was supplied to Invoke-GraphMethod.
-* Fixed error stream pollution when executing some type related commands (e.g. `Find-GraphType`)
-
+* Inherited methods not accessible to Invoke-GraphMethod
+* Removed some non-determinism in parsing of paths -- commands now always use the specified GraphName parameter to fully resolve the path, and otherwise if a URI does not contain the Graph in the path, the default context is used. Previously in some cases a relative URI would result in an attempt to find the "best" matching Graph, which would depend on which graphs were mounted and in what order.
 '@
     } # End of PSData hashtable
 

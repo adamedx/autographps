@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- *******************************************************************
+Copyright 2021, Adam Edwards
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+******************************************************************** -->
+
+<Configuration>
+
+  <SelectionSets>
+    <SelectionSet>
+      <Name>GraphMessageTypes</Name>
+      <Types>
+       <TypeName>Autograph.Entity.microsoft.graph.message</TypeName>
+       <TypeName>Autograph.Entity.microsoft.graph.eventMessage</TypeName>
+       <TypeName>Autograph.Entity.microsoft.graph.eventMessageResponse</TypeName>
+       <TypeName>Autograph.Entity.microsoft.graph.eventMessageRequest</TypeName>
+      </Types>
+    </SelectionSet>
+
+    <SelectionSet>
+      <Name>GraphDriveTypes</Name>
+      <Types>
+       <TypeName>Autograph.Entity.microsoft.graph.driveItem</TypeName>
+      </Types>
+    </SelectionSet>
+
+  </SelectionSets>
+
+  <ViewDefinitions>
+
+    <View>
+      <Name>GraphUser</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity.microsoft.graph.user</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+            <Width>56</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Job Title</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>UserPrincipalName</Label>
+            <Width>40</Width>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm DisplayName ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null) } </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                  <PropertyName>JobTitle</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                  <PropertyName>UserPrincipalName</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphGroup</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity.microsoft.graph.group</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+        <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>MailNickName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Enabled for</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm DisplayName ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis1', $null, $null, $null) } </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm MailNickName ) { $::.ColorString.ToStandardColorString($_.MailNickName, 'Emphasis2', $null, $null, $null) } </ScriptBlock>
+
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.GroupType($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphOrganization</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity.microsoft.graph.organization</TypeName>
+      </ViewSelectedBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CreatedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CountryCode</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>City</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.DisplayTypeFormatter.UtcTimeStringToDateTimeOffset($_.CreatedDateTime, $true)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm DisplayName ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null) } </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>CountryLetterCode</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>City</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphApplicationNative</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity.microsoft.graph.application</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AppId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CreatedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm AppId -erroraction ignore ) { $::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null) }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm CreatedDateTime -erroraction ignore ) { $::.DisplayTypeFormatter.UtcTimeStringToDateTimeOffset($_.CreatedDateTime, $true) }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm DisplayName -erroraction ignore ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null) } </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphContact</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Entity.microsoft.graph.contact</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Email</Label>
+            <Alignment>Right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Phone</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Address</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <Wrap/>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.ContactEmailAddress($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ( $_ | gm DisplayName -erroraction ignore ) { $::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null) }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.ContactPhone($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.ContactAddress($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>GraphMessage</Name>
+
+      <ViewSelectedBy>
+        <SelectionSetName>GraphMessageTypes</SelectionSetName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Received</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>From</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Subject</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>To Recipients</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.MessageTime($_, 'receivedDateTime')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.MessageEmailAddress($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.MessageSubject($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.MessageAudience($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphDriveItem</Name>
+
+      <ViewSelectedBy>
+        <SelectionSetName>GraphDriveTypes</SelectionSetName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <ScriptBlock>$_.__ItemMetadata().ParentPath</ScriptBlock>
+         <Label>Graph Location</Label>
+      </GroupBy>
+
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>CreatedBy</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>LastModifiedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Size</Label>
+            <Alignment>Right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemAuthor($_, 'createdBy')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemTime($_, 'lastModifiedDateTime')</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemSize($_)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.CustomFormatter.DriveItemName($_)</ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+  </ViewDefinitions>
+</Configuration>

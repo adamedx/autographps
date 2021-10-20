@@ -54,7 +54,7 @@ The commands above are trivial demonstrations of Graph. In particular, they only
 Here's how you can request the `Files.Read,` `Mail.Read`, and `Contacts.Read` permissions in addition to `User.Read` -- the additional permissions enable you to access those parts of the Graph for reading information about user files from *OneDrive*, your mail, and your list of personal contacts:
 
 ```powershell
-Connect-GraphApi User.Read, Files.Read, Mail.Read, Contacts.Read
+Connect-GraphApi -Permissions User.Read, Files.Read, Mail.Read, Contacts.Read
 ```
 
 This will prompt you to authenticate again and consent to allow the application to acquire these permissions. Note that it is generally not obvious what permissions are required to access different functionality in the Graph; future updates to AutoGraphPS will attempt to address this. For now, consult the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference) whenever you're accessing a new part of the Graph.
@@ -66,6 +66,20 @@ Now you can issue commands to read contacts, mail, and files. In addition to the
 ```powershell
 PS> Get-GraphResourceWithMetadata me/contacts
 
+              Email DisplayName    Phone                  Address
+              ----- ----------     -----                  -------
+cosmo@soulsonic.org Cosmo Jones    Mobile: (313) 555-7334 Home: 1075 Chalfonte
+aks@bee.org Akeelah Smith                                 Home: 8760 Lafayette
+  jhenry@legend.net John Henry     Work: (206) 882-9000   Work: One Turing Way
+ deandre@skynet.org Deandre George Mobile: (404) 200-1024 Home: 200 OK Drive
+```
+
+The `Get-GraphResourceWithMetatdata` combines the response from Graph with type metadata that allows it to recognize the response as a `contact`, and since it so happens that the command "knows" how to provide user-friendly output for the `contact` type, it applies specific formatting to improve readability.
+
+`Get-GraphResourceWithMetadata` only knows about certain fairly popular types, so if the response does not confirm to a type with formatting logic, the command applies default formatting. The default format view is called `GraphItem`, and you can override any formatting by using `Format-Table` with the `View` parameter:
+
+```powershell
+PS> Get-GraphResourceWithMetadata me/contacts | Format-Table -View GraphItem
 Info Type    Preview        Name
 ---- ----    -------        ----
 t +> contact Cosmo Jones    XMKDFX1
@@ -82,29 +96,20 @@ Items with a `+` in the `Info` field returned by `Get-GraphResourceWithMetadata`
 Get-GraphResource me/contacts/XMKDFX1
 ```
 
-which returns the contact with `id` `XMKDFX1` may also be retrieved through the sequence below through `Get-GraphResourceWithMetadata` (alias `gls`) with a `Select` for the `Content` property on the first result:
+returns the contact with `id` `XMKDFX1`. The same object may also be retrieved through the sequence below through `Get-GraphResourceWithMetadata` (alias `gls`) using the `First` parameter :
 
 ```powershell
-PS> gls me | select -expandproperty content -first 1
+PS> gls me -First 1
 
-@odata.etag          : W/"EQAAABYAAAD5jm8FcN/LSI12IpUPSDUMAADaa2EQ"
-id                   : XMKDFX1
-createdDateTime      : 2017-01-27T07:33:04Z
-lastModifiedDateTime : 2017-01-28T10:12:47Z
-categories           : {}
-birthday             :
-fileAs               : Jones, Cosmo
-displayName          : Cosmo Jones
-givenName            : Cosmo
-...
+              Email DisplayName    Phone                  Address
+              ----- ----------     -----                  -------
+cosmo@soulsonic.org Cosmo Jones    Mobile: (313) 555-7334 Home: 1075 Chalfonte
 ```
 
-And if you're really just interested in the content, you can just specify `ContentOnly`. This makes `gls` behave like `Get-GraphResource (ggr)`:
+You can also use the `Format-List` to make the output look the same as `Get-GraphResource (ggr)`:
 
 ```powershell
-# Retrieves contacts and the last time they were modified
-# Preview and info columns are already there by default
-gls me/contacts -ContentOnly
+gls me/contacts | Format-List
 ggr me/contacts
 ```
 
@@ -159,16 +164,19 @@ By default, AutoGraphPS automatically adds this to your path on your first use o
 With AutoGraphPS, you can traverse the Graph using `gls` and `gcd` just the way you'd traverse your file system using `ls` to "see" what's in and under the current location and "move" to a new location. Here's an example of exploring the `/drive` entity, i.e. the entity that represents your `OneDrive` files:
 
 ```powershell
-gcd me/drive/root/children
+gcd /me/drive/root/children
 [starchild@mothership.io] /v1.0:/me/drive/root/children
 PS> gls
 
-Info Type      Preview       Name
----- ----      -------       ----
-t +> driveItem Recipes       13J3XD#
-t +> driveItem Pyramid.js    13J3KD2
-t +> driveItem Panther.md    13J3SDJ
-t +> driveItem Spacetime     13J3DDF
+   Graph Location: /v1.0:/me/drive/root/children
+
+CreatedBy           LastModifiedDateTime     Size Name
+---------           --------------------     ---- ----
+cosmo@soulsonic.org 2017-10-24 21:36       612440 Recipes
+cosmo@soulsonic.org 2018-06-18 12:38         7581 Pyramid.js
+cosmo@soulsonic.org 2021-05-20 12:50       221260 Panther.md
+cosmo@soulsonic.org 2017-01-04 14:06     34400953 Spacetime
+
 ```
 
 If you'd like to know what's "inside" of Recipes, you can `gcd` and `gls` again:
@@ -178,6 +186,8 @@ If you'd like to know what's "inside" of Recipes, you can `gcd` and `gls` again:
 PS> gcd me/drive/root/children/Recipes
 [starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
 PS> gls
+
+   Graph Location: /me/drive/root/children/Recipes
 
 Info Type             Preview    Name
 ---- ----             -------    ----
@@ -189,21 +199,22 @@ n* > thumbnailSet                thumbnails
 n* > driveItemVersion            versions
 n  > workbook                    workbook
 
-[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
+PS> gcd children
+
+[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes/children
 PS> gls
 
-Info Type      Preview           Name
----- ----      -------           ----
-t +> driveItem SweetPotatePie.md 13K559
-t +> driveItem Gumbo.md          13K299
+   Graph Location: /v1.0:/me/drive/root/children/Recipes/children
 
-[starchild@mothership.io] /v1.0:/me/drive/root/children/Recipes
-PS> gls
+CreatedBy           LastModifiedDateTime     Size Name
+---------           --------------------     ---- ----
+cosmo@soulsonic.org 2001-10-25 12:03        17831 SweetPotatoPie.md
+cosmo@soulsonic.org 2008-11-04 21:14        84003 Gumbo.md
 ```
 
 Note that as in the file system case, you can save yourself a lot of typing of long Uri's by using `gcd` and taking advantage of the ability to use shorter Uri's relative to the current location.
 
-Of course, you can always use absolute Uri's that are independent of your current location, just start the Uri with `/`, e.g.
+Of course, you can always use absolute URI's that are independent of your current location, just start the Uri with `/`, e.g.
 
 ```powershell
 gls /me/contacts
@@ -225,7 +236,7 @@ The Microsoft Graph supports a rich set of query capabilities through its [OData
 
 AutoGraphPS's query capabilities are exposed in the `Get-GraphResource` `Get-GetGraphItemWithMetadata` (`ggr` and `gls` aliases respectively), and `Get-GraphChildItem` commands. To use them, you don't need to construct query Uri's as you might if you were making direct use of OData. And in most cases you will not need to know very much about OData.
 
-### Filtering data with `-Filter`
+### Filtering data with `-Filter` and `-SimpleMatch`
 
 The one area of AutoGraphPS usage in which it is helpful to understand OData is the filtering language. The `-Filter` option on `Get-GraphResource` and `Get-GraphChildItem` allows you to specify an OData query to limit the result set from Graph to items that satisfy certain conditions much like a SQL `where` clause. The query is performed by the Graph service, so your network and AutoGraphPS don't have to waste time processing results that don't match the criteria you specified:
 
@@ -244,6 +255,15 @@ This example returns all the users whose `mail` property (i.e. their e-mail addr
 
 Complex expressions combining multiple operators using logical operators like `and`, `or`, and `not` allow for far more complicated queries involving multiple predicates. For more details on OData filter queries, consult [Microsoft Graph documentation for `$filter`](https://developer.microsoft.com/en-us/graph/docs/concepts/query_parameters#filter-parameter).
 
+#### A simpler solution: `-SimpleMatch`
+While the filter syntax is powerful and flexible at the expense of learning the query language syntax, `SimpleMatch` requires no syntax. Just supply the term you want to search for -- `SimpleMatch` will try to "fuzzy" matches against commonly used fields. The command
+
+```powershell
+gls /users -SimpleMatch pfunk
+```
+
+will return the same results as the previous query since the `startsWith` is one of the filters it applies. In many casual interactive cases, `SimpleMatch` will get the job done without the need to recall OData filter syntax.
+
 ### Limiting enumerations with `-First` and `-Skip`
 
 Another way to avoid excessive traffic between AutoGraphPS and Graph is to use the `-First` and `-Skip` options, which are [PowerShell standard parameters for paging](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute?view=powershell-6#supportspaging). These options are implemented as analogs to the `$top` and `$skip` options in OData syntax. For example:
@@ -254,17 +274,17 @@ gls me/contacts -first 3
 
 returns the first 3 items in your contacts list.
 
-Note that by default Graph will limit the number of results returned even when you don't specify `-first` to avoid performance issues with the service. If you have 200 contacts and would like to retrieve them all with one command, you'll need to specify `-first` to get them as Graph currently defaults to returning only 10 at a time:
+Note that by default Graph will limit the number of results returned even when you don't specify `-first` to avoid performance issues with the service. If you have 200 contacts and would like to retrieve them all with one command, you'll need to specify `-all` to get them as Graph currently defaults to returning only 10 at a time:
 
 ```powershell
-# If I have ~200 contacts, this ensures I get them all :)
-gls me/contacts -first 1000
+# If I have hunreds of contacts contacts, this ensures I get them all :)
+gls me/contacts -All
 ```
 
 You can also skip ahead -- perhaps you want the last elements of a sorted collection or you've already read some number of previous items:
 
 ```powershell
-gls me/contacts -skip 3 -first 3
+gls me/contacts -Skip 3 -First 3
 ```
 
 ### Projecting fields with `-Property`
@@ -435,13 +455,13 @@ $newUser = New-GraphItem user -Property mailNickname, userPrincipalName, display
 We can see that the user has been successfully created by issuing a request to the Graph to get the new user using a command like the following:
 
 ```powershell
-PS> Get-GraphItem user $newUser.Id
+PS> $newUser | Get-GraphItem
 
    Graph Location: /users
 
-Info Type Preview             Id
----- ---- -------             --
-t +> user Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
+Id                                   DisplayName         Job Title UserPrincipalName
+--                                   -----------         --------- -----------------
+8618a75d-a209-44f3-b2f8-2423cb211eed Treemonisha Jackson Director  treejack@newnoir.org
 ```
 
 #### Create a resource with nested data: contact
@@ -505,7 +525,7 @@ The `TeamplateObject` parameter allows the these properties and values to be spe
 $modifiedGroup = New-GraphObject group description 'Just the description'
 $newGroup | Set-GraphItem -TemplateObject $modifiedGroup
 
-$newGroup | gls -ContentOnly | select displayname, description
+$newGroup | gls | select displayname, description
 
 displayName          description
 -----------          -----------
@@ -515,19 +535,19 @@ Group 7 Access Level Just the description
 Both the `TemplateObject` and `PropertyTable` parameters can be specified simultaneously -- this could be useful for copying parts of one object as a "template" while adding additional properties:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70
 
-$existingGroup | gls -ContentOnly | select description, displayName
+$existingGroup | gls | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
-             Unused      Unassinged group
+             Unused      Unassigned group
 
-$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description -ContentOnly
+$templateGroup = Get-GraphItem group 0b828d58-2f7d-4ec5-92fb-20f0f88aa1a2 -Property displayName, description
 
 $existingGroup | Set-GraphItem -TemplateObject $templateGroup -PropertyTable @{mailNickName='dorateam'}
 
-$existingGroup | gls -ContentOnly | select description, displayName
+$existingGroup | gls | select description, displayName
 
 mailNickname displayName description
 ------------ ----------- -----------
@@ -538,12 +558,12 @@ Finally, an object returned from the Graph may be "edited" locally and then resu
 the `GraphItem` parameter supplied to the pipeline is both the target item to update and the source of data to modify:
 
 ```powershell
-$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70 -ContentOnly
+$existingGroup = Get-GraphItem group 4e5701ac-92b2-42d5-91cf-45f4865d0e70
 $existingGroup.displayName += ' - ' + [DateTime]::now
 
 $existingGroup | Set-GraphItem
 
-$existingGroup | gls -ContentOnly | select description, displayName
+$existingGroup | gls | select description, displayName
 
 description                       displayName
 -----------                       -----------
@@ -565,7 +585,6 @@ New-GraphItemRelationship -FromItem $newGroup -ToItem $newUser -Relationship mem
 Relationship TargetId                             FromUri                                      TargetUri
 ------------ --------                             -------                                      ---------
 members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/e510d45c-aec3-4026-ba8e-317480ae7bc5
-members      71edbed4-a7e7-4b46-8e2f-a28e9135ca54 /groups/f8418e85-e865-45ba-bec6-d16b6dc44045 /directoryObjects/71edbed4-a7e7-4b46-8e2f-a28e9135ca54
 ```
 
 This adds a directional relationship between the group and the user "group is related to user" through the `members` relationship. In accordance with the API documentation for group, the interpretation of this relationship is that the user is now a member of the group.
@@ -583,9 +602,9 @@ $newGroup | Get-GraphRelatedItem -WithRelationship members
 
    Graph Location: /v1.0:/groups/053850da-691d-4605-9bda-6b3d74c7addb/members
 
-Info Type            Preview             Id
----- ----            -----------         --
-t +> directoryObject Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
+Info Type Preview             Id
+---- ---- -----------         --
+t +> user Treemonisha Jackson 8618a75d-a209-44f3-b2f8-2423cb211eed
 ```
 
 Another useful syntax for `New-GraphItemRelationship` is to supply the items on the "to" side of the relatinoship via the pipeline -- this exploits PowerShell pipeline idioms to simplify operating on sets of objects:
@@ -611,10 +630,10 @@ $teamGroup | Get-GraphRelatedItem -WithRelationship members
 
    Graph Location: /v1.0:/groups/c436312c-4f6e-4963-ac05-bf68b98d7475/members
 
-Info Type            Preview      Id
----- ----            -------      --
-t +> directoryObject Val Ashford  d126df35-b441-472e-a3d1-2de370cbbbb7
-t +> directoryObject Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
+Info Type Preview      Id
+---- ---- -------      --
+t +> user Val Ashford  d126df35-b441-472e-a3d1-2de370cbbbb7
+t +> user Nick Simpson aafbc281-cce2-450b-9409-7113033d2f62
 ```
 
 #### Removing a relationship
@@ -628,7 +647,7 @@ Remove-GraphItemRelationship -FromType group -FromId 51a617a1-9174-4836-9a8c-d1c
 A syntax that supports an object rather than identifier for the subject or object of the relationship or both is also available:
 
 ```powershell
-Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members -Id 36d3e3d4-55f2-405f-a601-fd522b7998f4
+Remove-GraphItemRelationship -FromItem $existingGroup -Relationship members -ToId 36d3e3d4-55f2-405f-a601-fd522b7998f4
 ```
 
 And the pipeline is also supported -- these example removse all members from the group `$teamGroup`:
@@ -776,19 +795,16 @@ Currently, the resource's rich documentation, including examples, is available o
 ```powershell
 Get-GraphType group
 
-TypeId        : microsoft.graph.group
+   Graph TypeId: microsoft.graph.group
+
+
 TypeClass     : Entity
 BaseType      : microsoft.graph.directoryObject
 DefaultUri    : /groups
-Relationships : {@{Parameters=; MethodType=; MemberType=Relationship; IsCollection=True; Name=appRoleAssignments;
-                TypeId=microsoft.graph.appRoleAssignment; ScriptClass=}, @{Parameters=; MethodType=;
-                TypeId=microsoft.graph.directoryObject; ScriptClass=}...}
-Properties    : {@{Parameters=; MethodType=; MemberType=Property; IsCollection=True; Name=assignedLabels;
-                TypeId=microsoft.graph.assignedLabel; ScriptClass=}, @{Parameters=; MethodType=; MemberType=Property;
-                Name=createdDateTime; TypeId=Edm.DateTimeOffset; ScriptClass=}...}
-Methods       : {@{Parameters=; MethodType=Action; MemberType=Method; IsCollection=False; Name=subscribeByMail;
-                MethodType=Action; MemberType=Method; IsCollection=False; Name=resetUnseenCount; TypeId=;
-                ScriptClass=}...}
+Relationships : {appRoleAssignments, createdOnBehalfOf, memberOf, members...}
+Properties    : {assignedLabels, assignedLicenses, classification, createdDateTime...}
+Methods       : {subscribeByMail, validateProperties, unsubscribeByMail, resetUnseenCount...}
+GraphName     : v1.0
 ```
 
 The resulting object contains information such as the "default" URI, this case `/groups`,  under which instances of the `group` resource may be found. You can use `Select-Object` to project the `Relationships` field that shows the connections with other resources, the `Properties` field which gives the structure of the object, and the `Methods` field which returns all of the methods available to the object.
@@ -799,18 +815,19 @@ The resulting object contains information such as the "default" URI, this case `
 Yes -- the `Get-GraphMember` command which is similar to the widely utilized core PowerShell command `Get-Member` emits output that provides a streamlined representation of all of the members, including `Property`, `Relationship`, and `Method` members. To view just the structural properties, the `MemberType` parameter can be specified with the value `Property`:
 
 ```powershell
-Get-GraphMember -TypeName group -MemberType Property
+Get-GraphMember group -MemberType Property
 
-Name                          MemberType TypeId                                      IsCollection
-----                          ---------- ------                                      ------------
-allowExternalSenders          Property   Edm.Boolean                                        False
-assignedLabels                Property   microsoft.graph.assignedLabel                       True
-assignedLicenses              Property   microsoft.graph.assignedLicense                     True
+   MemberType: Property (microsoft.graph.group)
+
+Name                          MemberType TypeId                                      IsCollection DefiningTypeId
+----                          ---------- ------                                      ------------ --------------
+allowExternalSenders          Property   Edm.Boolean                                 False        microsoft.graph.group
+assignedLabels                Property   microsoft.graph.assignedLabel               True         microsoft.graph.group
+assignedLicenses              Property   microsoft.graph.assignedLicense             True         microsoft.graph.group
 ...
-
-theme                         Property   Edm.String                                         False
-unseenCount                   Property   Edm.Int32                                          False
-visibility                    Property   Edm.String                                         False
+theme                         Property   Edm.String                                  False        microsoft.graph.group
+unseenCount                   Property   Edm.Int32                                   False        microsoft.graph.group
+visibility                    Property   Edm.String                                  False        microsoft.graph.group
 ```
 
 For each property name the data type is given as well as whether it's a collection, and can save you a trip to the web browser.
@@ -820,13 +837,14 @@ For each property name the data type is given as well as whether it's a collecti
 In the example above, the properties that are named without the `Edm` prefix are actually structured to definitions present in the API schema. They are typically nested structures, and you can simply use `Get-GraphMember` again along with the associated resource name (`TypeId` in acccordance to the output of `Get-GraphMember`) to find it:
 
 ```powershell
-Get-GraphMember -TypeName assignedLicense -MemberType Property
+Get-GraphMember assignedLicense -MemberType Property
 
-Name          MemberType TypeId   IsCollection
-----          ---------- ------   ------------
-disabledPlans Property   Edm.Guid         True
-skuId         Property   Edm.Guid        False
+   MemberType: Property (microsoft.graph.assignedLicense)
 
+Name          MemberType TypeId   IsCollection DefiningTypeId
+----          ---------- ------   ------------ --------------
+disabledPlans Property   Edm.Guid True         microsoft.graph.assignedLicense
+skuId         Property   Edm.Guid False        microsoft.graph.assignedLicense
 ```
 
 This is useful both in understanding what to expect in terms of responses and also what you may need to supply in submitting requests that include these types. Note that simply using `New-GraphObject` to create an "empty" object can allow you to inspect an object representing the resource directly:
@@ -860,20 +878,19 @@ gls
 The `Get-GraphMember` command's `MemberType` can be specified as `Relationship` to enumerate all of the relationships from this resource to other resources:
 
 ```powershell
-Get-GraphMember -TypeName group -MemberType Relationship
+Get-GraphMember group -MemberType Relationship
 
-Name                     MemberType   TypeId                                          IsCollection
-----                     ----------   ------                                          ------------
-acceptedSenders          Relationship microsoft.graph.directoryObject                         True
-appRoleAssignments       Relationship microsoft.graph.appRoleAssignment                       True
-calendar                 Relationship microsoft.graph.calendar                               False
+   MemberType: Relationship (microsoft.graph.group)
 
+Name                     MemberType   TypeId                                          IsCollection DefiningTypeId
+----                     ----------   ------                                          ------------ --------------
+acceptedSenders          Relationship microsoft.graph.directoryObject                 True         microsoft.graph.group
+appRoleAssignments       Relationship microsoft.graph.appRoleAssignment               True         microsoft.graph.group
+calendar                 Relationship microsoft.graph.calendar                        False        microsoft.graph.group
 ...
-
-
-threads                  Relationship microsoft.graph.conversationThread                      True
-transitiveMemberOf       Relationship microsoft.graph.directoryObject                         True
-transitiveMembers        Relationship microsoft.graph.directoryObject                         True
+threads                  Relationship microsoft.graph.conversationThread              True         microsoft.graph.group
+transitiveMemberOf       Relationship microsoft.graph.directoryObject                 True         microsoft.graph.group
+transitiveMembers        Relationship microsoft.graph.directoryObject                 True         microsoft.graph.group
 ```
 
 #### Does the resource have interesting methods I can call?
@@ -881,19 +898,20 @@ transitiveMembers        Relationship microsoft.graph.directoryObject           
 You can use `Get-GraphMember` again to view just `Method` members, but the specialized `Get-GraphMethod` command provides more focused output:
 
 ```powershell
-Get-GraphMethod -TypenName group
+Get-GraphMethod group
 
-Name                          MethodType ReturnType                                                Parameters
-----                          ---------- ----------                                                ----------
-addFavorite                   Action     @{TypeId=; IsCollection=False}
-assignLicense                 Action     @{TypeId=microsoft.graph.group; IsCollection=False}       {@{Name=addLicenses; TypeId=microsoft.g...
-checkGrantedPermissionsForApp Action     @{TypeId=microsoft.graph.resourceSpecificPermissionGrant;
-removeFavorite                Action     @{TypeId=; IsCollection=False}
-renew                         Action     @{TypeId=; IsCollection=False}
-resetUnseenCount              Action     @{TypeId=; IsCollection=False}
-subscribeByMail               Action     @{TypeId=; IsCollection=False}
-unsubscribeByMail             Action     @{TypeId=; IsCollection=False}
-validateProperties            Action     @{TypeId=; IsCollection=False}                             {@{Name=displayName; TypeId=Edm.String;...
+   TypeId: group
+
+Name                          MethodType ReturnType                                      IsCollection DefiningTypeId
+----                          ---------- ----------                                      ------------ --------------
+addFavorite                   Action                                                     False        microsoft.graph.group
+assignLicense                 Action     microsoft.graph.group                           False        microsoft.graph.group
+checkMemberGroups             Action     Edm.String                                      True         microsoft.graph.directoryObject
+restore                       Action     microsoft.graph.directoryObject                 False        microsoft.graph.directoryObject
+...
+subscribeByMail               Action                                                     False        microsoft.graph.group
+unsubscribeByMail             Action                                                     False        microsoft.graph.group
+validateProperties            Action                                                     False        microsoft.graph.group
 ```
 
 #### What are the parameters for a given method?
@@ -901,12 +919,15 @@ validateProperties            Action     @{TypeId=; IsCollection=False}         
 When you've identified a useful method, the next question is what parameters do you need to feed it? `Get-GraphMethod` has a `Parameter` option that lists just the parameters for a method:
 
 ```powershell
-Get-GraphMethod -TypeName group assignLicense -Parameters
+Get-GraphMethod group assignLicense -Parameters
 
-Name           TypeId                          IsCollection
-----           ------                          ------------
-addLicenses    microsoft.graph.assignedLicense         True
-removeLicenses Edm.Guid                                True
+
+   Method: assignLicense
+
+ParameterName  TypeId                          IsCollection
+-------------  ------                          ------------
+addLicenses    microsoft.graph.assignedLicense True
+removeLicenses Edm.Guid                        True
 ```
 
 #### In summary: now put your knowledge to work!
@@ -924,17 +945,15 @@ By default, AutoGraphPS uses a particular multi-tenant application identity to a
 The `New-GraphApplication` command provisions a new public client application for interactive sign-in -- the application is granted the specific delegated permissions `User.Read` and `Group.Read.All` in this invocation:
 
 ```powershell
-$newApp = New-GraphApplication 'Custom Graph PowerShell App' -DelegatedPermissions User.Read, Group.Read.All -ConsentForAllUsers
+$newApp = New-GraphApplication 'Custom Graph PowerShell App' -DelegatedUserPermissions User.Read, Group.Read.All -ConsentForAllUsers
 
 Connect-GraphApi -AppId $newApp.AppId
 
-Id         : 86b02091-9a57-43c0-a2c2-bf805b85deda
-AppId      : 32a7262b-492a-4ad2-bb96-2ff8ff6cf680
-Endpoint   : https://graph.microsoft.com/
-User       : natossa@ether.org
-Status     : Online
+AppId                                ConnectionName Organization                         AuthType
+-----                                -------------- ------------                         --------
+32a7262b-492a-4ad2-bb96-2ff8ff6cf680 (Unnamed)      24775524-ce1d-42ec-8aba-0b5763695729 Delegated
 
-$groups = Get-GraphResource groups
+$groups = Get-GraphResource /groups
 ```
 
 The `New-GraphApplication` command issued a request through the Graph API to create a new public client AAD application. Anyone in the organization can sign in to the application. Since the optional `ConsentForAllUsers` parameter was also specified, consent has been granted to the application for all users in the organization; they will not get prompted for consent when using it. By default, any delegated permissions specified to the command will be consented only for the user issuing the `New-GraphApplication` command, not the entire organization.
@@ -951,17 +970,15 @@ The built-in application identity for AutoGraphPS requires a user to sign-in bef
 # In addition to creating the app identity with Graph, this commmand
 # creates a certificate in the local certificate store for unattended
 # authentication
-$newApp = New-GraphApplication 'Daily user information stats background app' -Confidential -ApplicationPermissions User.Read.All
+$newApp = New-GraphApplication 'Daily user information stats background app' -Confidential -ApplicationPermissions User.Read.All -NewCredential
 
 # This command requires no user interaction because a certificate in the local
 # certificate store is being used
-Connect-GraphApi -AppId $newapp.AppId -Confidential -NoninteractiveAppOnlyAuth -TenantId natossa@ether.org
+Connect-GraphApi -AppId $newapp.AppId -NoninteractiveAppOnlyAuth -TenantId natossa@ether.org
 
-Id         : bfb7167a-e8b3-4238-aff2-9c673e8e8ffb
-AppId      : 3ea110e5-80e1-48a6-b67f-a3c5dc108b96
-Endpoint   : https://graph.microsoft.com/
-User       :
-Status     : Online
+AppId                                ConnectionName Organization AuthType
+-----                                -------------- ------------ --------
+3ea110e5-80e1-48a6-b67f-a3c5dc108b96 (Unnamed)                   AppOnly
 
 $users = Get-GraphResource users
 ```
@@ -992,57 +1009,61 @@ The parameters of all of these commands allow for additional scenarios beyond th
 Whether it's due to coding defects in scripts or typos during your exploration of the Graph, you'll inevitably encounter errors. The cmdlet `Get-GraphError` will show you the last error returned by the Microsoft Graph API during your last cmdlet invocation:
 
 ```powershell
-Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
+Get-GraphResourceWithMetadata /users -Filter "startwith(userPrincipalName, 'pfunk')"
 ```
 
 This results in an error:
 
-```
-Invoke-WebRequest : The remote server returned an error: (400) Bad Request.
-At C:\users\myuser\Documents\WindowsPowerShell\modules\autographps-sdk\0.4.0\src\rest\restrequest.ps1:73 char:17
-+ ...             Invoke-WebRequest -Uri $this.uri -headers $this.headers - ...
-+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-WebRequest], WebException
-    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand
+```powershell
+foreach : Exception calling "InvokeMethod" with "2" argument(s): "Exception calling "InvokeMethod" with "2" argument(s): "The remote server returned an
+error: (400) Bad Request.""
+At C:\Users\adamed\src\autographps\.devmodule\scriptclass\0.20.2\src\scriptobject\dsl\MethodDsl.ps1:37 char:16
++     $objects | foreach {
++                ~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [ForEach-Object], MethodInvocationException
+    + FullyQualifiedErrorId : ScriptMethodRuntimeException,Microsoft.PowerShell.Commands.ForEachObjectCommand
 ```
 
-The `400` is a fairly generic error -- to debug it, we'd like to see the response body from the server. `Get-GraphError` exposes it along with other useful information. For the error above, the `message` field of the response gives a hint at what was wrong with the request: `Invalid filter clause`:
+The `400` is a fairly generic error -- to debug it, we'd like to see the response body from the server. `Get-GraphError` exposes it along with other useful information. For the error above, the `message` field of the `ErrorResponse` JSON property gives a hint at what was wrong with the request: `Invalid filter clause`:
 
-```
+```powershell
 Get-GraphError
 
-AfterTimeLocal    : 7/6/2018 10:08:41 PM
-AfterTimeUtc      : 7/7/2018 5:08:41 AM
-PSErrorRecord     : The remote server returned an error: (400) Bad Request.
-Response          : System.Net.HttpWebResponse
-ResponseHeaders   : @{x-ms-ags-diagnostic={"ServerInfo":{"DataCenter":"West US","Slice":"SliceC","Ring":"5","
-                    ScaleUnit":"001","Host":"AGSFE_IN_28","ADSiteName":"WUS"}}; Transfer-Encoding=chunked;
-                    request-id=a5a65cde-bb6b-45ad-9eb6-15f192bc8849; Content-Type=application/json;
-                    Cache-Control=private; Strict-Transport-Security=max-age=31536000; Date=Sun, 08 Jul 2018
-                    05:10:12 GMT; Duration=7.5021; client-request-id=a5a65cde-bb6b-45ad-9eb6-15f192bc8849}
-ResponseStream    : {
-                      "error": {
-                        "code": "BadRequest",
-                        "message": "Invalid filter clause",
-                        "innerError": {
-                          "request-id": "a5a65cde-bb6b-45ad-9eb6-15f192bc8849",
-                          "date": "2018-07-06T05:08:42"
-                        }
-                      }
-                    }
-StatusCode        : BadRequest
-StatusDescription : Bad Request
+RequestTimestamp        : 10/12/2021 22:03:15 PM -07:00
+Status                  : 400
+ErrorResponse           : {"error":{"code":"BadRequest","message":"Invalid filter clause","innerError":{"date":"2021-10-14T03:38:07","request-id":"25343cc1
+                          -84b7-47ce-aec6-cc64cad83ecd","client-request-id":"956d2a74-268f-45fd-8359-febe38edcc66"}}}
+Method                  : GET
+Uri                     : https://graph.microsoft.com/v1.0/users?$filter=startwith(userPrincipalName, 'pfunk')
+RequestBodySize         : 0
+ClientElapsedTime       : 00:00:00.0962222
+RequestHeaders          : {Authorization, Content-Type, client-request-id, ConsistencyLevel}
+ClientRequestId         : 956d2a74-268f-45fd-8359-febe38edcc66
+AppId                   : a8d7de53-99f6-4542-834b-b4185eb366fc
+TenantId                :
+UserUpn                 :
+UserObjectId            :
+AuthType                : AppOnly
+ResourceUri             : users
+Query                   : ?$filter=startwith(userPrincipalName,%20'pfunk')
+ResponseTimestamp       : 10/12/2021 22:03:15 PM -07:00
+ResponseClientRequestId : 956d2a74-268f-45fd-8359-febe38edcc66
+ResponseHeaders         : {x-ms-ags-diagnostic, Transfer-Encoding, request-id, Content-Type...}
+ResponseContentSize     :
+ResponseRawContentSize  :
 ```
 
 A close look at the filter clause shows that `startwith` is missing an `s` after `start` -- the corrected command below will succeed with a `200`:
 
-```
-Get-GraphResource /users -Filter "startwith(userPrincipalName, 'pfunk')"
+```powershell
+Get-GraphResourceWithMetadata /users -Filter "startswith(userPrincipalName, 'pfunk')"
 
-Info Type Preview     Name
----- ---- -------     ----
-t +> user Sir Nose    83dd3dbb-d7f3-44d3-a4a1-b92971ba7379
-t +> user PFunk 4Life 30285b8b-70ba-42e0-9bd9-fbcee5d1ce64
+   Graph Location: /v1.0_10:/users
+
+Id                                   DisplayName Job Title  UserPrincipalName
+--                                   ----------- ---------  -----------------
+83dd3dbb-d7f3-44d3-a4a1-b92971ba7379 Sir Nose               devoidof@funk.org
+30285b8b-70ba-42e0-9bd9-fbcee5d1ce64 PFunk 4Life Verbalizer pfunk@funk.org
 ```
 
 You can inspect the various properties and object returned by `Get-GraphError` to find additional details that help you debug a failure.
@@ -1091,46 +1112,34 @@ In the example above, the most recent command was
 $newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled  -Value ReportViewers, 'Report Viewers', $false
 ```
 
-which failed with a `400 Bad Request` error. We can get more information on the failure by looking in more detail at the log entry:
+which failed with a `400 Bad Request` error. We can get more information on the failure by looking in more detail at the most recent log entry, which has the same output as `Get-GraphError`:
 
 ```powershell
-Get-GraphLog -first 1 | Format-List *
+Get-GraphLog -Newest 1 | Format-List *
 
 RequestTimestamp        : 2/27/2021 1:15:23 AM -08:00
-Uri                     : https://graph.microsoft.com/v1.0/groups
+Status                  : 400
+ErrorResponse           : {"error":{"code":"Request_BadRequest","message":"A value is required for property 'securityEnabled' of resource 'Group'.","innerE
+                          rror":{"date":"2021-02-27T09:14:50","request-id":"2f2f9077-1c5b-46f1-a7a1-c706924b2ba3","client-request-id":"f8e1b815-cd69-4431-b
+                          362-554d901c4019"}}}
 Method                  : POST
-ClientRequestId         : f8e1b815-cd69-4431-b362-554d901c4019
-RequestHeaders          : {Authorization, Content-Type, client-request-id}
-RequestBody             :
-HasRequestBody          : True
+Uri                     : https://graph.microsoft.com/v1.0/groups
+RequestBodySize         : 110
+ClientElapsedTime       : 00:00:00.2353523
+RequestHeaders          : {Authorization, Content-Type, client-request-id, ConsistencyLevel}
+ClientRequestId         : 87572233-f11d-41db-bfa7-dd172fd2a03f
 AppId                   : ac70e3e2-a821-4d19-839c-b8af4515254b
-AuthType                : Delegated
-UserObjectId            : a524cd16-58e0-48d3-93be-8cc25be634c1
-UserUpn                 : harrow@dragonking.org
-TenantId                : f2280b9c-8858-49cc-9544-db2e0529c22b
-Permissions             : {directory.accessasuser.all, email, openid, profile...}
+TenantId                :
+UserUpn                 :
+UserObjectId            :
+AuthType                : AppOnly
 ResourceUri             : groups
 Query                   :
-Version                 : v1.0
-StatusCode              : 400
-ResponseTimestamp       : 2/27/2021 1:15:59 AM -08:00
-ErrorResponse           : {
-                            "error": {
-                              "code": "Request_BadRequest",
-                              "message": "A value is required for property 'securityEnabled' of resource 'Group'.",
-                              "innerError": {
-                                "date": "2021-02-27T09:14:50",
-                                "request-id": "2f2f9077-1c5b-46f1-a7a1-c706924b2ba3",
-                                "client-request-id": "f8e1b815-cd69-4431-b362-554d901c4019"
-                              }
-                            }
-                          }
-ResponseClientRequestId : f8e1b815-cd69-4431-b362-554d901c4019
+ResponseTimestamp       : 2/27/2021 1:15:23 AM -08:00
+ResponseClientRequestId : 87572233-f11d-41db-bfa7-dd172fd2a03f
 ResponseHeaders         : {x-ms-ags-diagnostic, Transfer-Encoding, request-id, Content-Type...}
-ResponseContent         :
-ResponseRawContent      :
-ClientElapsedTime       : 00:00:35.8903225
-LogLevel                : Basic
+ResponseContentSize     :
+ResponseRawContentSize  :
 ```
 
 Note that the `ErrorResponse` field provides the detail needed to resolve the issue: `A value is required for property 'securityEnabled' of resource 'Group'.` The request did not include an explicit value for the `securityEnabled` property of the group; Graph requires this property be specified at creation time. The fix then is simple -- the original command can be modified to include the required property and re-invoked as followed:

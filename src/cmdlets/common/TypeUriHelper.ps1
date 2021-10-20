@@ -49,11 +49,20 @@ ScriptClass TypeUriHelper {
                 $responseObject.GraphUri.tostring()
             } else {
                 # Try to parse the odata context
-                $objectUri = $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
 
-                # If the odata context is not parseable for some reason, fall back to older logic
-                if ( ! $objectUri -and ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) ) {
-                    $requestUri = $::.GraphUtilities |=> ParseGraphUri $responseObject.__ItemContext().RequestUri $targetContext
+                $itemContext = if ( $responseObject | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                    $responseObject.__ItemContext()
+                }
+
+                # The IsCollectionMember property of itemContext cannot always be trusted -- for our use case
+                # we ignore this for entities. TODO: Address this in the context itself so we can actually trust the property
+                $objectUri = if ( ! $itemContext -or ! ( $itemContext.IsEntity -and $itemContext.IsCollectionMember ) ) {
+                    $::.GraphUtilities |=> GetAbstractUriFromResponseObject $responseObject $true $resourceId
+                }
+
+                # If the odata context is not parseable for some reason or we do not trust it, fall back to older and slower logic
+                if ( ! $objectUri -and $itemContext ) {
+                    $requestUri = $::.GraphUtilities |=> ParseGraphUri $itemContext.RequestUri $targetContext
                     $objectUri = $requestUri.GraphRelativeUri
                     $uriInfo = if ( $resourceId ) {
                         Get-GraphUriInfo $objectUri
@@ -71,6 +80,10 @@ ScriptClass TypeUriHelper {
                     if ( $uriInfo -and $uriInfo.Collection -and $resourceId -and ! $objectUri.tostring().tolower().EndsWith("/$($resourceId.tolower())") ) {
                         $objectUri = $objectUri.tostring(), $resourceId -join '/'
                     }
+                }
+
+                if ( ! $objectUri ) {
+                    throw 'Unable to determine the Graph URI for the specified object'
                 }
 
                 $objectUri.tostring()
@@ -136,10 +149,22 @@ ScriptClass TypeUriHelper {
         }
 
         function GetTypeAwareRequestInfo($graphName, $typeName, $fullyQualifiedTypeName, $uri, $id, $typedGraphObject, $ignoreTypeIfObjectPresent, $targetUriOptional) {
-            $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $graphName
+            $metadata = if ( $typedGraphObject -and ( $typedGraphObject | gm __ItemMetadata -erroraction ignore ) ) {
+                $typedGraphObject.__ItemMetadata()
+            }
+
+            $targetGraphName = if ( $metadata ) {
+                $metadata.Graphname
+            } else {
+                $graphName
+            }
+
+            $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $targetGraphName
 
             $targetUri = if ( $uri ) {
                 $::.GraphUtilities |=> ToGraphRelativeUri $uri $targetContext
+            } elseif ( $metadata ) {
+                $metadata.GraphUri
             }
 
             $targetTypeInfo = if ( $typeName -and ( ! $typedGraphObject -or $ignoreTypeIfObjectPresent ) ) {
@@ -163,18 +188,18 @@ ScriptClass TypeUriHelper {
                     FullTypeName = $resolvedType.typeId
                     IsCollection = $true
                 }
-            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of typedgraphobject over uri
+            } elseif ( $uri -and ! ( $ignoreTypeIfObjectPresent -and $typedGraphObject ) )  { # TODO: just increase precedence of metadata (i.e. typedGraphObject) over uri
                 TypeFromUri $targetUri $targetContext
             } elseif ( $typedGraphObject ) {
-                if (  $::.SegmentHelper |=> IsGraphSegmentType $typedGraphObject ) {
+                if ( $metadata -and $::.SegmentHelper.IsGraphSegmentType($metadata) ) {
                     # This is already a fully described object -- no need to make expensive
                     # calls to parse metadata and understand the object
-                    $objectUri = $typedGraphObject.GraphUri
+                    $objectUri = $metadata.GraphUri
                     $targetUri = $objectUri
                     [PSCustomObject] @{
-                        FullTypeName = $typedGraphObject.FullTypeName
-                        IsCollection = $typedGraphObject.Collection
-                        UriInfo = $typedGraphObject
+                        FullTypeName = $metadata.FullTypeName
+                        IsCollection = $metadata.Collection
+                        UriInfo = $metadata
                     }
                 } else {
                     # We need to analyze information about the object using its uri since we
@@ -201,8 +226,20 @@ ScriptClass TypeUriHelper {
                                 # The object was probably obtained via POST or by enumerating an object collection,
                                 # so we'll just assume it's safe to concatenate the id. However, once the corner cases
                                 # are corrected in the object decoration, we should update to reliable logic.
-                                $correctedUri = $objectUri, $id -join '/'
-                                $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                                $itemContext = if ( $typedGraphObject | Get-Member -MemberType ScriptMethod __ItemContext -erroraction ignore ) {
+                                    $typedGraphObject.__ItemContext()
+                                }
+
+                                $assumeNotCollectionMember = if ( $itemContext ) {
+                                    $itemContext.IsEntity -and $itemContext.IsCollectionMember
+                                }
+
+                                # Detect the case where we have a navigation to a single entity (not a collection
+                                # that contained this element)
+                                if ( ! $assumeNotCollectionMember ) {
+                                    $correctedUri = $objectUri, $id -join '/'
+                                    $objectUriInfo = TypeFromUri $correctedUri $targetContext
+                                }
                             }
                         }
 
