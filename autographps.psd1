@@ -271,7 +271,7 @@ Improved support for customizing display output, dependency updates for improved
 
 ### New features
 
-* `Set-GraphLocation` aka `gcd` now supports the `ToType` parameter which allows you to change the default location for the specified type.
+* `Set-GraphLocation` aka `gcd` now supports the `TypeName` parameter which allows you to change the default location for the specified type.
 * Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are listed below. Types other than those will be displayed with the default table view formatting:
     * application
     * contact
@@ -288,6 +288,11 @@ Improved support for customizing display output, dependency updates for improved
 
 * Inherited methods not accessible to Invoke-GraphMethod
 * Removed some non-determinism in parsing of paths -- commands now always use the specified GraphName parameter to fully resolve the path, and otherwise if a URI does not contain the Graph in the path, the default context is used. Previously in some cases a relative URI would result in an attempt to find the "best" matching Graph, which would depend on which graphs were mounted and in what order.
+* Added missing URI parameter completion for `Set-Graphitem`
+* Fixed `Get-GraphResourceWithMetadata` ignoring the Select parameter and requests returning all default properties
+* `Get-GraphItem` and `Get-GraphChildItem` were incorrectly including methods in parameter completion
+* `Invoke-GraphMethod` parameter uri completion did not work in common cases
+* Use of `PropertyFilter` in `Get-GraphResourceWithMetadata` and other commands incorrectly translated `$false` to `False` instead of `false`, causing invalid filter errors in API responses
 '@
     } # End of PSData hashtable
 
