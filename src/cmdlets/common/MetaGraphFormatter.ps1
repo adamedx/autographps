@@ -97,7 +97,7 @@ ScriptClass MetaGraphFormatter {
                 $::.SegmentHelper.__GetPreview($segment, '')
             }
 
-            $::.ColorString.ToStandardColorString($preview, 'Emphasis1', $null, $null, $null)
+            $::.ColorString.ToStandardColorString($preview, 'Emphasis2', $null, $null, $null)
         }
 
         function SegmentId($segment) {
@@ -119,8 +119,6 @@ ScriptClass MetaGraphFormatter {
                     } else {
                         if ( $segmentType -eq 'n' -or $segmentType -eq 's' ) {
                             'Emphasis1'
-                        } else {
-                            'Emphasis2'
                         }
                     }
                 }

@@ -128,6 +128,46 @@ function __ConfigurePrompt($behavior, $promptScript) {
     }
 }
 
+<#
+.SYNOPSIS
+Sets the behavior of the Graph information added to the PowerShell prompt.
+
+.DESCRIPTION
+Use Set-GraphPrompt to enable or disable the addition of information about the current Graph location added to the PowerShell prompt. By default, when the Set-GraphLocation command (alias gcd) is invoked, or when the Get-GraphResourceWithMetadata command (alias gls) enumerates relationships, the PowerShell prompt is modified to include information about the current location, including its full path with graph name, the API version of the graph, and the connection used to access the graph. This information is prepended to the existing prompt. See the NOTES section for details on how the data are presented in the prompt.
+
+Set-GraphPrompt provides a Behavior parameter that can enable or disable the prompt behavior, as well as the default 'Auto' setting that adds prompt information only under the specific conditions described earlier.
+
+.PARAMETER Behavior
+Specify the Behavior parameter to enable or disable the addition of Graph information to the PowerShell prompt. By default, the parameter is set to 'Auto', which means the prompt information will only be added as needed, specifically if the current location is changed or if the Get-GraphResourceWithMetadata command is invoked. If the value is 'Enabled', then prompt information is always displayed. If the value is 'Disabled', there is no graph information added to the prompt.
+
+.PARAMETER PromptScript
+Specify PromptScript to customize the Graph information shown by the prompt. By default, the prompt displays a specific set of information such as the name of the graph, the version, the application used to access it, and the organization id. To display arbitrary information, specify a ScriptBlock for the PromptScript parameter.
+
+.OUTPUTS
+This command produces no output.
+
+.NOTES
+
+Connection information is presented differently for delegated sign-ins vs. app-only. For delegated sign-ins, the connection information will include the user principal name of the signed in user (from which the organization can usually be inferred) and the application into which the user is signed in. Here is an example prompt for the delegated case:
+
+[marvin@unity.org, app=a6c5245c-f383-4547-9fa4-a3b841a6e839]
+ver=v1.0: /v1.0:/me/drive/root/children
+
+For app-only sign-in, there is no user, so instead of a user principal name only the tenant id guid is shown:
+
+[tid=d3e2e58d-e126-467e-bc9b-55a9f9ae74a2, app=df402ab7-6ad0-4602-aab3-fd813bfd6b6c]
+ver=v1.0: /beta:/groups
+
+.EXAMPLE
+Set-GraphPrompt -Behavior Disabled
+
+In this example, the prompt Graph prompt information added to the script is removed.
+
+.LINK
+Set-GraphLocation
+Get-GraphLocation
+Get-GraphResourceWithMetadata
+#>
 function Set-GraphPrompt {
     [cmdletbinding(positionalbinding=$false)]
     param (

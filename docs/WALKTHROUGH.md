@@ -69,7 +69,7 @@ PS> Get-GraphResourceWithMetadata me/contacts
               Email DisplayName    Phone                  Address
               ----- ----------     -----                  -------
 cosmo@soulsonic.org Cosmo Jones    Mobile: (313) 555-7334 Home: 1075 Chalfonte
-aks@bee.org Akeelah Smith                                 Home: 8760 Lafayette
+        aks@bee.org Akeelah Smith  Home: 8760 Lafayette
   jhenry@legend.net John Henry     Work: (206) 882-9000   Work: One Turing Way
  deandre@skynet.org Deandre George Mobile: (404) 200-1024 Home: 200 OK Drive
 ```
