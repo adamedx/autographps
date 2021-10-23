@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Fix incorrect / ambiguous resolution of '.' when used with graphname (graphname is being ignored)
+* Fix use of -all and -first in gls, other commands
 * Use graph connection id to find compatible graphs and not create new ones
 * Change metadata-only output format so that there is no "id" but a "name" instead.
 * Remove redundant ResultVariable in favor of OutVariable
@@ -422,6 +424,7 @@
 * Support external tenants, specific tenant in profiles
 * Fix select not working for gls
 * fix invoke-graphmethod -uri
+* Fix remove-graphitem not working for email gls
 
 ### Postponed
 

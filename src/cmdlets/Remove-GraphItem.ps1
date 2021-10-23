@@ -73,7 +73,11 @@ function Remove-GraphItem {
         $requestInfo = $::.TypeUriHelper |=> GetTypeAwareRequestInfo $GraphName $TypeName $FullyQualifiedTypeName.IsPresent $Uri $targetId $GraphItem
 
         $objects = if ( $GraphItem ) {
-            $GraphItem
+            if ( $GraphItem | gm __ItemMetadata -erroraction ignore ) {
+                $GraphItem.__ItemMetadata()
+            } else {
+                $GraphItem
+            }
         } elseif ( $Filter ) {
             Get-GraphResource $requestInfo.Uri @filterParameter -erroraction stop
         }
@@ -102,4 +106,5 @@ function Remove-GraphItem {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem GraphName (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem Uri (new-so GraphUriParameterCompleter LocationUri)
 
