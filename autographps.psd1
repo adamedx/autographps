@@ -266,11 +266,17 @@ None.
 
 ### Breaking changes
 
-None.
+* `Find-GraphPermission` has had some parameters renamed: `AuthType` is now `PermissionType`, and `Permission` is now `SearchString`
+* `Find-GraphPermission` has had a change in output: the `AuthType` property of the output has been renamed to `PermissionType`
+* `Remove-GraphItem` now returns an error if there are no items to delete when a filter isn't specified or input does not originate from the pipeline.
+* `Get-Graph` now returns a standard graph object in all cases instead of returning an internal object with a different structure when a graph name is specified to the command
+* `Get-GraphResourceWithMetadata` no longer supports the `ResultVariable` parameter since it duplicates the functionality of the common parameter `OutVariable`
 
 ### New features
 
-None.
+* Several commands, 37% of total, now have documentation accessible via `Get-Help`. Previously less than 10% of commands had documentation.
+* `Find-GraphPermission` now takes multiple search strings as input from the pipeline.
+* `Remove-Graph` now supports piping in the graph to remove from the pipeline
 
 ### Fixed defects
 

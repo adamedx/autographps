@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ ScriptClass PermissionHelper {
             [PSCustomObject] @{
                 PSTypeName = $this.PermissionDisplayTypeName
                 Id = $permissionData.Id
-                AuthType = $this.typeMap[$permissionData.Type]
+                PermissionType = $this.typeMap[$permissionData.Type]
                 ConsentType = $permissionData.consentType
                 Name = $permissionData.Name
                 Description = $permissionData.description

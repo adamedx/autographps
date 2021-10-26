@@ -2,11 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Add global request id preference
+* Add global headers to settings, matched to uris
+* Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem
 * Fix incorrect / ambiguous resolution of '.' when used with graphname (graphname is being ignored)
 * Fix use of -all and -first in gls, other commands
 * Use graph connection id to find compatible graphs and not create new ones
 * Change metadata-only output format so that there is no "id" but a "name" instead.
-* Remove redundant ResultVariable in favor of OutVariable
 * Make propertyfilter support an array of hash tables and translate this as or clauses
 * Fix get-graphuriinfo to correctly use pipeline
 * Add custom list formats for graph service principal and application
@@ -425,6 +427,7 @@
 * Fix select not working for gls
 * fix invoke-graphmethod -uri
 * Fix remove-graphitem not working for email gls
+* Remove redundant ResultVariable in favor of OutVariable without impacting LASTGRAPHITEMS
 
 ### Postponed
 

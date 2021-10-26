@@ -82,16 +82,10 @@ function Get-Graph {
 
     $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
 
-    $results = $graphContexts |
+    $graphContexts |
       where { ! $targetGraph -or $_.name -eq $targetGraph } | foreach {
           $::.ContextHelper |=> ToPublicContext $_
-      }
-
-    if ( $targetGraph ) {
-        $results | select *
-    } else {
-        $results
-    }
+      } | sort-object Name
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-Graph Name (new-so GraphParameterCompleter)

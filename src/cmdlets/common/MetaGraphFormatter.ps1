@@ -214,11 +214,12 @@ ScriptClass MetaGraphFormatter {
                     }
                 }
 
-                $colors = $::.ColorString.GetStandardColors('Emphasis2', $null, $null, $null)
-
-                if ( $isExact ) {
-                    $colors[1] = $colors[0]
-                    $colors[0] = $::.ColorString.GetColorContrast($colors[1])
+                $colors = if ( $field ) {
+                    $::.ColorString.GetStandardColors('Emphasis2', $null, $null, $null)
+                } elseif ( $isExact ) {
+                    $::.ColorString.GetStandardColors('Emphasis1', $null, $null, $null)
+                } else {
+                    $null, $null
                 }
 
                 $value = if ( $field ) {

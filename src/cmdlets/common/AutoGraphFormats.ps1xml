@@ -825,14 +825,14 @@ limitations under the License.
         <TypeName>__ScriptClassPermissionDisplayType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <PropertyName>AuthType</PropertyName>
-        <Label>AuthType</Label>
+        <PropertyName>PermissionType</PropertyName>
+        <Label>PermissionType</Label>
       </GroupBy>
 
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
-            <Label>AuthType</Label>
+            <Label>PermissionType</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>ConsentType</Label>
@@ -849,7 +849,7 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.PermissionType)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ConsentType</PropertyName>
@@ -873,8 +873,8 @@ limitations under the License.
         <TypeName>__ScriptClassPermissionDisplayType</TypeName>
       </ViewSelectedBy>
       <GroupBy>
-        <PropertyName>AuthType</PropertyName>
-        <Label>AuthType</Label>
+        <PropertyName>PermissionType</PropertyName>
+        <Label>PermissionType</Label>
       </GroupBy>
 
       <ListControl>
@@ -886,8 +886,8 @@ limitations under the License.
                 <PropertyName>Id</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>AuthType</Label>
-                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.AuthType)</ScriptBlock>
+                <Label>PermissionType</Label>
+                <ScriptBlock>$::.MetaGraphFormatter.AuthType($_.PermissionType)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>ConsentType</PropertyName>
