@@ -122,6 +122,9 @@ Specifies that the command should not wait for API metadata to be available befo
 .PARAMETER StrictOutput
 Specify StrictOutput to override the default behavior of returning segments that contain only metadata only when no parameter is passed to the command to enumerate the current directory and it is an entity. With StrictOutput, both data and metadata are emitted for every value of the Uri parameter where the Uri resolves to an entity.
 
+.PARAMETER GraphName
+Specifies the unique name of the graph on which the command should operate. This controls both the connection (e.g. identity and service endpoint) used to access the Graph API and also the API version used to interpret the Uri and TypeName parameters. When this parameter is unspecified, the current graph is used as a default.
+
 .OUTPUTS
 If the command issued a request for the specified URI, it returns the content of the HTTP response along with metadata about the URI. If no request was issued because the command was only enumerating relationships and other URI segments, then only the metadata about enumerated segments is returned.
 
@@ -321,8 +324,6 @@ function Get-GraphResourceWithMetadata {
         [switch] $NoClientRequestId,
 
         [switch] $NoSizeWarning,
-
-        [string] $ResultVariable = $null,
 
         [parameter(parametersetname='byuri')]
         [parameter(parametersetname='GraphItem')]
@@ -605,7 +606,7 @@ function Get-GraphResourceWithMetadata {
 
         __AutoConfigurePrompt $context
 
-        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable
         $targetResultVariable.value = $results
 
         if ( $results ) {
@@ -614,7 +615,7 @@ function Get-GraphResourceWithMetadata {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter LocationOrMethodUri)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Uri (new-so GraphUriParameterCompleter LocationUri)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Select (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata OrderBy (new-so TypeUriParameterCompleter Property)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResourceWithMetadata Expand (new-so TypeUriParameterCompleter Property $false NavigationProperty)

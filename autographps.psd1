@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.39.0'
+ModuleVersion = '0.40.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -256,43 +256,34 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.39.0 Release Notes
+## AutoGraphPS 0.40.0 Release Notes
 
-Improved support for customizing display output, dependency updates for improved authentication experiences
+Bugfixes and minor improvements
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.28.0 (including MSAL 4.35.0)
+None.
 
 ### Breaking changes
 
-* Objects returned by `Get-GraphResourceWithMetadata`, `Get-GraphItem`, `Get-GraphChildItem` return the structure of the Graph object they came from -- if they aren't from the graph (i.e. just metadata) then they will have the structure of metadata objects just as they did before this change.
-* Some commands access pipeline objects differently
+* `Find-GraphPermission` has had some parameters renamed: `AuthType` is now `PermissionType`, and `Permission` is now `SearchString`
+* `Find-GraphPermission` has had a change in output: the `AuthType` property of the output has been renamed to `PermissionType`
+* `Remove-GraphItem` now returns an error if there are no items to delete when a filter isn't specified or input does not originate from the pipeline.
+* `Get-Graph` now returns a standard graph object in all cases instead of returning an internal object with a different structure when a graph name is specified to the command
+* `Get-GraphResourceWithMetadata` no longer supports the `ResultVariable` parameter since it duplicates the functionality of the common parameter `OutVariable`
 
 ### New features
 
-* `Set-GraphLocation` aka `gcd` now supports the `TypeName` parameter which allows you to change the default location for the specified type.
-* Type-specific table formatting is available for certain objects returned by Graph -- this is based on the type of the object as defined in the API. The currently supported types are listed below. Types other than those will be displayed with the default table view formatting:
-    * application
-    * contact
-    * eventMessage
-    * eventMessageRequest
-    * eventMessageResponse
-    * driveItem
-    * group
-    * message
-    * organization
-    * user
+* Several commands, 37% of total, now have documentation accessible via `Get-Help`. Previously less than 10% of commands had documentation.
+* `Find-GraphPermission` now takes multiple search strings as input from the pipeline.
+* `Remove-Graph` now supports piping in the graph to remove from the pipeline
 
 ### Fixed defects
 
-* Inherited methods not accessible to Invoke-GraphMethod
-* Removed some non-determinism in parsing of paths -- commands now always use the specified GraphName parameter to fully resolve the path, and otherwise if a URI does not contain the Graph in the path, the default context is used. Previously in some cases a relative URI would result in an attempt to find the "best" matching Graph, which would depend on which graphs were mounted and in what order.
-* Added missing URI parameter completion for `Set-Graphitem`
-* Fixed `Get-GraphResourceWithMetadata` ignoring the Select parameter and requests returning all default properties
-* `Get-GraphItem` and `Get-GraphChildItem` were incorrectly including methods in parameter completion
-* `Invoke-GraphMethod` parameter uri completion did not work in common cases
-* Use of `PropertyFilter` in `Get-GraphResourceWithMetadata` and other commands incorrectly translated `$false` to `False` instead of `false`, causing invalid filter errors in API responses
+* `Remove-GraphItem` would fail with 405 for objects emitted from gls
+* `Remove-GraphItem` was missing parameter completion for the Uri parameter
+* `Get-GraphResourceWithMetadata` and `Set-GraphItem` incorrectly included methods in Uri parameter completion
+
 '@
     } # End of PSData hashtable
 
