@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $NoImport, $Path, [switch] $AllowProfile)
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $NoImport, $Path, [switch] $AllowProfile, [switch] $PSProfile)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -75,7 +75,13 @@ if (! $NoNewShell.ispresent ) {
         ''
     }
 
-    $shellArguments = '-noexit', '-command', "$bypassSettings; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
+    $shellArguments = @()
+
+    $psProfileArgument = if ( ! $PSProfile.IsPresent ) {
+        $shellArguments += '-noprofile'
+    }
+
+    $shellArguments += '-noexit', '-command', "$bypassSettings; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
 
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(
