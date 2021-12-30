@@ -212,7 +212,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
             $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
             Write-Progress -id 1 -activity $metadataactivity -status "Downloading"
 
-            $graphEndpoint = new-so GraphEndpoint Public MSGraph $endpoint http://localhost 'Default'
+            $graphEndpoint = new-so GraphEndpoint Public $endpoint http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
 
             $schema = try {

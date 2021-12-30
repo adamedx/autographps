@@ -380,7 +380,7 @@ Note that since AutoGraphPS is built on [AutoGraphPS-SDK](https://github.com/ada
 | Get-GraphRelatedItem (gri)| Gets the items related to a specified item through a specified relationship                             |
 | Get-GraphResource (ggr)   | Given a relative (to the Graph or current location) Uri gets information about the entity               |
 | Get-GraphResourceWithMetadata (gls) | Retrieves in tabular format the list of entities and metadata for a given Uri                 |
-| Get-GraphToken            | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
+| Get-GraphAccessToken      | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphType             | Gets metadata for the specified resource type as documented in the [Graph reference](https://developer.microsoft.com/en-us/graph/docs/concepts/v1-overview)         |
 | Get-GraphUri (guri)       | Gets the graph URI for the specified type and an optional object identifier                             |
 | Get-GraphUriInfo (ggu)    | Gets detailed metadata about the segments of a Graph Uri or child segments of the Uri                   |
