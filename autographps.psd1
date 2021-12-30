@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.40.0'
+ModuleVersion = '0.41.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/comm
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.28.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.29.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -256,33 +256,29 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.40.0 Release Notes
+## AutoGraphPS 0.41.0 Release Notes
 
-Bugfixes and minor improvements
+Removal of ADAL dependency, incorporation of AutoGraphPS-SDK commands with full documentation.
 
 ### New dependencies
 
-None.
+* AutoGraphPS-SDK 0.29.0
 
 ### Breaking changes
 
-* `Find-GraphPermission` has had some parameters renamed: `AuthType` is now `PermissionType`, and `Permission` is now `SearchString`
-* `Find-GraphPermission` has had a change in output: the `AuthType` property of the output has been renamed to `PermissionType`
-* `Remove-GraphItem` now returns an error if there are no items to delete when a filter isn't specified or input does not originate from the pipeline.
-* `Get-Graph` now returns a standard graph object in all cases instead of returning an internal object with a different structure when a graph name is specified to the command
-* `Get-GraphResourceWithMetadata` no longer supports the `ResultVariable` parameter since it duplicates the functionality of the common parameter `OutVariable`
+* See breaking changes for AutoGraphPS-SDK 0.29.0 including rename of `Get-GraphToken` to `Get-GraphAccessToken`.
+* ADAL is no longer loaded by this module; previously AutoGraphPS-SDK dependeded on ADAL, but in the updated version of that module ADAL has been removed.
 
 ### New features
 
-* Several commands, 37% of total, now have documentation accessible via `Get-Help`. Previously less than 10% of commands had documentation.
-* `Find-GraphPermission` now takes multiple search strings as input from the pipeline.
-* `Remove-Graph` now supports piping in the graph to remove from the pipeline
+* `Find-GraphPermission` supports a new `SourceMode` parameter that provides control over when it uses cached data vs. attempting to get data from AAD.
+    The default behavior of `Auto` for this option only makes an attempt to retrieve permissions data the first time permissions data is retrieved, but setting
+    the value of `Online` will force it to try retrieving the latest data from AAD. The `Offline` value instructs it to use cached (or hard-coded) data and avoids
+    any sign-in.
 
 ### Fixed defects
 
-* `Remove-GraphItem` would fail with 405 for objects emitted from gls
-* `Remove-GraphItem` was missing parameter completion for the Uri parameter
-* `Get-GraphResourceWithMetadata` and `Set-GraphItem` incorrectly included methods in Uri parameter completion
+* `Find-GraphPermission -ExactMatch User.Read` and similar commands would return a result but emit failure output -- this has been fixed.
 
 '@
     } # End of PSData hashtable

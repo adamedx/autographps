@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Update build script to skip powershell profile by default for import-devmodule
 * Add global request id preference
 * Add global headers to settings, matched to uris
 * Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem

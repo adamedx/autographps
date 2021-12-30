@@ -46,11 +46,14 @@ By default, the match for SearchString is evaluated by checking to see if Search
 .PARAMETER PermissionType
 Specifies the permission type to return, Delegated or AppOnly. By default, the parameter is $null so both delegated and app-only permissions that match SearchString are returned.
 
+.PARAMETER SourceMode
+Specifies the manner in which permissions data is obtained. By default, the SourceMode is 'Auto', which means that if the command has not previously attempted to access permission data from AAD, it will attempt to do so, and if it fails it will use static permissions information that may be out of date. Subsequent attempts will use whatever data was retrieved from either source on the first attempt. If the mode is set to 'Online' then it will attempt to read the data from AAD regardless whether it already has data cached from any source or whether the last attempt to access AAD was successful -- use this option to obtain the most recent data accessible. Specify Offline to indicate that AAD should not be contacted at all -- cached data will be used or if there is none the static data will be used -- use this to avoid unwanted network access or sign-in attempts. Note that in both the Auto and Online cases if AAD is accessed and the connection is not signed-in, a sign-in will occur. Also in both the Auto and Online cases failure to access AAD will not result in a command failure -- cached data will simply be used. The command does not provide a mechanism to expose whether the data returned by the command originated from AAD vs. the static source nor does it provide information about the last time the data was considered up to date.
+
 .PARAMETER Connection
 Specifies a Connection object returned by a command like New-GraphConnection or Connect-GraphApi or referenced by a Graph object. Find-GraphPermission will query the Graph at the specified connection for the list of all permissions supported by the Graph API service endpoint for the connection.
 
 .NOTES
-The command retrieves the list of permissions from the Graph API; it requires that the signed-in user or the application has permission to read this list of permissions from a service principal in the AAD organization. If it doesn't, the API falls back on a hard-coded list of permissions built into the module's code. In that case, some permissions recently added to the Graph API may not be found by the command. Since permissions are the same for all applications and organizations, a workaround is to sign in to a different application or even a different organization where you have a higher level set of permissions such as Application.Read.All, Application.ReadWrite.All, or Directory.AccessAsUser.All. Certain roles may also grant access to read the required service principal.
+The command retrieves the list of permissions from the Graph API; it requires that the signed-in user or the application has permission to read this list of permissions from a service principal in the AAD organization. If it doesn't, the API falls back on a hard-coded list of permissions built into the module's code. In that case, some permissions recently added to the Graph API may not be found by the command. Since permissions are the same for all applications and organizations, a workaround is to sign in to a different AAD application identity or even a different organization where you have a higher level set of permissions consented such as Application.Read.All, Application.ReadWrite.All, or Directory.AccessAsUser.All and use the SourceMode parameter with the value 'Online' to force the command to retry accessing AAD (it will continue to use cached information otherwise). Certain roles may also grant access to read the required service principal.
 
 .OUTPUTS
 A collection of objects, each with information about a permission that match the SearchString parameter. The data are grouped by permission type (i.e. Delegated or AppOnly) and sorted alphabetically within each grouping.
@@ -105,27 +108,36 @@ function Find-GraphPermission {
         [ValidateSet('Delegated', 'AppOnly')]
         [string] $PermissionType,
 
+        [ValidateSet('Auto', 'Offline', 'Online')]
+        [string] $SourceMode = 'Auto',
+
         $Connection
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
 
-        $commandContext = new-so CommandContext $Connection $null $null $null
+        $targetConnection = if ( $SourceMode -ne 'Offline' ) {
+            $commandContext = new-so CommandContext $Connection $null $null $null
+            if ( $SourceMode -eq 'Online' ) {
+                $::.PermissionHelper |=> ResetOnlineAttempted
+            }
+            $commandContext.Connection
+        }
     }
 
     process {
         if ( $ExactMatch.IsPresent ) {
             $foundPermissions = @()
             if ( ! $PermissionType -or $PermissionType -eq 'Delegated' ) {
-                $foundDelegated = $::.ScopeHelper |=> GetPermissionsByName $SearchString Scope $commandContext.Connection
+                $foundDelegated = $::.PermissionHelper |=> GetPermissionsByName $SearchString Scope $targetConnection $true
                 if ( $foundDelegated ) {
                     $foundPermissions += $foundDelegated
                 }
             }
 
             if ( ! $PermissionType -or $PermissionType -eq 'AppOnly' ) {
-                $foundAppOnly = $::.ScopeHelper |=> GetPermissionsByName $SearchString Role $commandContext.Connection
+                $foundAppOnly = $::.PermissionHelper |=> GetPermissionsByName $SearchString Role $targetConnection $true
                 if ( $foundAppOnly ) {
                     $foundPermissions += $foundAppOnly
                 }
@@ -141,15 +153,15 @@ function Find-GraphPermission {
 
             if ( ! $PermissionType -or $PermissionType -eq 'Delegated' ) {
                 $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
-                $delegatedPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection 'Delegated'
-                $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $commandContext
+                $delegatedPermissions = $::.PermissionHelper |=> GetKnownPermissionsSorted $targetConnection 'Delegated'
+                $::.PermissionHelper |=> FindPermission $delegatedPermissions $normalizedSearchString Scope $sortedResult $targetConnection
                 $sortedResult.values
             }
 
             if ( ! $PermissionType -or $PermissionType -eq 'AppOnly' ) {
                 $sortedResult = [System.Collections.Generic.SortedList[string, object]]::new()
-                $appOnlyPermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $commandContext.Connection 'AppOnly'
-                $::.PermissionHelper |=> FindPermission $appOnlyPermissions $normalizedSearchString Role $sortedResult $commandContext
+                $appOnlyPermissions = $::.PermissionHelper |=> GetKnownPermissionsSorted $targetConnection 'AppOnly'
+                $::.PermissionHelper |=> FindPermission $appOnlyPermissions $normalizedSearchString Role $sortedResult $targetConnection
                 $sortedResult.values
             }
         }

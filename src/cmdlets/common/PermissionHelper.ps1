@@ -15,6 +15,7 @@
 ScriptClass PermissionHelper {
     static {
         $PermissionDisplayTypeName = '__ScriptClassPermissionDisplayType'
+        $onlineAttempted = $false
 
         $typeMap = @{
             Scope='Delegated'
@@ -39,14 +40,28 @@ ScriptClass PermissionHelper {
 
         __RegisterSegmentDisplayType $PermissionDisplayTypeName
 
-        function FindPermission($source, $searchString, $permissionType, $destination, $commandContext) {
+        function FindPermission($source, $searchString, $permissionType, $destination, $connection) {
+            $targetConnection = __GetConnection $connection
+
             $source | foreach {
                 if ( ! $searchString -or ( $_.tolower().contains($searchString) ) ) {
-                    $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $commandContext.Connection
+                    $permissionData = $::.ScopeHelper |=> GetPermissionsByName $_ $permissionType $targetConnection $true
                     $entry = GetPermissionEntry $permissionData
                     $destination.Add($_, $entry)
                 }
             }
+        }
+
+        function GetPermissionsByName( [string[]] $scopeNames, $permissionType, $connection, $ignoreNotFound ) {
+            $targetConnection = __GetConnection $connection
+
+            $::.ScopeHelper |=> GetPermissionsByName $scopeNames $permissionType $targetConnection $ignoreNotFound
+        }
+
+        function GetKnownPermissionsSorted($connection, $graphAppAuthType) {
+            $targetConnection = __GetConnection $connection
+
+            $::.ScopeHelper |=> GetKnownPermissionsSorted $targetConnection $graphAppAuthType
         }
 
         function GetPermissionEntry($permissionData) {
@@ -57,6 +72,19 @@ ScriptClass PermissionHelper {
                 ConsentType = $permissionData.consentType
                 Name = $permissionData.Name
                 Description = $permissionData.description
+            }
+        }
+
+        function ResetOnlineAttempted {
+            $this.onlineAttempted = $false
+        }
+
+        function __GetConnection($connection) {
+            if ( $connection -and ! $this.onlineAttempted ) {
+                $this.onlineAttempted = $true
+                # TODO: Implement a method for accessing ScopeHelper state this way and / or a non-static solution
+                $::.ScopeHelper.retrievedScopesFromGraphService = $false
+                $connection
             }
         }
     }
