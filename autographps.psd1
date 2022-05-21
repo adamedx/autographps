@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.41.0'
+ModuleVersion = '0.42.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2021 Adam Edwards.'
+Copyright = '(c) 2022 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'The friendly, scriptable Graph Explorer CLI for automating the Microsoft Graph'
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/comm
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.29.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.30.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -256,29 +256,25 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.41.0 Release Notes
+## AutoGraphPS 0.42.0 Release Notes
 
-Removal of ADAL dependency, incorporation of AutoGraphPS-SDK commands with full documentation.
+Update to new AutoGraphPS-SDK dependency, bug fixes.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.29.0
+* AutoGraphPS-SDK 0.30.0
 
 ### Breaking changes
 
-* See breaking changes for AutoGraphPS-SDK 0.29.0 including rename of `Get-GraphToken` to `Get-GraphAccessToken`.
-* ADAL is no longer loaded by this module; previously AutoGraphPS-SDK dependeded on ADAL, but in the updated version of that module ADAL has been removed.
+* See breaking changes for AutoGraphPS-SDK 0.30.0
 
 ### New features
 
-* `Find-GraphPermission` supports a new `SourceMode` parameter that provides control over when it uses cached data vs. attempting to get data from AAD.
-    The default behavior of `Auto` for this option only makes an attempt to retrieve permissions data the first time permissions data is retrieved, but setting
-    the value of `Online` will force it to try retrieving the latest data from AAD. The `Offline` value instructs it to use cached (or hard-coded) data and avoids
-    any sign-in.
+None.
 
 ### Fixed defects
 
-* `Find-GraphPermission -ExactMatch User.Read` and similar commands would return a result but emit failure output -- this has been fixed.
+* `Measure-Graph` and any commands accessing API metadata information about enumeration types may fail when acting on the most recent Graph API `beta` version when an enumeration has no members
 
 '@
     } # End of PSData hashtable

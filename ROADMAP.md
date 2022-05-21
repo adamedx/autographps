@@ -2,6 +2,30 @@
 
 ## To-do items -- prioritized
 
+* Investigate bug in measure-graph on beta?
+❯ $error[4].scriptstacktrace
+at <ScriptBlock>, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\ScalarTypeProvider.ps1: line 144
+at LoadEnumerationTypeDefinitions, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\ScalarTypeProvider.ps1: line 139
+at __initialize, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\ScalarTypeProvider.ps1: line 30
+at <ScriptBlock>, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\type\ScriptClassBuilder.ps1: line 122
+at InitializeObject, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\ClassManager.ps1: line 158
+at CreateObject, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\ClassManager.ps1: line 61
+at New-ScriptObject, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\cmdlet\New-ScriptObject.ps1: line 22
+at __GetTypeProviderByObjectClass, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\TypeManager.ps1: line 359
+at __GetTypeProvider, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\TypeManager.ps1: line 353
+at __InitializeTypeSearcher, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\TypeManager.ps1: line 330
+at GetTypeSearcher, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\typesystem\TypeManager.ps1: line 139
+at <ScriptBlock>, <No file>: line 2
+at <ScriptBlock>, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\type\ScriptClassBuilder.ps1: line 105
+at InvokeMethodOnTarget, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\dsl\MethodDsl.ps1: line 119
+at <ScriptBlock>, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\dsl\MethodDsl.ps1: line 41
+at <ScriptBlock>, C:\Users\adamed\Documents\altmodules\scriptclass\0.20.2\src\scriptobject\dsl\MethodDsl.ps1: line 37
+at Measure-Graph, C:\Users\adamed\Documents\altmodules\autographps\0.41.0\src\cmdlets\Measure-Graph.ps1: line 108
+at <ScriptBlock>, <No file>: line 1
+[adamed@microsoft.com, app=9825d80c-5aa0-42ef-bf13-61e12116704c]
+ver=beta: /beta:/
+
+* Investigate pipeline behavior to Get-GraphRelatedItem
 * Update build script to skip powershell profile by default for import-devmodule
 * Add global request id preference
 * Add global headers to settings, matched to uris
