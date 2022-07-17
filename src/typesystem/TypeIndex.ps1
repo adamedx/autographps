@@ -35,6 +35,18 @@ ScriptClass TypeIndex {
 
     function __initialize([TypeIndexClass] $indexedField) {
         $this.indexedField = $indexedField
+        # Note on using keyed collections -- see this PowerShell defect: https://github.com/PowerShell/PowerShell/issues/7758. This is due to PowerShell
+        # magical syntactic sugar applied to collections -- if you try to access an instance property of a collection type, PowerShell first
+        # tries to find an item with that key name in the collection (presumably only if the collection has string keys)! Specifically this means
+        # that if you attempt to access the `Keys` property of a collection to enumerate its keys, it will work as expected *unless* you add a
+        # key to the collection that is itself the value string 'Keys'. In that case, you'll get the value associated with that key in the collection rather than
+        # the actual Keys property of the collection object. We hit an issue in this codebase for this specific keyed collection when a property was
+        # added to an entity in the beta API version called 'keys.' :( The workaround: use the 'get_Keys()' method instead of the 'keys' property.
+        # This extends to any other properties of the collection as well such as Count, Length, Values. This is truly a wild problem and extremely
+        # unfortunate design choice to prioritize questionable syntactic usability over predictability. In the case for this object, this was encountered
+        # as a runtime defect after years of the code running just fine (the Graph API schema change added the property that exposed the flaw).
+        #
+        # So call to action: use get_xxxx() everywhere for keyed collections (especially if the key is a string!) in place of any properties of the collection.
         $this.index = [System.Collections.Generic.SortedList[String, Object]]::new(([System.StringComparer]::OrdinalIgnoreCase))
         $this.typeClassAggregates = @{
             Entity = 0
@@ -67,14 +79,14 @@ ScriptClass TypeIndex {
     }
 
     function GetLookupValues {
-        $this.index.Keys
+        $this.index.get_Keys()
     }
 
     function Find($key, $typeClasses) {
         $entry = __FindEntry $key
 
         if ( $entry ) {
-            foreach ( $matchingType in $entry.targets.keys ) {
+            foreach ( $matchingType in $entry.targets.get_Keys() ) {
                 $matchedTypeClass = $entry.targets[$matchingType]
                 if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
                     new-so TypeMatch $this.indexedField $key $matchingType $matchedTypeClass @($key)
@@ -86,12 +98,12 @@ ScriptClass TypeIndex {
     function FindStartsWith($searchString, $typeClasses) {
         $normalizedSearchString = $searchString.tolower()
 
-        $matchedValues = $this.index.keys | where { $_.tolower().StartsWith($normalizedSearchString) }
+        $matchedValues = $this.index.get_Keys() | where { $_.tolower().StartsWith($normalizedSearchString) }
 
         if ( $matchedValues ) {
             foreach ( $matchingvalue in $matchedValues ) {
                 $entry = $this.index[$matchingValue]
-                foreach ( $matchingType in $entry.targets.keys ) {
+                foreach ( $matchingType in $entry.targets.get_Keys() ) {
                     $matchedTypeClass = $entry.targets[$matchingType]
                     if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
                         new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass $matchedValues
@@ -104,12 +116,12 @@ ScriptClass TypeIndex {
     function FindContains($searchString, $typeClasses) {
         $normalizedSearchString = $searchString.tolower()
 
-        $matchedValues = $this.index.keys | where { $_.tolower().Contains($normalizedSearchString) }
+        $matchedValues = $this.index.get_keys() | where { $_.tolower().Contains($normalizedSearchString) }
 
         if ( $matchedValues ) {
             foreach ( $matchingvalue in $matchedValues ) {
                 $entry = $this.index[$matchingValue]
-                foreach ( $matchingType in $entry.targets.keys ) {
+                foreach ( $matchingType in $entry.targets.get_keys() ) {
                     $matchedTypeClass = $entry.targets[$matchingType]
                     if ( ! $typeClasses -or ( $typeClasses -contains $matchedTypeClass ) ) {
                         new-so TypeMatch $this.indexedField $searchString $matchingType $matchedTypeClass @($matchingValue)
