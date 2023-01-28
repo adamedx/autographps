@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,6 +96,8 @@ function New-GraphItem {
 
         [switch] $SetDefaultValues,
 
+        [HashTable] $Headers = $null,
+
         [switch] $SkipPropertyCheck
     )
 
@@ -109,6 +111,16 @@ function New-GraphItem {
 
             if ( ! $existingSourceInfo ) {
                 throw "Unable to determine Uri for specified type '$TypeName' parameter -- specify an existing item with the Uri parameter and retry the command"
+            }
+        }
+
+        $restParameters = @{}
+
+        @(
+            'Headers'
+        ) | foreach {
+            if ( $PSBoundParameters[$_] -ne $null ) {
+                $restParameters[$_] = $PSBoundParameters[$_]
             }
         }
     }
@@ -163,7 +175,7 @@ function New-GraphItem {
             }
         }
 
-        Invoke-GraphApiRequest $sourceUri -Method $createMethod -Body $newObject -connection $graphContext.connection -erroraction 'stop'
+        Invoke-GraphApiRequest $sourceUri -Method $createMethod -Body $newObject @restParameters -connection $graphContext.connection -erroraction 'stop'
     }
 
     end {}
