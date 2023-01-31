@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Remove-GraphItem should work with items created by autographps-sdk like application
 * Investigate gls ignoring 400's
 * Investigate pipeline behavior to Get-GraphRelatedItem
 * Update build script to skip powershell profile by default for import-devmodule
@@ -432,6 +431,7 @@
 * Fix find-graphtype xxx -Criteria property -- break in beta only due to property named keys interfering with PowerShell non-deterministic, auto-magic keyed collection behavior: https://github.com/PowerShell/PowerShell/issues/7758
 * Fix measure-graph in beta where enum type with no enum members broke beta schema processing and all type functionality
 * Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem
+* Remove-GraphItem should work with items created by autographps-sdk like application (fixed by taking an update to autographps-sdk)
 
 ### Postponed
 
