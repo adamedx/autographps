@@ -271,13 +271,12 @@ Update to new AutoGraphPS-SDK, ScriptClass dependences, bug fixes.
 
 ### New features
 
-None.
+* `Set-GraphItem`, `New-GraphItem`, `Get-GraphItem`, and `Remove-GraphItem` now support a `Headers` parameter that allows headers to be specified
 
 ### Fixed defects
 
 * `Measure-Graph` and any commands accessing API metadata information about enumeration types may fail when acting on the most recent Graph API `beta` version when an enumeration has no members
 * `Find-GraphType` failing for `beta` API version where a type had a property called `keys` because of subtle non-deterministic, PowerShell syntactic sugar behavior with keyed collection string keys being automagically elevated to properties of the collection itself and this obscures real properties with name collisions (in this case the `keys` property of the collection used by the module to process property information): https://github.com/PowerShell/PowerShell/issues/7758
-* `Set-GraphItem`, `New-GraphItem`, `Get-GraphItem`, and `Remove-GraphItem` now support a `Headers` parameter that allows headers to be specified
 '@
     } # End of PSData hashtable
 

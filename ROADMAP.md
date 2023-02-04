@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add -property / select to Get-GraphRelatedItem and related commands
 * Investigate gls ignoring 400's
 * Investigate pipeline behavior to Get-GraphRelatedItem
 * Update build script to skip powershell profile by default for import-devmodule
