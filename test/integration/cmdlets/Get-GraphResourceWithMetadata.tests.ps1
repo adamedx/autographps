@@ -16,10 +16,11 @@ if ( ! ( & $psscriptroot/../../IsIntegrationTestRun.ps1 ) ) {
     return
 }
 
-Describe "The Get-GraphResource command executing unmocked" {
+Describe "The Get-GraphResourceWithMetadata command executing unmocked" {
 
     Set-StrictMode -Version 2
-
+    $erroractionpreference = 'stop'
+    
     Context "when invoked for simple use cases" {
         BeforeAll {
             Connect-GraphApi -Connection $global:__IntegrationTestGraphConnection | out-null

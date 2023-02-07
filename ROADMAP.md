@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add -property / select to Get-GraphRelatedItem and related commands
 * Investigate gls ignoring 400's
 * Investigate pipeline behavior to Get-GraphRelatedItem
 * Update build script to skip powershell profile by default for import-devmodule
@@ -12,7 +11,6 @@
 * Change metadata-only output format so that there is no "id" but a "name" instead.
 * Make propertyfilter support an array of hash tables and translate this as or clauses
 * Fix get-graphuriinfo to correctly use pipeline
-* Add custom list formats for graph service principal and application
 * Uri parameter for new-graphobject?
 * Address default parameters on set-graphitem -- should -property and -value be required by name when objects are piped in?
 * Investigate SelectionSet formatting that handles heterogeneous types
@@ -433,6 +431,8 @@
 * Fix measure-graph in beta where enum type with no enum members broke beta schema processing and all type functionality
 * Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem
 * Remove-GraphItem should work with items created by autographps-sdk like application (fixed by taking an update to autographps-sdk)
+* Add custom list formats for graph service principal and application
+* Add -property / select to Get-GraphRelatedItem and related commands
 
 ### Postponed
 
