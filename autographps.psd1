@@ -264,6 +264,8 @@ Update to new AutoGraphPS-SDK, ScriptClass dependences, bug fixes.
 
 * ScriptClass 0.20.3
 * AutoGraphPS-SDK 0.30.0
+* Microsft.Identity.Client 4.50.0 -- i.e. MSAL
+* Microsoft.IdentityModel.Abstractions 6.22.0 -- new dependency in this release brought in by MSAL update
 
 ### Breaking changes
 

@@ -1,6 +1,8 @@
 pkg/*
 lib/*
 bin/*
+obj/*
+tmplib/*
 test/results/*
 .psrepo/*
 .devmodule/*

@@ -40,17 +40,18 @@ if ( $TestAppId -in $disallowedOwners ) {
 
 $servicePrincipal = Get-GraphApplicationServicePrincipal -AppId $TestAppId -Connection $GraphConnection
 
-$ownedApplications = Get-GraphResource /servicePrincipals/$($servicePrincipal.Id) -Expand ownedObjects -Connection $GraphConnection
-
-# Work around issues with Get-GraphResource returning a non-empty object when there are no results
-$applications = if ( $ownedApplications | get-member id ) { $ownedApplications }
+$applications = Get-GraphResource /servicePrincipals/$($servicePrincipal.Id) -Expand ownedObjects -Connection $GraphConnection |
+  select-object -expandproperty ownedObjects |
+  where {
+      $_.'@odata.type' -eq '#microsoft.graph.application'
+  }
 
 foreach ( $application in $applications ) {
     $appUri = "/applications/$($application.Id)"
 
     write-verbose "Found application with application id $($application.AppId) and object id $($application.id)"
 
-    if ( $application.AppId in $disallowedDeletedAppIds ) {
+    if ( $application.AppId -in $disallowedDeletedAppIds ) {
         write-error "Deletion of the specified object $($application.Id) with app id $($application.AppId) is not supported by this script"
     }
 

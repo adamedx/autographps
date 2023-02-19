@@ -13,16 +13,20 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param([switch] $IncludeTools, [switch] $All)
+param([switch] $IncludeTools, [switch] $All, [switch] $IntegrationTestOnly )
 
 . "$psscriptroot/common-build-functions.ps1"
 
-if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
-    clean-tools
+if ( $IntegrationTestOnly.IsPresent ) {
+    Clean-TestDirectories
+} else {
+    if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
+        clean-tools
+    }
+
+    clear-TemporaryPSModuleSources
+
+    clean-builddirectories
 }
-
-clear-TemporaryPSModuleSources
-
-clean-builddirectories
 
 

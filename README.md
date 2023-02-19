@@ -20,7 +20,7 @@ If you have ideas on how to improve **AutoGraphPS**, please consider [opening an
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux and MacOS, PowerShell 6.1.2 and higher are supported.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux and MacOS, PowerShell 7.0 and higher are supported.
 
 ## Installation
 
@@ -480,7 +480,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2021 Adam Edwards
+Copyright:: Copyright (c) 2023 Adam Edwards
 
 License:: Apache License, Version 2.0
 
