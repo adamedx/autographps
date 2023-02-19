@@ -28,13 +28,15 @@ Describe "The GraphResponseObject type" {
             $appTags = $global:__IntegrationTestInfo.TestRunId, $thisTestInstanceId, '__IntegrationTest__'
         }
 
-        It "should successfully pipe a GraphResponseObjet from New-GraphApplication to Remove-GraphItem" {
+        It "should successfully pipe a GraphResponseObject from New-GraphApplication to Remove-GraphItem" {
             $testAppName = 'SimpleTestAppToDelete' + $thisTestInstanceId
             $newApp = New-GraphApplication -Name $testAppName -Tags $appTags
             $newApp.DisplayName | Should Be $testAppName
             Get-GraphApplication $newApp.AppId | Should Not Be $null
             { $newApp | Remove-GraphItem } | Should Not Throw
-            Get-GraphApplication $newApp.AppId -erroraction ignore | Should Be $null
+
+            # Use SilentlyContinue below due to issues with Ignore on Windows PowerShell (not Core)
+            Get-GraphApplication $newApp.AppId -erroraction silentlycontinue | Should Be $null
         }
 
         AfterAll {
