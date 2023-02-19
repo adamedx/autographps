@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,11 +91,11 @@ function Remove-GraphItem {
         [Alias('GraphUri')]
         [Uri] $Uri,
 
-        [parameter(position=0, parametersetname='bytypeandid', mandatory=$true)]
+        [parameter(position=0, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='bytypeandfilter', mandatory=$true)]
         $TypeName,
 
-        [parameter(position=1, parametersetname='bytypeandid', valuefrompipeline=$true, mandatory=$true)]
+        [parameter(position=1, parametersetname='bytypeandid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         $Id,
 
         [parameter(parametersetname='byobject', valuefrompipeline=$true, mandatory=$true)]
@@ -113,6 +113,8 @@ function Remove-GraphItem {
         [parameter(parametersetname='byobjectandfilter', mandatory=$true)]
         $Filter,
 
+        [HashTable] $Headers = $null,
+
         [switch] $FullyQualifiedTypeName
     )
 
@@ -127,6 +129,11 @@ function Remove-GraphItem {
         $filterValue = $::.QueryTranslationHelper |=> ToFilterParameter $null $Filter
         if ( $filterValue ) {
             $filterParameter['Filter'] = $filterValue
+        }
+
+        $coreParameters = @{}
+        if ( $Headers ) {
+            $coreParameters['Headers'] = $Headers
         }
     }
 
@@ -168,7 +175,7 @@ function Remove-GraphItem {
         }
 
         foreach ( $targetUri in $targetUris ) {
-            Invoke-GraphApiRequest $targetUri -Method DELETE -erroraction stop -connection $requestInfo.Context.Connection | out-null
+            Invoke-GraphApiRequest $targetUri -Method DELETE @coreParameters -erroraction stop -connection $requestInfo.Context.Connection | out-null
         }
     }
 

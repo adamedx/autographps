@@ -189,6 +189,7 @@ limitations under the License.
       <Name>GraphApplicationNative</Name>
       <ViewSelectedBy>
         <TypeName>AutoGraph.Entity.microsoft.graph.application</TypeName>
+        <TypeName>AutoGraph.Entity.microsoft.graph.serviceprincipal</TypeName>
       </ViewSelectedBy>
 
       <GroupBy>

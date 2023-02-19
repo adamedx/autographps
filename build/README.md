@@ -26,7 +26,7 @@ The most common case is to build the module and then execute it in a new shell.
 To create a new version of the module in the `pkg` output directory, run this command:
 
 ```powershell
-.\build\configure-tools.ps1 # only needed before your first build
+.\build\configure-tools.ps1 # only needed before your first build or when tools are updated
 .\build\build-package.ps1 -downloaddependencies
 ```
 
@@ -49,7 +49,7 @@ It also allows you to simply start a shell in which the module is loaded with yo
 
 The resulting shell can be used as if you had installed your module for ad-hoc testing, and you can also run the module's automated tests from it.
 
-#### Automated tests
+#### Unit tests
 AutoGraphPS's automated tests can be executed by starting a shell via the previously described `import-devmodule` script and executing the following command from within the shell:
 
 ```powershell
@@ -86,6 +86,62 @@ This translates into the following commands:
         .\build\publish-moduletodev.ps1
         .\build\import-devmodule.ps1
 
+#### Integration tests -- local execution
+Integration tests require more setup than unit tests since they actually with live cloud infrastructure. Typically they require pre-provisioned credentials for authentication and authorization, possibly some test data  cloud state, and of course a strategy for dealing with reliability aspects of the cloud infrastructure such as network reachability, latency, consistency, request throttling, and even service outages. Integration tests are therefore skipped by default when tests are executed by `invoke-pester` and also require a dedicated PowerShell session separate from that used to execute unit tests. To run the integration tests, do the following:
+
+* **One time setup:** Under the root of the repository, create the file `./.testconfig/TestConfig.json` with file with the following structure:
+```json
+{
+    "TestAppId": "<your_app_id>",
+    "TestAppTenant": "<your_test_tenant>",
+    "TestAppCertificatePath": "<your_app_credential_cert_path>"
+}
+```
+
+As the file's structure implies, you need to create an AAD application in some AAD tenant (organization) that you control, and provision client credentials for that AAD application:
+
+* The AutoGraphPS-SDK PowerShell module's `New-GraphApplication` command can be used to provision an AAD application. You can also use the [Azure Portal](https://portal.azure.com) graphical interface to perform this operation. As a best practice, the application should be a single-tenant application to limit security impact if the application is compromised in some way. Similarly, the tenant in which this application is hosted should be one that is not used for production capabilities and should not contain sensitive data and in general could be completely deleted if it were compromised.
+* The application must be configured with the following permissions `Organization.Read.All` and `Application.ReadWrite.OwnedBy`. The `New-GraphApplication` and `Set-GraphApplicationConsent` commands from the AutoGraphPS-SDK module may be used to configure the permissions, and again you can also use the Azure Portal to do this. Note that granting any application permissions does introduce security risks, so to understand the implications of granting these specific permissions, please consult the [Microsoft Graph Permissions Reference documentation](https://learn.microsoft.com/en-us/graph/permissions-reference).
+* You need to configure the AAD application with a public key that corresponds to a private key you possess on the system that will execute the test. On Windows only you can use the AutoGraphPS-SDK PowerShell module's `New-GraphApplicationCertificate` and / or `New-GraphLocalCertificate` commands to create a new certificate with the private key stored in the Windows certificate store (by default under 'Cert:/CurrentUser/My/'). The former command associates that certificate's public key with the AAD application, allowing you to authenticate as that application. You can also create such certificates with standard X509 certificate tools and / or services such as Azure Keyvault. The `Set-GraphApplicationCertificate` command can be used on all platforms to associate the public key with an AAD application -- on Windows the path used by that command may be one for an arbitrary location in the certificate store or a file system path to a standard certificate file. For non-Windows platforms only the certificate file path option is supported by `Set-GraphLocalCertificate`. And however the certificate is generated, the Azure Portal's application registration user interface may also be used to configure the public key for that certificate to enable authentication instead of using AutoGraphPS-SDK commands or other tools.
+
+Once you've created your applicaton and configured the credentials, you can replace the placeholder values in `<>` brackets in the file above and save it:
+
+* `<your_app_id>`: This is the application id of your application
+* `<your_test_tenant>`: This is the tenant id of the tenant in which the application will be used. Note that the integration tests will have the ability to read and even create some objects (applications) in this tenant.
+* `<your_app_credential_cert_thumbprint>`: This should be a path to a certificate with the private key associated with the public key you configured for the application -- it can be a path to the Windows certificate store or a file system path.
+
+Such a file may look like the following:
+```json
+{
+
+    "TestAppId": "6cc96e6c-b878-4000-9ced-dd39b0581c80",
+    "TestAppTenant": "57a14d1e-dcaf-4f9f-aff7-c10afded907c",
+    "TestAppCertificatePath": "Cert:/CurrentUser/My/DFF5B24A4F5814EFAA77067BB92953882"
+}
+```
+
+With the file saved, you can execute the following steps to run the integration tests:
+
+* `& ./build/import-devmodule` to create a new shell
+* From that new shell (not the original shell), execute `& ./test/Initialize-IntegrationTestEnvironment.ps1`
+* Within the shell above execute `& ./test/CI/RunIntegrationTests.ps1`
+
+This will run *only* the integration tests; it is not recommended to run both unit tests and integration tests in the same shell (i.e. use `invoke-pester` after `Initialize-IntegrationTestEnvironment`) since the unit tests alter the PowerShell session with mocks and other test hooks that corrupt the PowerShell session for the purposes of running production code -- use `RunIntegrationTests.ps`` to execute the unit tests.
+
+Note that the unit tests do create state in the tenant which *should* be cleaned up by the tests and even if the state is not cleaned up its existence *should not* impact subsequent test runs. To check for leftover state due to premature termination of the tests, code defects in the module under test or dependent modules, or test defects, you can run the following command which uses AutoGraphPS commands to perform a more exhaustive search or cleanup of leftover state -- you'll need to be able to sign in to the tenant with permissions appropriate to read and delete the state:
+
+```powershell
+# First Use Connect-GraphApi to sign in to the test tenant with the right credentials to read and delete state
+$currentConnection = Get-GraphConnection -Current
+
+# Run this to see if there is any leftover state
+& .\test\Clean-IntegrationTestState.ps1 -TestAppId <your_test_appid_from_testconfig.json> -Graphconnection $currentConnection
+
+# Run the same command with -EnableDelete to delete it -- this is destructive! You can use the -Confirm:$true parameter to avoid prompts.
+& .\test\Clean-IntegrationTestState.ps1 -TestAppId <your_test_appid_from_testconfig.json> -Graphconnection $currentConnection -EnableDelete
+
+```
+
 ## Publish the module to a PowerShell repository
 Use the command below to publish the package generated by the `build-package` command to a PowerShell Gallery compatible module repository:
 
@@ -109,6 +165,8 @@ After you've executed this, you'll need to include the `-downloaddependencies` o
 ```powershell
 .\build\build-package -downloaddependencies
 ```
+
+The `-downloaddependencies` option is only required the first time you perform a build, or if you've run a "clean build" command or realize you need to update the project's non-[PowerShell Gallery](https://powershellgallery.com) dependencies (dependent modules are sources from PowerShell Gallery and are managed through subsequent build operations described below). Note that you do not need to do this every time you make a code change -- it is only strictly necessary when you want to test module installation or generate an installable / publishable module package, or if you simply want to verify that you haven't broken the build. Alternatively, you can update these dependencies using the [install.ps1](install.ps1) script before executing `build-package` without the `downloaddependencies` parameter.
 
 ## Installing from source
 If you'd like to install the module from source, either to test installation itself or to make use of changes (your own or other forks / branches of the project) on your own system, you can simply run the following command
@@ -134,16 +192,21 @@ Without this type of feature, developers would need to manually provision depend
 
 ## Build script inventory
 
-All of the build scripts used in this project are given below with their uses -- for more information, see the actual build scripts in this [directory](.) and review their supported options.
+Notable of the build and test scripts used in this project are given below with their uses:
 
-|   | Script                         | Purpose                                                                                        |
-|---|--------------------------------|------------------------------------------------------------------------------------------------|
-| 1 | [build-package.ps1](build-package.ps1)         | Builds the Powershell module package for AutoGraphPS that can be published to a repository     |
-| 2 | [publish-moduletodev.ps1](publish-moduletodev.ps1)   | Copies a built module to a local repository along with its module dependencies                 |
-| 3 | [import-devmodule.ps1](import-devmodule.ps1)      | Creates a new shell with your module imported -- does not require a recent build as long as the required module dependencies are avaialble from a previous execution of `publish-moduletodev.ps1`                                        |
-| 4 | [publish-modulepackage.ps1](publish-modulepackage.ps1) | Publishes the module to a PowerShell Gallery package repository                                |
-| 5 | [install-devmodule.ps1](install-devmodule.ps1)     | Installs the module published via `publish-moduletodev.ps1` to the system                 |
-| 6 | [clean-build.ps1](clean-build.ps1)           | Deletes all artifacts generated by any of the build scripts                                    |
-| 7 | [install-fromsource.ps1](install-fromsource.ps1)    | Installs the module by automating 6, 1, 2, and 5.                                              |
-| 8 | [quickstart.ps1](quickstart.ps1)            | Starts a shell with AutoGraphPS imported with hints / and tips without installing to the system  |
+|   | Script                         | Purpose                                                                                           |
+|---|--------------------------------|---------------------------------------------------------------------------------------------------|
+| 1 | [configure-tools.ps1](configure-tools.ps1)  | Installs tools required by all other scripts such as the dotnet tool and PowerShell Pester module    |
+| 2 | [install.ps1](install.ps1)         | Installs any prerequesite library dependnecies from a package repository that must be bundled with the PowerShell module    |
+| 3 | [build-package.ps1](build-package.ps1)         | Builds the Powershell module package for AutoGraphPS-SDK that can be published to a repository      |
+| 4 | [publish-moduletodev.ps1](publish-moduletodev.ps1)   | Copies a built module to a local repository along with its module dependencies                    |
+| 5 | [import-devmodule.ps1](import-devmodule.ps1)   | Creates a new shell with your module imported -- does not require a recent build as long as the required module dependencies are avaialble from a previous execution of `publish-moduletodev.ps1` |
+| 6 | [publish-modulepackage.ps1](publish-modulepackage.ps1) | Publishes the module to a PowerShell package repository        |
+| 7 | [install-devmodule.ps1](install-devmodule.ps1)     | Installs the module published via `publish-moduletodev.ps1` to the system                    |
+| 8 | [clean-build.ps1](clean-build.ps1)           | Deletes all artifacts generated by any of the build scripts                                       |
+| 9 | [Initialize-IntegrationTests.ps1](../test/Initialize-IntegrationTests.ps1)           | Initializes a shell with the module under test already loaded to be able to run integration tests |
+| 10 | [RunIntegrationTests.ps1](../test/CI/RunIntegrationTests.ps1)           | Executes integration tests -- must execute Initialize-IntegrationTests before running this command |
+| 11 | [Clean-IntegrationTestState.ps1](../test/Clean-IntegrationTestState.ps1)           | Identifies any state unintentionally left in the integration test tenant and optionally deletes it |
+| 12 | [install-fromsource.ps1](install-fromsource.ps1)    | Installs the module by automating 6, 1, 2, and 5.                                                 |
+| 13 | [quickstart.ps1](quickstart.ps1)            | Starts a shell with AutoGraphPS-SDK imported with hints / and tips without installing to the system |
 

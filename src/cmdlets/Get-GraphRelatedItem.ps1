@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +44,9 @@ function Get-GraphRelatedItem {
         [parameter(parametersetname='typedobjectandproperty', valuefrompipeline=$true, mandatory=$true)]
         [Alias('FromItem')]
         [PSTypeName('GraphResponseObject')] $GraphItem,
+
+        [Alias('Property')]
+        [String[]] $Select = $null,
 
         [parameter(parametersetname='uripipe', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='uriandproperty')]
@@ -112,12 +115,16 @@ function Get-GraphRelatedItem {
     end {
         $variableArguments = @{ConsistencyLevel=$ConsistencyLevel;Count=$Count}
         if ( $GraphName ) { $variableArguments.Add('GraphName', $GraphName) }
-        if ( $First ) { $variableArguments.Add('GraphName', $First) }
+        if ( $First ) { $variableArguments.Add('First', $First) }
+        if ( $Select ) {
+            $variableArguments.Add('Select', $Select)
+        }
         $relationshipUris | Get-GraphResourceWithMetadata @variableArguments -ContentOnly:$($ContentOnly.IsPresent) -All -ErrorAction $requestErrorAction
     }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem TypeName (new-so TypeUriParameterCompleter TypeName)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Relationship (new-so TypeUriParameterCompleter Property $false NavigationProperty)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Select (new-so TypeUriParameterCompleter Property $false Property TypeName RelationShip )
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem GraphName (new-so GraphParameterCompleter)
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphRelatedItem Uri (new-so GraphUriParameterCompleter LocationUri)

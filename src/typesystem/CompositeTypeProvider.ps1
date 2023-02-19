@@ -93,11 +93,11 @@ ScriptClass CompositeTypeProvider {
 
         switch ( $typeClass ) {
             'Entity' {
-                (GetEntityTypeSchemas).Keys
+                (GetEntityTypeSchemas).get_Keys()
                 break
             }
             'Complex' {
-                (GetComplexTypeSchemas).Keys
+                (GetComplexTypeSchemas).get_Keys()
                 break
             }
         }
@@ -195,7 +195,7 @@ ScriptClass CompositeTypeProvider {
     }
 
     function __UpdateTypeIndex($index, $schemas, $typeClass) {
-        $schemaCount = ($schemas.keys | measure-object).count
+        $schemaCount = ($schemas.get_keys() | measure-object).count
 
         $schemasProcessed = 0
 
@@ -203,7 +203,7 @@ ScriptClass CompositeTypeProvider {
 
         Write-Progress -id 1 -activity $activityMessage
 
-        foreach ( $typeId in $schemas.Keys ) {
+        foreach ( $typeId in $schemas.get_Keys() ) {
             $nativeSchema = $schemas[$typeId]
 
             if ( $schemasProcessed++ % 10 -eq 0 ) {

@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,6 +64,8 @@ function Get-GraphItem {
         [Switch] $Descending,
 
         [switch] $ContentOnly,
+
+        [HashTable] $Headers = $null,
 
         [switch] $RawContent,
 
@@ -135,6 +137,7 @@ function Get-GraphItem {
                 OrderBy = $OrderBy
                 Descending = $Descending
                 Search = $Search
+                Headers = $Headers
             }
 
             if ( ! $GraphItem ) {

@@ -2,17 +2,15 @@
 
 ## To-do items -- prioritized
 
+* Investigate gls ignoring 400's
+* Investigate pipeline behavior to Get-GraphRelatedItem
 * Update build script to skip powershell profile by default for import-devmodule
-* Add global request id preference
-* Add global headers to settings, matched to uris
-* Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem
 * Fix incorrect / ambiguous resolution of '.' when used with graphname (graphname is being ignored)
 * Fix use of -all and -first in gls, other commands
 * Use graph connection id to find compatible graphs and not create new ones
 * Change metadata-only output format so that there is no "id" but a "name" instead.
 * Make propertyfilter support an array of hash tables and translate this as or clauses
 * Fix get-graphuriinfo to correctly use pipeline
-* Add custom list formats for graph service principal and application
 * Uri parameter for new-graphobject?
 * Address default parameters on set-graphitem -- should -property and -value be required by name when objects are piped in?
 * Investigate SelectionSet formatting that handles heterogeneous types
@@ -429,6 +427,12 @@
 * fix invoke-graphmethod -uri
 * Fix remove-graphitem not working for email gls
 * Remove redundant ResultVariable in favor of OutVariable without impacting LASTGRAPHITEMS
+* Fix find-graphtype xxx -Criteria property -- break in beta only due to property named keys interfering with PowerShell non-deterministic, auto-magic keyed collection behavior: https://github.com/PowerShell/PowerShell/issues/7758
+* Fix measure-graph in beta where enum type with no enum members broke beta schema processing and all type functionality
+* Add headers to certain commands like set-graphitem, new-graphitem, get-graphitem, remove-graphitem
+* Remove-GraphItem should work with items created by autographps-sdk like application (fixed by taking an update to autographps-sdk)
+* Add custom list formats for graph service principal and application
+* Add -property / select to Get-GraphRelatedItem and related commands
 
 ### Postponed
 

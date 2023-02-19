@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,87 +18,87 @@ param([switch] $clean)
 . "$psscriptroot/common-build-functions.ps1"
 
 function InstallDependencies($clean) {
-    validate-nugetpresent
-
     $appRoot = join-path $psscriptroot '..'
     $packagesDestination = join-path $appRoot lib
+    $packagesTempSource = Get-PackageTempDirectory
 
     if ( $clean -and (test-path $packagesDestination) ) {
         write-host -foregroundcolor cyan "Clean install specified -- deleting '$packagesDestination'"
         remove-item -r -force $packagesDestination
     }
 
+    # Always create this directory since subsequent scripts
+    # rely on its presence to know that it is safe to
+    # proceed with a build because this step has been carried out.
+    if ( ! (test-path $packagesDestination) ) {
+        psmkdir $packagesDestination | out-null
+    }
+
+    $projectFilePath = Get-ProjectFilePath
+
+    if ( ! ( test-path $projectFilePath ) ) {
+        write-verbose "Project file '$projectFilePath' not found, skipping library dependency installation"
+        return
+    }
+
     write-host "Installing dependencies to '$appRoot'"
+
+    Clean-PackageTempDirectory
+    psmkdir $packagesTempSource | out-null
+
+    $projectContent = [xml] ( get-content $projectFilePath | out-string )
+    $targetPlatforms = $projectContent.Project.PropertyGroup.TargetFrameworks -split ';'
+
+    if ( ! $targetPlatforms ) {
+        throw "No platforms found for the TargetFrameWorks element of '$projectfilePath'; at least one platform must be specified"
+    }
+
+    $restoreCommand = "dotnet restore '$projectFilePath' --packages '$packagesTempSource' /verbosity:normal --no-cache"
+
+    write-host "Executing command: $restoreCommand"
+
+    # This will download and install libraries and transitive dependencies under packages destination
+    Invoke-Expression $restoreCommand | out-host
+
+    # Group the libraries by platform and place all libraries for the same platform
+    # into the same platform-specific directory. Example layout is below -- note that
+    # this does not allow for the same library to have different versions in the same
+    # platform (which is a good thing to avoid conflicting or non-deterministic
+    # versionining issues):
+    #
+    #     lib/
+    #        <platformspec1>/
+    #                        library1.dll
+    #                        library2.dll
+    #                        library3.dll
+    #        <platformspec2>/
+    #                        library1.dll
+    #                        library2.dll
+    #                        library3.dll
 
     if ( ! (test-path $packagesDestination) ) {
         psmkdir $packagesDestination | out-null
     }
 
-    $configFilePath = join-path $appRoot 'NuGet.Config'
-    $nugetConfigFileArgument = if ( Test-Path $configFilePath ) {
-        $configFileFullPath = (gi (join-path $appRoot 'NuGet.Config')).fullname
-        Write-Warning "Using test NuGet config file '$configFileFullPath'..."
-        "-configfile '$configFileFullPath'"
-    } else {
-        ''
-    }
-    $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
+    foreach ( $platform in $targetPlatforms ) {
+        $platformSourceLibraries = Get-ChildItem -r $packagesTempSource |
+          where name -like *.dll |
+          where { $_.Directory.Name -eq $platform }
 
-    if ( ! ( test-path $packagesConfigFile ) ) {
-        return
-    }
+        if ( $platformSourceLibraries ) {
+            $platformDirectory = join-path $packagesDestination $platform
 
-    $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
-        # Add the explicit fallback source to nuget.org because we've hit issues in the past where the required packages
-        # weren't in the local source that the CI pipeline uses, even though these are very popular packages!
-        "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -FallbackSource  https://api.nuget.org/v3/index.json -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
-    } else {
-        $psCorePackagesCSProj = New-DotNetCoreProjFromPackagesConfig $packagesConfigFile $packagesDestination
-        "dotnet restore '$psCorePackagesCSProj' --packages '$packagesDestination' /verbosity:normal --no-cache"
-    }
-    write-host "Executing command: $restoreCommand"
-    iex $restoreCommand | out-host
+            if ( ! ( test-path $platformDirectory ) ) {
+                new-directory $platformDirectory -force | out-null
+            }
 
-    $nuspecFile = get-childitem -path $approot -filter '*.nuspec' | select -expandproperty fullname
-
-    if ( $nuspecFile -is [object[]] ) {
-        throw "More than one nuspec file found in directory '$appRoot'"
-    }
-
-    Normalize-LibraryDirectory $packagesConfigFile $packagesDestination
-
-    $allowedLibraryDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile
-
-    # Remove nupkg files
-    get-childitem -r $packagesDestination -filter '*.nupkg' | remove-item -erroraction ignore
-
-    # Remove everything that is not listed as an allowed library directory in the nuspec
-    $allowedFiles = $allowedLibraryDirectories | foreach {
-        # For linux, the path case may not match the case of the directory which comes
-        # from metadata -- seems that nuget converts to lower case on linux, so we try
-        # normal case and lower case get the actual file name from the file system via get-item
-        $allowedPathMixedCase = join-path . $_
-        $allowedPath = if ( test-path $allowedPathMixedCase ) {
-            $allowedPathMixedCase
-        } else {
-            $allowedPathMixedCase.tolower()
+            foreach ( $sourceLibrary in $platformSourceLibraries ) {
+                move-item $sourceLibrary.FullName $platformDirectory
+            }
         }
-
-        get-childitem -path $allowedPath -filter *.dll
     }
 
-    $allObjects = get-childitem ./lib -r
-    $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
-        ! $allowedFiles -or $allowedFiles.FullName -notcontains $_.FullName
-    }
-
-    $filesToRemove | remove-item
-
-    $directoriesToRemove = $allObjects | where PSIsContainer -eq $true | where {
-        $children = get-childitem -r $_.fullname | where PSISContainer -eq $false
-        $null -eq $children
-    }
-    $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | remove-item -r -force } }
+    Clean-PackageTempDirectory
 }
 
 InstallDependencies $clean

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ $PowerShellExecutable = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
 
 $OSPathSeparator = ';'
 $IsNonWindowsPlatform = $false
+
+$ToolsSettings = $null
 
 try {
     if ( $PSVersionTable.PSEdition -eq 'Core' ) {
@@ -66,8 +68,25 @@ function Get-DevModuleDirectory {
     join-path (Get-SourceRootDirectory) '.devmodule'
 }
 
+function Get-GeneratedTestsDirectory {
+    join-path (Get-SourceRootDirectory) '.test'
+}
+
+function Get-GeneratedDocsDirectory {
+    join-path (Get-SourceRootDirectory) '.doc'
+}
+
 function Get-DevRepoDirectory {
     join-path (Get-SourceRootDirectory) '.psrepo'
+}
+
+function Get-PackageTempDirectory {
+    join-path (Get-SourceRootDirectory) 'tmplib'
+}
+
+function Get-ProjectFilePath {
+    $projectFileBase = join-path (get-SourceRootDirectory) (Get-ModuleName)
+    "$($projectFileBase).csproj"
 }
 
 function Get-ModuleName {
@@ -111,20 +130,8 @@ function Get-ModuleOutputRootDirectory {
     join-path (Get-OutputDirectory) $moduleOutputSubdirectory
 }
 
-function Validate-Nugetpresent {
-    if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
-        get-command nuget | out-null
-
-        if (! $?) {
-            throw "Nuget is not installed. Please visit https://nuget.org to install, then restart PowerShell and try again."
-        }
-    }
-}
-
 function Validate-Prerequisites {
     param ([switch] $verifyInstalledLibraries)
-
-    validate-nugetpresent
 
     if ($verifyInstalledLibraries.ispresent) {
         $libPath = join-path (Get-SourceRootDirectory) lib
@@ -139,6 +146,94 @@ function Validate-Prerequisites {
     }
 }
 
+function Get-ToolsDirectory {
+    join-path (split-path -parent $psscriptroot) bin
+}
+
+function Get-SettingsPath {
+    join-path $psscriptroot ToolsSettings.json
+}
+
+function Get-ToolsSettings {
+    $settingsPath = Get-SettingsPath
+    if ( $script:ToolsSettings -eq $null ) {
+        if ( test-path $settingsPath ) {
+            write-verbose "Reading tools settings from path '$settingsPath'"
+            $settings = get-content -raw (Get-SettingsPath) | convertfrom-json
+            $script:ToolsSettings = @{}
+            $settings | gm -membertype noteproperty | foreach {
+                $script:ToolsSettings.Add($_.name, $settings.$($_.name))
+            }
+        } else {
+            write-warning "Tools settings file '$settingsPath' not found -- default settings values will be used."
+            $script:ToolsSettings = @{}
+        }
+    }
+    $script:ToolsSettings
+}
+
+function Get-ToolsModulesDirectory {
+    join-path (Get-ToolsDirectory) modules
+}
+
+function Get-LogsDirectory {
+    join-path (split-path -parent $psscriptroot) .logs
+}
+
+function Get-DefaultDocsDirectory {
+    join-path (split-path -parent $psscriptroot) 'docs/CommandReference'
+}
+
+function Get-DocsLogPath {
+    join-path (Get-LogsDirectory) 'documentation-log.json'
+}
+
+function Get-DocModuleName {
+    'platyPS'
+}
+
+function Get-DocModulePath {
+    $docModuleName = Get-DocModuleName
+    $modulesPath = Get-ToolsModulesDirectory
+    get-childitem $modulesPath -r "$docModuleName.psd1"
+}
+
+function Install-DocTools {
+    $settings = Get-ToolsSettings
+
+    $docToolVersion = 'latest'
+    $requiredVersion = if ( $settings['platyps'] ) {
+        $version = $settings['platyps'].version
+        if ( ! $version ) {
+            throw "Invalid tools settings for 'platyps' -- no version was found. Correct or remove tools settings file and retry."
+        }
+        $docToolVersion = $version
+        @{RequiredVersion=$version}
+    } else {
+        write-warning "No configuration found for 'platyps' in tools settings -- using latest version as a default"
+        @{}
+    }
+
+    $modulesPath = Get-ToolsModulesDirectory
+    $docModuleName = Get-DocModuleName
+    $docModulePath = Get-DocModulePath
+
+    if ( ! $docModulePath ) {
+        write-verbose "Doc tool '$docModuleName' not found under path '$modulesPath', will download version '$docToolVersion'"
+        remove-item -r -force (join-path $modulesPath $docModuleName) -erroraction ignore
+        Save-Module $docModuleName -path $modulesPath -repository psgallery @requiredversion
+
+        $moduleAtNewPath = Get-DocModulePath
+        if ( ! $moduleAtNewPath ) {
+            throw "Documentation module '$docModuleName' was installed, but the module manifest file '$docModuleName.psd1' could not be found under the directory $modulesPath"
+        }
+        $true
+    } else {
+        write-verbose "Doc tool was found at '$($docModulePath.fullname)', no update necessary"
+        $false
+    }
+}
+
 function Clean-Tools {
     $binPath = join-path $psscriptroot '../bin'
 
@@ -147,7 +242,35 @@ function Clean-Tools {
     }
 }
 
+function Clean-TestDirectories {
+    $generatedTestsLocation = Get-GeneratedTestsDirectory
+
+    if (test-path $generatedTestsLocation) {
+        $generatedTestsLocation | remove-item -r -force
+    }
+}
+
+function Clean-DocDirectories {
+    $generatedDocsLocation = Get-GeneratedDocsDirectory
+
+    if (test-path $generatedDocsLocation) {
+        $generatedDocsLocation | remove-item -r -force
+    }
+}
+
+function Clean-PackageTempDirectory {
+    $tmppkg = Get-PackageTempDirectory
+
+    if ( test-path $tmppkg ) {
+        remove-item -r -force $tmppkg
+    }
+}
+
 function Clean-BuildDirectories {
+    Clean-TestDirectories
+
+    Clean-PackageTempDirectory
+
     $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
         join-path $psscriptroot '../lib' | remove-item -r -force
@@ -156,6 +279,12 @@ function Clean-BuildDirectories {
     $testResultsPath = join-path $psscriptroot '../test/results'
     if (test-path $testResultsPath) {
         remove-item -r -force $testResultsPath
+    }
+
+    $logsPath = Get-LogsDirectory
+
+    if ( test-path $logsPath ) {
+        remove-item -r -force $logsPath
     }
 
     $outputDirectory = Get-OutputDirectory
@@ -174,6 +303,12 @@ function Clean-BuildDirectories {
 
     if (test-path $devRepoLocation) {
         $devRepoLocation | remove-item -r -force
+    }
+
+    $generatedDocsLocation = Get-GeneratedDocsDirectory
+
+    if (test-path $generatedDocsLocation) {
+        $generatedDocsLocation | remove-item -r -force
     }
 }
 
@@ -194,6 +329,16 @@ function New-ModuleOutputDirectory {
     }
 
     (gi $outputDirectory).fullname
+}
+
+function New-LogsDirectory {
+    $logsPath = Get-LogsDirectory
+
+    if ( test-path $logsPath ) {
+        (gi  $logsPath ).fullname
+    } else {
+        (psmkdir $logsPath).fullname
+    }
 }
 
 function build-module {
@@ -259,63 +404,6 @@ function build-module {
     }
 
     $targetDirectory
-}
-
-function build-nugetpackage {
-    [cmdletbinding()]
-    param(
-        $module,
-        $outputDirectory,
-        [switch] $includeInstalledLibraries
-    )
-
-    if( !( test-path $outputDirectory) ) {
-        throw "Specified output path '$outputDirectory' does not exist"
-    }
-
-    $nugetManifest = join-path $module.modulebase "$($module.name).nuspec"
-
-    write-host "Using .nuspec file '$nugetManifest'..."
-
-    $packageOutputDirectory = join-path $outputDirectory 'nuget'
-
-    if ( ! (test-path $packageOutputDirectory) ) {
-        psmkdir $packageOutputDirectory | out-null
-    } else {
-        get-childitem -r $packageOutputDirectory *.nupkg | remove-item
-    }
-
-    $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
-    validate-prerequisites @verifyInstalledLibrariesArgument
-
-    write-host "Building nuget package from manifest '$nugetManifest'..."
-    write-host "Output directory = '$packageOutputDirectory'..."
-
-    $nugetbuildcmd = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
-        "& nuget pack '$nugetManifest' -outputdirectory '$packageOutputdirectory' -nopackageanalysis -version '$($module.version)'"
-    } else {
-        return ''
-    }
-    write-host "Executing command: ", $nugetbuildcmd
-
-    iex $nugetbuildcmd
-    $buildResult = $lastexitcode
-
-    if ( $buildResult -ne 0 ) {
-        write-host -f red "Build failed with status code $buildResult."
-        throw "Command `"$nugetbuildcmd`" failed with exit status $buildResult"
-    }
-
-    $packagePath = ((get-childitem $packageOutputdirectory -filter *.nupkg) | select -first 1).fullname
-    $packageName = split-path -leaf $packagePath
-
-    $packageVersion = $packageName.substring($module.name.length + 1, $packageName.length - ($module.name.length + ".nupkg".length + 1))
-
-    if ( $packageVersion -ne $module.version ) {
-        throw "Generated package version '$packageVersion' does not match module version '$($module.version)' for package '$($module.name)'"
-    }
-
-    $packagePath
 }
 
 function Get-RepositoryKeyFromFile($path) {
@@ -649,16 +737,8 @@ function publish-modulelocal {
     # Copy the built module to the location where its dependencies already exist
     copy-item -r $modulePath $devModulelocation
 
-    # Use the module that was built -- this is *much* slower than using an
-    # existing nuget package built via nuget.exe, but that package is
-    # artificial in that it does not validate dependencies or the set of
-    # files specified in the manifest, so publishing via this approach
-    # offers higher confidence that if this package is installed from the
-    # local publishing source, it will install when promoted to a public
-    # repository. In the past, a module with files missing from the list
-    # was published publicly, and as a result that module failed to install.
-    # This method allows us to catch that error locally prior to making
-    # the module public.
+    # Use the module that was built to publish, though it is *much* slower than using an
+    # existing nuget package built via nuget.exe.
     $repository = get-temporarymodulepsrepository $moduleName $PsRepoLocation
 
     write-verbose "Publishing target module '$modulepath' from build output to publish location '$devModuleLocation'"
@@ -708,113 +788,6 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
     register-packagesource $localPackageRepositoryName $localPackageRepositoryLocation -providername nuget | out-null
 
     $localPackageRepositoryName
-}
-
-function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
-    write-verbose "Identifying ./lib files for module from '$nuspecFile'"
-    $packageData = [xml] (get-content $nuspecFile | out-string)
-    if ( $packageData.package ) {
-        $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
-            $_.replace("`\", '/')
-        }
-    } else {
-        @()
-    }
-}
-
-function get-AssemblyPackagesListFilePath {
-    join-path (get-sourcerootdirectory) packages.config
-}
-
-function get-AssemblyPackagesFromFile($assemblyListFilePath) {
-    write-verbose "Getting assemblies from '$assemblyListFilePath'"
-
-    if ( ! ( test-path $assemblyListFilePath ) ) {
-        throw "Assembly list file '$assemblyListFilePath' not found"
-    }
-
-    $packageData = [Xml] (get-content $assemblyListFilePath)
-
-    # Should throw exception if a node does not exist, i.e.
-    # if the schema is invalid
-    if ( $packageData.packages ) {
-        $packageData.packages.package
-    } else {
-        @()
-    }
-}
-
-function get-AssemblyDependencies {
-    $packageListPath = get-AssemblyPackagesListFilePath
-    get-AssemblyPackagesFromFile $packageListPath
-}
-
-function New-DotNetCoreProjFromPackagesConfig($packageConfigPath, $destinationFolder) {
-    $csProjName = 'DotNetCore-PackagesConfig.csproj'
-    $packagesConfigCsProj = join-path $destinationFolder $csProjName
-
-    if ( ! (test-path $packagesConfigCsProj) ) {
-        write-verbose "File '$packagesConfigCsProj' does not exist"
-        $packageReferenceTemplate = "`n" + '    <PackageReference Include="{0}" Version="{1}" />'
-        $csprojtemplate = @'
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>{0}
-  </ItemGroup>
-</Project>
-'@
-
-        $assemblies = get-assemblydependencies $packageConfigPath
-
-
-        $packageReferences = ''
-        $assemblies | foreach {
-            $packageReferences  += ($packageReferenceTemplate -f $_.id, $_.version)
-        }
-
-        $csProjectContent = $csProjTemplate -f $packageReferences
-
-        set-content -path $packagesConfigCsProj -value $csProjectContent
-    } else {
-        write-verbose "Config file '$packagesConfigCsProj' does not exist"
-    }
-
-    $packagesConfigCsProj
-}
-
-function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
-    if ( $PSVersionTable.PSEdition -ne 'Desktop' ) {
-        $assemblies = get-assemblydependencies $packageConfigPath
-
-        $assemblies | foreach {
-            $libraryDirectories = get-childitem $libraryRoot
-            $normalizedName = ($_.id, $_.version -join '.')
-            $normalizedPathActualCase = $libraryDirectories | where name -eq $normalizedName | select -expandproperty fullname
-
-            if ( ! $normalizedPathActualCase ) {
-                $librarySubdir = $libraryDirectories | where name -eq $_.id
-                $alternatePathActualCase = if ( $librarySubDir ) {
-                    join-path $librarySubDir.fullname $_.version
-                }
-
-                $alternatePathExists = if ( $alternatePathActualCase ) {
-                    write-verbose "Checking for alternatePath '$alternatePathActualCase'"
-                    test-path $alternatePathActualCase
-                }
-
-                if ( ! $alternatePathExists ) {
-                    throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedPathActualCase' or '$alternatePathActualCase'"
-                }
-                $normalizedPathTargetCase = ($librarySubdir.fullname, $_.version -join '.')
-                write-verbose "Normalizing name for library identified as '$normalizedName'" -verbose
-                write-verbose "Normalizing by moving file '$alternatePathActualCase' to '$normalizedPathTargetCase'" -verbose
-
-                move-item  $alternatePathActualCase $normalizedPathTargetCase
-            }
-        }
-    }
 }
 
 function InitDirectTestRun {

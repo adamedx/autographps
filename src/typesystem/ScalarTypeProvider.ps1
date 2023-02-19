@@ -141,7 +141,13 @@ ScriptClass ScalarTypeProvider {
 
             $typeId = $this.base.graph.UnaliasQualifiedName($_.QualifiedName)
 
-            $_.Schema.member | foreach {
+            # It turns out some enums have no members (!), so you can't assume
+            # that the member property exists -- the schema does not require it
+            $enumerationMembers = if ( $_.Schema | Get-Member Member ) {
+                $_.Schema.Member
+            }
+
+            $enumerationMembers | foreach {
                 $memberData = [PSCustomObject] @{
                     Type = 'Edm.String'
                     Name = [PSCUstomObject] @{Name=$_.name;Value=$_.value}

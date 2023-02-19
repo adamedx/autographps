@@ -71,11 +71,23 @@ function Set-GraphItem {
 
         [switch] $SetDefaultValues,
 
+        [HashTable] $Headers = $null,
+
         [switch] $SkipPropertyCheck
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $restParameters = @{}
+
+        @(
+            'Headers'
+        ) | foreach {
+            if ( $PSBoundParameters[$_] -ne $null ) {
+                $restParameters[$_] = $PSBoundParameters[$_]
+            }
+        }
     }
 
     process {
@@ -133,7 +145,7 @@ function Set-GraphItem {
             New-GraphObject -TypeName $writeRequestInfo.TypeName -TypeClass Entity @newGraphObjectParameters -erroraction 'stop'
         }
 
-        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject -connection $writeRequestInfo.Context.connection -erroraction 'stop' | out-null
+        Invoke-GraphApiRequest $writeRequestInfo.Uri -Method PATCH -Body $newObject @restParameters -connection $writeRequestInfo.Context.connection -erroraction 'stop' | out-null
     }
 
     end {}
