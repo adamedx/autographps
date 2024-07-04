@@ -39,7 +39,7 @@ jobs:
     inputs:
       azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
       KeyVaultName: 'CI-AutoGraphPS-SDK'
-      SecretsFilter: 'AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20'
+      SecretsFilter: 'CI-AutoGraph-App-Certificate'
       RunAsPreJob: false
   - task: powershell@2
     displayName: 'Show current PowerShell version information'
@@ -57,7 +57,7 @@ jobs:
     displayName: 'Install Pester test framework required version'
     inputs:
       targetType: inline
-      script: 'Install-Module Pester -RequiredVersion 4.8.1 -scope currentuser -force'
+      script: 'Install-Module Pester -RequiredVersion 4.8.1 -scope currentuser -force -skippublishercheck'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Get updated Pester test framework module version'
@@ -120,7 +120,7 @@ jobs:
     displayName: 'Run integration tests'
     inputs:
       targetType: inline
-      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(CI-AutoGraph-App-Certificate) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
