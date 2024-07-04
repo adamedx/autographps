@@ -51,9 +51,20 @@ function Remove-Graph {
         [string] $Name
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
+    }
 
-    $::.LogicalGraphManager |=> Get |=> RemoveContext $Name
+    process {
+        # Seems that if you accept pipeline input you can't rely on a mandatory parameter being non-null / non-empty
+        # This likely preserves the output to accept empty results as inputs without throwing an exception.
+        if ( $Name ) {
+            $::.LogicalGraphManager |=> Get |=> RemoveContext $Name
+        }
+    }
+
+    end {
+    }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-Graph Name (new-so GraphParameterCompleter)

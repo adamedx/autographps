@@ -91,7 +91,13 @@ function New-Graph {
     $graphConnection = if ( $Connection ) {
         $Connection
     } else {
-        ($::.GraphContext |=> GetCurrent).connection
+        $currentContext = ($::.GraphContext |=> GetCurrent)
+
+        if ( $currentContext ) {
+            $currentContext.connection
+        } else {
+            New-GraphConnection
+        }
     }
 
     $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name

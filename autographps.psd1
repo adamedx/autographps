@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.42.0'
+ModuleVersion = '0.43.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/comm
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.30.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.31.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.3';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -256,31 +256,28 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.42.0 Release Notes
+## AutoGraphPS 0.43.0 Release Notes
 
 Update to new AutoGraphPS-SDK, ScriptClass dependences, bug fixes.
 
 ### New dependencies
 
-* ScriptClass 0.20.3
-* AutoGraphPS-SDK 0.30.0
-* Microsft.Identity.Client 4.50.0 -- i.e. MSAL
-* Microsoft.IdentityModel.Abstractions 6.22.0 -- new dependency in this release brought in by MSAL update
+* AutoGraphPS-SDK 0.31.0
+* // Microsft.Identity.Client 4.50.0 -- i.e. MSAL
+* // Microsoft.IdentityModel.Abstractions 6.22.0 -- new dependency in this release brought in by MSAL update
 
 ### Breaking changes
 
-* See breaking changes for AutoGraphPS-SDK 0.30.0
+None.
 
 ### New features
 
-* `Set-GraphItem`, `New-GraphItem`, `Get-GraphItem`, and `Remove-GraphItem` now support a `Headers` parameter that allows headers to be specified
-* `Get-GraphRelatedItem` supports the `Select` parameter to project specific properties of the objects returned by the command
+None.
 
 ### Fixed defects
 
-* `Measure-Graph` and any commands accessing API metadata information about enumeration types may fail when acting on the most recent Graph API `beta` version when an enumeration has no members
-* `Find-GraphType` failing for `beta` API version where a type had a property called `keys` because of subtle non-deterministic, PowerShell syntactic sugar behavior with keyed collection string keys being automagically elevated to properties of the collection itself and this obscures real properties with name collisions (in this case the `keys` property of the collection used by the module to process property information): https://github.com/PowerShell/PowerShell/issues/7758
-* The `First` parameter of `Get-GraphRelatedItem` did not function and could cause errors -- this has been fixed.
+* `Remove-Graph` was completely broken, it would always throw an exception and not remove the graph. This is fixed.
+
 '@
     } # End of PSData hashtable
 
