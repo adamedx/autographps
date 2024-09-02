@@ -77,10 +77,13 @@ function New-Graph {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='Simple')]
     param(
         [parameter(position=0)]
+        $Name = $null,
+
         $Version = 'v1.0',
 
-        [parameter(position=1)]
-        $Name = $null,
+        [Uri] $SchemaUri = $null,
+
+        [string] $SchemaData,
 
         [parameter(parametersetname='Connection', mandatory=$true)]
         $Connection = $null
@@ -100,9 +103,9 @@ function New-Graph {
         }
     }
 
-    $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name
+    $context = $::.LogicalGraphManager |=> Get |=> NewContext $null $graphConnection $Version $Name $false $SchemaUri
 
-    $::.GraphManager |=> UpdateGraph $context
+    $::.GraphManager |=> UpdateGraph $context $SchemaData $false $false $SchemaUri
 
     $::.ContextHelper |=> ToPublicContext $context
 }

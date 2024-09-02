@@ -105,6 +105,10 @@ function Measure-Graph {
 
     $targetContext = $::.ContextHelper |=> GetContextByNameOrDefault $GraphName
 
+    if ( ! $targetContext ) {
+        throw "The specified graph named '$GraphName' could not be found."
+    }
+
     $typeSearcher = $::.TypeManager |=> Get $targetContext |=> GetTypeSearcher
 
     $indexClasses = 'Name', 'Property', 'NavigationProperty'
@@ -124,4 +128,4 @@ function Measure-Graph {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Measure-Graph Name (new-so GraphParameterCompleter)
+$::.ParameterCompleter |=> RegisterParameterCompleter Measure-Graph GraphName (new-so GraphParameterCompleter)
