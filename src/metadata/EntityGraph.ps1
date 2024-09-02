@@ -27,6 +27,7 @@ ScriptClass EntityGraph {
     $defaultNamespace = $null
     $dataModel = $null
     $builder = $null
+    $id = $null
 
     function __initialize($defaultNamespace, $apiVersion = 'localtest', [Uri] $endpoint = 'http://localhost', $dataModel) {
         $this.defaultNamespace = $defaultNamespace
@@ -38,6 +39,7 @@ ScriptClass EntityGraph {
         $this.Endpoint = $endpoint
         $this.dataModel = $dataModel
         $this.builder = new-so GraphBuilder $endpoint $apiVersion $dataModel
+        $this.id = [guid]::newguid()
     }
 
     function GetRootVertices {

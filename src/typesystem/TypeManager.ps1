@@ -30,6 +30,7 @@ ScriptClass TypeManager {
     $hasRequiredTypeDefinitions = $false
     $typeProviders = $null
     $typeSearcher = $null
+    $id = $null
 
     function __initialize($graphContext) {
         $this.graphContext = $graphContext
@@ -40,6 +41,7 @@ ScriptClass TypeManager {
             $true = @{}
         }
         $this.typeProviders = @{}
+        $this.id = [guid]::newguid()
     }
 
     function GetPrototype($typeClass, $typeName, $fullyQualified = $false, $setDefaultValues = $false, $recursive = $false, $propertyFilter, [object[]] $valueList, $propertyList, $skipPropertyCheck, [bool] $isCollection) {
