@@ -73,19 +73,28 @@ Describe 'The New-Graph cmdlet' {
 
         It "Should return the correct difference between two graphs mounted from local metadata" {
 
+            write-host 'starting difference test'
             $referenceGraph = new-graph -SchemaUri $ReferenceMetadataPath
+            write-host 'created reference graph'
             $differenceGraph = new-graph -SchemaUri $DifferenceMetadataPath
+            write-host 'created difference graph'
 
             $referenceTypes = Get-GraphType -list -GraphName $referenceGraph.Name
+            write-host 'got reference types'
             $differenceTypes = Get-GraphType -list -Graphname $differenceGraph.Name
+            write-host 'got difference types'
 
             ( $referenceTypes | measure-object ).Count | Should Be 1036
             ( $differenceTypes | measure-object ).Count | Should Be 1032
+            write-host 'obtained correct counts'
 
             $actualTypeDiff = Compare-Object $referenceTypes $differenceTypes
+            write-host 'created actual diff'
 
             Compare-Object $actualTypeDiff $incorrectTypeDiff | Should Not Be $null
+            write-host 'compared against incorrect diff'
             Compare-Object $actualTypeDiff $expectedTypeDiff | Should Be $null
+            write-host 'compared against actual diff'
         }
     }
 }

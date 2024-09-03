@@ -263,7 +263,7 @@ Update to new AutoGraphPS-SDK, MSAL, and custom API metadata improvements.
 ### New dependencies
 
 * AutoGraphPS-SDK 0.31.0
-* Microsft.Identity.Client 4.64.0 -- i.e. MSAL
+* Microsoft.Identity.Client 4.64.0 -- i.e. MSAL
 
 ### Breaking changes
 
