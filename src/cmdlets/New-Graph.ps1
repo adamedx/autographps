@@ -36,6 +36,12 @@ Specify the Version parameter to set the API version of the graph. If this param
 .PARAMETER Name
 Every graph must have a unique name -- specify the unique name of the graph through the Name parameter. If no name is specified, a unique name is automatically generated based on properties of the graph such as its API version.
 
+.PARAMETER SchemaUri
+Specify this parameter to override the default API metadata document location associated with the API endpoint so that the metadata from that document will be used against the API endpoint instead of the default metadata surfaced at the API endpoint itself.. The URI must either be a valid https or file scheme URI, or it may also be a valid local file system path.
+
+.PARAMETER SchemaData
+Specify the SchemaData parameter to provide the XML string-formatted Common Schema Definition Language (CSDL) schema that must be used to construct API requests sent to the API endpoint and also interpret the responses from that endpoint. This will override the content of any schema document supplied at the endpoint.
+
 .PARAMETER Connection
 Specifies graph connection object to associate with this graph. The connection object contains information about the service endpoints for the Graph API and parameters related to the authentication and authorization for the identity used to access the Graph API. Commands that interact with the Graph API will access the Graph API according to the properties of the graph's associated connection. If the Connection parameter is not specified, the current connection is associated with the Graph.
 
@@ -68,6 +74,23 @@ v1.0_1 v1.0    https://graph.microsoft.com/
 
 If no parameters are specified, then the graph's API version defaults to v1.0, and therefore the unspecified name is set to a variation of that API version. Since there was already a graph named 'v1.0', the unique name 'v1.0_1' is generated from the API version.
 
+.EXAMPLE
+New-Graph -Name OldAPIVersion -SchemaUri ~/schemas/2021-metadata-snapshot.csdl
+
+   Graph Name: OldAPIVersion
+
+Id                     : 44452774-7618-4f2d-b0a1-21250f9df78d
+Endpoint               : https://graph.microsoft.com/
+Version                : v1.0
+CurrentLocation        : /
+AuthEndpoint           : https://login.microsoftonline.com/
+Metadata               : Ready
+CreationTime           : 9/2/2024 4:38:14 PM
+LastUpdateTime         : 9/2/2024 4:38:14 PM
+LastTypeMetadataSource : C:\Users\myuser\schemas\2021-metadata-snapshot.csdl
+
+This command creates a new graph naemd 'OldAPIVersion' based on the API metadata at a local file system location rather than the API metadata at the default location for the endpoint, https://graph.microsoft.com/v1.0/$metadata. This could be useful for comparing changes between Graph API versions over time by downloading snapshots of the metadata document periodically.
+
 .LINK
 New-Graph
 Remove-Graph
@@ -81,11 +104,15 @@ function New-Graph {
 
         $Version = 'v1.0',
 
+        [parameter(parametersetname='SchemaMetadataUri', mandatory=$true)]
         [Uri] $SchemaUri = $null,
 
+        [parameter(parametersetname='CustomMetadata', mandatory=$true)]
         [string] $SchemaData,
 
         [parameter(parametersetname='Connection', mandatory=$true)]
+        [parameter(parametersetname='CustomMetadata')]
+        [parameter(parametersetname='SchemaMetadataUri')]
         $Connection = $null
     )
 

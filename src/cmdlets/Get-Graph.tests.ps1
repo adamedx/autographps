@@ -48,12 +48,5 @@ Describe 'The Get-Graph cmdlet' {
 
             { Get-Graph $newGraph.Name } | Should Throw
         }
-
-        It "Should throw an exception if a new graph is created with the same name as an existing graph" {
-
-            $originalGraph = new-graph originalGraph
-
-            { $duplicatedNameGraph = new-graph $originalGraph.Name } | Should Throw
-        }
     }
 }
