@@ -215,7 +215,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
                 write-verbose "Using locally supplied metadata, skipping retrieval from remote Graph"
                 $metadata
             } else {
-                __GetSchema $endpoint $apiVersion $schemaUri
+                __GetSchema $schemaUri $apiVersion
             }
             [PSCustomObject]@{Id=$graphId;SchemaData=$schemadata;Endpoint=$endpoint;Version=$apiVersion}
         }
@@ -228,23 +228,32 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
             }
         }
 
-        function __GetSchema([Uri] $endpointUri, $apiVersion, $schemaUri) {
+        function __GetSchema([Uri] $schemaUri, $apiVersion ) {
             if ( ! $schemaUri ) {
                 throw 'An empty schema URI was specified'
             }
 
-            $fromLocal = switch ( ( [Uri] $schemaUri ).scheme ) {
+            $schemaScheme = $schemaUri.scheme
+
+            $fromLocal = switch ( $schemaScheme ) {
                 'file' { $true }
                 'https' { $false }
                 default {
-                    throw "The specified URI '$schemaUri' did not conform to a valid file or https scheme"
+                    if ( $schemaScheme -ne $null ) {
+                        throw "The specified URI '$schemaUri' did not conform to a valid file or https scheme"
+                    }
+
+                    # Assume this is a local file system path if the scheme is not set
+                    $true
                 }
             }
+
+            write-host "Scheme: $schemaScheme", ($schemaScheme -eq $null)
 
             $metadataActivity = "Reading metadata for graph version '$apiversion' for endpoint '$endpoint' from URI $schemaUri"
             Write-Progress -id 1 -activity $metadataactivity -status "Downloading"
 
-            $graphEndpoint = new-so GraphEndpoint Custom $endpointUri http://localhost 'Default'
+            $graphEndpoint = new-so GraphEndpoint Custom $schemaUri http://localhost 'Default'
             $connection = new-so GraphConnection $graphEndpoint $null $null
 
             $schema = try {
@@ -252,9 +261,15 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
 
                 $schemaContent = if ( $fromLocal ) {
                     write-debug "Reading from local file '$schemaUri'"
-                    Get-Content $schemaUri
+                    write-host "Getting content from local: '$schemaUri'"
+                    Get-Content $schemaUri.AbsolutePath
                 } else {
                     write-debug "Reading from remote URI '$schemaUri'"
+                    write-host "Getting content from remote"
+
+                    $graphEndpoint = new-so GraphEndpoint Custom $schemaUri http://localhost 'Default'
+                    $connection = new-so GraphConnection $graphEndpoint $null $null
+
                     Invoke-GraphApiRequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
                 }
 
