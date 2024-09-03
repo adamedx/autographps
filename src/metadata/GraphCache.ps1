@@ -35,7 +35,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
     }
 
     function GetGraph($endpointUri, $apiVersion = 'v1.0', $metadata = $null, $schemaId, $schemaUri) {
-        $graph = FindGraph $endpoint $apiVersion $schemaId
+        $graph = FindGraph $endpointUri $apiVersion $schemaId
 
         if ( $graph ) {
             $graph
@@ -255,7 +255,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
                     Get-Content $schemaUri
                 } else {
                     write-debug "Reading from remote URI '$schemaUri'"
-                    Invoke-GraphApiRequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent -verbose
+                    Invoke-GraphApiRequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
                 }
 
                 write-debug "Finished reading schema content"
