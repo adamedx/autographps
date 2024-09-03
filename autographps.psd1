@@ -258,13 +258,12 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS 0.43.0 Release Notes
 
-Update to new AutoGraphPS-SDK, ScriptClass dependences, bug fixes.
+Update to new AutoGraphPS-SDK, MSAL, and custom API metadata improvements.
 
 ### New dependencies
 
 * AutoGraphPS-SDK 0.31.0
-* // Microsft.Identity.Client 4.50.0 -- i.e. MSAL
-* // Microsoft.IdentityModel.Abstractions 6.22.0 -- new dependency in this release brought in by MSAL update
+* Microsft.Identity.Client 4.64.0 -- i.e. MSAL
 
 ### Breaking changes
 
@@ -272,7 +271,12 @@ None.
 
 ### New features
 
-None.
+* The `New-Graph` command supports two new parameters to enable custom API metadata:
+  *  The `SchemaUri` parameter: this can point to a remote https scheme URI or even a local file system path
+     that conatins the OData metadata document for the API specification that defines the graph structure, i.e.
+     the same kind of content that is available at real API versions such as https://graph.microsoft.com/v1.0/$metadata.
+  *  The `SchemaMetadata` parameter: this is the actual content of the API schema document; it may be useful to specify this
+     in cases where the metadata has been downloaded or constructed out of band of any commands
 
 ### Fixed defects
 
