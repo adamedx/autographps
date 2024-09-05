@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2024, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,31 +34,31 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         $this.graphVersions = @{}
     }
 
-    function GetGraph($endpoint, $apiVersion = 'v1.0', $metadata = $null) {
-        $graph = FindGraph $endpoint $apiVersion
+    function GetGraph($endpointUri, $apiVersion = 'v1.0', $metadata = $null, $schemaId, $schemaUri) {
+        $graph = FindGraph $endpointUri $apiVersion $schemaId
 
         if ( $graph ) {
             $graph
         } else {
-            $graphJob = GetGraphAsync $endpoint $apiVersion $metadata
+            $graphJob = GetGraphAsync $endpointUri $apiVersion $metadata $schemaId $schemaUri
             WaitForGraphAsync $graphJob
         }
     }
 
-    function FindGraph($endpoint, $apiVersion) {
-        $graphId = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion
+    function FindGraph($endpoint, $apiVersion, $schemaId) {
+        $graphId = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion $schemaId
         $this.graphVersions[$graphId]
     }
 
-    function GetGraphAsync($endpoint, $apiVersion = 'v1.0', $metadata = $null) {
-        $graphid = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion
+    function GetGraphAsync($endpoint, $apiVersion = 'v1.0', $metadata = $null, $schemaId, $schemaUri) {
+        $graphId = $this.scriptclass |=> __GetGraphId $endpoint $apiVersion $schemaId
         $existingJob = $this.graphVersionsPending[$graphId]
         if ( $existingJob ) {
             write-verbose "Found existing job '$($existingJob.job.id)' for '$graphId'"
             $existingJob
         } else {
             write-verbose "No existing job for '$graphId' -- queueing up a new job"
-            __GetGraphAsync $graphId $endpoint $apiVersion $metadata
+            __GetGraphAsync $graphId $endpoint $apiVersion $metadata $schemaId $schemaUri
         }
     }
 
@@ -92,7 +92,23 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
             if ( (get-job $submittedVersion.job.id).State -eq 'Running' ) {
                 . $metadataWarningBlock
             }
-            receive-job -wait $submittedVersion.Job -erroraction stop
+
+            $elapsedMs = 0
+            $waitIntervalMs = 10000
+            $resultJob = $null
+            # Use a busy wait of sorts to avoid deadlocks
+            while ( $elapsedMs -lt (60 * $waitIntervalMs) -and ! (
+                        $resultJob = $submittedVersion.job | wait-job -timeout $waitIntervalMs -erroraction stop ) ) {
+                $elapsedMs += $waitIntervalMs
+            }
+
+            if ( ! $resultJob ) {
+                throw "Metadata processing job failed to complete after $elapsedMs milliseconds";
+            }
+
+            write-verbose "Receiving job"
+            $resultJob | receive-job -erroraction stop
+            write-verbose "Received job"
         } catch {
             $jobException = $_.exception
         }
@@ -149,8 +165,8 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         }
     }
 
-    function GetMetadataStatus($endpoint, $apiVersion) {
-        $graphid = $this.scriptclass |=> __GetGraphId $endpoint $apiversion
+    function GetMetadataStatus($endpoint, $apiVersion, $schemaId) {
+        $graphid = $this.scriptclass |=> __GetGraphId $endpoint $apiversion $schemaId
         $status = [MetadataStatus]::NotStarted
 
         if ($this.Graphversions[$graphId] -ne $null) {
@@ -171,9 +187,9 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         $status
     }
 
-    function __GetGraphAsync($graphId, $endpoint, $apiVersion, $metadata) {
-        write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion'"
-        write-verbose "Local metadata supplied: '$($metadata -ne $null)'"
+    function __GetGraphAsync($graphId, $endpoint, $apiVersion, $metadata, $schemaId, $schemaUri) {
+        write-verbose "Getting async graph for graphid: '$graphId', endpoint: '$endpoint', version: '$apiVersion' at URI '$schemaUri'"
+        write-verbose "Local metadata supplied: '$($metadata -ne $null)' with id '$schemaId'"
 
         $cacheClass = $::.GraphCache
 
@@ -184,7 +200,7 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
         # deserialize objects -- many of the strange workarounds in this module to ensure that ScriptClass object state was preserved is no longer
         # a necessity, though most of those workarounds are now built in to ScriptClass itself. It may even be feasible to parse the entire graph
         # rather than only parse just in time since the entire graph can be parsed efficiently in the background without being serialized and deserialized.
-        $graphLoadJob = Start-ThreadJob { param($cacheClass, $graphEndpoint, $version, $schemadata, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; $cacheClass.__GetGraph($graphEndpoint, $version, $schemadata) } -argumentlist $cacheClass, $endpoint, $apiVersion, $metadata, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
+        $graphLoadJob = Start-ThreadJob { param($cacheClass, $graphEndpoint, $version, $schemadata, $schemaId, $schemaUri, $verbosity) $verbosepreference=$verbosity; $__poshgraph_no_auto_metadata = $true; $cacheClass.__GetGraph($graphEndpoint, $version, $schemadata, $schemaId, $schemaUri) } -argumentlist $cacheClass, $endpoint, $apiVersion, $metadata, $schemaId, $schemaUri, $verbosepreference  -name "AutoGraphPS metadata download for '$graphId'"
 
         $graphAsyncJob = [PSCustomObject]@{Job=$graphLoadJob;Id=$graphId}
         write-verbose "Saving job '$($graphLoadJob.Id) for graphid '$graphId'"
@@ -193,30 +209,73 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
     }
 
     static {
-        function __GetGraph($endpoint, $apiVersion, $metadata) {
-            $graphId = __GetGraphId $endpoint $apiVersion
+        function __GetGraph($endpoint, $apiVersion, $metadata, $schemaId, $schemaUri) {
+            $graphId = __GetGraphId $endpoint $apiVersion $schemaId
             $schemadata = if ( $metadata ) {
                 write-verbose "Using locally supplied metadata, skipping retrieval from remote Graph"
                 $metadata
             } else {
-                __GetSchema $endpoint $apiVersion
+                __GetSchema $schemaUri
             }
             [PSCustomObject]@{Id=$graphId;SchemaData=$schemadata;Endpoint=$endpoint;Version=$apiVersion}
         }
 
-        function __GetGraphId($endpoint, $apiVersion) {
-            "{0}:{1}" -f $endpoint, $apiVersion
+        function __GetGraphId($endpoint, $apiVersion, $schemaId) {
+            if ( $schemaId ) {
+                "id=$($schemaId)"
+            } else {
+                "{0}:{1}" -f $endpoint, $apiVersion
+            }
         }
 
-        function __GetSchema($endpoint, $apiVersion) {
-            $metadataActivity = "Reading metadata for graph version '$apiversion' from endpoint '$endpoint'"
+        function __GetSchema([Uri] $schemaUri ) {
+            if ( ! $schemaUri ) {
+                throw 'An empty schema URI was specified'
+            }
+
+            $schemaScheme = $schemaUri.scheme
+
+            $fromLocal = switch ( $schemaScheme ) {
+                'file' { $true }
+                'https' { $false }
+                default {
+                    if ( $schemaScheme -ne $null ) {
+                        throw "The specified URI '$schemaUri' did not conform to a valid file or https scheme"
+                    }
+
+                    # Assume this is a local file system path if the scheme is not set
+                    $true
+                }
+            }
+
+            $metadataActivity = "Reading metadata for graph from URI $schemaUri"
             Write-Progress -id 1 -activity $metadataactivity -status "Downloading"
 
-            $graphEndpoint = new-so GraphEndpoint Public $endpoint http://localhost 'Default'
-            $connection = new-so GraphConnection $graphEndpoint $null $null
-
             $schema = try {
-                Invoke-GraphApiRequest -connection $connection '$metadata' -version $apiversion -erroraction stop -rawcontent
+                write-verbose 'Sending request'
+
+                $schemaContent = if ( $fromLocal ) {
+                    write-debug "Reading from local file '$schemaUri'"
+
+                    # Need to use OriginalString because it is the only field that
+                    # is set consistently on all platforms for local file system paths
+                    Get-Content $schemaUri.OriginalString
+                } else {
+                    write-debug "Reading from remote URI '$schemaUri'"
+
+                    $graphEndpoint = new-so GraphEndpoint Public $null http://localhost 'Default'
+                    $connection = new-so GraphConnection $graphEndpoint $null $null
+
+                    Invoke-GraphApiRequest -connection $connection -AbsoluteUri $schemaUri -erroraction stop -rawcontent
+                }
+
+                write-debug "Finished reading schema content"
+                write-debug "Parsing schema content as XML"
+
+                [xml] ( $schemaContent | out-string )
+
+                write-debug "Completed parsing of schema content as XML"
+                write-verbose 'Request completed'
             } catch {
                 write-verbose "Invoke-GraphApiRequest failed to download schema"
                 write-verbose $_
@@ -225,7 +284,9 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
             }
 
             Write-Progress -id 1 -activity $metadataactivity -status "Download complete" -completed
+
             $schema
         }
     }
 }
+

@@ -40,10 +40,12 @@ ScriptClass GraphManager {
         function UpdateGraph($context, $metadata = $null, $wait = $false, $force = $false, $metadataSourceOverridePath) {
             $graphEndpoint = $context |=> GetEndpoint
 
+            $updateSource = GetMetadataSource $context $metadataSourceOverridePath
+
             # Trigger a graph update -- we purposefully ignore the result as it may not be a graph
             # but instead an incomplete retrieval. The goal here is simply to trigger the update, not
             # to get the results.
-            __GetGraph $graphEndpoint $context.version $metadata $wait $force $true | out-null
+            __GetGraph $graphEndpoint $context.version $metadata $wait $force $true $context.schemaId $updateSource | out-null
 
             # Clear any existing cache as it is no longer valid given that the graph is being updated.
             $uriCache = $context |=> GetState $this.UriCacheStateKey
@@ -76,21 +78,35 @@ ScriptClass GraphManager {
 
             # Finally set the location from which the graph's metadata is retrieved
             # to reflect what is being used in this update.
-            $updateSource = if ( $metadataSourceOverridePath ) {
+            $context |=> SetState $this.MetadataSourceStateKey $updateSource
+        }
+
+        function GetMetadataSource($context, $metadataSourceOverridePath) {
+            $graphEndpoint = $context |=> GetEndpoint
+
+            $currentSource = $context |=> GetState $this.MetadataSourceStateKey
+
+            if ( $metadataSourceOverridePath ) {
                 $scheme = ( [Uri] $metadataSourceOverridePath ).scheme
                 if ( ! $scheme -or $scheme -eq 'file' ) {
-                    $metadataFileItem = get-item $metadataSourceOverridePath -erroraction ignore
-                    if ( $metadataFileItem ) {
-                        $metadataFileItem.FullName
+                    # Note that this path may be specified as a file scheme URI or a normal file name string, so convert to a file
+                    # name since get-item will not accept file scheme URIs
+                    $translatedPath = ([Uri] $metadataSourceOverridePath).AbsolutePath # This can be null though also :)
+                    $localPath = if ( $translatedPath ) {
+                        $translatedPath
+                    } else {
+                        $metadataSourceOverridePath.ToString()
                     }
+                    (get-item $localPath).FullName
                 } else {
                     $metadataSourceOverridePath
                 }
+            } elseif ( $currentSource ) {
+                $currentSource
             } else {
+                # If we only have an API version and endpoint, form the default URI
                 $graphEndpoint.tostring().trimend('/'), $context.version, '$metadata' -join '/'
             }
-
-            $context |=> SetState $this.MetadataSourceStateKey $updateSource
         }
 
         function GetMetadataStatus($context) {
@@ -99,14 +115,15 @@ ScriptClass GraphManager {
                 __initialize
             }
 
-            $this.cache |=> GetMetadataStatus $context.connection.GraphEndpoint.Graph $context.version
+            $this.cache |=> GetMetadataStatus $context.connection.GraphEndpoint.Graph $context.version $context.schemaId
         }
 
         function GetGraph($context, $metadata = $null, $force = $false) {
-             __GetGraph ($context |=> GetEndpoint) $context.version $metadata $true $force
+            $schemaUri = GetMetadataSource $context
+             __GetGraph ($context |=> GetEndpoint) $context.version $metadata $true $force $false $context.schemaId $schemaUri
         }
 
-        function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
+        function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false, $schemaId, $schemaUri) {
             # This really should not be necessary since __initialize is called at the script level, but there
             # seems to be an issue when executing in automated CI where class members are not initialized,
             # possibly due to some inability to call __initialize at some point -- we call it here if we detect
@@ -120,10 +137,10 @@ ScriptClass GraphManager {
             }
 
             if ( $wait -and ! $forceupdate ) {
-                $this.cache |=> GetGraph $endpoint $apiVersion $metadata
+                $this.cache |=> GetGraph $endpoint $apiVersion $metadata $schemaId $schemaUri
             } else {
 
-                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata
+                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata $schemaId $schemaUri
 
                 if ( $wait ) {
                     $this.cache |=> WaitForGraphAsync $asyncResult

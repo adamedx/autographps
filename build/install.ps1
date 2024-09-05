@@ -93,6 +93,12 @@ function InstallDependencies($clean) {
             }
 
             foreach ( $sourceLibrary in $platformSourceLibraries ) {
+                # So now there are some new '/ref/' directories in .net6 and later releases that include various superfluous
+                # binaries, so we explicitly filter these out. :(
+                if ( ( split-path -leaf ( split-path -parent ( split-path -Parent $sourceLibrary.FullName ) ) ) -eq 'ref' ) {
+                    continue
+                }
+
                 move-item $sourceLibrary.FullName $platformDirectory
             }
         }

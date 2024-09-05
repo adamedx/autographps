@@ -104,7 +104,7 @@ A strength of PowerShell's object pipeline is that it facilitates modifications 
 
 Other PowerShell cmdlets such as the `convertto-*` and `convertfrom-*` cmdlets enable interperation with cmdlets or applications that consume alternative data formats such as `csv`. PowerShell's built-in usage of the C# XML serializer type `XmlSerializer` enables XML interoperability. The conversion capabilities, along with AutoGraphPS's capability to emit raw JSON, allow users to interoperate with non-PowerShell tools, including REST utilities popular in web app and API development.
 
-Beyond the standard cmdlets included in PowerShell itself, repositories such as PowerShell Gallery and Nuget.Org provide a wide range of open source PowerShell modules that extend PowerShell. These libraries enable more than just scripting -- in concert with AutoGraphPS full-scale applicaitons may be built with AutoGraphPS. Such modules can also extend the user experience provided by AutoGraphPS through richer formatting or query facilities.
+Beyond the standard cmdlets included in PowerShell itself, repositories such as PowerShell Gallery and Nuget.Org provide a wide range of open source PowerShell modules that extend PowerShell. These libraries enable more than just scripting -- in concert with AutoGraphPS full-scale applications may be built with AutoGraphPS. Such modules can also extend the user experience provided by AutoGraphPS through richer formatting or query facilities.
 
 ### The missing PowerShell Programming Gateway for the Graph protocol
 Given that PowerShell as a language has the same expressibilty and concepts as Javascript, Ruby, et. al., each of which have respective Graph SDKs, it makes sense to ask where a similar developer interface may be found for Graph. AutoGraphPS is that programming surface, and because it uses a simple layering on top of the Graph API, it is a robust experience that does not require PowerShell users to constantly update to the latest version of AutoGraphPS to use new Graph features.
@@ -143,7 +143,7 @@ There are, then, some obvious next steps for the project in terms of both featur
 * More tests to enable contributions from more than just the original maintainer
 * Cmdlet help
 * Performance enhancements
-* Extension of the file system metaphore for move, copy, and similar semantics
+* Extension of the file system metaphor for move, copy, and similar semantics
 * New projects to provide domain-specific cmdlets built on AutoGraphPS (e.g. file management, email, etc.)
 * AutoGraphPS equivalents for other languages -- Python anyone?
 
