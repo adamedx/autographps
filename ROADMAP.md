@@ -132,7 +132,6 @@
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
 * Enable schemaless execution
-* Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
 * Add uri completion
@@ -158,9 +157,6 @@
 * common scopes -- use dynamicparam
 * scope browser
 * Add unit tests for parameters
-* Enable token refresh
-* Enable app-only auth
-* Add reply url to new-graphconnection -- only works with confidential client
 * Graph tracing
 * Graph trace replay
 * entity templates
@@ -250,6 +246,8 @@
 * Make connect-graph connect in the custom case
 * Make content-columns auto-avoid collisions
 * Rudimentary token auto-refresh
+* Enable app-only auth
+* Add reply url to new-graphconnection
 * Make graph drive collision nicer
 * Link to scopes docs when unauthorized
 * Fix bug where context is assumed to be current rather than from uri
