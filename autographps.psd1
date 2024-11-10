@@ -12,7 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.43.0'
+ModuleVersion = '0.44.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -67,7 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/comm
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    @{ModuleName='autographps-sdk';ModuleVersion='0.31.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
+    @{ModuleName='autographps-sdk';ModuleVersion='0.32.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
     @{ModuleName='scriptclass';ModuleVersion='0.20.3';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -256,31 +256,27 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS 0.43.0 Release Notes
+## AutoGraphPS 0.44.0 Release Notes
 
-Update to new AutoGraphPS-SDK, MSAL, and custom API metadata improvements. CI pipeline updates.
+Update to new AutoGraphPS-SDK, MSAL, new app id, authentication broker improvements.
 
 ### New dependencies
 
-* AutoGraphPS-SDK 0.31.0
-* Microsoft.Identity.Client 4.64.0 -- i.e. MSAL
+* AutoGraphPS-SDK 0.32.0
+* Microsoft.Identity.Client 4.66.1 -- i.e. MSAL
+* New optional dependency Microsoft.Identity.Client.Broker 4.66.1 for authentication broker support (Windows only)
 
 ### Breaking changes
 
-None.
+* New default app id (client id) for the module has been changed: A new application id, c98eb929-2053-4b03-b680-a5efcbd59035 is the default. This change is inherited from the updated AutoGraphPS-SDK module dependency.
 
 ### New features
 
-* The `New-Graph` command supports two new parameters to enable custom API metadata:
-  *  The `SchemaUri` parameter: this can point to a remote https scheme URI or even a local file system path
-     that contains the OData metadata document for the API specification that defines the graph structure, i.e.
-     the same kind of content that is available at real API versions such as https://graph.microsoft.com/v1.0/$metadata.
-  *  The `SchemaMetadata` parameter: this is the actual content of the API schema document; it may be useful to specify this
-     in cases where the metadata has been downloaded or constructed out of band of any commands
+* Authentication broker support -- use the `get-help` command with the `Connect-GraphApi` and `New-GraphConnection` commands for details on the `UseBroker` parameter supported by these commands (and associated settings configuration) from the AutoGraphPS-SDK dependency.
 
 ### Fixed defects
 
-* `Remove-Graph` was completely broken, it would always throw an exception and not remove the graph. This is fixed.
+* See fixes in the updated version of AutoGraphPS-SDK
 
 '@
     } # End of PSData hashtable
