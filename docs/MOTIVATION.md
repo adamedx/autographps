@@ -75,7 +75,7 @@ AutoGraphPS's design is focused then on the following three things that apply to
 * REST: AutoGraphPS automates REST conventions through consistent URI UX, handling of standard REST error statuses, and invocation of the appropriate REST methods (`GET`, `PUT`, `POST`, etc.)
 * [Entity Data Model (EDM)](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model): AutoGraphPS consumes the [EDM metadata exposed by Graph](https://developer.microsoft.com/en-us/graph/docs/concepts/traverse_the_graph) to surface types and a sense of location, and thus capabilities, to the user
 
-All of these design elements are universal throughout the Graph and are not specific to AAD, files, messaging, or any other part of the Graph. The advantages of aligning AutoGraphPS toward them are:
+All of these design elements are universal throughout the Graph and are not specific to Entra ID (fka AAD), files, messaging, or any other part of the Graph. The advantages of aligning AutoGraphPS toward them are:
 * No changes are needed to AutoGraphPS source code as new service features are enabled. Users do not need to continuously update their AutoGraphPS installations to get access to new Graph functionality.
 * The AutoGraphPS code base is simpler as domain-specific code can be omitted
 * Fewer poor cmdlet design choices are likely to be made in AutoGraphPS as domain-specific design is left to the Graph layer -- AutoGraphPS merely reflects what is in the Graph
@@ -87,7 +87,7 @@ This elasticity comes with a price, that of the loss of domain-specific optimiza
 
 One of the most difficult aspects of using the Graph is authentication. While in theory standardization on OAuth2 should allow consumers of the Graph to take advantage of standard OAuth2 libraries, no such libraries exist explicitly for PowerShell itself. Even in C# where PowerShell can interoperate with libraries quite efficiently, there has been confusion on which of two major libraries to use, both of which support scenarios that the other does not. The result is that in languages with an OAuth2 SDK, several lines of code requiring knoweledge of specific authentication endpoints and "application identity" configurations, most notably the pre-registered application identity and redirection URIs, must be invoked.
 
-AutoGraphPS aims to make authentication as easy as it is when using Graph Explorer -- invoke AutoGraphPS and provide credentials, and perhaps specify authorization scopes. No knowledge of the AAD application model, redirection URIs, application IDs, or login endpoints is required. A standalone cmdlet is even given to obtain authorization tokens that can be used with REST tools other than AutoGraphPS since those tools have no simple way of getting a Graph-specific token.
+AutoGraphPS aims to make authentication as easy as it is when using Graph Explorer -- invoke AutoGraphPS and provide credentials, and perhaps specify authorization scopes. No knowledge of the Entra ID application model, redirection URIs, application IDs, or login endpoints is required. A standalone cmdlet is even given to obtain authorization tokens that can be used with REST tools other than AutoGraphPS since those tools have no simple way of getting a Graph-specific token.
 
 Another area of friction is that of the input and output format for interacting with the Graph. Graph uses JSON, which is well-supported by many tools and somewhat human readable. However, with the kinds of nested structures used by Graph, it is very easy to incorrectly interpret or construct Graph JSON.
 
