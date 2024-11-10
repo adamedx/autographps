@@ -480,7 +480,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2023 Adam Edwards
+Copyright:: Copyright (c) 2024 Adam Edwards
 
 License:: Apache License, Version 2.0
 
