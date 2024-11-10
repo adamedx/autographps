@@ -123,7 +123,7 @@ gwd
 
 Path
 ----
-/v1.0:/users/AQMkADAwATExADlhNV00YzRmLWFjNDItMDAXLTAwCgBGAAAD_hc-sQbvekqyZIq_2GYBtgcAXNU0wBIpIEOF_w3WEyCuxAAAAgEkAABAA2hR9BI1qEuUOnyaM9xK8QAEM4Mv8wAAAA==
+/v1.0:/users/AQMkADAwATExADlhNV00YzRmLWFjNDItMDAXLTAwCgBGAACD_hc-sQbvekqyZIq_2GYBtgcAXNU0wBIpIEOF_w3WEyCuxAAAAgEkAABAA2hR9BI1qEuUOnyaM9xK8QAEM4Mv8wAAAA==
 
 In this example, Set-GraphLocation is used via the gcd alias to set the current location to /me/contacts. Executing 'gls' queries the Graph using the current location, returning all the contacts for the signed-in user. The output of gls is not shown here, but the output of Get-GraphLastOutput (alias 'glo') is shown since it provides a useful 'index' shortcut. The problem here is that if the goal is to 'gcd' into a particular contact, the id must be specified, and for contacts identifiers may be 100 characters in length, and when displayed on the console may be truncated. Get-GraphLastObject shows an identifier and a heuristically derived friendly name; in the list above, if "John Henry" is the desired contact, the index is '2'. Thus `gcd -Index 2' will set the current location to that contact without the need to specify its cumbersome identifier.
 

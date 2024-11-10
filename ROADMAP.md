@@ -432,6 +432,7 @@
 * Remove-GraphItem should work with items created by autographps-sdk like application (fixed by taking an update to autographps-sdk)
 * Add custom list formats for graph service principal and application
 * Add -property / select to Get-GraphRelatedItem and related commands
+* Replaced outdated references to AAD / Azure Active Directory with Entra ID (where appropriate)
 
 ### Postponed
 
