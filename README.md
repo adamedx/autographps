@@ -1,4 +1,4 @@
-# <Img src="https://raw.githubusercontent.com/adamedx/autographps/main/assets/PoshGraphIcon.png" width="50"> AutoGraphPS
+# <img src="https://raw.githubusercontent.com/adamedx/autographps/main/assets/PoshGraphIcon.png" width="50"> AutoGraphPS
 
 | [Documentation](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Usage](#usage) | [Reference](#reference) | [Contributing and development](#contributing-and-development) |
 |-------------|-------------|-------------|-------------|-------------|
