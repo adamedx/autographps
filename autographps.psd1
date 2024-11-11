@@ -12,11 +12,7 @@
 RootModule = 'autographps.psm1'
 
 # Version number of this module.
-<<<<<<< HEAD
 ModuleVersion = '0.44.0'
-=======
-ModuleVersion = '0.43.0'
->>>>>>> main
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
