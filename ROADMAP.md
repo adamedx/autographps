@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Replace usage of Invoke-GraphApiRequest for metadata via connection to support an "anonymous" access so we don't need to create types from external modules to get unauthenticated connections.
+* Or just use an httpclient's async functionality to avoid threads altogether, and remove usage of ThreadJob.
 * Switch build system to dotnet
 * Investigate gls ignoring 400's
 * Investigate pipeline behavior to Get-GraphRelatedItem
@@ -432,6 +434,7 @@
 * Remove-GraphItem should work with items created by autographps-sdk like application (fixed by taking an update to autographps-sdk)
 * Add custom list formats for graph service principal and application
 * Add -property / select to Get-GraphRelatedItem and related commands
+* Replaced outdated references to AAD / Azure Active Directory with Entra ID (where appropriate)
 
 ### Postponed
 

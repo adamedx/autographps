@@ -23,7 +23,7 @@ write-host "To get started, try executing any of the following commands:"
     [PSCustomObject]@{Command="    gwd";Purpose="# Output the current location."}
     [PSCustomObject]@{Command="    gls";Purpose="# Enumerates the children of the (new) current location."}
     [PSCustomObject]@{Command="    gls messages";Purpose="# Enumerates email messages ('me/messages')."}
-    [PSCustomObject]@{Command="    Get-GraphItem /organization";Purpose="# For AAD accounts, gets organization information using an absolute path"}
+    [PSCustomObject]@{Command="    Get-GraphItem /organization";Purpose="# For Entra ID accounts, gets organization information using an absolute path"}
     [PSCustomObject]@{Command="    Get-Graph";Purpose="# Outputs information about all the current graphs and their API versions"}
     [PSCustomObject]@{Command="    gcd /beta:";Purpose="# Mount an entirely new graph of API version 'beta' and change the current location to it."}
     [PSCustomObject]@{Command="    gls me";Purpose="# Enumerate the 'me' segment itself."}

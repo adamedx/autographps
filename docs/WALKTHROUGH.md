@@ -396,12 +396,12 @@ Connect-GraphApi User.ReadWrite.All, Group.ReadWrite.All, Contacts.ReadWrite
 
 A few notes are in order:
 
-* As long as you sign in with the same account used to execute the command above, you'll only need to run it *once* -- even if you start a new PowerShell session and sign in without executing that command, AAD will continue to grant those permissions to AutoGraphPS until you take an explicit action to revoke your consent to those permissions.
-* These write permissions are typically not available to ordinary users in an AAD tenant; for the AAD-only scenarios, you'll need to be highly-privileged. If this isn't the case for you in your standard usage, you should use an alternate tenant, potentially one acquired through a developer program or trial Azure subscription.
+* As long as you sign in with the same account used to execute the command above, you'll only need to run it *once* -- even if you start a new PowerShell session and sign in without executing that command, Entra ID (formerly known as AAD) will continue to grant those permissions to AutoGraphPS until you take an explicit action to revoke your consent to those permissions.
+* These write permissions are typically not available to ordinary users in an Entra ID tenant; for the Entra ID-only scenarios, you'll need to be highly-privileged. If this isn't the case for you in your standard usage, you should use an alternate tenant, potentially one acquired through a developer program or trial Azure subscription.
 
-#### Create a simple resource: group (AAD accounts only)
+#### Create a simple resource: group (Entra ID accounts only)
 
-This example uses the `New-GraphItem` command to creates a new AAD security group:
+This example uses the `New-GraphItem` command to creates a new Entra ID security group:
 
 ```powershell
 PS> $newGroup = New-GraphItem group -Property mailNickName, displayName, mailEnabled, securityEnabled -Value Group7Access, 'Group 7 Access', $false, $true
@@ -466,7 +466,7 @@ Id                                   DisplayName         Job Title UserPrincipal
 
 #### Create a resource with nested data: contact
 
-In this example, a new `contact` (i.e. e-mail or phone contact; requires either a free Microsoft account or non-trial AAD subscription) for the signed-in user is created. Here's a first attempt:
+In this example, a new `contact` (i.e. e-mail or phone contact; requires either a free Microsoft account or non-trial Entra ID subscription) for the signed-in user is created. Here's a first attempt:
 
 ```powershell
 PS> $newContact = New-GraphItem contact
@@ -572,7 +572,7 @@ Standard team collaboration group Team group - 05/16/2019 15:14:41
 
 Note that `Set-GraphItem` includes an `ExcludeObjectProperty` parameter that allows you to ignore properties specified through `TemplateObject` and `GraphItem` which is useful when the object contains read-only properties that may have been returned as part of an object from a previously executed command.
 
-#### Link resources: add a user to a group (AAD accounts only)
+#### Link resources: add a user to a group (Entra ID accounts only)
 
 The Graph is not just about individual resources, its power comes from the relationships between those resources. With groups and users for example, the fact that users are members of a group is modeled by a relationship property called `members`. This means that by modifying the `members` relationship property, we can modify which users are members of a group.
 
@@ -936,7 +936,7 @@ By making use of these "type" introspection commands, you can easily find your w
 
 ## Managing and customizing application identities
 
-AutoGraphPS provides commands to manage Azure Active Directory application identities, including the ability to manage permission consent for the applications. These commands are useful for provisioning any application or service for your organization, and may also be used to create new identities for which to execute AutoGraphPS-based scripts. And because application management commands are built-in to the module, AutoGraphPS is a self-contained Graph automation solution; there is no need jump outside to other command-line or graphical tools / portals if you need to provision an application identity dedicated to automation since AutoGraphPS itself can perform the provisioning.
+AutoGraphPS provides commands to manage Entra ID application identities, including the ability to manage permission consent for the applications. These commands are useful for provisioning any application or service for your organization, and may also be used to create new identities for which to execute AutoGraphPS-based scripts. And because application management commands are built-in to the module, AutoGraphPS is a self-contained Graph automation solution; there is no need jump outside to other command-line or graphical tools / portals if you need to provision an application identity dedicated to automation since AutoGraphPS itself can perform the provisioning.
 
 ### Provision a new application for interactive AutoGraphPS usage
 
@@ -956,7 +956,7 @@ AppId                                ConnectionName Organization                
 $groups = Get-GraphResource /groups
 ```
 
-The `New-GraphApplication` command issued a request through the Graph API to create a new public client AAD application. Anyone in the organization can sign in to the application. Since the optional `ConsentForAllUsers` parameter was also specified, consent has been granted to the application for all users in the organization; they will not get prompted for consent when using it. By default, any delegated permissions specified to the command will be consented only for the user issuing the `New-GraphApplication` command, not the entire organization.
+The `New-GraphApplication` command issued a request through the Graph API to create a new public client Entra ID application. Anyone in the organization can sign in to the application. Since the optional `ConsentForAllUsers` parameter was also specified, consent has been granted to the application for all users in the organization; they will not get prompted for consent when using it. By default, any delegated permissions specified to the command will be consented only for the user issuing the `New-GraphApplication` command, not the entire organization.
 
 The subsequent use of the `Connect-GraphApi` command with the `AppId` parameter shown above allows users to sign in with this (or any other) application by specifying the application's identifier. Once signed in, AutoGraphPS commands may be issue just as they are when using the default AutoGraphPS application; the commands will be authorized by the Graph API based on the permissions granted to this application at sign-in.
 
@@ -983,7 +983,7 @@ AppId                                ConnectionName Organization AuthType
 $users = Get-GraphResource users
 ```
 
-In this example, `New-GraphApplication` creates a new confidential client application identity and provisions it with `User.Read.All`. However, if the AutoGraphPS script is executed from the Windows OS, then by default `New-GraphApplication` **also** creates a certificate in the local certificate store specific to this application and configures AAD to enable that certificate as a credential for the identity.
+In this example, `New-GraphApplication` creates a new confidential client application identity and provisions it with `User.Read.All`. However, if the AutoGraphPS script is executed from the Windows OS, then by default `New-GraphApplication` **also** creates a certificate in the local certificate store specific to this application and configures Entra ID to enable that certificate as a credential for the identity.
 
 The example continues by using the newly created application to sign in to Graph using `Connect-GraphApi`. In addition to specifying the new application's identifier using the `AppId` parameter, the `Confidential` parameter must be supplied to direct the command to require credentials for the application itself and not just a user's credentials, AND the `NonInteractiveAppOnlyAuth` parameter must be supplied so that only the application credential is required (no user interaction is desired in this case). Additionally, the `TenantId` parameter must be specified using either the domain name of the tenant as in this case or the the tenant identifer. This allows the command to direct the sign-in to the correct tenant.
 

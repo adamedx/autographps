@@ -32,7 +32,7 @@ Install-Module AutoGraphPS -scope currentuser
 
 ## Usage
 
-Once you've installed the module, you can use an AutoGraphPS cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once you've installed the module, you can use an AutoGraphPS cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Entra ID (fka AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> Get-GraphResource me
@@ -290,7 +290,7 @@ https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/us
 #### AutoGraphPS tips
 Here are a few simple tips to keep in mind as you first start using AutoGraphPS:
 
-**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Azure Active Directory account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
+**1. Permissions matter:** AutoGraphPS can only access parts of the Graph for which you (or your organization's administrator) have given consent. Use the `Connnect-Graph` cmdlet to request additional permissions for AutoGraphPS, particularly if you run into authorization errors. Also, consult the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference) to understand what permissions are required for particular subsets of the Graph. Note that if you're using an Entra ID (formerly known as Azure Active Directory) account to access the Graph, you may need your organization's administrator to consent to the permissions on your behalf in order to grant them to AutoGraphPS.
 
 **2. Use tab-completion to learn and save time:** Many AutoGraphPS commands, including `Get-GraphResource`, `gls`, and `gcd` will tab-complete command parameters just like many other popular PowerShell commands do. URIs, resource names, and permission names are just some of the kinds of parameters that AutoGraphPS will tab-complete for you to reduce the time needed to issue a command and also clue you in on when you're potentially providing invalid input.
 
@@ -313,7 +313,7 @@ AutoGraphPS is your PowerShell interface to the Microsoft Graph REST API. In wha
 
 * **Developer - Graph education:** The Microsoft Graph is aimed at developers, and just as Graph Explorer helps developers learn how to make API calls to the Graph and debug them, AutoGraphPS offers the same capability, with the added benefit of the CLI's speed and automation
 * **Developer - testing and debugging:** AutoGraphPS makes it trivial to reproduce errors you encounter in your application's REST calls to the Graph -- simply use the same credentials, REST method, and Uri in one of the Graph cmdlets, and you can obtain diagnostics without rebuilding your application or otherwise altering it to isolate failure cases and add debugging information. AutoGraphPS is also useful for pursuing ad hoc "what if"-style investigations of Graph functionality that is new to you or understanding Graph's corner cases without building a new application.
-* **System administration:** Sysadmins manage the same services such as AAD, Exchange, and SharePoint that are exposed by the Microsoft Graph. Sysadmins are also heavy users of PowerShell. AutoGraphPS allows administrators to author PowerShell automation that takes full advantage of the management capabilities constantly being added to Microsoft Graph. Your existing PowerShell automation can be enhanced with AutoGraphPS or included in new tools based on it.
+* **System administration:** Sysadmins manage the same services such as Entra ID, Exchange, and SharePoint that are exposed by the Microsoft Graph. Sysadmins are also heavy users of PowerShell. AutoGraphPS allows administrators to author PowerShell automation that takes full advantage of the management capabilities constantly being added to Microsoft Graph. Your existing PowerShell automation can be enhanced with AutoGraphPS or included in new tools based on it.
 * **Developer - management tools:** Configuration management and system administration tools are popular output for developers, particularly in OSS communities. AutoGraphPS offers developers building PowerShell-based configuration management tools for their users a key library that solves authentication, modeling, querying, and deserialization. Graph calls with AutoGraphPS are typically one-liners requiring little in the way of setup, a quality that enhances your productivity as a developer.
 * **Enthusiast / power user:** Users who enjoy learning about what powers their software will find AutoGraphPS a great way to not only learn about Graph, but exploit its capabilities to do things such as advanced e-mail or photo management through Exchange and OneDrive, implement their own backup features with OneDrive and SharePoint, or simply automate common tasks.
 
@@ -480,7 +480,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2023 Adam Edwards
+Copyright:: Copyright (c) 2024 Adam Edwards
 
 License:: Apache License, Version 2.0
 
