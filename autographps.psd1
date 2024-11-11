@@ -67,11 +67,7 @@ FormatsToProcess = @('./src/cmdlets/common/AutoGraphFormats.ps1xml', './src/comm
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-<<<<<<< HEAD
     @{ModuleName='autographps-sdk';ModuleVersion='0.32.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
-=======
-    @{ModuleName='autographps-sdk';ModuleVersion='0.31.0';Guid='4d32f054-da30-4af7-b2cc-af53fb6cb1b6'}
->>>>>>> main
     @{ModuleName='scriptclass';ModuleVersion='0.20.3';Guid='9b0f5599-0498-459c-9a47-125787b1af19'}
     @{ModuleName='ThreadJob';ModuleVersion='2.0.3';Guid='0e7b895d-2fec-43f7-8cae-11e8d16f6e40'}
 )
@@ -282,6 +278,7 @@ Update to new AutoGraphPS-SDK, MSAL, new app id, authentication broker improveme
 
 * Replaced outdated references to Azure Active Directory / AAD with Entra ID
 * See fixes in the updated version of AutoGraphPS-SDK
+
 '@
     } # End of PSData hashtable
 
