@@ -276,6 +276,7 @@ Update to new AutoGraphPS-SDK, MSAL, new app id, authentication broker improveme
 
 ### Fixed defects
 
+* Fixed metadata download deadlock impacting type-related commands like Get-GraphType, New-Graph, etc. due to a PowerShell Core bug in ThreadJob exposed by ScriptClass. The issue was a race condition most likely encountered in niche cases like using multiple graphs at once or running tests against the type commands. The fix was a workarond to avoid the condition. See this ScriptClass issue for more details: https://github.com/adamedx/scriptclass/issues/40.
 * Replaced outdated references to Azure Active Directory / AAD with Entra ID
 * See fixes in the updated version of AutoGraphPS-SDK
 
