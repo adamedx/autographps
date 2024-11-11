@@ -76,6 +76,7 @@ AutoGraphPS's design is focused then on the following three things that apply to
 * [Entity Data Model (EDM)](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model): AutoGraphPS consumes the [EDM metadata exposed by Graph](https://developer.microsoft.com/en-us/graph/docs/concepts/traverse_the_graph) to surface types and a sense of location, and thus capabilities, to the user
 
 All of these design elements are universal throughout the Graph and are not specific to Entra ID (fka AAD), files, messaging, or any other part of the Graph. The advantages of aligning AutoGraphPS toward them are:
+
 * No changes are needed to AutoGraphPS source code as new service features are enabled. Users do not need to continuously update their AutoGraphPS installations to get access to new Graph functionality.
 * The AutoGraphPS code base is simpler as domain-specific code can be omitted
 * Fewer poor cmdlet design choices are likely to be made in AutoGraphPS as domain-specific design is left to the Graph layer -- AutoGraphPS merely reflects what is in the Graph

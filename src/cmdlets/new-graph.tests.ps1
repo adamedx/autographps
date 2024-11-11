@@ -72,7 +72,6 @@ Describe 'The New-Graph cmdlet' {
         }
 
         It "Should return the correct difference between two graphs mounted from local metadata" {
-
             # On PSCore the use of ThreadJob introduces some interesting race conditions that seem to be bugs
             # in PowerShell's ThreadJob implementation. Due to those issues, we'll leave this test for
             # desktop only for now until we can remove ThreadJob from the implementation.
