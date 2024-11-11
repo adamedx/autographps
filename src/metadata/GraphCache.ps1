@@ -322,16 +322,17 @@ ScriptClass GraphCache -ArgumentList { __Preference__ShowNotReadyMetadataWarning
                     # to initialize a connection object. It turns out that even if we create this object outside of the ThreadJob
                     # in which this code will execute, we still hit the SCriptClass bug mentioned earlier that causes this to hang.
                     # So instead, we'll just use good old native Invoke-WebRequest for now.
-                    $currentProgressPreference = $progressPreference
+                    $currentProgressPreference = $ProgressPreference
 
                     try {
+                        $ProgressPreference = 'SilentlyContinue'
                         Invoke-WebRequest -usebasicparsing -Method GET -Uri $schemaUri -ErrorAction Stop |
                           Select-Object -ExpandProperty Content
                     } finally {
                         # Invoke-WebRequest on desktop does not support the ProgressAction parameter, so we reset
                         # the preference variable as a workaround. If progress is enabled, there are significant performance
                         # penalties for Invoke-WebRequest.
-                        $progressPreference = $currentProgressPreference
+                        $ProgressPreference = $currentProgressPreference
                     }
                 }
 
